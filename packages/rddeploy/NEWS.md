@@ -89,3 +89,14 @@ Git- och GitHub-anropen är omskrivna att gå via **gert**, **gh** och
 * `shinyapp_avpublicera()`, `shinyapp_flytta()` – `gh`-triggade workflows,
   server-URL:er konfigurerbara (`rddeploy.shiny_host_*`).
 * `.gh_pat`/`.gh_push` -> `rddeploy_pat()` / `intern_gh_push()`.
+
+## Ännu inte portat
+
+* Landningssidefunktionerna (`landningssida_*`) och `kor_cron_jobb()`.
+  Både `func_landningssida_adminportal.R` och `func_kor_cron_jobb.R` är i
+  dag medvetet fristående filer som `source()`:as direkt från
+  raw.githubusercontent.com av serverskript på RP0003 och wfalmitvs978.
+  Att flytta in dem i ett paket bryter det upplägget - beslut om hur de
+  ska hanteras tas separat.
+* `skapa_hamta_data_skript_pxweb()` - ska inte portas
+  (`pxweb2r::pxweb2_data_script_template()` täcker behovet).

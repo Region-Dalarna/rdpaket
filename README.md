@@ -16,7 +16,7 @@ Planen för uppdelningen finns i `funktioner/PLAN-paketuppdelning.md`.
 | `rdgis` | geometri, kartdata, rutor, GIS-filinläsning | planerat |
 | `rdpostgres` | databasanslutningar och postgres-hjälpare | planerat |
 | `rdgeorouting` | postgis, pgRouting, pendlingsnätverk | planerat |
-| `rddeploy` | github/git, webbrapport, shiny-app-deploy, landningssida | planerat |
+| `rddeploy` | github/git, webbrapport, shiny-app-deploy, landningssida | **delvis** (git/GitHub, webbrapport, shinyapp klart; landningssida + cron kvar) |
 | `rdshinyappar` | runtime-hjälpare för Shiny-appar (DB, lösenord, telemetri) | **klart** |
 | `rd` | paraplypaket – `library(rd)` drar in allt | planerat |
 
