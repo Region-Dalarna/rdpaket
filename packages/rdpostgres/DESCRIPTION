@@ -1,0 +1,40 @@
+Package: rdpostgres
+Title: PostgreSQL-verktyg för Region Dalarnas Databaser
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
+    person("Region Dalarna", role = "cph")
+  )
+Description: Anslutningar och administration mot Region Dalarnas
+    PostgreSQL-servrar: lista och skapa databaser, scheman, roller och
+    rättigheter, läsa och skriva tabeller, hantera metadata om när tabeller
+    senast uppdaterades, samt automatiska grants via event triggers.
+    Utbrutet ur postgres-avsnittet i func_GIS.R i Region-Dalarna/funktioner.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.5.0)
+Imports:
+    DBI,
+    dplyr,
+    glue,
+    purrr,
+    rlang,
+    RPostgres,
+    stringr,
+    tibble,
+    tidyr
+Suggests:
+    keyring,
+    pxweb2r,
+    rdverktyg,
+    testthat (>= 3.0.0),
+    withr
+Config/testthat/edition: 3
+URL: https://github.com/Region-Dalarna/rdpaket
+BugReports: https://github.com/Region-Dalarna/rdpaket/issues
+Config/roxygen2/version: 8.1.0
+Remotes:
+    FaluPeppe/pxweb2r,
+    Region-Dalarna/rdpaket/packages/rdverktyg
