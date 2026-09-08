@@ -52,6 +52,27 @@ intern_gh_org_an  <- function() intern_opt("gh_org_an", "Analytikernatverket")
 # E-postdomän som anv_epostadress_hamta() letar efter.
 intern_epost_doman <- function() intern_opt("epost_doman", "regiondalarna.se")
 
+# Shiny-serverns värdnamn per target.
+intern_shiny_host <- function(target) {
+  switch(target,
+    publik = intern_opt("shiny_host_publik", "shiny.regiondalarna.se"),
+    intern = intern_opt("shiny_host_intern", "shiny.ltdalarna.se"),
+    cli::cli_abort("Okänt target: {.val {target}}")
+  )
+}
+
+# Webbportalens värdnamn per target (för webbsida_med_portal_*).
+intern_portal_host <- function(target) {
+  switch(target,
+    publik = intern_opt("portal_host_publik", "samhallsanalys.regiondalarna.se"),
+    intern = intern_opt("portal_host_intern", "samhallsanalys.ltdalarna.se"),
+    cli::cli_abort("Okänt target: {.val {target}}")
+  )
+}
+
+# GitHub-team som ges push-behörighet på nyskapade repos (NULL = inget team).
+intern_behorighet_team <- function() intern_opt("behorighet_team", "samhallsanalys")
+
 # Känd person -> namn + e-post. Går att utöka via
 # options(rddeploy.namn_epost_lista = list(anna = list(namn = "...", epost = "..."))).
 intern_namn_epost_lista <- function() {

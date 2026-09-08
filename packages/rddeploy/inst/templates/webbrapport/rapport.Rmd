@@ -1,0 +1,83 @@
+---
+title: <<rapport_titel>>
+author: ""
+date: ""
+output:
+  html_document:
+    self_contained: true
+    includes:
+      in_header:
+        - favicon.html
+        - hero_image.html
+    toc: yes
+    toc_float: yes
+    toc_depth: 6
+    css: "styles_hero.css"
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(here)
+library(rddiagram)   # SkapaStapelDiagram(), SkapaLinjeDiagram(), diagramfarger()
+
+options(dplyr.summarise.inform = FALSE)
+
+# Mapp för figurer
+outputmapp <- here("figurer", "/")
+
+# Sätt till TRUE när figurer ska sparas till fil
+spara_figur <- FALSE
+```
+
+<p style="font-size:12px">
+<i>Rapporten är skapad av Samhällsanalys, Region Dalarna<br>
+Senast uppdaterad: `r Sys.Date()`</i>
+</p>
+
+# Sammanfattning {-}
+
+Punktlista med de viktigaste budskapen – inte ett referat av varje avsnitt.
+
+- Första punkten.
+- Andra punkten.
+- Tredje punkten.
+
+# Introduktion {-}
+
+Kort text om vad rapporten handlar om och vad läsaren kan förvänta sig.
+
+# Första avsnittet
+
+Brödtext.
+
+```{r}
+diagram_capt <- paste0(
+  "Källa: SCB:s öppna statistikdatabas\n",
+  "Bearbetning: Samhällsanalys, Region Dalarna"
+)
+
+# exempeldata – byt ut mot riktig inläsning i skript/1_hamta_data.R
+exempel_df <- tibble::tibble(
+  grupp = c("A", "B", "C"),
+  andel = c(42, 31, 27)
+)
+
+exempel_fig <- SkapaStapelDiagram(
+  skickad_df    = exempel_df,
+  skickad_x_var = "grupp",
+  skickad_y_var = "andel",
+  manual_y_axis_title = "procent",
+  diagram_titel = "Exempeldiagram",
+  diagram_capt  = diagram_capt,
+  output_mapp   = outputmapp,
+  filnamn_diagram = "exempel.png",
+  skriv_till_diagramfil = spara_figur
+)
+```
+
+```{r, fig.height=5, fig.width=8, fig.align="center"}
+exempel_fig
+```

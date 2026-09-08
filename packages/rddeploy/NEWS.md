@@ -52,3 +52,40 @@ Git- och GitHub-anropen är omskrivna att gå via **gert**, **gh** och
 * `depot_hamta_fran()`, `depot_hamta_mapp_fran()`, `depot_skriv_mall_fran()`
   – textfiler via Contents-API med raw-accept (förbi CDN-cache), binärfiler
   via `download_url`.
+
+## GitHub Actions
+
+* `intern_trigga_workflow()`, `intern_vanta_pa_workflow()`,
+  `intern_ge_team_behorighet()` – via `gh` (ersätter handrullade
+  `httr::POST/PUT` mot Actions- och teams-API:t).
+
+## Webbrapport och portal
+
+* `skapa_webbrapport_github()` – ~400 rader inbäddad text/RMarkdown flyttad
+  till `inst/templates/webbrapport/`. Det stora, inaktuella exempel-`.Rmd`:t
+  ersatt av ett rent skelett som använder `rddiagram`. git/GitHub via
+  `gert` + `usethis`.
+* `webbrapport_publicera()`, `webbrapport_avpublicera()` – redan `gert`/`gh`,
+  städade; avpublicera triggar workflow via `gh`.
+* `webbsida_med_portal_skapa_med_github_repo()`, `dokumentation_sida_skapa()`
+  – konfigurerbara sökvägar, team-behörighet via delad hjälpare.
+
+## Shiny-appar
+
+* Mallfiler (`deploy.yml`, `avpublicera.yml`, `global.R`, `ui.R`, `server.R`,
+  `_dependencies.R`, `app.css`, `README.md`, ...) i
+  `inst/templates/shinyapp/` med `<<platshållare>>` (så att GitHub Actions
+  `${{ ... }}` står orört).
+* `shinyapp_config()` – validerat config-objekt i stället för ~12 argument.
+* Monoliterna (`shinyapp_skapa_med_github_repo` ~730 rader,
+  `..._forka_befintligt` ~510) uppdelade i stegfunktioner:
+  `intern_scaffold_struktur/appfiler/www/workflows/meta/renv`,
+  `intern_init_git_och_github`, `intern_preflight` (skriver ut vad som
+  skapas, kräver att föräldermappen finns, ber om bekräftelse om inte
+  `force = TRUE`). renv-bootstrappen isolerad i `intern_scaffold_renv()`.
+* `shinyapp_publicera()` – `gert` i stället för `system2("git")`; pushar
+  default-branchens topp till `publicera-<target>` (som `webbrapport_publicera`).
+  `tvinga_omdeploy` för omdeploy av samma commit.
+* `shinyapp_avpublicera()`, `shinyapp_flytta()` – `gh`-triggade workflows,
+  server-URL:er konfigurerbara (`rddeploy.shiny_host_*`).
+* `.gh_pat`/`.gh_push` -> `rddeploy_pat()` / `intern_gh_push()`.
