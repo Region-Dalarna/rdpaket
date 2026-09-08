@@ -141,6 +141,8 @@ ladda_ned_fil <- function(output_mapp, fil_url) {
   invisible(mal)
 }
 
+## `%notin%` finns i base R sedan 4.5.0 - ingen egen definition behövs.
+
 #' Datum för nästa förekomst av en viss veckodag
 #'
 #' `nextweekday(Sys.Date(), 2)` ger nästa måndag. Veckodag anges som
@@ -160,13 +162,3 @@ nextweekday <- function(date, wday) {
   date + diff
 }
 
-#' Negation av `%in%`
-#'
-#' `x %notin% tabell` är `!(x %in% tabell)`.
-#'
-#' @param x Värden som testas.
-#' @param table Värden att testa mot.
-#'
-#' @return Logisk vektor.
-#' @export
-`%notin%` <- function(x, table) !(x %in% table)

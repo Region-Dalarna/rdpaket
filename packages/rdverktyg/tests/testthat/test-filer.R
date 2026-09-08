@@ -48,7 +48,3 @@ test_that("nextweekday hittar nästa veckodag", {
   expect_equal(nextweekday("2026-09-08", 4), as.Date("2026-09-09")) # onsdag
   expect_equal(nextweekday("2026-09-08", 3), as.Date("2026-09-15")) # samma dag -> +7
 })
-
-test_that("%notin% negerar %in%", {
-  expect_equal(c(1, 2, 3) %notin% c(2, 4), c(TRUE, FALSE, TRUE))
-})

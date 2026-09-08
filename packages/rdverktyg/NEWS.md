@@ -42,8 +42,10 @@ Första versionen. Funktioner utbrutna ur funktionsskripten i
 
 * `sparafil_unik()`, `skapa_mapp_om_den_inte_finns()`,
   `sparafil_en_backup_nvdb()`, `sparafil_backup_omfinns()`, `ladda_ned_fil()`,
-  `nextweekday()`, `%notin%`.
+  `nextweekday()`.
 * Sökvägshantering går via `fs`.
+* `%notin%` togs INTE med - finns i base R sedan 4.5.0. Paketet kräver
+  därför R >= 4.5.0.
 * `get_shapefile()` togs INTE med - den var trasig (refererade odefinierade
   globala variabler) och överlappade `ladda_ned_fil()`.
 
