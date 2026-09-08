@@ -20,11 +20,17 @@ Imports:
     ggplot2,
     ggtext,
     rlang,
+    scales,
     tidyr
 Suggests:
+    classInt,
+    cowplot,
+    forcats,
+    ggrepel,
     magick,
     ragg,
     RColorBrewer,
+    sf,
     svglite,
     testthat (>= 3.0.0),
     tidytext,
