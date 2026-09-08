@@ -4,9 +4,10 @@
 if (!requireNamespace("pak", quietly = TRUE)) install.packages("pak")
 
 paket <- c(
-  "rdverktyg"
-  # "rddiagram", "rdpostgres", "rdgis", "rdgeorouting",
-  # "rdshinyappar", "rddeploy", "rd"
+  "rdverktyg",
+  "rddiagram",
+  "rdshinyappar"
+  # "rdpostgres", "rdgis", "rdgeorouting", "rddeploy", "rd"
 )
 
 pak::pkg_install(file.path("local::packages", paket))

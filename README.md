@@ -12,12 +12,12 @@ Planen för uppdelningen finns i `funktioner/PLAN-paketuppdelning.md`.
 | Paket | Innehåll | Status |
 |---|---|---|
 | `rdverktyg` | text, filer, SCB-/regionhämtning, allmänna verktyg, datakällor | **klart** (utom `oppnadata_hamta` → rdpostgres) |
-| `rddiagram` | diagram (ggplot), färg/skala, bubbeldiagram | planerat |
+| `rddiagram` | diagram (ggplot), färg/skala, bubbeldiagram | **klart** |
 | `rdgis` | geometri, kartdata, rutor, GIS-filinläsning | planerat |
 | `rdpostgres` | databasanslutningar och postgres-hjälpare | planerat |
 | `rdgeorouting` | postgis, pgRouting, pendlingsnätverk | planerat |
 | `rddeploy` | github/git, webbrapport, shiny-app-deploy, landningssida | planerat |
-| `rdshinyappar` | runtime-hjälpare för Shiny-appar (DB, lösenord) | planerat |
+| `rdshinyappar` | runtime-hjälpare för Shiny-appar (DB, lösenord, telemetri) | **klart** |
 | `rd` | paraplypaket – `library(rd)` drar in allt | planerat |
 
 `pxweb2r` (PxWeb API v2) ligger i eget repo: <https://github.com/FaluPeppe/pxweb2r>.
