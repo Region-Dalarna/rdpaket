@@ -13,7 +13,7 @@ Planen för uppdelningen finns i `funktioner/PLAN-paketuppdelning.md`.
 |---|---|---|
 | `rdverktyg` | text, filer, SCB-/regionhämtning, allmänna verktyg, datakällor | **klart** (utom `oppnadata_hamta` → rdpostgres) |
 | `rddiagram` | diagram (ggplot), färg/skala, bubbeldiagram | **klart** |
-| `rdgis` | geometri, kartdata, rutor, GIS-filinläsning | planerat |
+| `rdgis` | geometri, kartdata, rutor, GIS-filinläsning | **klart** |
 | `rdpostgres` | databasanslutningar, roller/rättigheter, metadata, grants | **klart** |
 | `rdgeorouting` | postgis, pgRouting, pendlingsnätverk | planerat |
 | `rddeploy` | github/git, webbrapport/portal, shiny-app-scaffolding & -publicering | **klart** |

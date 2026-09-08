@@ -60,6 +60,12 @@ Första versionen. Utbrutet ur postgres-avsnittet i `func_GIS.R` i
 * `postgres_grants_auto_skapa()`, `postgres_grants_pa_befintliga_objekt()`,
   `postgres_grants_auto_visa()`, `postgres_grants_auto_testa()`.
 
+## Keyring
+
+* `get_password_tk()` (maskerat tcltk-fönster), `keyring_lagg_till_inloggning()`
+  – flyttade hit från func_GIS.R eftersom de sätter upp de
+  keyring-services `uppkoppling_db()`/`uppkoppling_adm()` läser.
+
 ## Övrigt
 
 * `postgres_felmeddelande()`, `logga_event()`.

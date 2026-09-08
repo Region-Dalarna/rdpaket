@@ -29,6 +29,8 @@ Suggests:
     keyring,
     pxweb2r,
     rdverktyg,
+    svDialogs,
+    tcltk,
     testthat (>= 3.0.0),
     withr
 Config/testthat/edition: 3

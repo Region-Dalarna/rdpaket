@@ -1,0 +1,42 @@
+Package: rdgis
+Title: GIS-verktyg för Region Dalarnas Analysarbete
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
+    person("Region Dalarna", role = "cph")
+  )
+Description: Hämta kartdata ur geodatabasen, skapa sf-objekt av
+    ruttabeller och koordinatpar, geometriska hjälpfunktioner
+    (centroider inuti polygoner, linjer längs punkter), läsa GIS-filer
+    ur zip-arkiv och extrahera kolumnnamn ur ESRI-geodatabaser.
+    Utbrutet ur geometri-avsnitten i func_GIS.R i Region-Dalarna/funktioner.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.5.0)
+Imports:
+    DBI,
+    dplyr,
+    rdpostgres,
+    rlang,
+    stats,
+    stringr,
+    tibble
+Suggests:
+    curl,
+    data.table,
+    rdverktyg,
+    rio,
+    sf,
+    terra,
+    testthat (>= 3.0.0),
+    withr
+Config/testthat/edition: 3
+URL: https://github.com/Region-Dalarna/rdpaket
+BugReports: https://github.com/Region-Dalarna/rdpaket/issues
+Config/roxygen2/version: 8.1.0
+Remotes:
+    FaluPeppe/pxweb2r,
+    Region-Dalarna/rdpaket/packages/rdverktyg,
+    Region-Dalarna/rdpaket/packages/rdpostgres
