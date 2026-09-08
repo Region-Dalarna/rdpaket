@@ -1,0 +1,25 @@
+Package: rdverktyg
+Title: Allmänna Verktyg för Region Dalarnas Analysarbete
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
+    person("Region Dalarna", role = "cph")
+  )
+Description: Samling av allmänna hjälpfunktioner för text, filer, SCB-hämtning
+    och andra återkommande behov i Region Dalarnas analysarbete. Utbrutet ur
+    funktionsskripten i Region-Dalarna/funktioner.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.1)
+Imports:
+    dplyr,
+    stringi,
+    stringr
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+URL: https://github.com/Region-Dalarna/rdpaket
+BugReports: https://github.com/Region-Dalarna/rdpaket/issues
+Config/roxygen2/version: 8.1.0
