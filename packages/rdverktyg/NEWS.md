@@ -3,6 +3,21 @@
 Första versionen. Funktioner utbrutna ur funktionsskripten i
 `Region-Dalarna/funktioner`.
 
+## Region- och kommunkoder (ur `func_API.R`)
+
+* `hamtaregtab()`, `hamtakommuner()`, `hamtaAllaLan()`,
+  `hamtaregion_kod_namn()`, `hamta_kommunkoder()`, `skapa_kortnamn_lan()`,
+  `region_kolumn_splitta_kod_klartext()`, `ar_alla_kommuner_i_ett_lan()`,
+  `ar_alla_lan_i_sverige()`.
+* Region-/kommunlistan hämtas nu från SCB:s codelist-endpoints
+  (`vs_RegionRiket99`, `vs_RegionLän07`, `vs_RegionKommun07`) via
+  `pxweb2r::pxweb2_get_codelist()`, i stället för att extraheras ur en
+  befolkningstabell över pxweb v1. `hamtaregtab()` cachar per session.
+* Ännu ej flyttade (kräver per-tabell-beslut): `regsokoder_bearbeta()`,
+  `desokoder_bearbeta()`, `tatortskoder_bearbeta()`,
+  `hamta_regionkod_med_knas_regionkod()`.
+* `svenska_tecken_byt_ut()` togs bort - dubblett av `byt_ut_svenska_tecken()`.
+
 ## Filer (ur `func_filer.R`)
 
 * `sparafil_unik()`, `skapa_mapp_om_den_inte_finns()`,
