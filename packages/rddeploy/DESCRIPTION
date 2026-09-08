@@ -1,0 +1,38 @@
+Package: rddeploy
+Title: Deploy-verktyg för Region Dalarnas GitHub, webbrapporter och Shiny-appar
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
+    person("Region Dalarna", role = "cph")
+  )
+Description: Samlar Region Dalarnas arbetsflöden för git och GitHub, publicering
+    av webbrapporter och portaler samt scaffolding och publicering av
+    Shiny-appar. Bygger på gert, gh och gitcreds i stället för handrullade
+    git-anrop. Utbrutet ur func_API.R och func_landningssida_adminportal.R i
+    Region-Dalarna/funktioner.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.5.0)
+Imports:
+    cli,
+    curl,
+    gert,
+    gh,
+    gitcreds,
+    glue,
+    purrr,
+    tibble
+Suggests:
+    clipr,
+    keyring,
+    rstudioapi,
+    testthat (>= 3.0.0),
+    usethis,
+    withr,
+    yaml
+Config/testthat/edition: 3
+URL: https://github.com/Region-Dalarna/rdpaket
+BugReports: https://github.com/Region-Dalarna/rdpaket/issues
+Config/roxygen2/version: 8.1.0
