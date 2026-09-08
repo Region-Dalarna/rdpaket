@@ -7,7 +7,8 @@ paket <- c(
   "rdverktyg",
   "rddiagram",
   "rdshinyappar",
-  "rddeploy"
+  "rddeploy",
+  "rdadminportal"
   # "rdpostgres", "rdgis", "rdgeorouting", "rd"
 )
 

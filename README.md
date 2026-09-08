@@ -16,8 +16,9 @@ Planen för uppdelningen finns i `funktioner/PLAN-paketuppdelning.md`.
 | `rdgis` | geometri, kartdata, rutor, GIS-filinläsning | planerat |
 | `rdpostgres` | databasanslutningar och postgres-hjälpare | planerat |
 | `rdgeorouting` | postgis, pgRouting, pendlingsnätverk | planerat |
-| `rddeploy` | github/git, webbrapport, shiny-app-deploy, landningssida | **delvis** (git/GitHub, webbrapport, shinyapp klart; landningssida + cron kvar) |
+| `rddeploy` | github/git, webbrapport/portal, shiny-app-scaffolding & -publicering | **klart** |
 | `rdshinyappar` | runtime-hjälpare för Shiny-appar (DB, lösenord, telemetri) | **klart** |
+| `rdadminportal` | adminportal + serverdrift: landningssidor, ikoner, nedladdningar, cron | **klart** |
 | `rd` | paraplypaket – `library(rd)` drar in allt | planerat |
 
 `pxweb2r` (PxWeb API v2) ligger i eget repo: <https://github.com/FaluPeppe/pxweb2r>.

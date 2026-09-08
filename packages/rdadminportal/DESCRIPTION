@@ -1,0 +1,35 @@
+Package: rdadminportal
+Title: Adminportal och Serverdrift för Region Dalarnas Shiny-landningssidor
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
+    person("Region Dalarna", role = "cph")
+  )
+Description: Funktioner för adminportalens Exkludering-, Ikoner-, Appar- och
+    Nedladdning-flikar samt för de serverskript som synkar Shiny-
+    landningssidorna. Hanterar VILKA appar och rapporter som visas, deras
+    ikoner och exkluderingsstatus, mot den delade adminshiny-databasen
+    ("publik") eller lokala sudo-anrop ("intern"). Innehåller även
+    kor_cron_jobb() som exekverar ett schemalagt datauttag. Utbrutet ur
+    func_landningssida_adminportal.R och func_kor_cron_jobb.R i
+    Region-Dalarna/funktioner.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.5.0)
+Imports:
+    DBI,
+    jsonlite,
+    rdshinyappar
+Suggests:
+    sf,
+    testthat (>= 3.0.0),
+    withr,
+    writexl
+Config/testthat/edition: 3
+URL: https://github.com/Region-Dalarna/rdpaket
+BugReports: https://github.com/Region-Dalarna/rdpaket/issues
+Config/roxygen2/version: 8.1.0
+Remotes:
+    Region-Dalarna/rdpaket/packages/rdshinyappar
