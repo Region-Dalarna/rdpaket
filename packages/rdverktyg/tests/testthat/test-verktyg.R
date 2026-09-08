@@ -3,7 +3,7 @@ test_that("nummer_till_text hanterar 1-20", {
   expect_equal(nummer_till_text(c(1, 20)), c("ett", "tjugo"))
   expect_warning(x <- nummer_till_text(c(2, 99)), "1-20")
   expect_equal(x, "två")
-  expect_error(nummer_till_text(99), "1-20")
+  expect_error(suppressWarnings(nummer_till_text(99)), "1-20")
 })
 
 test_that("slash_lagg_till lägger till snedstreck", {

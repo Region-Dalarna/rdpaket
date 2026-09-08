@@ -14,21 +14,33 @@ Roxygen: list(markdown = TRUE)
 Depends:
     R (>= 4.5.0)
 Imports:
+    curl,
     dplyr,
     fs,
+    httr,
+    jsonlite,
+    purrr,
     pxweb2r,
     rlang,
     stringi,
     stringr,
     tibble,
-    tidyr
+    tidyr,
+    tidyselect
 Suggests:
     clipr,
-    curl,
+    keyring,
+    openxlsx,
+    readxl,
+    rio,
+    rKolada,
     rstudioapi,
+    rvest,
     testthat (>= 3.0.0),
     this.path,
-    withr
+    withr,
+    xml2,
+    zip
 Remotes:
     FaluPeppe/pxweb2r
 Config/testthat/edition: 3

@@ -230,11 +230,12 @@ nummer_till_text <- function(x) {
            "elva", "tolv", "tretton", "fjorton", "femton", "sexton", "sjutton",
            "arton", "nitton", "tjugo")
 
-  retur_x <- ifelse(x >= 1 & x <= 20, ord[x], NA_character_)
-  if (anyNA(retur_x)) warning("Funktionen kan bara hantera talen 1-20, övriga tas bort.")
-  retur_x <- retur_x[!is.na(retur_x)]
-  if (length(retur_x) == 0) stop("Funktionen kan bara hantera tal som är 1-20.")
-  retur_x
+  giltiga <- x >= 1 & x <= 20
+  if (!any(giltiga, na.rm = TRUE)) stop("Funktionen kan bara hantera tal som är 1-20.")
+  if (!all(giltiga, na.rm = TRUE) || anyNA(giltiga)) {
+    warning("Funktionen kan bara hantera talen 1-20, övriga tas bort.")
+  }
+  ord[x[which(giltiga)]]
 }
 
 #' Lägg till avslutande snedstreck om det saknas

@@ -3,6 +3,30 @@
 Första versionen. Funktioner utbrutna ur funktionsskripten i
 `Region-Dalarna/funktioner`.
 
+## Datakällor och filformat (ur `func_API.R`, grupp C/D/F)
+
+* **Kolada** (`Suggests: rKolada`): `hamta_kolada_giltiga_ar()`,
+  `hamta_kolada_df()`.
+* **Skolverket**: `skolverket_generera_kolumnnamn()`,
+  `skolverket_hitta_startrad()`, `gymnprg_inr_koder_hamta_api_skolverket()`.
+* **Försäkringskassan-JSON**: `hamta_fk_json_dataset_med_url()` +
+  `json_extrahera_*()`/`json_ersatt_nycklar_med_etiketter()` (interna).
+  Sköra parsers - verifiera mot riktiga FK-dataset.
+* **Excel/filformat**: `excel_xml_las_fil()` (`Suggests: xml2`),
+  `hamta_excel_dataset_med_url()` (`readxl`), `konvertera_dataset_filformat()`
+  (`rio`), `excelfil_spara_formaterad()` (`openxlsx`), `spara_som_csv_i_zip()`
+  (`zip`), `csv_fran_zipfiler_inlasning()`, `las_b64()`.
+* **Webb**: `filhamtning_med_url_och_sokord()`,
+  `webbsida_extrahera_url_med_sokord()` (`rvest`; namnet var
+  `webbsida_af_extrahera_url_med_sokord` - "af" borttaget, bugg fixad där
+  sista raden skrev över det filtrerade resultatet), `url_finns_webbsida()`.
+* **source-hjälpare** (övergångsinfra): `source_utan_cache()`,
+  `source_funktioner()`, `copilot_konvertera()`.
+* `separator_gissa()` blev intern (`intern_separator_gissa`).
+* `oppnadata_hamta()` togs INTE med - beror på postgres-funktioner, hör till
+  `rdpostgres`.
+* Tunga/nischade beroenden ligger i `Suggests` med `requireNamespace()`-vakt.
+
 ## Region- och kommunkoder (ur `func_API.R`)
 
 * `hamtaregtab()`, `hamtakommuner()`, `hamtaAllaLan()`,

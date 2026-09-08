@@ -11,7 +11,7 @@ Planen för uppdelningen finns i `funktioner/PLAN-paketuppdelning.md`.
 
 | Paket | Innehåll | Status |
 |---|---|---|
-| `rdverktyg` | text, filer, SCB-/regionhämtning, allmänna verktyg | text, filer, region, verktyg klara; grupp C/D/F kvar |
+| `rdverktyg` | text, filer, SCB-/regionhämtning, allmänna verktyg, datakällor | **klart** (utom `oppnadata_hamta` → rdpostgres) |
 | `rddiagram` | diagram (ggplot), färg/skala, bubbeldiagram | planerat |
 | `rdgis` | geometri, kartdata, rutor, GIS-filinläsning | planerat |
 | `rdpostgres` | databasanslutningar och postgres-hjälpare | planerat |
