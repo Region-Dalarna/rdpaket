@@ -15,11 +15,11 @@ Planen för uppdelningen finns i `funktioner/PLAN-paketuppdelning.md`.
 | `rddiagram` | diagram (ggplot), färg/skala, bubbeldiagram | **klart** |
 | `rdgis` | geometri, kartdata, rutor, GIS-filinläsning | **klart** |
 | `rdpostgres` | databasanslutningar, roller/rättigheter, metadata, grants | **klart** |
-| `rdgeorouting` | postgis, pgRouting, pendlingsnätverk | planerat |
+| `rdgeorouting` | postgis, pgRouting, pendlingsnätverk (ur `func_GIS.R`) | planerat |
 | `rddeploy` | github/git, webbrapport/portal, shiny-app-scaffolding & -publicering | **klart** |
 | `rdshinyappar` | runtime-hjälpare för Shiny-appar (DB, lösenord, telemetri) | **klart** |
 | `rdadminportal` | adminportal + serverdrift: landningssidor, ikoner, nedladdningar, cron | **klart** |
-| `rd` | paraplypaket – `library(rd)` drar in allt | planerat |
+| `rd` | paraplypaket – `library(rd)` drar in analyspaketen | **klart** (rdgeorouting läggs till senare) |
 
 `pxweb2r` (PxWeb API v2) ligger i eget repo: <https://github.com/FaluPeppe/pxweb2r>.
 
@@ -39,6 +39,8 @@ Beroende `rd*`-paket installeras automatiskt. Allt på en gång: se `install_all
 `rd*`-paketen har **1 förväntad WARNING** ("non-ASCII characters in code") —
 svenska i kod och utdatasträngar är avsiktligt, och paketen ska aldrig till
 CRAN. Allt annat (ERROR, NOTE, en andra WARNING) är nytt och ska åtgärdas.
+Undantag: paraplypaketet `rd` har ingen kod med svenska strängar och går
+igenom rent (Status: OK).
 
 ## Utveckling
 

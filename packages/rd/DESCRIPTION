@@ -1,0 +1,34 @@
+Package: rd
+Title: Region Dalarnas Analyspaket (paraply)
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
+    person("Region Dalarna", role = "cph")
+  )
+Description: Paraplypaket för Region Dalarnas analysarbete. `library(rd)`
+    drar in alla rd-analyspaket på en gång (rdverktyg, rddiagram, rdgis,
+    rdpostgres, rdshinyappar). Deploy- och serverdriftspaketen (rddeploy,
+    rdadminportal) ingår inte - de laddas explicit vid behov.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.5.0),
+    rddiagram,
+    rdgis,
+    rdpostgres,
+    rdshinyappar,
+    rdverktyg
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+URL: https://github.com/Region-Dalarna/rdpaket
+BugReports: https://github.com/Region-Dalarna/rdpaket/issues
+Config/roxygen2/version: 8.1.0
+Remotes:
+    FaluPeppe/pxweb2r,
+    Region-Dalarna/rdpaket/packages/rdverktyg,
+    Region-Dalarna/rdpaket/packages/rddiagram,
+    Region-Dalarna/rdpaket/packages/rdgis,
+    Region-Dalarna/rdpaket/packages/rdpostgres,
+    Region-Dalarna/rdpaket/packages/rdshinyappar
