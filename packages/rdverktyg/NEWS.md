@@ -18,6 +18,26 @@ Första versionen. Funktioner utbrutna ur funktionsskripten i
   `hamta_regionkod_med_knas_regionkod()`.
 * `svenska_tecken_byt_ut()` togs bort - dubblett av `byt_ut_svenska_tecken()`.
 
+## Allmänna verktyg (ur `func_API.R`)
+
+* Upprepa försök: `funktion_upprepa_forsok_tills_retur_TRUE()`,
+  `funktion_upprepa_forsok_om_fel()`, `skriptrader_upprepa_om_fel()`.
+* `ladda_funk_parametrar()`, `lista_funktioner_i_skript()`,
+  `hitta_funktioner_i_fil_ej_inuti_andra_funktioner()`, `stop_tyst()`,
+  `suppress_specific_warning()`, `period_jmfr_filter()`, `avrundning_dynamisk()`,
+  `skapa_intervaller()`, `varden_jamnt_spridda_valj_ut()`, `vektor_till_text()`,
+  `nummer_till_text()`, `slash_lagg_till()`, `sokvag_for_skript_hitta()`,
+  `urklipp()`, `skapa_aldersgrupper()`.
+* `sokvag_for_skript_hitta()` provar nu `this.path` först.
+* `urklipp()` / `vektor_till_text()` använder `clipr` (Suggests) med
+  plattforms-fallback.
+* Fixad bugg i `lista_funktioner_i_skript()` (testade fel variabel för
+  URL-detektering); läser nu URL:er direkt via `readr::read_lines()`.
+* `korrigera_kolnamn_supercross()` togs INTE med (Supercross fasas ut).
+  Färg-/skalhjälparna `skalcirklar_skapa()`, `kontrastfarg_hitta()`,
+  `hamta_logga_path()` och `demo_diagrambild_skapa()` går till `rddiagram`
+  (den sista stryks).
+
 ## Filer (ur `func_filer.R`)
 
 * `sparafil_unik()`, `skapa_mapp_om_den_inte_finns()`,

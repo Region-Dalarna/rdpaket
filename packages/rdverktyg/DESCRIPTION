@@ -23,7 +23,11 @@ Imports:
     tibble,
     tidyr
 Suggests:
+    clipr,
+    curl,
+    rstudioapi,
     testthat (>= 3.0.0),
+    this.path,
     withr
 Remotes:
     FaluPeppe/pxweb2r

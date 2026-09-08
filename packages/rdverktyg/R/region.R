@@ -225,3 +225,110 @@ ar_alla_lan_i_sverige <- function(reg_koder, tillat_rikskod = TRUE,
 
   if (retur_varde) "Sveriges län" else if (returtext_na) FALSE else returtext
 }
+
+
+# --- Utökning av läns-/kommunkoder till mindre områden -----------------------
+# Bygger på pxweb2r::pxweb2_get_values() - signaturen har bytt api_url -> tabell_id
+# jämfört med func_API.R. Behöver verifieras mot riktiga tabeller.
+
+intern_giltiga_regionkoder <- function(tabell_id, region_var, base_url) {
+  vals <- pxweb2r::pxweb2_get_values(tabell_id, variables = region_var, base_url = base_url)
+  if ("type" %in% names(vals)) vals <- dplyr::filter(vals, .data$type == "Variable")
+  vals$code
+}
+
+#' Utöka läns-/kommunkoder till tätortskoder
+#'
+#' Skicka läns-, kommun- eller tätortskoder och få tillbaka alla giltiga
+#' tätortskoder inom dem (från den angivna tabellen).
+#'
+#' @param tabell_id PxWeb-tabell-id.
+#' @param koder Läns- (2 tecken), kommun- (4 tecken) eller tätortskoder
+#'   (>4 tecken). `"*"` returneras oförändrat.
+#' @param region_var Regionvariabelns namn i tabellen.
+#' @param base_url Bas-URL till PxWeb API v2.
+#'
+#' @return En teckenvektor med tätortskoder.
+#' @export
+tatortskoder_bearbeta <- function(tabell_id, koder, region_var = "Region",
+                                  base_url = "https://statistikdatabasen.scb.se/api/v2/tables/") {
+  if (all(koder == "*")) return(koder)
+
+  giltiga <- intern_giltiga_regionkoder(tabell_id, region_var, base_url)
+
+  kommun_koder <- koder[nchar(koder) == 4]
+  lan_koder    <- koder[nchar(koder) == 2]
+  omr_koder    <- koder[nchar(koder) > 4]
+
+  unique(c(
+    giltiga[substr(giltiga, 1, 4) %in% kommun_koder],
+    giltiga[substr(giltiga, 1, 2) %in% lan_koder],
+    giltiga[giltiga %in% omr_koder]
+  ))
+}
+
+#' Utöka läns-/kommunkoder till RegSO-koder
+#'
+#' @inheritParams tatortskoder_bearbeta
+#' @param behall_bara_regsokoder Om `TRUE` behålls bara koder längre än 4 tecken.
+#'
+#' @return En teckenvektor med RegSO-koder.
+#' @export
+regsokoder_bearbeta <- function(tabell_id, koder, region_var = "Region",
+                                behall_bara_regsokoder = TRUE,
+                                base_url = "https://statistikdatabasen.scb.se/api/v2/tables/") {
+  ut <- tatortskoder_bearbeta(tabell_id, koder, region_var, base_url)
+  if (isTRUE(behall_bara_regsokoder)) ut <- ut[nchar(ut) > 4]
+  ut
+}
+
+#' Utöka läns-/kommunkoder till DeSO-koder
+#'
+#' @inheritParams tatortskoder_bearbeta
+#' @param behall_bara_desokoder Om `TRUE` behålls bara koder längre än 4 tecken.
+#'
+#' @return En teckenvektor med DeSO-koder.
+#' @export
+desokoder_bearbeta <- function(tabell_id, koder, region_var = "Region",
+                               behall_bara_desokoder = TRUE,
+                               base_url = "https://statistikdatabasen.scb.se/api/v2/tables/") {
+  ut <- tatortskoder_bearbeta(tabell_id, koder, region_var, base_url)
+  if (isTRUE(behall_bara_desokoder)) ut <- ut[nchar(ut) > 4]
+  ut
+}
+
+#' Slå upp riktiga regionkoder i tabeller med påhittade koder
+#'
+#' Vissa myndigheter använder egna löpnummer som regionkoder men lägger de
+#' riktiga koderna först i klartexten, t.ex. `"20 Dalarnas län"`. Funktionen
+#' plockar ut den riktiga koden och namnet ur klartexten.
+#'
+#' @param tabell_id PxWeb-tabell-id.
+#' @param koder Riktiga regionkoder man vill ha de påhittade koderna för.
+#'   `"*"` = alla.
+#' @param variabel Regionvariabelns namn i tabellen.
+#' @param returnera_nyckeltabell Om `TRUE` returneras en tabell med både
+#'   påhittad kod (`felaktig_kod`), riktig `regionkod` och `region`.
+#' @param base_url Bas-URL till PxWeb API v2.
+#'
+#' @return En teckenvektor med de påhittade koderna, eller en `tibble` om
+#'   `returnera_nyckeltabell = TRUE`.
+#' @export
+hamta_regionkod_med_knas_regionkod <- function(tabell_id, koder, variabel,
+                                               returnera_nyckeltabell = FALSE,
+                                               base_url = "https://statistikdatabasen.scb.se/api/v2/tables/") {
+  vals <- pxweb2r::pxweb2_get_values(tabell_id, variables = variabel, base_url = base_url)
+
+  nyckel <- vals |>
+    dplyr::transmute(
+      felaktig_kod = .data$code,
+      regionkod = stringr::str_extract(.data$label, "^\\S+"),
+      region = stringr::str_trim(stringr::str_remove(.data$label, "^\\S+"))
+    )
+
+  if (!all(koder == "*")) {
+    nyckel <- dplyr::filter(nyckel, .data$regionkod %in% koder)
+  }
+
+  if (isTRUE(returnera_nyckeltabell)) nyckel else nyckel$felaktig_kod
+}

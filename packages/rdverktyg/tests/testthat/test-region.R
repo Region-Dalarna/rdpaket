@@ -47,3 +47,13 @@ test_that("hamtakommuner och hamtaAllaLan (nätverk)", {
   )
   expect_true(ar_alla_lan_i_sverige(lan))
 })
+
+test_that("tatortskoder_bearbeta släpper igenom '*'", {
+  expect_equal(tatortskoder_bearbeta("TAB0000", "*"), "*")
+})
+
+test_that("hamta_regionkod_med_knas_regionkod delar klartext (nätverk)", {
+  skip_on_cran()
+  skip_if_offline()
+  skip("kräver en tabell med påhittade regionkoder - verifieras manuellt")
+})

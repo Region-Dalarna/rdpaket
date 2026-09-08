@@ -11,7 +11,7 @@ Planen för uppdelningen finns i `funktioner/PLAN-paketuppdelning.md`.
 
 | Paket | Innehåll | Status |
 |---|---|---|
-| `rdverktyg` | text, filer, SCB-/regionhämtning, allmänna verktyg | text + filer klara |
+| `rdverktyg` | text, filer, SCB-/regionhämtning, allmänna verktyg | text, filer, region, verktyg klara; grupp C/D/F kvar |
 | `rddiagram` | diagram (ggplot), färg/skala, bubbeldiagram | planerat |
 | `rdgis` | geometri, kartdata, rutor, GIS-filinläsning | planerat |
 | `rdpostgres` | databasanslutningar och postgres-hjälpare | planerat |
@@ -32,6 +32,12 @@ remotes::install_github("Region-Dalarna/rdpaket", subdir = "packages/rdverktyg")
 ```
 
 Beroende `rd*`-paket installeras automatiskt. Allt på en gång: se `install_all.R`.
+
+## R CMD check
+
+`rd*`-paketen har **1 förväntad WARNING** ("non-ASCII characters in code") —
+svenska i kod och utdatasträngar är avsiktligt, och paketen ska aldrig till
+CRAN. Allt annat (ERROR, NOTE, en andra WARNING) är nytt och ska åtgärdas.
 
 ## Utveckling
 
