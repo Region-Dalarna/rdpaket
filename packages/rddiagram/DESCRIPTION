@@ -11,6 +11,7 @@ Description: ggplot2-baserade diagrammallar för Region Dalarnas analysarbete -
     func_SkapaDiagram.R m.fl. i Region-Dalarna/funktioner.
 License: MIT + file LICENSE
 Encoding: UTF-8
+LazyData: true
 Roxygen: list(markdown = TRUE)
 Depends:
     R (>= 4.5.0)
@@ -19,14 +20,22 @@ Imports:
     farver,
     ggplot2,
     ggtext,
+    packcircles,
     rlang,
     scales,
-    tidyr
+    tidyr,
+    utils
 Suggests:
     classInt,
     cowplot,
+    curl,
     forcats,
+    ggforce,
     ggrepel,
+    readxl,
+    rdverktyg,
+    showtext,
+    sysfonts,
     magick,
     ragg,
     RColorBrewer,
@@ -39,3 +48,6 @@ Config/testthat/edition: 3
 URL: https://github.com/Region-Dalarna/rdpaket
 BugReports: https://github.com/Region-Dalarna/rdpaket/issues
 Config/roxygen2/version: 8.1.0
+Remotes:
+    FaluPeppe/pxweb2r,
+    Region-Dalarna/rdpaket/packages/rdverktyg

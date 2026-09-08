@@ -36,7 +36,20 @@ Första versionen. Utbrutet ur `func_SkapaDiagram.R`,
 
 * `skalcirklar_skapa()`, `kontrastfarg_hitta()`, `add_logo()`.
 
-## Kvar
+## Karta
 
-* `skapa_koropletkarta_ggplot()` (nästa commit)
-* Packed circles (`func_bubbeldiagram.R`)
+* `skapa_koropletkarta_ggplot()` - städad enligt granskningen: döda
+  `exists()`-wrappers borttagna (`titel_legend` fanns aldrig), `antal_unika`
+  beräknas en gång, `karta_farg_hogst = NA`/`karta_bredd = "auto"` -> `NULL`,
+  `returnera_ggobj` borttagen, `glue` borttaget. `sf` m.fl. i `Suggests` med
+  `requireNamespace()`-vakt.
+
+## Packed circles (ur `func_bubbeldiagram.R`)
+
+* `skapa_packed_circles()`, `aktivera_font()`, `forhandsvisa()`.
+* `dalarna_layout` blev paketdata (`data/dalarna_layout.rda`), dokumenterad.
+* `library()`-raderna borttagna; ggplot2/packcircles/ggforce kvalificerade.
+* `bestam_omfattning()` (intern) använder nu `rdverktyg::hamtakommuner()` m.fl.
+  via `requireNamespace()`-vakt i stället för `exists()`/`get()`.
+* Hjälpfunktionerna är interna. Filen var redan i bra skick - porten är i
+  huvudsak mekanisk; rendering får verifieras mot riktig branschdata.
