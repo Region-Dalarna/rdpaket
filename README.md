@@ -11,7 +11,7 @@ Planen för uppdelningen finns i `funktioner/PLAN-paketuppdelning.md`.
 
 | Paket | Innehåll | Status |
 |---|---|---|
-| `rdverktyg` | text, filer, SCB-/regionhämtning, allmänna verktyg | under uppbyggnad |
+| `rdverktyg` | text, filer, SCB-/regionhämtning, allmänna verktyg | text + filer klara |
 | `rddiagram` | diagram (ggplot), färg/skala, bubbeldiagram | planerat |
 | `rdgis` | geometri, kartdata, rutor, GIS-filinläsning | planerat |
 | `rdpostgres` | databasanslutningar och postgres-hjälpare | planerat |
