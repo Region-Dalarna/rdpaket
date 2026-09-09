@@ -7,6 +7,18 @@
   bygget med *"Aesthetics must be either length 1 or the same as the data"*.
   Nu används första färgen i det läget, som i originalet och som
   `SkapaLinjeDiagram()` redan gjorde.
+* `stodlinjer_avrunda_fem = TRUE` kraschade (*"missing value where TRUE/FALSE
+  needed"* i `nice_breaks()`) när datat bara hade en punkt eller alla värden
+  var lika (spann = 0). `nice_breaks()` är omskriven:
+  * **1-2-5-10-serien** i stället för 1-2.5-5-10 (inget `2.5`-steg).
+  * spann som är 0, `NA`, `Inf` eller negativt ger nu steget `1` i stället
+    för att krascha.
+  * `Berakna_varden_stodlinjer()` räknar spannet från 0 när axeln tvingas
+    börja där, så stödlinjerna blir vettiga även när värdena ligger tätt
+    men långt från noll.
+  * de tunna stödlinjerna delas nu `/2` när det tjocka steget börjar på 2
+    (så `2 → 1`, inte `2 → 0.4`), annars `/5` — alltid ett steg på
+    1/2/5 × 10^k.
 
 ---
 

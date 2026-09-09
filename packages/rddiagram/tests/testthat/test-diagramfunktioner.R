@@ -3,10 +3,45 @@ test_that("nDigits räknar siffror", {
   expect_equal(nDigits(-1234), 4)
 })
 
-test_that("nice_breaks ger runda steg", {
-  expect_equal(nice_breaks(100), 25)
-  expect_equal(nice_breaks(47), 5)
-  expect_true(nice_breaks(1000) %in% c(100, 250))
+test_that("nice_breaks ger steg på 1/2/5 x 10^k", {
+  expect_equal(nice_breaks(100), 20)
+  expect_equal(nice_breaks(47), 10)
+  expect_equal(nice_breaks(1000), 200)
+  expect_equal(nice_breaks(8), 2)
+  expect_equal(nice_breaks(0.7), 0.1)
+  expect_equal(nice_breaks(8500), 2000)
+  # inga "konstiga" steg
+  for (s in c(3, 8, 23, 47, 137, 999, 0.03, 0.7, 12.5)) {
+    steg <- nice_breaks(s)
+    ledande <- steg / 10^floor(log10(steg))
+    expect_true(round(ledande, 6) %in% c(1, 2, 5), info = paste("spann", s))
+  }
+})
+
+test_that("nice_breaks kraschar inte på spann 0, NA eller negativt", {
+  expect_equal(nice_breaks(0), 1)
+  expect_equal(nice_breaks(NA), 1)
+  expect_equal(nice_breaks(-5), 1)
+  expect_equal(nice_breaks(Inf), 1)
+})
+
+test_that("Berakna_varden_stodlinjer klarar en enda datapunkt (spann 0)", {
+  # tidigare: 'missing value where TRUE/FALSE needed' i nice_breaks()
+  st <- Berakna_varden_stodlinjer(42, 42, avrunda_fem = TRUE)
+  expect_equal(st$min_yvar, 0)
+  expect_gte(st$max_yvar, 42)
+  expect_true(st$maj_by_yvar > 0)
+  # värden tätt samlade men långt från noll
+  st2 <- Berakna_varden_stodlinjer(95, 103, avrunda_fem = TRUE)
+  expect_true(st2$maj_by_yvar > 0 && is.finite(st2$maj_by_yvar))
+})
+
+test_that("Berakna_varden_stodlinjer: minor-steget är begripligt (1/2/5)", {
+  for (mx in c(38, 73, 137, 8500, 0.7, 12)) {
+    st <- Berakna_varden_stodlinjer(0, mx, avrunda_fem = TRUE)
+    ledande <- st$min_by_yvar / 10^floor(log10(st$min_by_yvar))
+    expect_true(round(ledande, 6) %in% c(1, 2, 5), info = paste("max", mx))
+  }
 })
 
 test_that("avrunda_till_multipel avrundar uppåt", {

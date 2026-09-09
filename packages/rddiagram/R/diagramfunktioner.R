@@ -83,7 +83,11 @@ avrunda_till_multipel <- function(n, multipel_in = 5) {
   list(max_varde = ny_resultat, maj_by_var = maj_by_var, min_by_var = maj_by_var / multipel_in)
 }
 
-#' "Snyggt" intervallsteg enligt 1-2.5-5-10-serien
+#' "Snyggt" intervallsteg enligt 1-2-5-10-serien
+#'
+#' Ger alltid ett steg på formen 1, 2 eller 5 gånger en tiopotens - fungerar
+#' för stora som små tal, heltal som decimaltal. Ett spann som är 0, negativt
+#' eller saknas ger steget 1 (i stället för att krascha).
 #'
 #' @param spann Datats totala spann.
 #' @param antal_optimala_intervall Ungefärligt önskat antal intervall.
@@ -91,10 +95,24 @@ avrunda_till_multipel <- function(n, multipel_in = 5) {
 #' @return Ett intervallsteg.
 #' @export
 nice_breaks <- function(spann, antal_optimala_intervall = 5) {
-  exp10 <- 10^floor(log10(spann / antal_optimala_intervall))
-  steg <- spann / (antal_optimala_intervall * exp10)
-  multipel <- if (steg < 1.5) 1 else if (steg < 7.5) 2.5 else if (steg < 15) 5 else 10
-  exp10 * multipel
+  spann <- suppressWarnings(as.numeric(spann[1]))
+  if (!is.finite(spann) || spann <= 0) return(1)
+  antal_optimala_intervall <- max(1, antal_optimala_intervall)
+
+  rastep <- spann / antal_optimala_intervall
+  exp10  <- 10^floor(log10(rastep))
+  f      <- rastep / exp10                       # 1 <= f < 10
+  multipel <- if (f < 1.5) 1 else if (f < 3) 2 else if (f < 7) 5 else 10
+  multipel * exp10
+}
+
+# Underindelning (tunna stödlinjer) av ett tjockt steg. /2 om ledande siffra är
+# 2 (så 2 -> 1, inte 0.4), annars /5. Ger alltid ett steg på 1/2/5 x 10^k.
+intern_minor_stodlinje <- function(maj) {
+  if (!is.finite(maj) || maj <= 0) return(1)
+  exp10   <- 10^floor(log10(maj))
+  ledande <- round(maj / exp10)
+  if (ledande == 2) maj / 2 else maj / 5
 }
 
 #' Beräkna min/max och stödlinjeintervall för en diagramaxel
@@ -129,20 +147,30 @@ Berakna_varden_stodlinjer <- function(min_varde, max_varde, y_borjar_pa_noll = T
   modifierat_varde <- FALSE
 
   if (avrunda_fem) {
-    spann <- abs(max_varde - min_varde)
+    # Effektivt axelspann: räkna från 0 om axeln tvingas dit, så att stödlinjerna
+    # blir vettiga även när alla värden ligger tätt men långt från noll (då är
+    # datats eget spann ~ 0).
+    golv <- if (y_borjar_pa_noll && min_varde >= 0) 0 else min_varde
+    tak  <- if (y_borjar_pa_noll && max_varde <= 0) 0 else max_varde
+    if (golv > tak) { tmp <- golv; golv <- tak; tak <- tmp }
+
+    spann <- tak - golv
+    if (!is.finite(spann) || spann <= 0) spann <- max(abs(tak), abs(golv), 1)
+
     maj_by_yvar <- nice_breaks(spann)
-    if (spann < 10 && maj_by_yvar < 1) maj_by_yvar <- 1
-    if (spann < 5 && maj_by_yvar < 0.5) maj_by_yvar <- 0.5
+    while (is.finite(maj_by_yvar) && maj_by_yvar > 0 &&
+           spann / maj_by_yvar > max_antal_stodlinjer) {
+      maj_by_yvar <- maj_by_yvar * 2
+    }
+    min_by_yvar <- intern_minor_stodlinje(maj_by_yvar)
 
-    if (ceiling(spann / maj_by_yvar) > max_antal_stodlinjer) maj_by_yvar <- maj_by_yvar * 2
-    min_by_yvar <- maj_by_yvar / 5
-
-    max_yvar <- ceiling(max_varde / maj_by_yvar) * maj_by_yvar
-    min_yvar <- floor(min_varde / maj_by_yvar) * maj_by_yvar
+    max_yvar <- ceiling(tak  / maj_by_yvar) * maj_by_yvar
+    min_yvar <- floor(golv / maj_by_yvar) * maj_by_yvar
     if (max_yvar < max_varde) max_yvar <- max_yvar + maj_by_yvar
     if (min_yvar > min_varde) min_yvar <- min_yvar - maj_by_yvar
     if (y_borjar_pa_noll && min_yvar > 0) min_yvar <- 0
-    if (min_varde < 0 && max_varde < 0) max_yvar <- 0
+    if (y_borjar_pa_noll && max_yvar < 0) max_yvar <- 0
+    if (max_yvar <= min_yvar) max_yvar <- min_yvar + maj_by_yvar
 
   } else {
     if (max_varde < 1) {
