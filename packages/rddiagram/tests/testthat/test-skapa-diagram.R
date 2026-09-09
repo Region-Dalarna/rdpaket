@@ -36,6 +36,23 @@ test_that("SkapaStapelDiagram bygger ett ggplot-objekt", {
   expect_true(any(vapply(p$layers, function(l) inherits(l$geom, "GeomBar"), logical(1))))
 })
 
+test_that("SkapaStapelDiagram: en grupp + längre färgvektor kraschar inte", {
+  skip_if_not_installed("ggplot2")
+  farger <- c("#4f6228", "#9bbb59", "#c3d69b", "#77933c")
+  # en enda rad (en x-kategori, ingen grupp)
+  p1 <- SkapaStapelDiagram(data.frame(kommun = "Falun", andel = 42),
+                           "kommun", "andel", farger = farger,
+                           output_mapp = tempdir(), filnamn_diagram = "t.png",
+                           skriv_till_diagramfil = FALSE)
+  expect_s3_class(p1, "ggplot")
+  # flera x-kategorier, fortfarande ingen grupp
+  p2 <- SkapaStapelDiagram(data.frame(kommun = c("Falun", "Mora"), andel = c(42, 31)),
+                           "kommun", "andel", farger = farger,
+                           output_mapp = tempdir(), filnamn_diagram = "t.png",
+                           skriv_till_diagramfil = FALSE)
+  expect_s3_class(p2, "ggplot")
+})
+
 test_that("SkapaStapelDiagram: sortera_x = TRUE ger faktor-x", {
   skip_if_not_installed("ggplot2")
   df <- data.frame(kommun = c("Falun", "Borlänge", "Mora"), antal = c(3, 1, 2))

@@ -1,5 +1,15 @@
 # rddiagram 0.0.0.9000
 
+## Rättat
+
+* `SkapaStapelDiagram()`: när det inte fanns någon x-grupp (bara en
+  stapelgrupp) men `farger` var en vektor med fler än en färg kraschade
+  bygget med *"Aesthetics must be either length 1 or the same as the data"*.
+  Nu används första färgen i det läget, som i originalet och som
+  `SkapaLinjeDiagram()` redan gjorde.
+
+---
+
 Första versionen. Utbrutet ur `func_SkapaDiagram.R`,
 `func_diagramfunktioner.R`, `func_logga_i_diagram.R` och
 `func_bubbeldiagram.R` i `Region-Dalarna/funktioner`.

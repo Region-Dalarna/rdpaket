@@ -159,6 +159,12 @@ SkapaStapelDiagram <- function(
   } else {
     chart_col <- intern_valj_farger(farger, if (har_grupp) antal_grupper else 1L)
   }
+  # En enda stapelgrupp (ingen x-grupp, ingen fokus, ingen namngiven vektor):
+  # fyllningen mappas till chart_col direkt, så en längre färgvektor än 1 skulle
+  # ge "Aesthetics must be ... length 1". Använd första färgen, som originalet.
+  if (!har_grupp && !har_fokus && !har_namngiven && length(chart_col) > 1) {
+    chart_col <- chart_col[1]
+  }
 
   y_titel <- manual_y_axis_title %||% skickad_y_var
   if (identical(manual_y_axis_title, "procent")) y_titel <- NULL
