@@ -11,15 +11,15 @@ Planen för uppdelningen finns i `funktioner/PLAN-paketuppdelning.md`.
 
 | Paket | Innehåll | Status |
 |---|---|---|
-| `rdverktyg` | text, filer, SCB-/regionhämtning, allmänna verktyg, datakällor | **klart** (utom `oppnadata_hamta` → rdpostgres) |
+| `rdverktyg` | text, filer, SCB-/regionhämtning, allmänna verktyg, datakällor | **klart** |
 | `rddiagram` | diagram (ggplot), färg/skala, bubbeldiagram | **klart** |
 | `rdgis` | geometri, kartdata, rutor, GIS-filinläsning | **klart** |
 | `rdpostgres` | databasanslutningar, roller/rättigheter, metadata, grants | **klart** |
-| `rdgeorouting` | postgis, pgRouting, pendlingsnätverk (ur `func_GIS.R`) | planerat |
+| `rdgeorouting` | postgis, pgRouting, pendlingsnätverk (ur `func_GIS.R`) | **klart** (SQL-pipelines behöver verifieras mot riktig pgRouting-databas) |
 | `rddeploy` | github/git, webbrapport/portal, shiny-app-scaffolding & -publicering | **klart** |
 | `rdshinyappar` | runtime-hjälpare för Shiny-appar (DB, lösenord, telemetri) | **klart** |
 | `rdadminportal` | adminportal + serverdrift: landningssidor, ikoner, nedladdningar, cron | **klart** |
-| `rd` | paraplypaket – `library(rd)` drar in analyspaketen | **klart** (rdgeorouting läggs till senare) |
+| `rd` | paraplypaket – `library(rd)` drar in analyspaketen | **klart** |
 
 `pxweb2r` (PxWeb API v2) ligger i eget repo: <https://github.com/FaluPeppe/pxweb2r>.
 

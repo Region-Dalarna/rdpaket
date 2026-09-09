@@ -15,6 +15,7 @@ Roxygen: list(markdown = TRUE)
 Depends:
     R (>= 4.5.0),
     rddiagram,
+    rdgeorouting,
     rdgis,
     rdpostgres,
     rdshinyappar,
@@ -31,4 +32,5 @@ Remotes:
     Region-Dalarna/rdpaket/packages/rddiagram,
     Region-Dalarna/rdpaket/packages/rdgis,
     Region-Dalarna/rdpaket/packages/rdpostgres,
+    Region-Dalarna/rdpaket/packages/rdgeorouting,
     Region-Dalarna/rdpaket/packages/rdshinyappar

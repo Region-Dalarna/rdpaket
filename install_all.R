@@ -8,11 +8,11 @@ paket <- c(
   "rddiagram",
   "rdpostgres",
   "rdgis",
+  "rdgeorouting",
   "rdshinyappar",
   "rddeploy",
   "rdadminportal",
   "rd"
-  # "rdgeorouting" - kvar att bygga
 )
 
 pak::pkg_install(file.path("local::packages", paket))

@@ -1,0 +1,41 @@
+Package: rdgeorouting
+Title: PostGIS- och pgRouting-verktyg för Region Dalarnas Ruttanalyser
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
+    person("Region Dalarna", role = "cph")
+  )
+Description: Bygga och köra pgRouting-grafer av vägnätet (NVDB), skapa
+    isokroner, beräkna restid/avstånd mellan från- och till-punkter, samt
+    pendlingsanalyser (pendlingsnätverk, kraftfält, in-/utpendling på ruta).
+    Kräver en PostGIS-databas med pgRouting. Utbrutet ur postgis-, pgrouting-
+    och pendlingsavsnitten i func_GIS.R i Region-Dalarna/funktioner.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.5.0)
+Imports:
+    DBI,
+    dplyr,
+    glue,
+    purrr,
+    rdpostgres,
+    stringr
+Suggests:
+    clipr,
+    data.table,
+    keyring,
+    rdverktyg,
+    sf,
+    testthat (>= 3.0.0),
+    tidyr,
+    withr
+Config/testthat/edition: 3
+URL: https://github.com/Region-Dalarna/rdpaket
+BugReports: https://github.com/Region-Dalarna/rdpaket/issues
+Config/roxygen2/version: 8.1.0
+Remotes:
+    FaluPeppe/pxweb2r,
+    Region-Dalarna/rdpaket/packages/rdverktyg,
+    Region-Dalarna/rdpaket/packages/rdpostgres
