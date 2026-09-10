@@ -1,3 +1,25 @@
+# rddiagram 0.0.0.9001
+
+## Parameternamn tillbaka till func_SkapaDiagram.R
+
+Efter önskemål: `SkapaStapelDiagram()` och `SkapaLinjeDiagram()` använder
+igen de gamla parameternamnen, så befintliga skript fungerar utan
+ändring. De ihopslagna namnen finns kvar som **alias**:
+
+| Primärt namn (som förr) | Alias |
+|---|---|
+| `manual_color` + `brew_palett` | `farger` |
+| `lagg_pa_logga` + `logga_path` | `logga` |
+| `logga_scaling` | `logga_storlek` |
+| `x_axis_sort_value` + `x_axis_sort_grp` (stapel) | `sortera_x` |
+
+`facet_grp` styr facet direkt (ingen `diagram_facet` – den återinförs inte).
+Fortsatt borttaget: filter-mekanismen, `AF_special`, `utan_diagramtitel`
+(använd `diagram_titel = NULL`), `skriv_till_excelfil`, `berakna_index` i
+stapeldiagram (finns kvar i linje).
+
+---
+
 # rddiagram 0.0.0.9000
 
 ## Rättat

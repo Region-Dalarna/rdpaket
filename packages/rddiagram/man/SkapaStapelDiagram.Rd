@@ -22,9 +22,13 @@ SkapaStapelDiagram(
   facet_kolumner = NULL,
   facet_rader = NULL,
   facet_legend_bottom = FALSE,
+  manual_color = NA,
+  brew_palett = "Greens",
   farger = NULL,
   skickad_namngiven_fargvektor = NULL,
   farg_variabler = NULL,
+  x_axis_sort_value = FALSE,
+  x_axis_sort_grp = NA,
   sortera_x = NULL,
   vand_sortering = FALSE,
   x_var_fokus = NULL,
@@ -70,8 +74,11 @@ SkapaStapelDiagram(
   facet_rubrik_storlek = 12,
   facet_space_diag_horisont = 5.5,
   facet_oka_avstand_vid_visa_sista_vardet = 1.5,
-  logga = TRUE,
-  logga_storlek = 20,
+  lagg_pa_logga = TRUE,
+  logga_path = NA,
+  logga_scaling = 20,
+  logga = NULL,
+  logga_storlek = NULL,
   skriv_till_diagramfil = TRUE,
   diagramfil_bredd = 12,
   diagramfil_hojd = 7,
@@ -96,14 +103,24 @@ SkapaStapelDiagram(
 
 \item{facet_scale, facet_sort, facet_kolumner, facet_rader, facet_legend_bottom}{Facet-inställningar.}
 
-\item{farger}{\code{NULL} (default), en vektor med hex-färger (manuell skala) eller
-en sträng (namn på en RColorBrewer-palett).}
+\item{manual_color}{Vektor med hex-färger (manuell skala), eller \code{NA}.}
+
+\item{brew_palett}{Namn på en RColorBrewer-palett (används om \code{manual_color}
+är \code{NA}).}
+
+\item{farger}{Alias: en hex-vektor \strong{eller} ett palettnamn i en parameter
+(skrivs över \code{manual_color}/\code{brew_palett} om satt).}
 
 \item{skickad_namngiven_fargvektor, farg_variabler}{Namngiven färgvektor och
 de variabler som styr färgvalet, eller \code{NULL}.}
 
-\item{sortera_x}{\code{NULL} (ingen sortering), \code{TRUE} (sortera på totalen) eller
-ett heltal (index för den x-grupp som ska styra sorteringen).}
+\item{x_axis_sort_value}{\code{TRUE} sorterar x-etiketterna efter y-värdet.}
+
+\item{x_axis_sort_grp}{Heltal = index för den x-grupp sorteringen ska ske på
+(för stacked-diagram); \code{NA} = sortera på totalen.}
+
+\item{sortera_x}{Alias: \code{TRUE} (sortera på totalen) eller ett heltal
+(gruppindex).}
 
 \item{vand_sortering}{Vänd sorteringsordningen.}
 
@@ -144,9 +161,14 @@ ett heltal (index för den x-grupp som ska styra sorteringen).}
 
 \item{facet_x_axis_storlek, facet_y_axis_storlek, facet_rubrik_storlek, facet_space_diag_horisont, facet_oka_avstand_vid_visa_sista_vardet}{Facet-styling.}
 
-\item{logga}{\code{TRUE} = standardlogga, \code{FALSE} = ingen, en sökväg = egen logga.}
+\item{lagg_pa_logga}{\code{TRUE} = standardlogga, \code{FALSE} = ingen.}
 
-\item{logga_storlek}{Loggans relativa storlek.}
+\item{logga_path}{Sökväg till en egen logga (används om satt).}
+
+\item{logga_scaling}{Loggans relativa storlek.}
+
+\item{logga, logga_storlek}{Alias för \code{lagg_pa_logga}/\code{logga_path} respektive
+\code{logga_scaling} (\code{logga} tar \code{TRUE}/\code{FALSE}/sökväg).}
 
 \item{skriv_till_diagramfil}{Om \code{TRUE} skrivs diagrammet till fil.}
 

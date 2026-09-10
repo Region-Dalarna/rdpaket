@@ -1,8 +1,11 @@
 # SkapaStapelDiagram() - utbrutet ur func_SkapaDiagram.R och städat enligt
-# REVIEW-SkapaDiagram.md (filter-mekanism, berakna_index, AF_special,
-# utan_diagramtitel, skriv_till_excelfil m.m. borttaget; NA-sentineller -> NULL;
-# lagg_pa_logga+logga_path -> logga; manual_color+brew_palett -> farger;
-# x_axis_sort_value+x_axis_sort_grp -> sortera_x).
+# REVIEW-SkapaDiagram.md. Borttaget: filter-mekanismen (skickad_filter_OR_*),
+# berakna_index (var dead code här), AF_special, utan_diagramtitel
+# (använd diagram_titel = NULL), skriv_till_excelfil.
+# Parameternamnen är desamma som i func_SkapaDiagram.R (manual_color +
+# brew_palett, lagg_pa_logga + logga_path, logga_scaling, x_axis_sort_value +
+# x_axis_sort_grp). De kortare namnen farger / logga / logga_storlek /
+# sortera_x accepteras som alias.
 
 intern_sortera_stapel_x <- function(plot_df, x_var, x_grupp, sortera_x,
                                     vand_sortering, diagram_liggande) {
@@ -47,12 +50,18 @@ intern_sortera_stapel_x <- function(plot_df, x_var, x_grupp, sortera_x,
 #' @param facet_grp Kolumnnamn att facetta på, eller `NULL` för inget facet.
 #' @param facet_scale,facet_sort,facet_kolumner,facet_rader,facet_legend_bottom
 #'   Facet-inställningar.
-#' @param farger `NULL` (default), en vektor med hex-färger (manuell skala) eller
-#'   en sträng (namn på en RColorBrewer-palett).
+#' @param manual_color Vektor med hex-färger (manuell skala), eller `NA`.
+#' @param brew_palett Namn på en RColorBrewer-palett (används om `manual_color`
+#'   är `NA`).
+#' @param farger Alias: en hex-vektor **eller** ett palettnamn i en parameter
+#'   (skrivs över `manual_color`/`brew_palett` om satt).
 #' @param skickad_namngiven_fargvektor,farg_variabler Namngiven färgvektor och
 #'   de variabler som styr färgvalet, eller `NULL`.
-#' @param sortera_x `NULL` (ingen sortering), `TRUE` (sortera på totalen) eller
-#'   ett heltal (index för den x-grupp som ska styra sorteringen).
+#' @param x_axis_sort_value `TRUE` sorterar x-etiketterna efter y-värdet.
+#' @param x_axis_sort_grp Heltal = index för den x-grupp sorteringen ska ske på
+#'   (för stacked-diagram); `NA` = sortera på totalen.
+#' @param sortera_x Alias: `TRUE` (sortera på totalen) eller ett heltal
+#'   (gruppindex).
 #' @param vand_sortering Vänd sorteringsordningen.
 #' @param x_var_fokus Kolumnnamn att fokusera färg på, eller `NULL`.
 #' @param y_axis_borjar_pa_noll,y_axis_100proc,y_axis_minus_plus_samma_axel
@@ -80,8 +89,11 @@ intern_sortera_stapel_x <- function(plot_df, x_var, x_grupp, sortera_x,
 #'   Titelstyling.
 #' @param facet_x_axis_storlek,facet_y_axis_storlek,facet_rubrik_storlek,facet_space_diag_horisont,facet_oka_avstand_vid_visa_sista_vardet
 #'   Facet-styling.
-#' @param logga `TRUE` = standardlogga, `FALSE` = ingen, en sökväg = egen logga.
-#' @param logga_storlek Loggans relativa storlek.
+#' @param lagg_pa_logga `TRUE` = standardlogga, `FALSE` = ingen.
+#' @param logga_path Sökväg till en egen logga (används om satt).
+#' @param logga_scaling Loggans relativa storlek.
+#' @param logga,logga_storlek Alias för `lagg_pa_logga`/`logga_path` respektive
+#'   `logga_scaling` (`logga` tar `TRUE`/`FALSE`/sökväg).
 #' @param skriv_till_diagramfil Om `TRUE` skrivs diagrammet till fil.
 #' @param diagramfil_bredd,diagramfil_hojd,diagram_bildformat Filinställningar.
 #'
@@ -94,8 +106,10 @@ SkapaStapelDiagram <- function(
     manual_x_axis_title = NULL, manual_y_axis_title = NULL,
     facet_grp = NULL, facet_scale = "free", facet_sort = FALSE,
     facet_kolumner = NULL, facet_rader = NULL, facet_legend_bottom = FALSE,
-    farger = NULL, skickad_namngiven_fargvektor = NULL, farg_variabler = NULL,
-    sortera_x = NULL, vand_sortering = FALSE, x_var_fokus = NULL,
+    manual_color = NA, brew_palett = "Greens", farger = NULL,
+    skickad_namngiven_fargvektor = NULL, farg_variabler = NULL,
+    x_axis_sort_value = FALSE, x_axis_sort_grp = NA, sortera_x = NULL,
+    vand_sortering = FALSE, x_var_fokus = NULL,
     y_axis_borjar_pa_noll = TRUE, y_axis_100proc = FALSE,
     y_axis_minus_plus_samma_axel = FALSE, procent_0_100_10intervaller = FALSE,
     stodlinjer_avrunda_fem = FALSE, stodlinjer_minor_tabort = FALSE,
@@ -115,9 +129,27 @@ SkapaStapelDiagram <- function(
     diagram_caption_storlek = 11,
     facet_x_axis_storlek = 8, facet_y_axis_storlek = 8, facet_rubrik_storlek = 12,
     facet_space_diag_horisont = 5.5, facet_oka_avstand_vid_visa_sista_vardet = 1.5,
-    logga = TRUE, logga_storlek = 20,
+    lagg_pa_logga = TRUE, logga_path = NA, logga_scaling = 20,
+    logga = NULL, logga_storlek = NULL,
     skriv_till_diagramfil = TRUE, diagramfil_bredd = 12, diagramfil_hojd = 7,
     diagram_bildformat = "png") {
+
+  # Alias -> primära (gamla) parameternamn
+  if (!is.null(farger))        manual_color  <- farger
+  if (!is.null(logga_storlek)) logga_scaling <- logga_storlek
+  if (!is.null(logga)) {
+    if (is.logical(logga)) lagg_pa_logga <- isTRUE(logga) else logga_path <- logga
+  }
+  if (!is.null(sortera_x)) {
+    x_axis_sort_value <- !isFALSE(sortera_x)
+    if (is.numeric(sortera_x)) x_axis_sort_grp <- sortera_x
+  }
+  # översätt till de interna hjälparnas argument
+  farg_arg <- if (!all(is.na(manual_color))) manual_color else brew_palett
+  logga_arg <- if (!all(is.na(logga_path))) logga_path else lagg_pa_logga
+  sortera_x_intern <- if (isTRUE(x_axis_sort_value)) {
+    if (all(is.na(x_axis_sort_grp))) TRUE else x_axis_sort_grp
+  } else NULL
 
   har_grupp <- !is.null(skickad_x_grupp)
   har_facet <- !is.null(facet_grp)
@@ -157,7 +189,7 @@ SkapaStapelDiagram <- function(
   if (har_namngiven) {
     chart_col <- skickad_namngiven_fargvektor
   } else {
-    chart_col <- intern_valj_farger(farger, if (har_grupp) antal_grupper else 1L)
+    chart_col <- intern_valj_farger(farg_arg, if (har_grupp) antal_grupper else 1L)
   }
   # En enda stapelgrupp (ingen x-grupp, ingen fokus, ingen namngiven vektor):
   # fyllningen mappas till chart_col direkt, så en längre färgvektor än 1 skulle
@@ -173,9 +205,9 @@ SkapaStapelDiagram <- function(
   if (har_facet) y_axis_storlek <- facet_y_axis_storlek
 
   # sortering av x
-  if (!is.null(sortera_x)) {
+  if (!is.null(sortera_x_intern)) {
     plot_df <- intern_sortera_stapel_x(plot_df, skickad_x_var, skickad_x_grupp,
-                                       sortera_x, vand_sortering, diagram_liggande)
+                                       sortera_x_intern, vand_sortering, diagram_liggande)
   } else if (diagram_liggande) {
     plot_df[[skickad_x_var]] <- stats::reorder(
       factor(plot_df[[skickad_x_var]]),
@@ -346,7 +378,7 @@ SkapaStapelDiagram <- function(
     skriv_till_diagramfil(
       ggplot_objekt = p, output_mapp = output_mapp, filnamn_diagram = filnamn_diagram,
       diagramfil_bredd = diagramfil_bredd, diagramfil_hojd = diagramfil_hojd,
-      logga = logga, logga_storlek = logga_storlek, diagram_bildformat = diagram_bildformat
+      logga = logga_arg, logga_storlek = logga_scaling, diagram_bildformat = diagram_bildformat
     )
     return(invisible(p))
   }

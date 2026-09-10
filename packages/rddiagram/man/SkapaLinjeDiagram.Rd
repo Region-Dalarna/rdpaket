@@ -29,6 +29,8 @@ SkapaLinjeDiagram(
   facet_rubrik_storlek = 12,
   facet_space_diag_horisont = 5.5,
   facet_oka_avstand_vid_visa_sista_vardet = 1.5,
+  manual_color = NA,
+  brew_palett = "Greens",
   farger = NULL,
   na_varden_behall_i_dataset = FALSE,
   linjetyp_kolumn = NULL,
@@ -57,8 +59,11 @@ SkapaLinjeDiagram(
   undertitel_storlek = 11,
   undertitel_hjust = 0.5,
   diagram_caption_storlek = 11,
-  logga = TRUE,
-  logga_storlek = 15,
+  lagg_pa_logga = TRUE,
+  logga_path = NA,
+  logga_scaling = 15,
+  logga = NULL,
+  logga_storlek = NULL,
   skriv_till_diagramfil = TRUE,
   diagramfil_bredd = 12,
   diagramfil_hojd = 7,
@@ -88,8 +93,11 @@ SkapaLinjeDiagram(
 
 \item{facet_x_axis_storlek, facet_y_axis_storlek, facet_rubrik_storlek, facet_space_diag_horisont, facet_oka_avstand_vid_visa_sista_vardet}{Facet-styling.}
 
-\item{farger}{\code{NULL} (default), en vektor med hex-färger eller ett
-RColorBrewer-palettnamn.}
+\item{manual_color}{Vektor med hex-färger, eller \code{NA}.}
+
+\item{brew_palett}{RColorBrewer-palettnamn (används om \code{manual_color} är \code{NA}).}
+
+\item{farger}{Alias: hex-vektor \strong{eller} palettnamn i en parameter.}
 
 \item{na_varden_behall_i_dataset}{Behåll \code{NA}-värden (bryt linjerna).}
 
@@ -115,9 +123,14 @@ RColorBrewer-palettnamn.}
 
 \item{diagram_titel_storlek, undertitel_storlek, undertitel_hjust, diagram_caption_storlek}{Titelstyling.}
 
-\item{logga}{\code{TRUE} = standardlogga, \code{FALSE} = ingen, en sökväg = egen logga.}
+\item{lagg_pa_logga}{\code{TRUE} = standardlogga, \code{FALSE} = ingen.}
 
-\item{logga_storlek}{Loggans relativa storlek.}
+\item{logga_path}{Sökväg till en egen logga.}
+
+\item{logga_scaling}{Loggans relativa storlek.}
+
+\item{logga, logga_storlek}{Alias för \code{lagg_pa_logga}/\code{logga_path} respektive
+\code{logga_scaling}.}
 
 \item{skriv_till_diagramfil}{Om \code{TRUE} skrivs diagrammet till fil.}
 

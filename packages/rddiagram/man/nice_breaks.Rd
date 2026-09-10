@@ -2,7 +2,7 @@
 % Please edit documentation in R/diagramfunktioner.R
 \name{nice_breaks}
 \alias{nice_breaks}
-\title{"Snyggt" intervallsteg enligt 1-2.5-5-10-serien}
+\title{"Snyggt" intervallsteg enligt 1-2-5-10-serien}
 \usage{
 nice_breaks(spann, antal_optimala_intervall = 5)
 }
@@ -15,5 +15,7 @@ nice_breaks(spann, antal_optimala_intervall = 5)
 Ett intervallsteg.
 }
 \description{
-"Snyggt" intervallsteg enligt 1-2.5-5-10-serien
+Ger alltid ett steg på formen 1, 2 eller 5 gånger en tiopotens - fungerar
+för stora som små tal, heltal som decimaltal. Ett spann som är 0, negativt
+eller saknas ger steget 1 (i stället för att krascha).
 }

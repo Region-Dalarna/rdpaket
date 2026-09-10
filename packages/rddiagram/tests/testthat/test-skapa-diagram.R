@@ -53,6 +53,43 @@ test_that("SkapaStapelDiagram: en grupp + längre färgvektor kraschar inte", {
   expect_s3_class(p2, "ggplot")
 })
 
+test_that("SkapaStapelDiagram: gamla parameternamn funkar (manual_color, x_axis_sort_value, logga_path)", {
+  skip_if_not_installed("ggplot2")
+  df <- data.frame(kommun = rep(c("Falun", "Mora"), each = 2),
+                   kon = c("kvinnor", "män"), andel = c(42, 40, 31, 29))
+  p <- SkapaStapelDiagram(
+    df, "kommun", "andel", skickad_x_grupp = "kon",
+    manual_color = c("#9bbb59", "#4f6228"), brew_palett = "Blues",
+    x_axis_sort_value = TRUE,
+    lagg_pa_logga = FALSE, logga_scaling = 25,
+    output_mapp = tempdir(), filnamn_diagram = "t.png",
+    skriv_till_diagramfil = FALSE)
+  expect_s3_class(p, "ggplot")
+
+  # alias och primärt namn ger samma resultat
+  a <- SkapaStapelDiagram(df, "kommun", "andel", skickad_x_grupp = "kon",
+                          farger = c("#111111", "#222222"),
+                          output_mapp = tempdir(), filnamn_diagram = "t.png",
+                          skriv_till_diagramfil = FALSE)
+  b <- SkapaStapelDiagram(df, "kommun", "andel", skickad_x_grupp = "kon",
+                          manual_color = c("#111111", "#222222"),
+                          output_mapp = tempdir(), filnamn_diagram = "t.png",
+                          skriv_till_diagramfil = FALSE)
+  expect_equal(ggplot2::ggplot_build(a)$data, ggplot2::ggplot_build(b)$data)
+})
+
+test_that("SkapaLinjeDiagram: gamla parameternamn funkar (manual_color, logga_path)", {
+  skip_if_not_installed("ggplot2")
+  df <- data.frame(ar = rep(2019:2022, 2), grupp = rep(c("A", "B"), each = 4),
+                   v = c(10, 12, 11, 14, 8, 9, 9, 10))
+  p <- SkapaLinjeDiagram(df, "ar", "v", skickad_x_grupp = "grupp",
+                         manual_color = c("#178571", "#93cec1"),
+                         lagg_pa_logga = FALSE, logga_scaling = 20,
+                         output_mapp = tempdir(), filnamn_diagram = "t.png",
+                         skriv_till_diagramfil = FALSE)
+  expect_s3_class(p, "ggplot")
+})
+
 test_that("SkapaStapelDiagram: sortera_x = TRUE ger faktor-x", {
   skip_if_not_installed("ggplot2")
   df <- data.frame(kommun = c("Falun", "Borlänge", "Mora"), antal = c(3, 1, 2))

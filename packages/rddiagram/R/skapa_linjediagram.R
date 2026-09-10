@@ -1,5 +1,9 @@
 # SkapaLinjeDiagram() - utbrutet ur func_SkapaDiagram.R och städat enligt
-# REVIEW-SkapaDiagram.md.
+# REVIEW-SkapaDiagram.md. Borttaget: filter-mekanismen (skickad_filter_OR_*),
+# AF_special, utan_diagramtitel (använd diagram_titel = NULL).
+# Parameternamnen är desamma som i func_SkapaDiagram.R (manual_color +
+# brew_palett, lagg_pa_logga + logga_path, logga_scaling). De kortare namnen
+# farger / logga / logga_storlek accepteras som alias.
 
 #' Skapa ett linjediagram enligt Region Dalarnas profil
 #'
@@ -16,8 +20,9 @@
 #'   Facet-inställningar.
 #' @param facet_x_axis_storlek,facet_y_axis_storlek,facet_rubrik_storlek,facet_space_diag_horisont,facet_oka_avstand_vid_visa_sista_vardet
 #'   Facet-styling.
-#' @param farger `NULL` (default), en vektor med hex-färger eller ett
-#'   RColorBrewer-palettnamn.
+#' @param manual_color Vektor med hex-färger, eller `NA`.
+#' @param brew_palett RColorBrewer-palettnamn (används om `manual_color` är `NA`).
+#' @param farger Alias: hex-vektor **eller** palettnamn i en parameter.
 #' @param na_varden_behall_i_dataset Behåll `NA`-värden (bryt linjerna).
 #' @param linjetyp_kolumn Kolumn som styr linjetyp, eller `NULL`.
 #' @param linjetyp_typvektor Vektor med linjetyper, eller `NULL`.
@@ -34,8 +39,11 @@
 #'   Legend-inställningar.
 #' @param diagram_titel_storlek,undertitel_storlek,undertitel_hjust,diagram_caption_storlek
 #'   Titelstyling.
-#' @param logga `TRUE` = standardlogga, `FALSE` = ingen, en sökväg = egen logga.
-#' @param logga_storlek Loggans relativa storlek.
+#' @param lagg_pa_logga `TRUE` = standardlogga, `FALSE` = ingen.
+#' @param logga_path Sökväg till en egen logga.
+#' @param logga_scaling Loggans relativa storlek.
+#' @param logga,logga_storlek Alias för `lagg_pa_logga`/`logga_path` respektive
+#'   `logga_scaling`.
 #' @param skriv_till_diagramfil Om `TRUE` skrivs diagrammet till fil.
 #' @param diagramfil_bredd,diagramfil_hojd,diagram_bildformat Filinställningar.
 #'
@@ -51,7 +59,8 @@ SkapaLinjeDiagram <- function(
     facet_kolumner = NULL, facet_rader = NULL, facet_legend_bottom = FALSE,
     facet_x_axis_storlek = 8, facet_y_axis_storlek = 8, facet_rubrik_storlek = 12,
     facet_space_diag_horisont = 5.5, facet_oka_avstand_vid_visa_sista_vardet = 1.5,
-    farger = NULL, na_varden_behall_i_dataset = FALSE,
+    manual_color = NA, brew_palett = "Greens", farger = NULL,
+    na_varden_behall_i_dataset = FALSE,
     linjetyp_kolumn = NULL, linjetyp_typvektor = NULL,
     marginal_y_axis = c(0, 0),
     stodlinjer_avrunda_fem = FALSE, stodlinjer_minor_tabort = FALSE,
@@ -65,9 +74,19 @@ SkapaLinjeDiagram <- function(
     legend_byrow = FALSE,
     diagram_titel_storlek = 20, undertitel_storlek = 11, undertitel_hjust = 0.5,
     diagram_caption_storlek = 11,
-    logga = TRUE, logga_storlek = 15,
+    lagg_pa_logga = TRUE, logga_path = NA, logga_scaling = 15,
+    logga = NULL, logga_storlek = NULL,
     skriv_till_diagramfil = TRUE, diagramfil_bredd = 12, diagramfil_hojd = 7,
     diagram_bildformat = "png") {
+
+  # Alias -> primära (gamla) parameternamn
+  if (!is.null(farger))        manual_color  <- farger
+  if (!is.null(logga_storlek)) logga_scaling <- logga_storlek
+  if (!is.null(logga)) {
+    if (is.logical(logga)) lagg_pa_logga <- isTRUE(logga) else logga_path <- logga
+  }
+  farg_arg  <- if (!all(is.na(manual_color))) manual_color else brew_palett
+  logga_arg <- if (!all(is.na(logga_path)))   logga_path   else lagg_pa_logga
 
   har_grupp <- !is.null(skickad_x_grupp)
   har_facet <- !is.null(facet_grp)
@@ -114,7 +133,7 @@ SkapaLinjeDiagram <- function(
   )
 
   antal_grupper <- if (har_grupp) dplyr::n_distinct(plot_df[[skickad_x_grupp]]) else 1L
-  chart_col <- intern_valj_farger(farger, antal_grupper)
+  chart_col <- intern_valj_farger(farg_arg, antal_grupper)
   if (!har_grupp) chart_col <- chart_col[1]
 
   if (is.null(linjetyp_typvektor)) linjetyp_typvektor <- rep("solid", antal_grupper)
@@ -210,7 +229,7 @@ SkapaLinjeDiagram <- function(
     skriv_till_diagramfil(
       ggplot_objekt = p, output_mapp = output_mapp, filnamn_diagram = filnamn_diagram,
       diagramfil_bredd = diagramfil_bredd, diagramfil_hojd = diagramfil_hojd,
-      logga = logga, logga_storlek = logga_storlek, diagram_bildformat = diagram_bildformat
+      logga = logga_arg, logga_storlek = logga_scaling, diagram_bildformat = diagram_bildformat
     )
     return(invisible(p))
   }
