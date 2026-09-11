@@ -1,3 +1,18 @@
+# rddeploy 0.0.0.9001
+
+## `rddeploy_auth_check()` utökad
+
+* Flaggar föråldrade keyring-poster `"github"` (användarnamn+lösenord -
+  GitHub har inte stött det för git-operationer sedan 2021) och `"git2r"`
+  (gav bara git-identitet, ersatt av `git_kontrollera_id_uppgifter()`).
+  Rör dem inte automatiskt - bara en varning med kommando för att radera.
+* Skriver ut en sammanfattande rad: allt konfigurerat eller något saknas.
+* Databas-/keyring-autentisering (`databas_adm`, `rd_geodata`, `.Renviron`)
+  ligger medvetet utanför den här funktionen - se
+  `rdpostgres::rdpostgres_auth_check()`.
+
+---
+
 # rddeploy 0.0.0.9000
 
 Första versionen. Utbrutet ur `func_API.R` och

@@ -1,6 +1,6 @@
 Package: rdpostgres
 Title: PostgreSQL-verktyg för Region Dalarnas Databaser
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
@@ -28,6 +28,7 @@ Imports:
 Suggests:
     keyring,
     pxweb2r,
+    rdshinyappar,
     rdverktyg,
     svDialogs,
     tcltk,
@@ -39,4 +40,5 @@ BugReports: https://github.com/Region-Dalarna/rdpaket/issues
 Config/roxygen2/version: 8.1.0
 Remotes:
     FaluPeppe/pxweb2r,
-    Region-Dalarna/rdpaket/packages/rdverktyg
+    Region-Dalarna/rdpaket/packages/rdverktyg,
+    Region-Dalarna/rdpaket/packages/rdshinyappar

@@ -8,9 +8,10 @@ rddeploy_auth_check()
 }
 \value{
 Osynligt: en lista med \code{token}, \code{user}, \code{scopes}, \code{git_name},
-\code{git_email}.
+\code{git_email}, \code{foraldrade_keyring_services}, \code{redo} (alla krav uppfyllda).
 }
 \description{
 Motsvarar \code{usethis::git_sitrep()} men kortfattad: finns en token, vem är den
-kopplad till, och är git-identiteten satt.
+kopplad till, är git-identiteten satt - och flaggar föråldrade
+keyring-poster (\code{"github"}, \code{"git2r"}) om de påträffas.
 }

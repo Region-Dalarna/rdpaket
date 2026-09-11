@@ -1,3 +1,18 @@
+# rdpostgres 0.0.0.9001
+
+## Nytt
+
+* `rdpostgres_auth_check()` - listar vilka av keyring-services
+  `"databas_adm"`/`"rd_geodata"` som finns, varnar om `uppkoppling_db()`
+  utan `service_name` skulle falla tillbaka på den inbyggda
+  `geodata_las`/`geodata_las`-kopplingen, och listar `.Renviron`-lösenord
+  via `rdshinyappar::shiny_list_passwords()` om det paketet finns.
+* `uppkoppling_db()` skriver nu ett meddelande första gången den faller
+  tillbaka på `geodata_las`/`geodata_las` utan att `service_name`/
+  `db_user`/`db_password` angetts - beteendet är oförändrat, bara synligt.
+
+---
+
 # rdpostgres 0.0.0.9000
 
 Första versionen. Utbrutet ur postgres-avsnittet i `func_GIS.R` i

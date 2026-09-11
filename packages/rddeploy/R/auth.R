@@ -45,13 +45,25 @@ rddeploy_pat <- function(service = "github_token") {
   ))
 }
 
+# keyring-services som inte används av rddeploy längre. "github" var
+# användarnamn+lösenord för git-auth - GitHub har inte stött det sedan
+# augusti 2021. "git2r" gav bara git-identitet, ersatt av
+# git_kontrollera_id_uppgifter() (läser den globala git-configen).
+intern_foraldrade_keyring_services <- function() {
+  if (!requireNamespace("keyring", quietly = TRUE)) return(character(0))
+  Filter(function(s) {
+    isTRUE(tryCatch(nrow(keyring::key_list(service = s)) > 0, error = function(e) FALSE))
+  }, c("github", "git2r"))
+}
+
 #' Diagnostik för git- och GitHub-uppsättningen
 #'
 #' Motsvarar `usethis::git_sitrep()` men kortfattad: finns en token, vem är den
-#' kopplad till, och är git-identiteten satt.
+#' kopplad till, är git-identiteten satt - och flaggar föråldrade
+#' keyring-poster (`"github"`, `"git2r"`) om de påträffas.
 #'
 #' @return Osynligt: en lista med `token`, `user`, `scopes`, `git_name`,
-#'   `git_email`.
+#'   `git_email`, `foraldrade_keyring_services`, `redo` (alla krav uppfyllda).
 #' @export
 rddeploy_auth_check <- function() {
   cli::cli_h2("git / GitHub")
@@ -80,12 +92,33 @@ rddeploy_auth_check <- function() {
   cli::cli_li(if (isTRUE(nzchar(git_name)))  "git user.name: {.val {git_name}}"  else "git user.name: {.red ej satt}")
   cli::cli_li(if (isTRUE(nzchar(git_email))) "git user.email: {.val {git_email}}" else "git user.email: {.red ej satt}")
 
+  foraldrade <- intern_foraldrade_keyring_services()
+  if (length(foraldrade) > 0) {
+    for (svc in foraldrade) {
+      cli::cli_alert_warning(c(
+        "Föråldrad keyring-post {.val {svc}} hittades - används inte av rddeploy. ",
+        "{.val github} (användarnamn+lösenord) stöds inte av GitHub sedan 2021; ",
+        "{.val git2r} ersattes av git_kontrollera_id_uppgifter(). ",
+        "Kan raderas: {.code keyring::key_delete(\"{svc}\")}"
+      ))
+    }
+  }
+
+  redo <- har_token && isTRUE(nzchar(git_name)) && isTRUE(nzchar(git_email))
+  if (redo) {
+    cli::cli_alert_success("Allt som krävs för git/GitHub är konfigurerat.")
+  } else {
+    cli::cli_alert_danger("Något saknas ovan - se raderna markerade i rött.")
+  }
+
   invisible(list(
     token     = har_token,
     user      = if (!is.null(whoami)) whoami$login else NA_character_,
     scopes    = scopes,
     git_name  = git_name,
-    git_email = git_email
+    git_email = git_email,
+    foraldrade_keyring_services = foraldrade,
+    redo      = redo
   ))
 }
 
