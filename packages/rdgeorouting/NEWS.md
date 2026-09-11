@@ -1,3 +1,10 @@
+# rdgeorouting 0.0.0.9001
+
+Versionsbump utan innehållsändring (för att `remotes`/`pak`
+tillförlitligt ska upptäcka uppdateringar i det här monorepot).
+
+---
+
 # rdgeorouting 0.0.0.9000
 
 Första versionen. Utbrutet ur postgis-, pgrouting- och pendlingsavsnitten

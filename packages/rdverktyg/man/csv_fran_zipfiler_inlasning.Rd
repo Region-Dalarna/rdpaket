@@ -4,16 +4,31 @@
 \alias{csv_fran_zipfiler_inlasning}
 \title{Läs csv-filer direkt ur en eller flera zip-filer}
 \usage{
-csv_fran_zipfiler_inlasning(zip_sokvagar, kalla_som_kolumn = FALSE)
+csv_fran_zipfiler_inlasning(
+  zip_sokvagar,
+  kalla_som_kolumn = FALSE,
+  bind_ihop_dataseten = FALSE
+)
 }
 \arguments{
 \item{zip_sokvagar}{Sökväg(ar) till zip-filer som innehåller csv-filer.}
 
-\item{kalla_som_kolumn}{Om \code{TRUE} läggs kolumner \code{zip_fil} och \code{csv_fil} till
-som visar varifrån varje rad kommer.}
+\item{kalla_som_kolumn}{Om \code{TRUE} och \code{bind_ihop_dataseten = TRUE} läggs
+kolumner \code{zip_fil} och \code{csv_fil} till som visar varifrån varje rad
+kommer. Påverkar inte listläget (där varje element redan är namngivet
+efter zip- och csv-fil).}
+
+\item{bind_ihop_dataseten}{Om \code{TRUE} binds alla csv-filers innehåll ihop
+till en enda \code{tibble} med \code{\link[dplyr:bind_rows]{dplyr::bind_rows()}} (det gamla beteendet).
+Om \code{FALSE} (standard) returneras i stället en namngiven lista med en
+\code{tibble} per csv-fil, vilket passar bäst när filerna inte nödvändigtvis
+har samma kolumner. Vill man binda ihop listan själv efteråt går det
+lika gärna med \code{dplyr::bind_rows()}/\code{purrr::list_rbind()}.}
 }
 \value{
-En \code{tibble} med alla csv-filers innehåll ihopbundet.
+Om \code{bind_ihop_dataseten = FALSE} (standard): en namngiven lista
+med en \code{tibble} per csv-fil, med namn \code{"<zipfil>/<csvfil>"}. Om
+\code{bind_ihop_dataseten = TRUE}: en enda \code{tibble} med allt ihopbundet.
 }
 \description{
 Läs csv-filer direkt ur en eller flera zip-filer

@@ -1,3 +1,19 @@
+# rdverktyg 0.0.0.9001
+
+## Ändrat beteende (bakåtinkompatibelt)
+
+* `csv_fran_zipfiler_inlasning()` returnerar nu som standard en namngiven
+  lista med en `tibble` per csv-fil (namn `"<zipfil>/<csvfil>"`) i stället
+  för att alltid binda ihop allt till en enda `tibble`. Det gamla
+  beteendet fås med `bind_ihop_dataseten = TRUE`. Motivet är att csv-filer
+  i en zip inte nödvändigtvis har samma kolumner, och att man annars bara
+  fick ut en enda ihoprörd `tibble` utan att kunna se filerna var för sig.
+* `kalla_som_kolumn` styr nu bara `zip_fil`/`csv_fil`-kolumnerna när
+  `bind_ihop_dataseten = TRUE`; listans element är redan namngivna efter
+  zip- och csv-fil.
+
+---
+
 # rdverktyg 0.0.0.9000
 
 Första versionen. Funktioner utbrutna ur funktionsskripten i

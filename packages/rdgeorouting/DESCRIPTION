@@ -1,6 +1,6 @@
 Package: rdgeorouting
 Title: PostGIS- och pgRouting-verktyg för Region Dalarnas Ruttanalyser
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")

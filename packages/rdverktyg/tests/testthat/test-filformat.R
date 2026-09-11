@@ -22,11 +22,18 @@ test_that("csv_fran_zipfiler_inlasning läser csv ur zip", {
   zip::zip(z, files = c("en.csv", "tva.csv"), root = d, mode = "cherry-pick")
 
   ut <- csv_fran_zipfiler_inlasning(z)
-  expect_equal(nrow(ut), 3)
-  expect_true(all(c("x", "y") %in% names(ut)))
+  expect_type(ut, "list")
+  expect_length(ut, 2)
+  expect_equal(names(ut), c("data.zip/en.csv", "data.zip/tva.csv"))
+  expect_equal(nrow(ut[["data.zip/en.csv"]]), 2)
+  expect_true(all(c("x", "y") %in% names(ut[["data.zip/en.csv"]])))
 
-  ut2 <- csv_fran_zipfiler_inlasning(z, kalla_som_kolumn = TRUE)
-  expect_true(all(c("zip_fil", "csv_fil") %in% names(ut2)))
+  ut_bunden <- csv_fran_zipfiler_inlasning(z, bind_ihop_dataseten = TRUE)
+  expect_equal(nrow(ut_bunden), 3)
+  expect_true(all(c("x", "y") %in% names(ut_bunden)))
+
+  ut_bunden2 <- csv_fran_zipfiler_inlasning(z, kalla_som_kolumn = TRUE, bind_ihop_dataseten = TRUE)
+  expect_true(all(c("zip_fil", "csv_fil") %in% names(ut_bunden2)))
 })
 
 test_that("skolverket_hitta_startrad hittar första blocket", {
