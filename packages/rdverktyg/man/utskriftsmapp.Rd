@@ -13,3 +13,11 @@ En sökväg (sträng). Sätt eget värde med
 \description{
 Sökväg till utskriftsmappen
 }
+\details{
+Sätt eget värde för den pågående sessionen med
+\code{options(rdverktyg.utskriftsmapp = "...")}. Vill du att värdet ska
+gälla permanent, mellan R-sessioner (och inte bara i den du sitter i
+just nu), lägg samma \code{options()}-rad i din \code{.Rprofile} - öppna den med
+\code{usethis::edit_r_profile()}, spara raden, spara filen och starta om R.
+\code{.Rprofile} körs automatiskt varje gång R startar på din dator.
+}

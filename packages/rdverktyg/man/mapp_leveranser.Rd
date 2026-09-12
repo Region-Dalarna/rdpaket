@@ -13,3 +13,10 @@ En sökväg (sträng). Sätt eget värde med
 \description{
 Sökväg till leveransmappen
 }
+\details{
+Sätt eget värde för den pågående sessionen med
+\code{options(rdverktyg.mapp_leveranser = "...")}. Vill du att värdet ska
+gälla permanent, mellan R-sessioner, lägg samma \code{options()}-rad i din
+\code{.Rprofile} - öppna den med \code{usethis::edit_r_profile()}, spara raden,
+spara filen och starta om R.
+}

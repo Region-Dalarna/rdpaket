@@ -11,6 +11,13 @@ intern_mapp <- function(option_namn, standard) {
 
 #' Sökväg till utskriftsmappen
 #'
+#' @details Sätt eget värde för den pågående sessionen med
+#'   `options(rdverktyg.utskriftsmapp = "...")`. Vill du att värdet ska
+#'   gälla permanent, mellan R-sessioner (och inte bara i den du sitter i
+#'   just nu), lägg samma `options()`-rad i din `.Rprofile` - öppna den med
+#'   `usethis::edit_r_profile()`, spara raden, spara filen och starta om R.
+#'   `.Rprofile` körs automatiskt varje gång R startar på din dator.
+#'
 #' @return En sökväg (sträng). Sätt eget värde med
 #'   `options(rdverktyg.utskriftsmapp = "...")`.
 #' @export
@@ -19,6 +26,12 @@ utskriftsmapp <- function() {
 }
 
 #' Sökväg till mappen för hämtad data
+#'
+#' @details Sätt eget värde för den pågående sessionen med
+#'   `options(rdverktyg.mapp_hamtadata = "...")`. Vill du att värdet ska
+#'   gälla permanent, mellan R-sessioner, lägg samma `options()`-rad i din
+#'   `.Rprofile` - öppna den med `usethis::edit_r_profile()`, spara raden,
+#'   spara filen och starta om R.
 #'
 #' @return En sökväg (sträng). Sätt eget värde med
 #'   `options(rdverktyg.mapp_hamtadata = "...")`.
@@ -29,6 +42,12 @@ mapp_hamtadata <- function() {
 
 #' Sökväg till temp-mappen
 #'
+#' @details Sätt eget värde för den pågående sessionen med
+#'   `options(rdverktyg.mapp_temp = "...")`. Vill du att värdet ska gälla
+#'   permanent, mellan R-sessioner, lägg samma `options()`-rad i din
+#'   `.Rprofile` - öppna den med `usethis::edit_r_profile()`, spara raden,
+#'   spara filen och starta om R.
+#'
 #' @return En sökväg (sträng). Sätt eget värde med
 #'   `options(rdverktyg.mapp_temp = "...")`.
 #' @export
@@ -38,6 +57,12 @@ mapp_temp <- function() {
 
 #' Sökväg till leveransmappen
 #'
+#' @details Sätt eget värde för den pågående sessionen med
+#'   `options(rdverktyg.mapp_leveranser = "...")`. Vill du att värdet ska
+#'   gälla permanent, mellan R-sessioner, lägg samma `options()`-rad i din
+#'   `.Rprofile` - öppna den med `usethis::edit_r_profile()`, spara raden,
+#'   spara filen och starta om R.
+#'
 #' @return En sökväg (sträng). Sätt eget värde med
 #'   `options(rdverktyg.mapp_leveranser = "...")`.
 #' @export
@@ -46,6 +71,12 @@ mapp_leveranser <- function() {
 }
 
 #' Sökväg till mappen med inläsningsdata från mikrodatabasen
+#'
+#' @details Sätt eget värde för den pågående sessionen med
+#'   `options(rdverktyg.mapp_inlasdata = "...")`. Vill du att värdet ska
+#'   gälla permanent, mellan R-sessioner, lägg samma `options()`-rad i din
+#'   `.Rprofile` - öppna den med `usethis::edit_r_profile()`, spara raden,
+#'   spara filen och starta om R.
 #'
 #' @return En sökväg (sträng). Sätt eget värde med
 #'   `options(rdverktyg.mapp_inlasdata = "...")`.

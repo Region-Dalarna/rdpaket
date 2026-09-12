@@ -1,3 +1,15 @@
+# rdverktyg 0.0.0.9002
+
+## Dokumentation
+
+* `utskriftsmapp()`, `mapp_hamtadata()`, `mapp_temp()`, `mapp_leveranser()`
+  och `mapp_inlasdata()` förklarar nu även hur man sätter ett värde
+  permanent (mellan R-sessioner, inte bara i den pågående) genom att lägga
+  `options(...)`-raden i `.Rprofile` - tidigare stod bara att man kunde
+  sätta det med `options()`, utan att säga var.
+
+---
+
 # rdverktyg 0.0.0.9001
 
 ## Ändrat beteende (bakåtinkompatibelt)

@@ -13,3 +13,10 @@ En sökväg (sträng). Sätt eget värde med
 \description{
 Sökväg till temp-mappen
 }
+\details{
+Sätt eget värde för den pågående sessionen med
+\code{options(rdverktyg.mapp_temp = "...")}. Vill du att värdet ska gälla
+permanent, mellan R-sessioner, lägg samma \code{options()}-rad i din
+\code{.Rprofile} - öppna den med \code{usethis::edit_r_profile()}, spara raden,
+spara filen och starta om R.
+}
