@@ -1,3 +1,19 @@
+# rddiagram 0.0.0.9007
+
+## Buggfix: `x_var_fokus = NA` kraschade i `SkapaStapelDiagram()`
+
+Samma NA-som-NULL-konvention missades för `x_var_fokus`: koden kollade bara
+`is.null(x_var_fokus)` för att avgöra `har_fokus`, men anropande skript
+skrivna mot original-`func_SkapaDiagram.R` skickar ofta `NA` (t.ex.
+`x_var_fokus = ifelse(..., "fokus", NA)`) för "ingen fokusering". Det gick
+vidare till `plot_df[[NA]]`, som kraschade med "Can't extract column with
+`x_var_fokus`". Hittat vid migrering av
+`diagram_arbetsmarknadsstatus_senastear.R` i diagram-repot. `NA`
+normaliseras nu till `NULL`, precis som för `skickad_x_grupp` och
+`x_axis_visa_var_xe_etikett`.
+
+---
+
 # rddiagram 0.0.0.9006
 
 ## Buggfix: `x_axis_visa_var_xe_etikett = NA` kraschade

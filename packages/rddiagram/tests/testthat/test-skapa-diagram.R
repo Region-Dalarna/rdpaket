@@ -58,6 +58,22 @@ test_that("SkapaStapelDiagram: x_axis_visa_var_xe_etikett = NA fungerar som NULL
   expect_s3_class(p, "ggplot")
 })
 
+test_that("SkapaStapelDiagram: x_var_fokus = NA fungerar som NULL (ingen fokusering)", {
+  skip_if_not_installed("ggplot2")
+  # Samma NA-som-NULL-konvention som skickad_x_grupp/x_axis_visa_var_xe_etikett.
+  # plot_df[[NA]] kraschar med "Can't extract column with `x_var_fokus`" om NA
+  # inte normaliseras bort innan har_fokus/plot_df[[x_var_fokus]] används -
+  # hittat vid migrering av diagram_arbetsmarknadsstatus_senastear.R, där
+  # anropande kod skriver x_var_fokus = ifelse(..., "fokus", NA).
+  df <- data.frame(ar = 2018:2022, varde = c(100, 102, 98, 101, 103))
+  p <- SkapaStapelDiagram(
+    df, "ar", "varde", x_var_fokus = NA,
+    output_mapp = tempdir(), filnamn_diagram = "test.png",
+    skriv_till_diagramfil = FALSE
+  )
+  expect_s3_class(p, "ggplot")
+})
+
 test_that("SkapaStapelDiagram: stödlinjer blir inte för många när noll tvingas in i ett stort, smalt spann", {
   skip_if_not_installed("ggplot2")
   # Verklighetsnära fall: befolkningstal som ligger tätt ihop men långt från
