@@ -44,6 +44,20 @@ test_that("SkapaStapelDiagram: skickad_x_grupp = NA fungerar som NULL (ingen gru
   expect_s3_class(p, "ggplot")
 })
 
+test_that("SkapaStapelDiagram: x_axis_visa_var_xe_etikett = NA fungerar som NULL (ingen gallring)", {
+  skip_if_not_installed("ggplot2")
+  # Samma NA-som-NULL-konvention som skickad_x_grupp. every_nth(NA, ...) gör
+  # rep(FALSE, NA - 1) internt, vilket kraschar med "invalid 'times' argument"
+  # om NA inte normaliseras bort innan every_nth() anropas.
+  df <- data.frame(ar = 2018:2022, varde = c(100, 102, 98, 101, 103))
+  p <- SkapaStapelDiagram(
+    df, "ar", "varde", x_axis_visa_var_xe_etikett = NA,
+    output_mapp = tempdir(), filnamn_diagram = "test.png",
+    skriv_till_diagramfil = FALSE
+  )
+  expect_s3_class(p, "ggplot")
+})
+
 test_that("SkapaStapelDiagram: stödlinjer blir inte för många när noll tvingas in i ett stort, smalt spann", {
   skip_if_not_installed("ggplot2")
   # Verklighetsnära fall: befolkningstal som ligger tätt ihop men långt från
@@ -66,6 +80,17 @@ test_that("SkapaLinjeDiagram: skickad_x_grupp = NA fungerar som NULL (ingen grup
   df <- data.frame(ar = 2018:2022, varde = c(100, 102, 98, 101, 103))
   p <- SkapaLinjeDiagram(
     df, "ar", "varde", skickad_x_grupp = NA,
+    output_mapp = tempdir(), filnamn_diagram = "test.png",
+    skriv_till_diagramfil = FALSE
+  )
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("SkapaLinjeDiagram: x_axis_visa_var_xe_etikett = NA fungerar som NULL (ingen gallring)", {
+  skip_if_not_installed("ggplot2")
+  df <- data.frame(ar = 2018:2022, varde = c(100, 102, 98, 101, 103))
+  p <- SkapaLinjeDiagram(
+    df, "ar", "varde", x_axis_visa_var_xe_etikett = NA,
     output_mapp = tempdir(), filnamn_diagram = "test.png",
     skriv_till_diagramfil = FALSE
   )

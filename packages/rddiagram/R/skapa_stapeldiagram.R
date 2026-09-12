@@ -150,10 +150,15 @@ SkapaStapelDiagram <- function(
     if (all(is.na(x_axis_sort_grp))) TRUE else x_axis_sort_grp
   } else NULL
 
-  # NA används genomgående (manual_color, x_axis_sort_grp, logga_path ...) som
-  # "inget värde", precis som NULL - normalisera så anrop skrivna med den
-  # konventionen inte kraschar (plot_df[[NA]] är inte samma sak som "ingen grupp").
+  # NA används genomgående (manual_color, x_axis_sort_grp, logga_path,
+  # x_axis_visa_var_xe_etikett ...) som "inget värde", precis som NULL -
+  # normalisera så anrop skrivna med den konventionen inte kraschar
+  # (plot_df[[NA]] är inte samma sak som "ingen grupp", och every_nth(NA, ...)
+  # kraschar på rep(FALSE, NA - 1) i stället för att betyda "ingen gallring").
   if (length(skickad_x_grupp) == 1 && is.na(skickad_x_grupp)) skickad_x_grupp <- NULL
+  if (length(x_axis_visa_var_xe_etikett) == 1 && is.na(x_axis_visa_var_xe_etikett)) {
+    x_axis_visa_var_xe_etikett <- NULL
+  }
 
   har_grupp <- !is.null(skickad_x_grupp)
   har_facet <- !is.null(facet_grp)

@@ -1,3 +1,18 @@
+# rddiagram 0.0.0.9006
+
+## Buggfix: `x_axis_visa_var_xe_etikett = NA` kraschade
+
+Samma NA-som-NULL-konvention som tidigare `skickad_x_grupp`-fixen missades
+för `x_axis_visa_var_xe_etikett`: den porterade koden kollade bara
+`is.null(...)`, men skript skrivna mot original-`func_SkapaDiagram.R`
+(default där var `NA`, inte `NULL`) skickar ofta `NA` för "ingen gallring
+av x-etiketter". Det gick vidare till `every_nth(NA, ...)`, som kraschade
+på `rep(FALSE, NA - 1)` ("invalid 'times' argument"). `NA` normaliseras nu
+till `NULL` i både `SkapaStapelDiagram()` och `SkapaLinjeDiagram()`, precis
+som för `skickad_x_grupp`.
+
+---
+
 # rddiagram 0.0.0.9005
 
 ## `lagg_till_ckm_notering()`: nytt `fran_ar`
