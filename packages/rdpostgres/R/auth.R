@@ -1,3 +1,16 @@
+# keyring väljer lagringsbackend första gången den anropas i en session och
+# varnar då om den inte hittar ett riktigt OS-backend (t.ex. Linux utan
+# secret_service, eller en huvudlös session) - ofarligt, säger bara att den
+# föll tillbaka på "env"-backendet. Döljer bara den specifika varningen så
+# att andra, riktiga varningar från keyring fortfarande syns.
+intern_suppress_keyring_backend_varning <- function(expr) {
+  withCallingHandlers(expr, warning = function(w) {
+    if (grepl("Selecting .* backend", conditionMessage(w))) {
+      invokeRestart("muffleWarning")
+    }
+  })
+}
+
 #' Diagnostik för databaskonfiguration
 #'
 #' Listar vilka av de keyring-services som `uppkoppling_adm()` och
@@ -23,7 +36,10 @@ rdpostgres_auth_check <- function(services = c("databas_adm", "rd_geodata")) {
   finns <- stats::setNames(rep(NA, length(services)), services)
   if (har_keyring) {
     finns <- vapply(services, function(s) {
-      tryCatch(nrow(keyring::key_list(service = s)) > 0, error = function(e) FALSE)
+      tryCatch(
+        intern_suppress_keyring_backend_varning(nrow(keyring::key_list(service = s)) > 0),
+        error = function(e) FALSE
+      )
     }, logical(1))
   }
 

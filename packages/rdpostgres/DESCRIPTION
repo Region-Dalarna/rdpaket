@@ -1,6 +1,6 @@
 Package: rdpostgres
 Title: PostgreSQL-verktyg för Region Dalarnas Databaser
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")

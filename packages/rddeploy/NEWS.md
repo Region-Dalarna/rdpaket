@@ -1,3 +1,16 @@
+# rddeploy 0.0.0.9003
+
+## Döljer keyrings ofarliga backend-varning
+
+`rddeploy_pat()`s reservväg via keyring (och `intern_foraldrade_keyring_services()`)
+kunde skriva ut `"Selecting 'env' backend. Secrets are stored in environment
+variables"` från `keyring` självt - ofarligt, bara keyrings engångsval av
+lagringsbackend i miljöer utan ett riktigt OS-backend (Linux utan
+secret_service, huvudlösa sessioner). Döljs nu specifikt, andra varningar
+från keyring syns fortfarande.
+
+---
+
 # rddeploy 0.0.0.9002
 
 ## Tydligare urklippshantering

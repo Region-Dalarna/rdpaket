@@ -26,10 +26,10 @@ rddeploy_pat <- function(service = "github_token") {
   }
 
   if (requireNamespace("keyring", quietly = TRUE)) {
-    poster <- tryCatch(keyring::key_list(service = service),
+    poster <- tryCatch(intern_suppress_keyring_backend_varning(keyring::key_list(service = service)),
                        error = function(e) data.frame())
     if (nrow(poster) > 0) {
-      pat <- keyring::key_get(service, poster$username[1])
+      pat <- intern_suppress_keyring_backend_varning(keyring::key_get(service, poster$username[1]))
       if (nzchar(pat)) {
         Sys.setenv(GITHUB_PAT = pat)
         return(invisible(pat))
@@ -45,6 +45,19 @@ rddeploy_pat <- function(service = "github_token") {
   ))
 }
 
+# keyring väljer lagringsbackend första gången den anropas i en session och
+# varnar då om den inte hittar ett riktigt OS-backend (t.ex. Linux utan
+# secret_service, eller en huvudlös session) - ofarligt, säger bara att den
+# föll tillbaka på "env"-backendet. Döljer bara den specifika varningen så
+# att andra, riktiga varningar från keyring fortfarande syns.
+intern_suppress_keyring_backend_varning <- function(expr) {
+  withCallingHandlers(expr, warning = function(w) {
+    if (grepl("Selecting .* backend", conditionMessage(w))) {
+      invokeRestart("muffleWarning")
+    }
+  })
+}
+
 # keyring-services som inte används av rddeploy längre. "github" var
 # användarnamn+lösenord för git-auth - GitHub har inte stött det sedan
 # augusti 2021. "git2r" gav bara git-identitet, ersatt av
@@ -52,7 +65,10 @@ rddeploy_pat <- function(service = "github_token") {
 intern_foraldrade_keyring_services <- function() {
   if (!requireNamespace("keyring", quietly = TRUE)) return(character(0))
   Filter(function(s) {
-    isTRUE(tryCatch(nrow(keyring::key_list(service = s)) > 0, error = function(e) FALSE))
+    isTRUE(tryCatch(
+      intern_suppress_keyring_backend_varning(nrow(keyring::key_list(service = s)) > 0),
+      error = function(e) FALSE
+    ))
   }, c("github", "git2r"))
 }
 

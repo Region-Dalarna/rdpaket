@@ -1,3 +1,15 @@
+# rdpostgres 0.0.0.9002
+
+## Döljer keyrings ofarliga backend-varning
+
+`rdpostgres_auth_check()` kunde skriva ut `"Selecting 'env' backend. Secrets
+are stored in environment variables"` från `keyring` självt - ofarligt, bara
+keyrings engångsval av lagringsbackend i miljöer utan ett riktigt OS-backend.
+Döljs nu specifikt (samma fix som i `rddeploy`), andra varningar från
+keyring syns fortfarande.
+
+---
+
 # rdpostgres 0.0.0.9001
 
 ## Nytt
