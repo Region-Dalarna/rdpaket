@@ -192,7 +192,7 @@ SkapaLinjeDiagram <- function(
     )) +
     ggplot2::scale_color_manual(values = chart_col)
 
-  if (!is.null(linjetyp_typvektor) && !all(linjetyp_typvektor == "solid")) {
+  if (har_grupp) {
     p <- p + ggplot2::scale_linetype_manual(values = linjetyp_typvektor)
   }
 

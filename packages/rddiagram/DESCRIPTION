@@ -1,6 +1,6 @@
 Package: rddiagram
 Title: Region Dalarnas Diagrammallar
-Version: 0.0.0.9007
+Version: 0.0.0.9008
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")

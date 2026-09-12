@@ -206,6 +206,27 @@ test_that("SkapaLinjeDiagram bygger ett ggplot-objekt med linje", {
   expect_true(any(vapply(p$layers, function(l) inherits(l$geom, "GeomLine"), logical(1))))
 })
 
+test_that("SkapaLinjeDiagram: standardlinjetyp är solid för alla grupper (ingen automatisk streckning)", {
+  skip_if_not_installed("ggplot2")
+  # linetype mappas alltid till grupperingsvariabeln i aes(), men innan
+  # denna fix applicerades ingen scale_linetype_manual() i standardfallet
+  # (linjetyp_typvektor = NULL -> rep("solid", n) beräknades men skala
+  # las bara på om vektorn INTE var "solid" överallt) - resultatet blev
+  # ggplot2:s egna, svårlästa streck-/prickmönster i legend och linjer i
+  # stället för solida linjer för samtliga grupper.
+  df <- data.frame(
+    ar = rep(2019:2021, 3),
+    grupp = rep(c("A", "B", "C"), each = 3),
+    v = 1:9
+  )
+  p <- SkapaLinjeDiagram(df, "ar", "v", skickad_x_grupp = "grupp",
+                         output_mapp = tempdir(), filnamn_diagram = "l2.png",
+                         skriv_till_diagramfil = FALSE)
+  linetype_scale <- p$scales$get_scales("linetype")
+  expect_false(is.null(linetype_scale))
+  expect_true(all(linetype_scale$palette(3) == "solid"))
+})
+
 test_that("SkapaLinjeDiagram: berakna_index normaliserar till 100", {
   skip_if_not_installed("ggplot2")
   df <- data.frame(ar = 2019:2022, v = c(50, 55, 60, 75))

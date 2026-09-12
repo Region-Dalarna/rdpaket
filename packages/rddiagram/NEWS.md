@@ -1,3 +1,22 @@
+# rddiagram 0.0.0.9008
+
+## Buggfix: `SkapaLinjeDiagram()` gav alltid streckade/prickade linjer, oavsett `linjetyp_typvektor`
+
+`linetype` mappas i `aes()` till grupperingsvariabeln så fort en gruppering
+används, oavsett `linjetyp_typvektor`. Standardvärdet (`linjetyp_typvektor
+= NULL` -> `rep("solid", antal_grupper)`) beräknades, men
+`scale_linetype_manual()` applicerades bara om vektorn INTE var "solid"
+överallt - i standardfallet (ingen linjetyp angiven) hoppades skalan
+alltså över, och ggplot2:s egna automatiska streck-/prickmönster användes
+i stället, vilket gör legenden svårläst när många grupper visas.
+Hittat vid ett användarönskemål om att ta bort linjetyp helt i
+`diag_bef_forandring_per_manad.R` i diagram-repot. `scale_linetype_manual()`
+appliceras nu alltid när en gruppering finns, så standardfallet blir
+solida linjer för alla grupper (anpassningsbart via `linjetyp_typvektor`
+som tidigare).
+
+---
+
 # rddiagram 0.0.0.9007
 
 ## Buggfix: `x_var_fokus = NA` kraschade i `SkapaStapelDiagram()`
