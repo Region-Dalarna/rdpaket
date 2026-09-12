@@ -25,6 +25,17 @@ test_that("intern_filtrera_filnamn: OR, AND, NOT", {
                   "hamta_scb_befolkning.R")
 })
 
+test_that("intern_kopiera_urklipp krånglar aldrig, oavsett om urklipp finns", {
+  # Ska varken ge fel eller varning oavsett om clipr/systemets urklipp finns
+  # i den här miljön - bara antingen kopiera och bekräfta, eller informera
+  # om att det inte gick. Testar bara att den är tyst på fel/varningar.
+  expect_no_error(intern_kopiera_urklipp("test"))
+  expect_no_warning(intern_kopiera_urklipp("test"))
+
+  # till_urklipp = FALSE ska alltid hoppa över utan sidoeffekt eller utskrift
+  expect_no_error(intern_kopiera_urklipp("test", till_urklipp = FALSE))
+})
+
 test_that("intern_commit_meddelande sammanfattar git-status", {
   st <- data.frame(
     file   = c("a.R", "b.R", "c.R"),

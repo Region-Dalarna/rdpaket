@@ -1,5 +1,26 @@
 # GitHub-arbetsflöden byggda på gh (REST API) och gert (git-operationer).
 
+# Kopierar text till urklipp om möjligt, annars talar den tydligt om att det
+# inte gick i stället för att tyst hoppa över (t.ex. Linux utan xclip/xsel/
+# wl-copy, eller en huvudlös session utan skrivbordsmiljö - fungerar likadant
+# oavsett OS eftersom clipr::clipr_available() redan är plattformsoberoende).
+intern_kopiera_urklipp <- function(txt, till_urklipp = TRUE) {
+  if (!till_urklipp) return(invisible(FALSE))
+  if (requireNamespace("clipr", quietly = TRUE) && clipr::clipr_available()) {
+    clipr::write_clip(txt)
+    cli::cli_alert_success("Kopierat till urklipp.")
+    invisible(TRUE)
+  } else {
+    cli::cli_alert_info(
+      "Kunde inte kopiera till urklipp automatiskt (inget urklipp tillgängligt i \\
+      den här R-sessionen, t.ex. saknas {.pkg xclip}/{.pkg xsel}/{.pkg wl-copy} \\
+      på Linux, eller sessionen saknar helt en skrivbordsmiljö) - kopiera raden/\\
+      raderna ovan för hand i stället."
+    )
+    invisible(FALSE)
+  }
+}
+
 # Filtrera filnamn med en liten sök-DSL:
 #  - teckenvektor: OR ("brott|befolkning")
 #  - "&": AND ("scb&kvinnor")
@@ -108,11 +129,7 @@ github_lista_repo_filer <- function(repo,
 
   url <- sprintf("https://raw.githubusercontent.com/%s/%s/%s/%s", owner, repo, branch, namn)
 
-  kopiera <- function(txt) {
-    if (till_urklipp && requireNamespace("clipr", quietly = TRUE) && clipr::clipr_available()) {
-      clipr::write_clip(txt)
-    }
-  }
+  kopiera <- function(txt) intern_kopiera_urklipp(txt, till_urklipp = till_urklipp)
 
   switch(retur,
     url = url,
@@ -188,9 +205,7 @@ gh_hamta_analytikernatverket <- function(filter = NULL) {
 ppt_lista_rader <- function(ppt_url = "") {
   rad <- intern_ppt_rad(ppt_url)
   cat(rad)
-  if (requireNamespace("clipr", quietly = TRUE) && clipr::clipr_available()) {
-    clipr::write_clip(rad)
-  }
+  intern_kopiera_urklipp(rad)
   invisible(rad)
 }
 

@@ -1,3 +1,18 @@
+# rddeploy 0.0.0.9002
+
+## Tydligare urklippshantering
+
+* `github_lista_repo_filer()`/`gh_dia()`/`gh_ppt()`/`ppt_lista_rader()` m.fl.
+  kopierade tidigare tyst till urklipp - misslyckades kopieringen (t.ex.
+  Linux utan `xclip`/`xsel`/`wl-copy`, eller en huvudlös session utan
+  skrivbordsmiljö) hände ingenting alls, utan minsta antydan om varför.
+  Ny intern `intern_kopiera_urklipp()` ger nu alltid besked: `"Kopierat
+  till urklipp."` när det gick, annars en tydlig förklaring och en
+  påminnelse om att kopiera raden/raderna för hand. Samma kod, samma
+  `clipr`-paket, oavsett OS - skillnaden är bara att felet syns.
+
+---
+
 # rddeploy 0.0.0.9001
 
 ## `rddeploy_auth_check()` utökad
