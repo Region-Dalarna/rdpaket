@@ -53,11 +53,21 @@ intern_etikett_format <- function(manual_y_axis_title = NULL) {
   }
 }
 
-# Välj färgvektor: manuell vektor, brewer-palett eller default.
-intern_valj_farger <- function(farger, antal_grupper) {
-  if (is.character(farger) && length(farger) > 1) return(farger)
+# Välj färgvektor: manuell färg/vektor (går alltid före, oavsett antal
+# grupper - som i originalet, där manual_color kollas separat och FÖRE
+# brew_palett/standardfärgen), annars brewer-palett eller default.
+intern_valj_farger <- function(manual_color, brew_palett, antal_grupper) {
+  har_manual <- is.character(manual_color) && !anyNA(manual_color) && length(manual_color) > 0
+  if (har_manual) {
+    if (length(manual_color) > 1) return(manual_color)
+    return(manual_color[1])
+  }
 
-  palett <- if (is.character(farger) && length(farger) == 1) farger else "Greens"
+  palett <- if (is.character(brew_palett) && length(brew_palett) == 1 && !is.na(brew_palett)) {
+    brew_palett
+  } else {
+    "Greens"
+  }
 
   if (antal_grupper <= 1) return("#4f6228")
   if (antal_grupper == 2) return(c("#9bbb59", "#4f6228"))

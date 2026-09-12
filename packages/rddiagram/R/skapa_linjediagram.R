@@ -63,7 +63,7 @@ SkapaLinjeDiagram <- function(
     na_varden_behall_i_dataset = FALSE,
     linjetyp_kolumn = NULL, linjetyp_typvektor = NULL,
     marginal_y_axis = c(0, 0),
-    stodlinjer_avrunda_fem = FALSE, stodlinjer_minor_tabort = FALSE,
+    stodlinjer_avrunda_fem = TRUE, stodlinjer_minor_tabort = FALSE,
     y_axis_borjar_pa_noll = TRUE, y_axis_100proc = FALSE,
     y_axis_minus_plus_samma_axel = FALSE, procent_0_100_10intervaller = FALSE,
     x_axis_lutning = 45, x_axis_storlek = 10.5, y_axis_storlek = 12,
@@ -85,7 +85,6 @@ SkapaLinjeDiagram <- function(
   if (!is.null(logga)) {
     if (is.logical(logga)) lagg_pa_logga <- isTRUE(logga) else logga_path <- logga
   }
-  farg_arg  <- if (!all(is.na(manual_color))) manual_color else brew_palett
   logga_arg <- if (!all(is.na(logga_path)))   logga_path   else lagg_pa_logga
 
   # NA används genomgående (manual_color, logga_path ...) som "inget värde",
@@ -138,7 +137,7 @@ SkapaLinjeDiagram <- function(
   )
 
   antal_grupper <- if (har_grupp) dplyr::n_distinct(plot_df[[skickad_x_grupp]]) else 1L
-  chart_col <- intern_valj_farger(farg_arg, antal_grupper)
+  chart_col <- intern_valj_farger(manual_color, brew_palett, antal_grupper)
   if (!har_grupp) chart_col <- chart_col[1]
 
   if (is.null(linjetyp_typvektor)) linjetyp_typvektor <- rep("solid", antal_grupper)

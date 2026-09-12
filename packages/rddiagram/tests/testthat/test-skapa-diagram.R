@@ -14,10 +14,20 @@ test_that("intern_forbered_plotdata grupperar och summerar", {
 })
 
 test_that("intern_valj_farger väljer rätt", {
-  expect_equal(rddiagram:::intern_valj_farger(NULL, 1), "#4f6228")
-  expect_equal(rddiagram:::intern_valj_farger(NULL, 2), c("#9bbb59", "#4f6228"))
-  expect_equal(rddiagram:::intern_valj_farger(c("#111111", "#222222"), 5),
+  expect_equal(rddiagram:::intern_valj_farger(NA, NA, 1), "#4f6228")
+  expect_equal(rddiagram:::intern_valj_farger(NA, NA, 2), c("#9bbb59", "#4f6228"))
+  expect_equal(rddiagram:::intern_valj_farger(c("#111111", "#222222"), NA, 5),
                c("#111111", "#222222"))
+})
+
+test_that("intern_valj_farger: en egen manuell färg går alltid före, oavsett antal grupper", {
+  # Detta var trasigt: en enda manual_color ignorerades helt när det inte
+  # fanns någon gruppering (antal_grupper <= 1), och "#4f6228" användes i
+  # stället - samma bugg motsvarande kod i original-func_SkapaDiagram.R INTE
+  # hade (manual_color kollas där separat och FÖRE brew_palett/standardfärgen).
+  expect_equal(rddiagram:::intern_valj_farger("#178571", NA, 1), "#178571")
+  expect_equal(rddiagram:::intern_valj_farger("#178571", "Greens", 1), "#178571")
+  expect_equal(rddiagram:::intern_valj_farger("#178571", NA, 2), "#178571")
 })
 
 test_that("SkapaStapelDiagram: skickad_x_grupp = NA fungerar som NULL (ingen grupp)", {

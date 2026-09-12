@@ -36,7 +36,7 @@ SkapaLinjeDiagram(
   linjetyp_kolumn = NULL,
   linjetyp_typvektor = NULL,
   marginal_y_axis = c(0, 0),
-  stodlinjer_avrunda_fem = FALSE,
+  stodlinjer_avrunda_fem = TRUE,
   stodlinjer_minor_tabort = FALSE,
   y_axis_borjar_pa_noll = TRUE,
   y_axis_100proc = FALSE,

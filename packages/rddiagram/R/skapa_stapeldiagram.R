@@ -112,7 +112,7 @@ SkapaStapelDiagram <- function(
     vand_sortering = FALSE, x_var_fokus = NULL,
     y_axis_borjar_pa_noll = TRUE, y_axis_100proc = FALSE,
     y_axis_minus_plus_samma_axel = FALSE, procent_0_100_10intervaller = FALSE,
-    stodlinjer_avrunda_fem = FALSE, stodlinjer_minor_tabort = FALSE,
+    stodlinjer_avrunda_fem = TRUE, stodlinjer_minor_tabort = FALSE,
     noll_linje_betona = "grey40",
     dataetiketter = FALSE, dataetikett_storlek = 2.3, dataetiketter_antal_dec = 1,
     dataetikett_noll_visa_ej = FALSE, dataetiketter_justering_hojdled = 0,
@@ -145,7 +145,6 @@ SkapaStapelDiagram <- function(
     if (is.numeric(sortera_x)) x_axis_sort_grp <- sortera_x
   }
   # översätt till de interna hjälparnas argument
-  farg_arg <- if (!all(is.na(manual_color))) manual_color else brew_palett
   logga_arg <- if (!all(is.na(logga_path))) logga_path else lagg_pa_logga
   sortera_x_intern <- if (isTRUE(x_axis_sort_value)) {
     if (all(is.na(x_axis_sort_grp))) TRUE else x_axis_sort_grp
@@ -194,7 +193,7 @@ SkapaStapelDiagram <- function(
   if (har_namngiven) {
     chart_col <- skickad_namngiven_fargvektor
   } else {
-    chart_col <- intern_valj_farger(farg_arg, if (har_grupp) antal_grupper else 1L)
+    chart_col <- intern_valj_farger(manual_color, brew_palett, if (har_grupp) antal_grupper else 1L)
   }
   # En enda stapelgrupp (ingen x-grupp, ingen fokus, ingen namngiven vektor):
   # fyllningen mappas till chart_col direkt, så en längre färgvektor än 1 skulle

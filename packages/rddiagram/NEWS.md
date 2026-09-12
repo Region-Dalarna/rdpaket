@@ -1,3 +1,29 @@
+# rddiagram 0.0.0.9004
+
+## Buggfix: en egen `manual_color` ignorerades utan gruppering
+
+`intern_valj_farger()` hoppade över en angiven `manual_color` och använde i
+stället den hårdkodade standardfärgen `"#4f6228"` så fort diagrammet inte
+hade någon gruppering (t.ex. `SkapaStapelDiagram()` utan `skickad_x_grupp`).
+Original-`func_SkapaDiagram.R` kollade `manual_color` separat och FÖRE
+`brew_palett`/standardfärgen - den prioriteringen hade tappats bort i
+porteringen. `manual_color` vinner nu alltid när den är satt, oavsett antal
+grupper.
+
+## Ändrat default: `stodlinjer_avrunda_fem = TRUE`
+
+Var `FALSE` i båda `SkapaStapelDiagram()`/`SkapaLinjeDiagram()`. Sedan
+tidigare buggfixar i `nice_breaks()`/`Berakna_varden_stodlinjer()` ger
+`avrunda_fem`-metoden konsekvent bra stödlinjer, så den är nu standard i
+stället för något man måste slå på själv.
+
+## `lagg_till_ckm_notering()`: notering på egen rad
+
+Lades till med `paste(..., sep = "\n")` i stället för mellanslag, så
+CKM-noteringen hamnar på en egen rad under den ordinarie bildtexten.
+
+---
+
 # rddiagram 0.0.0.9003
 
 ## Nytt: `lagg_till_ckm_notering()`

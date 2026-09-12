@@ -28,7 +28,7 @@ lagg_till_ckm_notering <- function(
   if (is.null(diagram_capt) || all(is.na(diagram_capt)) || !nzchar(trimws(diagram_capt))) {
     return(ckm_text)
   }
-  paste(diagram_capt, ckm_text)
+  paste(diagram_capt, ckm_text, sep = "\n")
 }
 
 #' Sökväg (URL) till Region Dalarnas logga

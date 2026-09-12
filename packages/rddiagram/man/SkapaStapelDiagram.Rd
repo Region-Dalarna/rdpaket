@@ -36,7 +36,7 @@ SkapaStapelDiagram(
   y_axis_100proc = FALSE,
   y_axis_minus_plus_samma_axel = FALSE,
   procent_0_100_10intervaller = FALSE,
-  stodlinjer_avrunda_fem = FALSE,
+  stodlinjer_avrunda_fem = TRUE,
   stodlinjer_minor_tabort = FALSE,
   noll_linje_betona = "grey40",
   dataetiketter = FALSE,
