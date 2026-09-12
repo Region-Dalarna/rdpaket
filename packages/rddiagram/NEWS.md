@@ -1,3 +1,14 @@
+# rddiagram 0.0.0.9005
+
+## `lagg_till_ckm_notering()`: nytt `fran_ar`
+
+Nytt argument `fran_ar` nämner från och med vilket år CKM-metoden gäller,
+t.ex. `lagg_till_ckm_notering(capt, TRUE, fran_ar = 2025)` ger "Uppgifter
+fr.o.m. 2025 är skyddade med SCB:s CKM-metod ...". Utan `fran_ar` (eller med
+egen `ckm_text`) fungerar det precis som förut.
+
+---
+
 # rddiagram 0.0.0.9004
 
 ## Buggfix: en egen `manual_color` ignorerades utan gruppering

@@ -7,8 +7,8 @@
 lagg_till_ckm_notering(
   diagram_capt = NULL,
   har_ckm_data = FALSE,
-  ckm_text =
-    "Nyare uppgifter är skyddade med SCB:s CKM-metod (röjandekontroll) och kan avvika några enstaka individer från de faktiska talen."
+  fran_ar = NULL,
+  ckm_text = NULL
 )
 }
 \arguments{
@@ -17,7 +17,13 @@ ingen finns sedan innan).}
 
 \item{har_ckm_data}{\code{TRUE} om diagrammet innehåller CKM-skyddad data.}
 
-\item{ckm_text}{Texten som läggs till när \code{har_ckm_data} är \code{TRUE}.}
+\item{fran_ar}{Från och med vilket år CKM-metoden gäller i just detta
+diagram (t.ex. det första året som faktiskt kom från en CKM-tabell).
+\code{NULL} ger en mer generell text utan årtal. Ignoreras om \code{ckm_text}
+anges explicit.}
+
+\item{ckm_text}{Egen text som läggs till i stället för standardtexten
+(med eller utan \code{fran_ar}) när \code{har_ckm_data} är \code{TRUE}.}
 }
 \value{
 \code{diagram_capt} med CKM-noteringen tillagd, om \code{har_ckm_data} är

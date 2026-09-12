@@ -20,6 +20,22 @@ test_that("lagg_till_ckm_notering lägger bara till noteringen när har_ckm_data
   expect_equal(lagg_till_ckm_notering("X.", TRUE, ckm_text = "Y."), "X.\nY.")
 })
 
+test_that("lagg_till_ckm_notering: fran_ar nämns i texten, ckm_text går ändå före", {
+  ut <- lagg_till_ckm_notering("Källa: SCB.", TRUE, fran_ar = 2025)
+  expect_true(grepl("2025", ut))
+  expect_true(grepl("CKM", ut))
+
+  # utan fran_ar ska ingen specifik årtalstext nämnas
+  utan_ar <- lagg_till_ckm_notering("Källa: SCB.", TRUE)
+  expect_false(grepl("[0-9]{4}", utan_ar))
+
+  # ckm_text vinner även om fran_ar också anges
+  expect_equal(
+    lagg_till_ckm_notering("X.", TRUE, fran_ar = 2025, ckm_text = "Y."),
+    "X.\nY."
+  )
+})
+
 test_that("nice_breaks ger steg på 1/2/5 x 10^k", {
   expect_equal(nice_breaks(100), 20)
   expect_equal(nice_breaks(47), 10)

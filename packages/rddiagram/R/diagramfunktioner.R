@@ -14,7 +14,12 @@
 #' @param diagram_capt Diagrammets ordinarie bildtext (`NULL` eller `NA` om
 #'   ingen finns sedan innan).
 #' @param har_ckm_data `TRUE` om diagrammet innehåller CKM-skyddad data.
-#' @param ckm_text Texten som läggs till när `har_ckm_data` är `TRUE`.
+#' @param fran_ar Från och med vilket år CKM-metoden gäller i just detta
+#'   diagram (t.ex. det första året som faktiskt kom från en CKM-tabell).
+#'   `NULL` ger en mer generell text utan årtal. Ignoreras om `ckm_text`
+#'   anges explicit.
+#' @param ckm_text Egen text som läggs till i stället för standardtexten
+#'   (med eller utan `fran_ar`) när `har_ckm_data` är `TRUE`.
 #'
 #' @return `diagram_capt` med CKM-noteringen tillagd, om `har_ckm_data` är
 #'   `TRUE` - annars `diagram_capt` oförändrad.
@@ -22,9 +27,20 @@
 lagg_till_ckm_notering <- function(
     diagram_capt = NULL,
     har_ckm_data = FALSE,
-    ckm_text = "Nyare uppgifter är skyddade med SCB:s CKM-metod (röjandekontroll) och kan avvika några enstaka individer från de faktiska talen."
+    fran_ar = NULL,
+    ckm_text = NULL
 ) {
   if (!isTRUE(har_ckm_data)) return(diagram_capt)
+
+  if (is.null(ckm_text)) {
+    ckm_text <- if (!is.null(fran_ar) && !is.na(fran_ar)) {
+      paste0("Uppgifter fr.o.m. ", fran_ar, " är skyddade med SCB:s CKM-metod ",
+             "(röjandekontroll) och kan avvika några enstaka individer från de faktiska talen.")
+    } else {
+      "Nyare uppgifter är skyddade med SCB:s CKM-metod (röjandekontroll) och kan avvika några enstaka individer från de faktiska talen."
+    }
+  }
+
   if (is.null(diagram_capt) || all(is.na(diagram_capt)) || !nzchar(trimws(diagram_capt))) {
     return(ckm_text)
   }
