@@ -1,3 +1,17 @@
+# rddiagram 0.0.0.9002
+
+## Buggfix: `skickad_x_grupp = NA` kraschade
+
+`manual_color`, `x_axis_sort_grp`, `logga_path` m.fl. använder genomgående
+`NA` som "inget värde" - men `skickad_x_grupp` följde inte samma konvention:
+`har_grupp <- !is.null(skickad_x_grupp)` blev sant även när `NA` skickades
+(t.ex. `skickad_x_grupp = ifelse(length(kon) == 1, NA, "kön")`, ett vanligt
+mönster i diagramskripten), vilket kraschade på `plot_df[[NA]]`.
+`SkapaStapelDiagram()`/`SkapaLinjeDiagram()` normaliserar nu `NA` till
+`NULL` innan grupperingen avgörs.
+
+---
+
 # rddiagram 0.0.0.9001
 
 ## Parameternamn tillbaka till func_SkapaDiagram.R

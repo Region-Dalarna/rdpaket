@@ -20,6 +20,48 @@ test_that("intern_valj_farger väljer rätt", {
                c("#111111", "#222222"))
 })
 
+test_that("SkapaStapelDiagram: skickad_x_grupp = NA fungerar som NULL (ingen grupp)", {
+  skip_if_not_installed("ggplot2")
+  # NA används genomgående i anropande skript (manual_color, logga_path osv.)
+  # som "inget värde" - skickad_x_grupp ska följa samma konvention och inte
+  # krascha på plot_df[[NA]].
+  df <- data.frame(ar = 2018:2022, varde = c(100, 102, 98, 101, 103))
+  p <- SkapaStapelDiagram(
+    df, "ar", "varde", skickad_x_grupp = NA,
+    output_mapp = tempdir(), filnamn_diagram = "test.png",
+    skriv_till_diagramfil = FALSE
+  )
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("SkapaStapelDiagram: stödlinjer blir inte för många när noll tvingas in i ett stort, smalt spann", {
+  skip_if_not_installed("ggplot2")
+  # Verklighetsnära fall: befolkningstal som ligger tätt ihop men långt från
+  # noll (t.ex. 275000-291000) och en stapel som ska börja vid noll. Steget
+  # ska räknas ut för hela 0-till-max-spannet, inte bara för datats eget
+  # smala spann (annars blir det dussintals/hundratals stödlinjer).
+  df <- data.frame(ar = 1968:2024, varde = seq(275618, 291203, length.out = 57))
+  p <- SkapaStapelDiagram(
+    df, "ar", "varde",
+    output_mapp = tempdir(), filnamn_diagram = "test.png",
+    stodlinjer_avrunda_fem = TRUE,
+    skriv_till_diagramfil = FALSE
+  )
+  brytpunkter <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y$breaks
+  expect_lt(length(brytpunkter[!is.na(brytpunkter)]), 15)
+})
+
+test_that("SkapaLinjeDiagram: skickad_x_grupp = NA fungerar som NULL (ingen grupp)", {
+  skip_if_not_installed("ggplot2")
+  df <- data.frame(ar = 2018:2022, varde = c(100, 102, 98, 101, 103))
+  p <- SkapaLinjeDiagram(
+    df, "ar", "varde", skickad_x_grupp = NA,
+    output_mapp = tempdir(), filnamn_diagram = "test.png",
+    skriv_till_diagramfil = FALSE
+  )
+  expect_s3_class(p, "ggplot")
+})
+
 test_that("SkapaStapelDiagram bygger ett ggplot-objekt", {
   skip_if_not_installed("ggplot2")
   df <- data.frame(

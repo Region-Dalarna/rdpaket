@@ -88,6 +88,11 @@ SkapaLinjeDiagram <- function(
   farg_arg  <- if (!all(is.na(manual_color))) manual_color else brew_palett
   logga_arg <- if (!all(is.na(logga_path)))   logga_path   else lagg_pa_logga
 
+  # NA används genomgående (manual_color, logga_path ...) som "inget värde",
+  # precis som NULL - normalisera så anrop skrivna med den konventionen inte
+  # kraschar (plot_df[[NA]] är inte samma sak som "ingen grupp").
+  if (length(skickad_x_grupp) == 1 && is.na(skickad_x_grupp)) skickad_x_grupp <- NULL
+
   har_grupp <- !is.null(skickad_x_grupp)
   har_facet <- !is.null(facet_grp)
   na_rm <- !na_varden_behall_i_dataset
