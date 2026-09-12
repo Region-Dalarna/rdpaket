@@ -3,6 +3,22 @@ test_that("nDigits räknar siffror", {
   expect_equal(nDigits(-1234), 4)
 })
 
+test_that("lagg_till_ckm_notering lägger bara till noteringen när har_ckm_data är TRUE", {
+  expect_equal(lagg_till_ckm_notering("Källa: SCB.", FALSE), "Källa: SCB.")
+  expect_equal(lagg_till_ckm_notering(NULL, FALSE), NULL)
+
+  ut <- lagg_till_ckm_notering("Källa: SCB.", TRUE)
+  expect_true(startsWith(ut, "Källa: SCB. "))
+  expect_true(grepl("CKM", ut))
+
+  # ingen tidigare bildtext - noteringen blir hela texten, ingen krasch på NULL/NA
+  expect_equal(lagg_till_ckm_notering(NULL, TRUE), lagg_till_ckm_notering(NA, TRUE))
+  expect_true(grepl("CKM", lagg_till_ckm_notering(NULL, TRUE)))
+
+  # egen text går att skicka med
+  expect_equal(lagg_till_ckm_notering("X.", TRUE, ckm_text = "Y."), "X. Y.")
+})
+
 test_that("nice_breaks ger steg på 1/2/5 x 10^k", {
   expect_equal(nice_breaks(100), 20)
   expect_equal(nice_breaks(47), 10)

@@ -1,5 +1,36 @@
 # Hjälpfunktioner för diagram - utbrutna ur func_diagramfunktioner.R.
 
+#' Lägg till en CKM-notering i diagrammets bildtext
+#'
+#' SCB (och fler myndigheter) har infört CKM (cell key method,
+#' "röjandekontroll") för att skydda enskilda i statistiken - nyare årgångar
+#' av vissa tabeller är därför avsiktligt något förändrade och kan avvika
+#' några enstaka individer (oftast 1-3) från de faktiska talen. Data från
+#' flera CKM-skyddade grupper bör inte heller summeras ihop (felen kan då
+#' bli större). Använd den här funktionen för att synliggöra det i
+#' diagrammets bildtext varje gång ett diagram innehåller CKM-data, i
+#' stället för att hårdkoda texten i varje skript.
+#'
+#' @param diagram_capt Diagrammets ordinarie bildtext (`NULL` eller `NA` om
+#'   ingen finns sedan innan).
+#' @param har_ckm_data `TRUE` om diagrammet innehåller CKM-skyddad data.
+#' @param ckm_text Texten som läggs till när `har_ckm_data` är `TRUE`.
+#'
+#' @return `diagram_capt` med CKM-noteringen tillagd, om `har_ckm_data` är
+#'   `TRUE` - annars `diagram_capt` oförändrad.
+#' @export
+lagg_till_ckm_notering <- function(
+    diagram_capt = NULL,
+    har_ckm_data = FALSE,
+    ckm_text = "Nyare uppgifter är skyddade med SCB:s CKM-metod (röjandekontroll) och kan avvika några enstaka individer från de faktiska talen."
+) {
+  if (!isTRUE(har_ckm_data)) return(diagram_capt)
+  if (is.null(diagram_capt) || all(is.na(diagram_capt)) || !nzchar(trimws(diagram_capt))) {
+    return(ckm_text)
+  }
+  paste(diagram_capt, ckm_text)
+}
+
 #' Sökväg (URL) till Region Dalarnas logga
 #'
 #' @return En URL till logga-PNG:en i `Region-Dalarna/depot`.

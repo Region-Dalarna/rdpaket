@@ -1,3 +1,16 @@
+# rddiagram 0.0.0.9003
+
+## Nytt: `lagg_till_ckm_notering()`
+
+SCB (och fler) har infört CKM (röjandekontroll) för nyare årgångar av vissa
+tabeller - talen kan då avvika några enstaka individer (1-3) från de
+faktiska. `lagg_till_ckm_notering(diagram_capt, har_ckm_data)` lägger till
+en kort, enhetlig notering om detta i diagrammets bildtext när
+`har_ckm_data = TRUE`, i stället för att varje diagramskript hårdkodar
+texten själv.
+
+---
+
 # rddiagram 0.0.0.9002
 
 ## Buggfix: `skickad_x_grupp = NA` kraschade
