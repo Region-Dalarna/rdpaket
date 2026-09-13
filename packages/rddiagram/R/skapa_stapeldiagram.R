@@ -160,6 +160,7 @@ SkapaStapelDiagram <- function(
     x_axis_visa_var_xe_etikett <- NULL
   }
   if (length(x_var_fokus) == 1 && is.na(x_var_fokus)) x_var_fokus <- NULL
+  if (length(fokusera_varden) == 1 && is.na(fokusera_varden)) fokusera_varden <- NULL
 
   har_grupp <- !is.null(skickad_x_grupp)
   har_facet <- !is.null(facet_grp)

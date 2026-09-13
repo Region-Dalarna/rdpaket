@@ -74,6 +74,23 @@ test_that("SkapaStapelDiagram: x_var_fokus = NA fungerar som NULL (ingen fokuser
   expect_s3_class(p, "ggplot")
 })
 
+test_that("SkapaStapelDiagram: fokusera_varden = NA fungerar som NULL (inga annoteringar)", {
+  skip_if_not_installed("ggplot2")
+  # Samma NA-som-NULL-konvention som x_var_fokus m.fl. Anropande skript
+  # sätter ofta "total_list <- NA" när inga annoteringar ska visas (t.ex.
+  # diag_inr_flyttnetto_inr_utr_fodda_scb.R) och skickar sedan
+  # fokusera_varden = total_list oavsett - kraschade tidigare med
+  # "$ operator is invalid for atomic vectors" i stället för att betyda
+  # "inga annoteringar".
+  df <- data.frame(ar = 2018:2022, varde = c(100, 102, 98, 101, 103))
+  p <- SkapaStapelDiagram(
+    df, "ar", "varde", fokusera_varden = NA,
+    output_mapp = tempdir(), filnamn_diagram = "test.png",
+    skriv_till_diagramfil = FALSE
+  )
+  expect_s3_class(p, "ggplot")
+})
+
 test_that("SkapaStapelDiagram: stödlinjer blir inte för många när noll tvingas in i ett stort, smalt spann", {
   skip_if_not_installed("ggplot2")
   # Verklighetsnära fall: befolkningstal som ligger tätt ihop men långt från

@@ -1,3 +1,19 @@
+# rddiagram 0.0.0.9009
+
+## Buggfix: `fokusera_varden = NA` kraschade i `SkapaStapelDiagram()`
+
+Samma NA-som-NULL-konvention som tidigare `x_var_fokus`/`skickad_x_grupp`/
+`x_axis_visa_var_xe_etikett`-fixar missades för `fokusera_varden`: kod
+skriven mot original-`func_SkapaDiagram.R` sätter ofta en lista med
+annoteringar till `NA` (i stället för `NULL`) när inga annoteringar ska
+visas. Det gick vidare oskyddat till annoteringskoden, som kraschade med
+"$ operator is invalid for atomic vectors" i stället för att betyda
+"inga annoteringar". Hittat vid migrering av
+`diag_inr_flyttnetto_inr_utr_fodda_scb.R` i diagram-repot. `NA`
+normaliseras nu till `NULL`, precis som för de tidigare parametrarna.
+
+---
+
 # rddiagram 0.0.0.9008
 
 ## Buggfix: `SkapaLinjeDiagram()` gav alltid streckade/prickade linjer, oavsett `linjetyp_typvektor`
