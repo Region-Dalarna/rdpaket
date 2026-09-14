@@ -8,6 +8,7 @@ pendling_ruta(
   tabell_pend_relation_ruta,
   rutor,
   fokusomrade,
+  rutor_id_kol = "rut_id",
   con = NA,
   ut_mapp = NA,
   grid_epsg = 3006,
@@ -20,14 +21,19 @@ pendling_ruta(
 \code{antalpend}.}
 
 \item{rutor}{Ett \code{sf}-objekt med polygon-/multipolygongeometri och en
-\code{rut_id}-kolumn, eller en \code{\link[=postgis_tabell]{postgis_tabell()}}-referens till en
-motsvarande tabell i databasen. Rasterdata eller andra geometrityper
-(punkter, linjer) stöds inte.}
+id-kolumn (namnges med \code{rutor_id_kol}), eller en \code{\link[=postgis_tabell]{postgis_tabell()}}-
+referens till en motsvarande tabell i databasen. Rasterdata eller andra
+geometrityper (punkter, linjer) stöds inte.}
 
 \item{fokusomrade}{Området pendlingen ska räknas mot - ett \code{sf}-objekt med
 polygon-/multipolygongeometri (t.ex. en tätortsgräns eller ett eget
 avgränsat område), eller en \code{\link[=postgis_tabell]{postgis_tabell()}}-referens. Rasterdata
 eller andra geometrityper stöds inte.}
+
+\item{rutor_id_kol}{Namnet på kolumnen i \code{rutor} som identifierar varje
+ruta och som \code{tabell_pend_relation_ruta}s \code{boruta}/\code{arbruta} refererar
+till (standard \code{"rut_id"}). Ange rätt namn om källtabellen kallar
+kolumnen något annat - annars hittas inga träffar alls.}
 
 \item{con}{En \code{DBIConnection}, eller \code{NA} (standard) för att inte ansluta
 till någon databas alls. Behövs bara om \code{rutor} och \code{fokusomrade} båda

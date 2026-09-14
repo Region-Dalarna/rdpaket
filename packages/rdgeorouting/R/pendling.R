@@ -310,37 +310,59 @@ intern_tabell_geominfo <- function(con, schema, tabell) {
   list(geom_kol = attr(prov, "sf_column"), srid = srid)
 }
 
+# Byter namn på id-kolumnen till det kanoniska "rut_id" om källans egen id-kolumn heter något
+# annat - så att resten av pendling_ruta() (och pendling_ruta_karta()) alltid kan lita på att
+# resultatet har en kolumn som heter "rut_id", oavsett vad kolumnen råkar heta i källtabellen.
+intern_som_rut_id <- function(df, id_kol) {
+  if (id_kol != "rut_id") names(df)[names(df) == id_kol] <- "rut_id"
+  df
+}
+
 # Bygger ett gränssnitt mot `rutor`: $filtrera(fokusomrade) ger de rutor som ligger innanför
 # fokusomrade, $id_geom(ids) ger geometrin för specifika rut_id. Databasaccelererat (ST_Intersects
 # mot ett spatialt index) så fort en anslutning finns tillgänglig - för en postgis_tabell-referens
 # frågas den befintliga tabellen direkt (ingen anledning att kopiera en tabell som redan ligger i
 # databasen), för ett sf-objekt skrivs det i så fall till en temporär tabell med ett eget index
 # först. Annars (inget con alls) görs allt i ren R utan databaskontakt.
-intern_rutor_kalla <- function(rutor, con_arg) {
+intern_rutor_kalla <- function(rutor, con_arg, id_kol) {
 
   if (inherits(rutor, "postgis_tabell")) {
     cc <- intern_pendling_con(rutor$con)
     info <- intern_tabell_geominfo(cc$con, rutor$schema, rutor$tabell)
 
+    kolumner <- DBI::dbListFields(cc$con, DBI::Id(schema = rutor$schema, table = rutor$tabell))
+    if (!id_kol %in% kolumner) {
+      stop("Kolumnen '", id_kol, "' finns inte i ", rutor$schema, ".", rutor$tabell,
+           " - ange rätt kolumnnamn via `rutor_id_kol`. Tillgängliga kolumner: ",
+           paste(kolumner, collapse = ", "), ".", call. = FALSE)
+    }
+
     filtrera <- function(fokusomrade) {
       fokus_repr <- sf::st_transform(fokusomrade, info$srid)
       wkt <- sf::st_as_text(sf::st_union(sf::st_geometry(fokus_repr)))
-      sf::st_read(cc$con, query = glue::glue_sql(
+      res <- sf::st_read(cc$con, query = glue::glue_sql(
         "SELECT * FROM {`rutor$schema`}.{`rutor$tabell`} r
          WHERE ST_Intersects(r.{`info$geom_kol`}, ST_GeomFromText({wkt}, {info$srid}))",
         .con = cc$con), quiet = TRUE)
+      intern_som_rut_id(res, id_kol)
     }
     id_geom <- function(ids) {
       if (length(ids) == 0) {
-        return(sf::st_read(cc$con, query = glue::glue_sql(
-          "SELECT * FROM {`rutor$schema`}.{`rutor$tabell`} WHERE FALSE", .con = cc$con), quiet = TRUE))
+        res <- sf::st_read(cc$con, query = glue::glue_sql(
+          "SELECT * FROM {`rutor$schema`}.{`rutor$tabell`} WHERE FALSE", .con = cc$con), quiet = TRUE)
+      } else {
+        res <- sf::st_read(cc$con, query = glue::glue_sql(
+          "SELECT * FROM {`rutor$schema`}.{`rutor$tabell`} WHERE {`id_kol`} IN ({ids*})", .con = cc$con), quiet = TRUE)
       }
-      sf::st_read(cc$con, query = glue::glue_sql(
-        "SELECT * FROM {`rutor$schema`}.{`rutor$tabell`} WHERE rut_id IN ({ids*})", .con = cc$con), quiet = TRUE)
+      intern_som_rut_id(res, id_kol)
     }
     stang <- function() intern_stang(cc)
 
   } else {
+    if (!id_kol %in% names(rutor)) {
+      stop("Kolumnen '", id_kol, "' finns inte i `rutor` - ange rätt kolumnnamn via `rutor_id_kol`. ",
+           "Tillgängliga kolumner: ", paste(names(rutor), collapse = ", "), ".", call. = FALSE)
+    }
     anvand_postgis <- inherits(con_arg, "DBIConnection")
     srid <- NULL
 
@@ -355,17 +377,18 @@ intern_rutor_kalla <- function(rutor, con_arg) {
       if (anvand_postgis) {
         fokus_repr <- sf::st_transform(fokusomrade, srid)
         wkt <- sf::st_as_text(sf::st_union(sf::st_geometry(fokus_repr)))
-        sf::st_read(con_arg, query = glue::glue_sql(
+        res <- sf::st_read(con_arg, query = glue::glue_sql(
           "SELECT * FROM rutor_tmp r WHERE ST_Intersects(r.geom, ST_GeomFromText({wkt}, {srid}))",
           .con = con_arg), quiet = TRUE)
       } else {
         if (sf::st_crs(fokusomrade) != sf::st_crs(rutor)) {
           fokusomrade <- sf::st_transform(fokusomrade, sf::st_crs(rutor))
         }
-        sf::st_filter(rutor, fokusomrade)
+        res <- sf::st_filter(rutor, fokusomrade)
       }
+      intern_som_rut_id(res, id_kol)
     }
-    id_geom <- function(ids) rutor[rutor$rut_id %in% ids, ]
+    id_geom <- function(ids) intern_som_rut_id(rutor[rutor[[id_kol]] %in% ids, ], id_kol)
     stang <- function() invisible(NULL)   # con_arg tillhör anroparen - stängs inte här
   }
 
@@ -395,9 +418,13 @@ intern_rutor_kalla <- function(rutor, con_arg) {
 #' @param tabell_pend_relation_ruta Data.frame med `boruta`, `arbruta`,
 #'   `antalpend`.
 #' @param rutor Ett `sf`-objekt med polygon-/multipolygongeometri och en
-#'   `rut_id`-kolumn, eller en [postgis_tabell()]-referens till en
-#'   motsvarande tabell i databasen. Rasterdata eller andra geometrityper
-#'   (punkter, linjer) stöds inte.
+#'   id-kolumn (namnges med `rutor_id_kol`), eller en [postgis_tabell()]-
+#'   referens till en motsvarande tabell i databasen. Rasterdata eller andra
+#'   geometrityper (punkter, linjer) stöds inte.
+#' @param rutor_id_kol Namnet på kolumnen i `rutor` som identifierar varje
+#'   ruta och som `tabell_pend_relation_ruta`s `boruta`/`arbruta` refererar
+#'   till (standard `"rut_id"`). Ange rätt namn om källtabellen kallar
+#'   kolumnen något annat - annars hittas inga träffar alls.
 #' @param fokusomrade Området pendlingen ska räknas mot - ett `sf`-objekt med
 #'   polygon-/multipolygongeometri (t.ex. en tätortsgräns eller ett eget
 #'   avgränsat område), eller en [postgis_tabell()]-referens. Rasterdata
@@ -419,6 +446,7 @@ intern_rutor_kalla <- function(rutor, con_arg) {
 #'   [postgis_tabell()] för att referera till en tabell i databasen.
 #' @export
 pendling_ruta <- function(tabell_pend_relation_ruta, rutor, fokusomrade,
+                          rutor_id_kol = "rut_id",
                           con = NA, ut_mapp = NA, grid_epsg = 3006,
                           skriv_till_gpkg = FALSE, gpkg_namn = NA) {
   intern_krav("sf")
@@ -432,7 +460,7 @@ pendling_ruta <- function(tabell_pend_relation_ruta, rutor, fokusomrade,
 
   fokus_sf <- intern_som_sf(fokusomrade, "fokusomrade")
 
-  kalla <- intern_rutor_kalla(rutor, con)
+  kalla <- intern_rutor_kalla(rutor, con, rutor_id_kol)
   on.exit(kalla$stang(), add = TRUE)
 
   utvalda_rutor <- kalla$filtrera(fokus_sf)
