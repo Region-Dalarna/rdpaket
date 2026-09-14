@@ -2,14 +2,13 @@
 % Please edit documentation in R/pendling.R
 \name{pendling_ruta}
 \alias{pendling_ruta}
-\title{In- och utpendling för rutor inom en polygon}
+\title{In- och utpendling för rutor inom ett fokusområde}
 \usage{
 pendling_ruta(
-  version = c("PostGIS", "R"),
-  con = NA,
   tabell_pend_relation_ruta,
   rutor,
-  polygon,
+  fokusomrade,
+  con = NA,
   ut_mapp = NA,
   grid_epsg = 3006,
   skriv_till_gpkg = FALSE,
@@ -17,17 +16,25 @@ pendling_ruta(
 )
 }
 \arguments{
-\item{version}{\code{"PostGIS"} (snabbare, kräver \code{con}) eller \code{"R"}.}
-
-\item{con}{En \code{DBIConnection}, eller \code{NA} för Region Dalarnas databas
-(används av \code{"PostGIS"}-versionen).}
-
 \item{tabell_pend_relation_ruta}{Data.frame med \code{boruta}, \code{arbruta},
 \code{antalpend}.}
 
-\item{rutor}{\code{sf}-objekt med rutorna (måste ha \code{rut_id}).}
+\item{rutor}{Ett \code{sf}-objekt med polygon-/multipolygongeometri och en
+\code{rut_id}-kolumn, eller en \code{\link[=postgis_tabell]{postgis_tabell()}}-referens till en
+motsvarande tabell i databasen. Rasterdata eller andra geometrityper
+(punkter, linjer) stöds inte.}
 
-\item{polygon}{\code{sf}-objekt (punkt/linje/polygon) som avgränsar området.}
+\item{fokusomrade}{Området pendlingen ska räknas mot - ett \code{sf}-objekt med
+polygon-/multipolygongeometri (t.ex. en tätortsgräns eller ett eget
+avgränsat område), eller en \code{\link[=postgis_tabell]{postgis_tabell()}}-referens. Rasterdata
+eller andra geometrityper stöds inte.}
+
+\item{con}{En \code{DBIConnection}, eller \code{NA} (standard) för att inte ansluta
+till någon databas alls. Behövs bara om \code{rutor} och \code{fokusomrade} båda
+är \code{sf}-objekt och man ändå vill köra rutfiltreringen
+databasaccelererat - annars ignoreras den (om \code{rutor} eller
+\code{fokusomrade} redan är en \code{\link[=postgis_tabell]{postgis_tabell()}}-referens används dess
+egen anslutning i stället).}
 
 \item{ut_mapp}{Målmapp för GeoPackage.}
 
@@ -35,11 +42,33 @@ pendling_ruta(
 
 \item{skriv_till_gpkg}{Skriv resultatet till GeoPackage.}
 
-\item{gpkg_namn}{Filnamn (inte använt - namnet sätts av versionen).}
+\item{gpkg_namn}{Filnamn (\code{NA} = döps automatiskt).}
 }
 \value{
-En lista med \code{utvalda_rutor}, \code{in_pendling}, \code{ut_pendling}.
+En lista med \code{utvalda_rutor}, \code{in_pendling} (med kolumnen
+\code{pendlare_fran}) och \code{ut_pendling} (med kolumnen \code{pendlare_till}).
 }
 \description{
-In- och utpendling för rutor inom en polygon
+Beräknar vilka rutor som pendlar in till respektive ut från ett angivet
+fokusområde, utifrån en tabell med pendlingsrelationer mellan rutor.
+}
+\details{
+\code{rutor} och \code{fokusomrade} kan var för sig anges antingen som ett redan
+inläst \code{sf}-objekt eller som en referens till en tabell i en PostGIS-
+databas (skapad med \code{\link[=postgis_tabell]{postgis_tabell()}}) - funktionen avgör själv vilket,
+och läser bara in det som faktiskt behövs (aldrig hela \code{rutor}, oavsett
+hur stor den är). Beräkningen körs databasaccelererat så fort en
+anslutning finns tillgänglig - antingen för att \code{rutor} eller
+\code{fokusomrade} angetts som en \code{\link[=postgis_tabell]{postgis_tabell()}}-referens, eller för att
+ett eget \code{con} skickas med trots att båda är \code{sf}-objekt. Ges ingen
+anslutning alls (standardläget om båda är \code{sf}-objekt) körs allt i ren R
+utan databaskontakt.
+
+Använd \code{\link[=pendling_ruta_karta]{pendling_ruta_karta()}} för att göra resultatet till ett färdigt
+\code{sf}-objekt (fokusområdets rutor svartmarkerade, in- eller
+utpendlingsrutorna med antal pendlare) och/eller en GeoPackage-fil.
+}
+\seealso{
+\code{\link[=pendling_ruta_karta]{pendling_ruta_karta()}} för att göra resultatet till en karta,
+\code{\link[=postgis_tabell]{postgis_tabell()}} för att referera till en tabell i databasen.
 }

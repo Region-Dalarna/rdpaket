@@ -267,91 +267,197 @@ pendling_kraftfalt <- function(tabell_pend_relation, ut_mapp = NA, gpkg_namn = N
   stats::setNames(lapply(lager, las_lager), lager)
 }
 
-#' In- och utpendling för rutor inom en polygon
+# ---------------------------------------------------------------------------------------------
+# Hjälpare för pendling_ruta(): rutor/fokusomrade kan var för sig ges som ett sf-objekt eller en
+# postgis_tabell()-referens (se postgis.R). Vi behöver aldrig hela `rutor`-tabellen i minnet -
+# bara (1) vilka rutor som ligger innanför fokusomrade och (2) geometrin för de specifika
+# grannrutor som faktiskt dyker upp i den summerade in-/utpendlingen. Båda är riktade frågor/
+# filter, oavsett om källan är ett sf-objekt eller en tabell i databasen.
+# ---------------------------------------------------------------------------------------------
+
+intern_krav_polygongeometri <- function(x, argnamn) {
+  if (inherits(x, "postgis_tabell")) return(invisible(TRUE))
+  if (!inherits(x, "sf")) {
+    stop("`", argnamn, "` måste vara antingen ett sf-objekt (med polygon-/multipolygongeometri) ",
+         "eller en postgis_tabell()-referens - inte t.ex. rasterdata.", call. = FALSE)
+  }
+  typer <- unique(as.character(sf::st_geometry_type(x)))
+  if (!all(typer %in% c("POLYGON", "MULTIPOLYGON"))) {
+    stop("`", argnamn, "` måste ha polygon- eller multipolygongeometri (hittade: ",
+         paste(typer, collapse = ", "), ") - inte t.ex. punkter, linjer eller rasterdata.", call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
+# fokusomrade är normalt en enda liten polygon - läses därför alltid in i sin helhet (ingen
+# anledning att filtrera den i databasen innan den läses in).
+intern_som_sf <- function(x, argnamn) {
+  if (inherits(x, "sf")) return(x)
+  cc <- intern_pendling_con(x$con)
+  on.exit(intern_stang(cc), add = TRUE)
+  omrade <- sf::st_read(cc$con, layer = DBI::Id(schema = x$schema, table = x$tabell), quiet = TRUE)
+  intern_krav_polygongeometri(omrade, argnamn)
+  omrade
+}
+
+# Geometrikolumnens namn och SRID för en postgis-tabell, avläst genom att hämta en enda rad -
+# billigt även för en stor tabell, och gör att vi slipper anta att geometrikolumnen heter "geom".
+intern_tabell_geominfo <- function(con, schema, tabell) {
+  prov <- sf::st_read(con, query = glue::glue_sql(
+    "SELECT * FROM {`schema`}.{`tabell`} LIMIT 1", .con = con), quiet = TRUE)
+  srid <- sf::st_crs(prov)$epsg
+  if (is.na(srid)) stop("Kunde inte avgöra SRID för ", schema, ".", tabell, ".", call. = FALSE)
+  list(geom_kol = attr(prov, "sf_column"), srid = srid)
+}
+
+# Bygger ett gränssnitt mot `rutor`: $filtrera(fokusomrade) ger de rutor som ligger innanför
+# fokusomrade, $id_geom(ids) ger geometrin för specifika rut_id. Databasaccelererat (ST_Intersects
+# mot ett spatialt index) så fort en anslutning finns tillgänglig - för en postgis_tabell-referens
+# frågas den befintliga tabellen direkt (ingen anledning att kopiera en tabell som redan ligger i
+# databasen), för ett sf-objekt skrivs det i så fall till en temporär tabell med ett eget index
+# först. Annars (inget con alls) görs allt i ren R utan databaskontakt.
+intern_rutor_kalla <- function(rutor, con_arg) {
+
+  if (inherits(rutor, "postgis_tabell")) {
+    cc <- intern_pendling_con(rutor$con)
+    info <- intern_tabell_geominfo(cc$con, rutor$schema, rutor$tabell)
+
+    filtrera <- function(fokusomrade) {
+      fokus_repr <- sf::st_transform(fokusomrade, info$srid)
+      wkt <- sf::st_as_text(sf::st_union(sf::st_geometry(fokus_repr)))
+      sf::st_read(cc$con, query = glue::glue_sql(
+        "SELECT * FROM {`rutor$schema`}.{`rutor$tabell`} r
+         WHERE ST_Intersects(r.{`info$geom_kol`}, ST_GeomFromText({wkt}, {info$srid}))",
+        .con = cc$con), quiet = TRUE)
+    }
+    id_geom <- function(ids) {
+      if (length(ids) == 0) {
+        return(sf::st_read(cc$con, query = glue::glue_sql(
+          "SELECT * FROM {`rutor$schema`}.{`rutor$tabell`} WHERE FALSE", .con = cc$con), quiet = TRUE))
+      }
+      sf::st_read(cc$con, query = glue::glue_sql(
+        "SELECT * FROM {`rutor$schema`}.{`rutor$tabell`} WHERE rut_id IN ({ids*})", .con = cc$con), quiet = TRUE)
+    }
+    stang <- function() intern_stang(cc)
+
+  } else {
+    anvand_postgis <- inherits(con_arg, "DBIConnection")
+    srid <- NULL
+
+    if (anvand_postgis) {
+      DBI::dbWriteTable(con_arg, "rutor_tmp", rutor, overwrite = TRUE, temporary = TRUE)
+      DBI::dbExecute(con_arg, "CREATE INDEX ON rutor_tmp USING GIST (geom);")
+      srid <- sf::st_crs(rutor)$epsg
+      if (is.na(srid)) stop("Kunde inte avgöra SRID för `rutor`.", call. = FALSE)
+    }
+
+    filtrera <- function(fokusomrade) {
+      if (anvand_postgis) {
+        fokus_repr <- sf::st_transform(fokusomrade, srid)
+        wkt <- sf::st_as_text(sf::st_union(sf::st_geometry(fokus_repr)))
+        sf::st_read(con_arg, query = glue::glue_sql(
+          "SELECT * FROM rutor_tmp r WHERE ST_Intersects(r.geom, ST_GeomFromText({wkt}, {srid}))",
+          .con = con_arg), quiet = TRUE)
+      } else {
+        if (sf::st_crs(fokusomrade) != sf::st_crs(rutor)) {
+          fokusomrade <- sf::st_transform(fokusomrade, sf::st_crs(rutor))
+        }
+        sf::st_filter(rutor, fokusomrade)
+      }
+    }
+    id_geom <- function(ids) rutor[rutor$rut_id %in% ids, ]
+    stang <- function() invisible(NULL)   # con_arg tillhör anroparen - stängs inte här
+  }
+
+  list(filtrera = filtrera, id_geom = id_geom, stang = stang)
+}
+
+#' In- och utpendling för rutor inom ett fokusområde
 #'
-#' @param version `"PostGIS"` (snabbare, kräver `con`) eller `"R"`.
-#' @param con En `DBIConnection`, eller `NA` för Region Dalarnas databas
-#'   (används av `"PostGIS"`-versionen).
+#' Beräknar vilka rutor som pendlar in till respektive ut från ett angivet
+#' fokusområde, utifrån en tabell med pendlingsrelationer mellan rutor.
+#'
+#' `rutor` och `fokusomrade` kan var för sig anges antingen som ett redan
+#' inläst `sf`-objekt eller som en referens till en tabell i en PostGIS-
+#' databas (skapad med [postgis_tabell()]) - funktionen avgör själv vilket,
+#' och läser bara in det som faktiskt behövs (aldrig hela `rutor`, oavsett
+#' hur stor den är). Beräkningen körs databasaccelererat så fort en
+#' anslutning finns tillgänglig - antingen för att `rutor` eller
+#' `fokusomrade` angetts som en [postgis_tabell()]-referens, eller för att
+#' ett eget `con` skickas med trots att båda är `sf`-objekt. Ges ingen
+#' anslutning alls (standardläget om båda är `sf`-objekt) körs allt i ren R
+#' utan databaskontakt.
+#'
+#' Använd [pendling_ruta_karta()] för att göra resultatet till ett färdigt
+#' `sf`-objekt (fokusområdets rutor svartmarkerade, in- eller
+#' utpendlingsrutorna med antal pendlare) och/eller en GeoPackage-fil.
+#'
 #' @param tabell_pend_relation_ruta Data.frame med `boruta`, `arbruta`,
 #'   `antalpend`.
-#' @param rutor `sf`-objekt med rutorna (måste ha `rut_id`).
-#' @param polygon `sf`-objekt (punkt/linje/polygon) som avgränsar området.
+#' @param rutor Ett `sf`-objekt med polygon-/multipolygongeometri och en
+#'   `rut_id`-kolumn, eller en [postgis_tabell()]-referens till en
+#'   motsvarande tabell i databasen. Rasterdata eller andra geometrityper
+#'   (punkter, linjer) stöds inte.
+#' @param fokusomrade Området pendlingen ska räknas mot - ett `sf`-objekt med
+#'   polygon-/multipolygongeometri (t.ex. en tätortsgräns eller ett eget
+#'   avgränsat område), eller en [postgis_tabell()]-referens. Rasterdata
+#'   eller andra geometrityper stöds inte.
+#' @param con En `DBIConnection`, eller `NA` (standard) för att inte ansluta
+#'   till någon databas alls. Behövs bara om `rutor` och `fokusomrade` båda
+#'   är `sf`-objekt och man ändå vill köra rutfiltreringen
+#'   databasaccelererat - annars ignoreras den (om `rutor` eller
+#'   `fokusomrade` redan är en [postgis_tabell()]-referens används dess
+#'   egen anslutning i stället).
 #' @param ut_mapp Målmapp för GeoPackage.
 #' @param grid_epsg EPSG-kod (inte använd i nuläget, behålls för kompatibilitet).
 #' @param skriv_till_gpkg Skriv resultatet till GeoPackage.
-#' @param gpkg_namn Filnamn (inte använt - namnet sätts av versionen).
+#' @param gpkg_namn Filnamn (`NA` = döps automatiskt).
 #'
-#' @return En lista med `utvalda_rutor`, `in_pendling`, `ut_pendling`.
+#' @return En lista med `utvalda_rutor`, `in_pendling` (med kolumnen
+#'   `pendlare_fran`) och `ut_pendling` (med kolumnen `pendlare_till`).
+#' @seealso [pendling_ruta_karta()] för att göra resultatet till en karta,
+#'   [postgis_tabell()] för att referera till en tabell i databasen.
 #' @export
-pendling_ruta <- function(version = c("PostGIS", "R"), con = NA,
-                          tabell_pend_relation_ruta, rutor, polygon,
-                          ut_mapp = NA, grid_epsg = 3006,
+pendling_ruta <- function(tabell_pend_relation_ruta, rutor, fokusomrade,
+                          con = NA, ut_mapp = NA, grid_epsg = 3006,
                           skriv_till_gpkg = FALSE, gpkg_namn = NA) {
   intern_krav("sf")
-  version <- match.arg(version)
 
-  if (!inherits(rutor, "sf")) stop("`rutor` måste vara ett sf-objekt.", call. = FALSE)
-  if (!inherits(polygon, "sf")) stop("`polygon` måste vara ett sf-objekt.", call. = FALSE)
   if (!all(c("boruta", "arbruta", "antalpend") %in% colnames(tabell_pend_relation_ruta))) {
     stop("`tabell_pend_relation_ruta` måste innehålla 'boruta', 'arbruta', 'antalpend'.", call. = FALSE)
   }
+  intern_krav_polygongeometri(rutor, "rutor")
+  intern_krav_polygongeometri(fokusomrade, "fokusomrade")
   if (is.na(ut_mapp)) ut_mapp <- intern_utskriftsmapp()
 
-  cc <- NULL
-  if (version == "PostGIS") {
-    cc <- intern_pendling_con(con)
-    con <- cc$con
-    if (!DBI::dbIsValid(con)) stop("Databasuppkopplingen är inte giltig.", call. = FALSE)
-  }
-  on.exit(if (!is.null(cc)) intern_stang(cc), add = TRUE)
+  fokus_sf <- intern_som_sf(fokusomrade, "fokusomrade")
 
-  if (sf::st_crs(polygon) != sf::st_crs(rutor)) polygon <- sf::st_transform(polygon, sf::st_crs(rutor))
-  vald_polygon <- sf::st_intersection(rutor, polygon)
-  if (nrow(vald_polygon) == 0) stop("Ingen överlappning mellan polygon och rutor.", call. = FALSE)
+  kalla <- intern_rutor_kalla(rutor, con)
+  on.exit(kalla$stang(), add = TRUE)
 
-  if (version == "PostGIS") {
-    DBI::dbWriteTable(con, "ruta", rutor, overwrite = TRUE, temporary = TRUE)
-    DBI::dbWriteTable(con, "rutpendling", tabell_pend_relation_ruta, overwrite = TRUE, temporary = TRUE)
+  utvalda_rutor <- kalla$filtrera(fokus_sf)
+  if (nrow(utvalda_rutor) == 0) stop("Ingen överlappning mellan fokusomrade och rutor.", call. = FALSE)
+  ids <- utvalda_rutor$rut_id
 
-    utvalda_rutor <- sf::st_filter(sf::st_read(con, layer = "ruta", quiet = TRUE), vald_polygon)
-    ids <- paste(utvalda_rutor$rut_id, collapse = ", ")
+  fran <- tabell_pend_relation_ruta[
+    tabell_pend_relation_ruta$boruta %in% ids &
+    !tabell_pend_relation_ruta$arbruta %in% ids, ]
+  till <- tabell_pend_relation_ruta[
+    tabell_pend_relation_ruta$arbruta %in% ids &
+    !tabell_pend_relation_ruta$boruta %in% ids, ]
 
-    in_pendling <- sf::st_read(con, query = glue::glue("
-      WITH commuters_in AS (
-        SELECT boruta, sum(antalpend) AS total FROM rutpendling
-        WHERE arbruta::BIGINT IN ({ids}) AND boruta::BIGINT NOT IN ({ids})
-        GROUP BY boruta
-      )
-      SELECT c.*, r.geom FROM commuters_in c JOIN ruta r ON c.boruta = r.rut_id"), quiet = TRUE)
-    ut_pendling <- sf::st_read(con, query = glue::glue("
-      WITH commuters_out AS (
-        SELECT arbruta, sum(antalpend) AS total FROM rutpendling
-        WHERE boruta::BIGINT IN ({ids}) AND arbruta::BIGINT NOT IN ({ids})
-        GROUP BY arbruta
-      )
-      SELECT c.*, r.geom FROM commuters_out c JOIN ruta r ON c.arbruta = r.rut_id"), quiet = TRUE)
-  } else {
-    utvalda_rutor <- sf::st_filter(rutor, vald_polygon)
-    fran <- tabell_pend_relation_ruta[
-      tabell_pend_relation_ruta$boruta %in% utvalda_rutor$rut_id &
-      !tabell_pend_relation_ruta$arbruta %in% utvalda_rutor$rut_id, ]
-    till <- tabell_pend_relation_ruta[
-      tabell_pend_relation_ruta$arbruta %in% utvalda_rutor$rut_id &
-      !tabell_pend_relation_ruta$boruta %in% utvalda_rutor$rut_id, ]
+  from_c <- stats::aggregate(antalpend ~ boruta, data = till, FUN = sum)
+  names(from_c) <- c("rut_id", "pendlare_fran")
+  to_c <- stats::aggregate(antalpend ~ arbruta, data = fran, FUN = sum)
+  names(to_c) <- c("rut_id", "pendlare_till")
 
-    from_c <- stats::aggregate(antalpend ~ boruta, data = till, FUN = sum)
-    names(from_c) <- c("rut_id", "pendlare_fran")
-    to_c <- stats::aggregate(antalpend ~ arbruta, data = fran, FUN = sum)
-    names(to_c) <- c("rut_id", "pendlare_till")
+  grannrutor <- kalla$id_geom(union(from_c$rut_id, to_c$rut_id))
 
-    full <- merge(from_c, to_c, by = "rut_id", all = TRUE)
-    result <- merge(rutor, full, by = "rut_id")
-    in_pendling <- result[!is.na(result$pendlare_fran), setdiff(names(result), "pendlare_till")]
-    ut_pendling <- result[!is.na(result$pendlare_till), setdiff(names(result), "pendlare_fran")]
-  }
+  in_pendling <- merge(grannrutor, from_c, by = "rut_id")
+  ut_pendling <- merge(grannrutor, to_c, by = "rut_id")
 
   if (skriv_till_gpkg) {
-    filnamn <- if (version == "PostGIS") "rut_pendling_pg.gpkg" else "rut_pendlingR.gpkg"
+    filnamn <- if (!is.na(gpkg_namn)) gpkg_namn else "rut_pendling.gpkg"
     sokvag <- file.path(ut_mapp, filnamn)
     sf::st_write(utvalda_rutor, sokvag, "omrade", delete_dsn = TRUE, append = FALSE, quiet = TRUE)
     sf::st_write(in_pendling, sokvag, "in_pend", append = FALSE, quiet = TRUE)
@@ -359,4 +465,67 @@ pendling_ruta <- function(version = c("PostGIS", "R"), con = NA,
   }
 
   list(utvalda_rutor = utvalda_rutor, in_pendling = in_pendling, ut_pendling = ut_pendling)
+}
+
+#' Karta (sf-objekt / GeoPackage) av resultatet från pendling_ruta()
+#'
+#' Slår ihop fokusområdets rutor (svartmarkerade) med antingen in- eller
+#' utpendlingsrutorna från [pendling_ruta()]s resultat till ett enda
+#' `sf`-objekt, klart att kartlägga eller skriva till en GeoPackage-fil.
+#'
+#' @param resultat Listan som returneras av [pendling_ruta()].
+#' @param typ `"in"` eller `"ut"` - vilken pendling som ska visas
+#'   tillsammans med fokusområdet.
+#' @param farg_fokusomrade Färg för fokusområdets rutor (kolumnen `farg`,
+#'   `NA` för pendlingsrutorna - dessa styrs lämpligare via kolumnen
+#'   `antal_pendlare` med en färgskala när man kartlägger resultatet).
+#' @param skriv_till_gpkg Skriv resultatet till en GeoPackage-fil.
+#' @param ut_mapp Målmapp för GeoPackage.
+#' @param gpkg_namn Filnamn för GeoPackage (`NA` = byggs automatiskt utifrån `typ`).
+#'
+#' @return Ett `sf`-objekt med kolumnerna `typ` (`"fokusomrade"`,
+#'   `"in_pendling"` eller `"ut_pendling"`), `farg` och `antal_pendlare`
+#'   (`NA` för fokusområdets rutor).
+#' @seealso [pendling_ruta()]
+#' @export
+pendling_ruta_karta <- function(resultat, typ = c("in", "ut"),
+                                farg_fokusomrade = "black",
+                                skriv_till_gpkg = FALSE, ut_mapp = NA, gpkg_namn = NA) {
+  intern_krav("sf")
+  typ <- match.arg(typ)
+  if (!all(c("utvalda_rutor", "in_pendling", "ut_pendling") %in% names(resultat))) {
+    stop("`resultat` måste vara listan som pendling_ruta() returnerar.", call. = FALSE)
+  }
+
+  pendling_df <- if (typ == "in") resultat$in_pendling else resultat$ut_pendling
+  pendlare_kol <- if (typ == "in") "pendlare_fran" else "pendlare_till"
+  pendling_typ <- if (typ == "in") "in_pendling" else "ut_pendling"
+
+  fokus <- resultat$utvalda_rutor
+  fokus$typ <- "fokusomrade"
+  fokus$farg <- farg_fokusomrade
+  fokus$antal_pendlare <- NA_real_
+
+  pend <- pendling_df
+  pend$typ <- pendling_typ
+  pend$farg <- NA_character_
+  pend$antal_pendlare <- pend[[pendlare_kol]]
+
+  # rutor och fokusomrade kan i teorin komma från källor med olika namn på geometrikolumnen
+  # (t.ex. "geom" mot "geometry") - byt namn på pend:s geometrikolumn till fokus:s innan rbind.
+  geom_kol <- attr(fokus, "sf_column")
+  if (attr(pend, "sf_column") != geom_kol) names(pend)[names(pend) == attr(pend, "sf_column")] <- geom_kol
+  sf::st_geometry(pend) <- geom_kol
+  if (sf::st_crs(pend) != sf::st_crs(fokus)) pend <- sf::st_transform(pend, sf::st_crs(fokus))
+
+  kolumner <- c("typ", "farg", "antal_pendlare", geom_kol)
+  karta_sf <- rbind(fokus[, kolumner], pend[, kolumner])
+
+  if (skriv_till_gpkg) {
+    if (is.na(ut_mapp)) ut_mapp <- intern_utskriftsmapp()
+    if (is.na(gpkg_namn)) gpkg_namn <- paste0("pendling_ruta_karta_", typ, ".gpkg")
+    sf::st_write(karta_sf, file.path(ut_mapp, gpkg_namn), delete_dsn = TRUE, quiet = TRUE)
+  }
+
+  karta_sf
 }
