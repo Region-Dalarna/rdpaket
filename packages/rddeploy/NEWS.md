@@ -1,5 +1,13 @@
 # rddeploy 0.0.0.9003
 
+## `github_commit_push()` visar åter vilka filer som ändrats
+
+`github_commit_push()`/`github_commit_push_analytikernatverket()` skrev bara
+ut fillistan (nya/ändrade/borttagna) när `commit_txt = NULL`, eftersom den
+byggdes som en del av det auto-genererade commit-meddelandet. Angav man ett
+eget `commit_txt` syntes den inte alls. Skriver nu alltid ut fillistan innan
+commit/push, oavsett `commit_txt`.
+
 ## Döljer keyrings ofarliga backend-varning
 
 `rddeploy_pat()`s reservväg via keyring (och `intern_foraldrade_keyring_services()`)
