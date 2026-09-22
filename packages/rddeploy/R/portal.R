@@ -27,7 +27,7 @@ webbsida_med_portal_skapa_med_github_repo <- function(github_repo,
   rddeploy_pat()
 
   runner_label <- switch(server, publik = "rapport", intern = "rapport-intern")
-  lokal_path <- file.path(grundsokvag, github_repo)
+  lokal_path <- file.path(sub("/+$", "", grundsokvag), github_repo)
   if (dir.exists(lokal_path)) {
     cli::cli_abort("Mappen finns redan: {.path {lokal_path}}. Avbryter.")
   }

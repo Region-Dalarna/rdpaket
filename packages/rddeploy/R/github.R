@@ -398,7 +398,7 @@ github_lagg_till_repo_fran_github <- function(repo_namn,
   if (missing(repo_namn) || !nzchar(repo_namn)) cli::cli_abort("{.arg repo_namn} måste anges.")
   tryCatch(rddeploy_pat(), error = function(e) NULL)
 
-  lokal_sokvag <- file.path(grundsokvag, repo_namn)
+  lokal_sokvag <- file.path(sub("/+$", "", grundsokvag), repo_namn)
   if (dir.exists(lokal_sokvag)) cli::cli_abort("Katalogen finns redan: {.path {lokal_sokvag}}")
 
   finns <- tryCatch({
