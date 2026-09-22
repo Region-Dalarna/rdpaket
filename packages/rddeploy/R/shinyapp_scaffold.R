@@ -31,7 +31,7 @@ intern_scaffold_struktur <- function(sokvag, fork = FALSE) {
 intern_scaffold_appfiler <- function(sokvag, cfg) {
   telemetri_block <- if (cfg$telemetri) {
     paste0(
-      'source("https://raw.githubusercontent.com/Region-Dalarna/funktioner/main/func_shinyappar.R", encoding = "utf-8", echo = FALSE)\n\n',
+      'library(rdshinyappar)\n\n',
       'telemetry <- skapa_telemetry("', cfg$github_repo, '")\n'
     )
   } else ""

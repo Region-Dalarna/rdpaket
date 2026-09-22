@@ -1,3 +1,14 @@
+# rddeploy 0.0.0.9006
+
+## Shinyapp-mallen laddar `rdshinyappar` via `library()` i stället för `source()`
+
+`global.R`-mallen hämtade tidigare `skapa_telemetry()` genom att
+`source()`a `func_shinyappar.R` direkt från GitHub (`raw.githubusercontent.com`)
+vid varje appstart - ett nätverksberoende vid körning, och paketet
+`rdshinyappar` (som redan används av `telemetri_ui()`/`telemetri_server()`
+i mallens `ui.R`/`server.R`) har länge haft samma funktion. Nya
+Shiny-app-projekt får nu `library(rdshinyappar)` i `global.R` i stället.
+
 # rddeploy 0.0.0.9005
 
 ## `.Rproj`-filen som saknades i nya Shiny-app-projekt är tillbaka
