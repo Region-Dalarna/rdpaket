@@ -1,3 +1,17 @@
+# rddeploy 0.0.0.9004
+
+## Fixar krasch vid kloning när `grundsokvag` slutar med `/`
+
+`github_lagg_till_repo_fran_github()` och
+`webbsida_med_portal_skapa_med_github_repo()` byggde mål-sökvägen till
+`gert::git_clone()` med `file.path(grundsokvag, repo_namn)`. Eftersom
+`intern_gh_mapp()`/`intern_gh_mapp_an()` alltid lägger till ett avslutande
+`/` gav det ett dubbelt snedstreck (`.../gh//repo`), vilket fick
+`git_clone()` att krascha med det kryptiska felet
+`Error in libgit2::git_clone : invalid argument: 'repo'`. Strippar nu bort
+ev. avslutande snedstreck innan `file.path()` byggs, samma mönster som
+redan användes i `shinyapp_config.R`.
+
 # rddeploy 0.0.0.9003
 
 ## `github_commit_push()` visar åter vilka filer som ändrats
