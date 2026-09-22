@@ -1,3 +1,16 @@
+# rddeploy 0.0.0.9005
+
+## `.Rproj`-filen som saknades i nya Shiny-app-projekt är tillbaka
+
+`shinyapp_skapa_med_github_repo()` och
+`shinyapp_skapa_med_github_repo_forka_befintligt()` skapade ingen
+`.Rproj`-fil, trots att det var tanken. Anropet till
+`usethis::create_project()` föll bort när funktionerna refaktorerades från
+den ursprungliga koden i `Region-Dalarna/funktioner` (`func_API.R`) till
+`rddeploy`s stegfunktioner. Ny intern `intern_scaffold_rproj()` anropas nu
+tidigt i båda flödena och skapar `.Rproj`-filen (`rstudio = TRUE` sätts
+explicit, så den skapas oavsett om man kör från RStudio eller ej).
+
 # rddeploy 0.0.0.9004
 
 ## Fixar krasch vid kloning när `grundsokvag` slutar med `/`

@@ -4,6 +4,16 @@
 
 # --- Stegfunktioner (disk) --------------------------------------------------
 
+# .Rproj-fil så mappen känns igen som ett RStudio-projekt.
+intern_scaffold_rproj <- function(sokvag) {
+  if (!requireNamespace("usethis", quietly = TRUE)) {
+    cli::cli_warn("Paketet {.pkg usethis} saknas - ingen .Rproj-fil skapas.")
+    return(invisible(sokvag))
+  }
+  usethis::create_project(sokvag, rstudio = TRUE, open = FALSE)
+  invisible(sokvag)
+}
+
 # Grundstruktur i repo-roten.
 intern_scaffold_struktur <- function(sokvag, fork = FALSE) {
   mappar <- c(sokvag, file.path(sokvag, ".github", "workflows"))
@@ -218,6 +228,7 @@ shinyapp_skapa_med_github_repo <- function(github_repo,
   intern_preflight(sokvag, cfg$grundsokvag, force,
                    extra = if (initiera_renv) "renv-bibliotek (kan ta några minuter)")
 
+  intern_scaffold_rproj(sokvag)
   intern_scaffold_struktur(sokvag)
   intern_scaffold_appfiler(sokvag, cfg)
   intern_scaffold_www(sokvag)
@@ -278,6 +289,7 @@ shinyapp_skapa_med_github_repo_forka_befintligt <- function(github_repo,
                    extra = c(paste0("app/ hämtas via git subtree från ", kalla_repo_url,
                                     " (branch ", kalla_branch, ")")))
 
+  intern_scaffold_rproj(sokvag)
   intern_scaffold_struktur(sokvag, fork = TRUE)
   intern_scaffold_workflows(sokvag, temp_dir_suffix = "/app")
   intern_scaffold_meta(sokvag, cfg, fork = TRUE)
