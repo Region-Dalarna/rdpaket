@@ -1,3 +1,12 @@
+# rdshinyappar 0.0.0.9002
+
+* `df_till_sf()` fungerar nu med sf 1.1-3. Geometri som RPostgres levererar
+  med klassen `pq_geometry` görs om till WKB innan tolkningen, eftersom sf:s
+  metod för `pq_geometry` har ett stavfel som från sf 1.1-3 ger felet
+  "object(s) should be of class 'sfg'" (r-spatial/sf#2625).
+
+---
+
 # rdshinyappar 0.0.0.9001
 
 Versionsbump utan innehållsändring (för att `remotes`/`pak`
