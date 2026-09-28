@@ -1,3 +1,12 @@
+# rddeploy 0.0.0.9004
+
+## fluidPage() i shinyapp-mallens ui.R sätter nu title så webbläsarfliken får rätt text
+
+Ändring som minnebär att webbläsarfliken visar rätt titel när man kör en shinyapp skapad med
+rddeploy.
+
+---
+
 # rddeploy 0.0.0.9003
 
 ## Döljer keyrings ofarliga backend-varning
