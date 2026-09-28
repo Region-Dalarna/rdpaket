@@ -1,6 +1,54 @@
 # source()-hjälpare - utbrutna ur func_API.R.
 # Övergångsinfrastruktur: när alla funktionsfiler är paket behövs de inte längre.
 
+#' Läs en GitHub-PAT (argument, GITHUB_PAT, keyring)
+#'
+#' @param pat Valfri GitHub-PAT skickad som argument - har företräde.
+#'
+#' @return Token som text, eller `""` om ingen hittades.
+#' @noRd
+intern_github_pat_hamta <- function(pat = NULL) {
+  if (!is.null(pat) && nzchar(pat)) return(pat)
+
+  pat <- Sys.getenv("GITHUB_PAT", "")
+  if (!nzchar(pat) && requireNamespace("keyring", quietly = TRUE)) {
+    kp <- tryCatch(keyring::key_list(service = "github_token"), error = function(e) NULL)
+    if (!is.null(kp) && nrow(kp) > 0) {
+      pat <- tryCatch(keyring::key_get("github_token", kp$username[1]), error = function(e) "")
+    }
+  }
+  pat
+}
+
+#' Hämta en fil från ett GitHub-repo via Contents-API:t
+#'
+#' Till skillnad från `raw.githubusercontent.com` (bakom en CDN som kan
+#' servera en gammal cachad version en stund efter en push) speglar
+#' Contents-API:t alltid senaste commit.
+#'
+#' @param owner GitHub-användare/organisation.
+#' @param repo Repo-namn.
+#' @param path Sökväg till filen inom repot.
+#' @param branch Gren.
+#' @param pat Valfri GitHub-PAT (argument, `GITHUB_PAT`, keyring).
+#'
+#' @return Ett `httr`-svarsobjekt (ohanterad status).
+#' @noRd
+intern_github_api_hamta <- function(owner, repo, path, branch = "main", pat = NULL) {
+  if (!requireNamespace("httr", quietly = TRUE)) stop("Paketet 'httr' krävs.", call. = FALSE)
+
+  pat <- intern_github_pat_hamta(pat)
+
+  api_url <- sprintf(
+    "https://api.github.com/repos/%s/%s/contents/%s?ref=%s",
+    owner, repo, utils::URLencode(path, reserved = FALSE), branch
+  )
+  hdrs <- c(Accept = "application/vnd.github.raw", "X-GitHub-Api-Version" = "2022-11-28")
+  if (nzchar(pat)) hdrs <- c(hdrs, Authorization = paste("token", pat))
+
+  httr::GET(api_url, httr::add_headers(.headers = hdrs))
+}
+
 #' Source:a en R-fil från GitHub utan risk för gammal CDN-cache
 #'
 #' `raw.githubusercontent.com` ligger bakom Fastly som kan servera en gammal
@@ -28,22 +76,7 @@ source_utan_cache <- function(url, encoding = "UTF-8", echo = FALSE, pat = NULL)
 
   owner <- m[2]; repo <- m[3]; branch <- m[4]; path <- m[5]
 
-  if (is.null(pat) || !nzchar(pat)) pat <- Sys.getenv("GITHUB_PAT", "")
-  if (!nzchar(pat) && requireNamespace("keyring", quietly = TRUE)) {
-    kp <- tryCatch(keyring::key_list(service = "github_token"), error = function(e) NULL)
-    if (!is.null(kp) && nrow(kp) > 0) {
-      pat <- tryCatch(keyring::key_get("github_token", kp$username[1]), error = function(e) "")
-    }
-  }
-
-  api_url <- sprintf(
-    "https://api.github.com/repos/%s/%s/contents/%s?ref=%s",
-    owner, repo, utils::URLencode(path, reserved = FALSE), branch
-  )
-  hdrs <- c(Accept = "application/vnd.github.raw", "X-GitHub-Api-Version" = "2022-11-28")
-  if (nzchar(pat)) hdrs <- c(hdrs, Authorization = paste("token", pat))
-
-  res <- httr::GET(api_url, httr::add_headers(.headers = hdrs))
+  res <- intern_github_api_hamta(owner, repo, path, branch, pat)
 
   if (httr::status_code(res) == 403) {
     body <- httr::content(res, "text", encoding = "UTF-8")

@@ -1,3 +1,25 @@
+# rdverktyg 0.0.0.9003
+
+## Nya funktioner
+
+* `rdpaket_uppdatera_alla()`: jämför installerad version av de `rd*`-paket
+  som ingår i monorepot `Region-Dalarna/rdpaket` mot senaste `Version` i
+  `DESCRIPTION` på GitHub, och installerar om (via `remotes::install_github()`)
+  de paket där GitHub-versionen är nyare. Med `installera = FALSE` görs bara
+  en kontroll.
+
+## Nya funktioner (data)
+
+* `csv_fran_zipfiler_inlasning()` har fått argumenten `textmonster` och
+  `numeriska_monster`: kolumner vars namn matchar ett mönster (t.ex.
+  `"kommunkod"`) läses tvingat som text respektive numeriskt i stället för
+  att `read.delim()` själv ska gissa datatyp. Standard för `textmonster` är
+  `c("kommunkod", "lanskod", "länskod", "regionkod")`, så att den typen av
+  kod-kolumner inte tappar inledande nollor. Text har företräde om en
+  kolumn matchar båda mönstren.
+
+---
+
 # rdverktyg 0.0.0.9002
 
 ## Dokumentation

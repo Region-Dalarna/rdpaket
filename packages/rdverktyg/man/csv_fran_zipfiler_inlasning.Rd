@@ -7,7 +7,9 @@
 csv_fran_zipfiler_inlasning(
   zip_sokvagar,
   kalla_som_kolumn = FALSE,
-  bind_ihop_dataseten = FALSE
+  bind_ihop_dataseten = FALSE,
+  textmonster = c("kommunkod", "lanskod", "länskod", "regionkod"),
+  numeriska_monster = NULL
 )
 }
 \arguments{
@@ -15,20 +17,24 @@ csv_fran_zipfiler_inlasning(
 
 \item{kalla_som_kolumn}{Om \code{TRUE} och \code{bind_ihop_dataseten = TRUE} läggs
 kolumner \code{zip_fil} och \code{csv_fil} till som visar varifrån varje rad
-kommer. Påverkar inte listläget (där varje element redan är namngivet
-efter zip- och csv-fil).}
+kommer. Påverkar inte listläget.}
 
 \item{bind_ihop_dataseten}{Om \code{TRUE} binds alla csv-filers innehåll ihop
-till en enda \code{tibble} med \code{\link[dplyr:bind_rows]{dplyr::bind_rows()}} (det gamla beteendet).
-Om \code{FALSE} (standard) returneras i stället en namngiven lista med en
-\code{tibble} per csv-fil, vilket passar bäst när filerna inte nödvändigtvis
-har samma kolumner. Vill man binda ihop listan själv efteråt går det
-lika gärna med \code{dplyr::bind_rows()}/\code{purrr::list_rbind()}.}
+till en enda \code{tibble} med \code{\link[dplyr:bind_rows]{dplyr::bind_rows()}}. Om \code{FALSE} (standard)
+returneras en namngiven lista med en \code{tibble} per csv-fil.}
+
+\item{textmonster}{Teckenvektor med mönster i kolumnnamn som ska läsas
+som text. Matchningen är skiftlägesokänslig. Sätt till \code{NULL} för att
+inte automatiskt läsa några kolumner som text.}
+
+\item{numeriska_monster}{Teckenvektor med mönster i kolumnnamn som ska
+läsas som numeriska. Matchningen är skiftlägesokänslig. Standard är
+\code{NULL}.}
 }
 \value{
-Om \code{bind_ihop_dataseten = FALSE} (standard): en namngiven lista
-med en \code{tibble} per csv-fil, med namn \code{"<zipfil>/<csvfil>"}. Om
-\code{bind_ihop_dataseten = TRUE}: en enda \code{tibble} med allt ihopbundet.
+Om \code{bind_ihop_dataseten = FALSE} returneras en namngiven lista
+med en \code{tibble} per csv-fil. Om \code{bind_ihop_dataseten = TRUE} returneras
+en enda \code{tibble} med allt ihopbundet.
 }
 \description{
 Läs csv-filer direkt ur en eller flera zip-filer
