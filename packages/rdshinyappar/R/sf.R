@@ -16,8 +16,16 @@ df_till_sf <- function(df, geom_col = "geometry", crs = 3006) {
     stop("Paketet 'sf' krävs för df_till_sf().", call. = FALSE)
   }
 
+  geom <- df[[geom_col]]
+
+  # RPostgres levererar PostGIS-geometri med klassen pq_geometry. sf:s metod för
+  # den klassen skickar vidare argumentet med ett stavfel (spatiallite), vilket från
+  # sf 1.1-3 ger "object(s) should be of class 'sfg'" (r-spatial/sf#2625).
+  # Som WKB går geometrin direkt till sf:s vanliga EWKB-tolkning.
+  if (inherits(geom, "pq_geometry")) geom <- structure(unclass(geom), class = "WKB")
+
   df_sf <- df
-  df_sf[[geom_col]] <- sf::st_as_sfc(df[[geom_col]], EWKB = TRUE)
+  df_sf[[geom_col]] <- sf::st_as_sfc(geom, EWKB = TRUE)
   df_sf <- sf::st_as_sf(df_sf, sf_column_name = geom_col)
   sf::st_crs(df_sf) <- crs
   df_sf

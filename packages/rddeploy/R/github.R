@@ -230,15 +230,21 @@ github_status_filer_lokalt_repo <- function(repo, grundsokvag = intern_gh_mapp()
     return(invisible(st))
   }
 
-  ny       <- st$file[st$status == "new"]
-  andrad   <- st$file[st$status %in% c("modified", "renamed", "typechange")]
+  cli::cli_h3("Ändringar i {.path {repo_sokvag}}")
+  intern_skriv_filstatus(st)
+  invisible(st)
+}
+
+# Skriv ut vilka filer som är nya/ändrade/borttagna enligt en git-status-tibble.
+intern_skriv_filstatus <- function(st) {
+  ny        <- st$file[st$status == "new"]
+  andrad    <- st$file[st$status %in% c("modified", "renamed", "typechange")]
   borttagen <- st$file[st$status == "deleted"]
 
-  cli::cli_h3("Ändringar i {.path {repo_sokvag}}")
   if (length(ny))        cli::cli_alert_info("{length(ny)} ny(a): {.file {ny}}")
   if (length(andrad))    cli::cli_alert_info("{length(andrad)} ändrad(e): {.file {andrad}}")
   if (length(borttagen)) cli::cli_alert_info("{length(borttagen)} borttagen/borttagna: {.file {borttagen}}")
-  invisible(st)
+  invisible(NULL)
 }
 
 #' @rdname github_status_filer_lokalt_repo
@@ -290,6 +296,9 @@ github_commit_push <- function(repo,
     cli::cli_alert_info("Inga nya eller ändrade filer att ladda upp.")
     return(invisible(FALSE))
   }
+
+  cli::cli_h3("Filer som committas i {.path {repo_sokvag}}")
+  intern_skriv_filstatus(st)
 
   if (is.null(commit_txt) || is.na(commit_txt)) {
     commit_txt <- intern_commit_meddelande(st)
@@ -389,7 +398,7 @@ github_lagg_till_repo_fran_github <- function(repo_namn,
   if (missing(repo_namn) || !nzchar(repo_namn)) cli::cli_abort("{.arg repo_namn} måste anges.")
   tryCatch(rddeploy_pat(), error = function(e) NULL)
 
-  lokal_sokvag <- file.path(grundsokvag, repo_namn)
+  lokal_sokvag <- file.path(sub("/+$", "", grundsokvag), repo_namn)
   if (dir.exists(lokal_sokvag)) cli::cli_abort("Katalogen finns redan: {.path {lokal_sokvag}}")
 
   finns <- tryCatch({

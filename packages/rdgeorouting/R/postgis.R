@@ -1,5 +1,31 @@
 # PostGIS: aktivera tillägget, skriva/läsa sf-tabeller, kopiera/flytta tabeller.
 
+#' Referera till en tabell i en PostGIS-databas
+#'
+#' Skapar en lättviktig referens till en tabell i databasen, för funktioner
+#' (t.ex. [pendling_ruta()]) som kan ta emot antingen ett redan inläst
+#' `sf`-objekt eller en tabell i databasen och själva avgöra vilket. Öppnar
+#' ingen anslutning och läser ingen data - det sker först när referensen
+#' faktiskt används.
+#'
+#' @param con En `DBIConnection`, eller `NA` (standard) för Region Dalarnas
+#'   databas.
+#' @param schema,tabell Schema och tabellnamn för tabellen i databasen.
+#'   Tabellen förutsätts ha en geometrikolumn med polygon-/
+#'   multipolygongeometri - inte t.ex. rasterdata.
+#'
+#' @return Ett objekt av klass `postgis_tabell`.
+#' @export
+postgis_tabell <- function(con = NA, schema, tabell) {
+  structure(list(con = con, schema = schema, tabell = tabell), class = "postgis_tabell")
+}
+
+#' @export
+print.postgis_tabell <- function(x, ...) {
+  cat("<postgis_tabell>", x$schema, ".", x$tabell, "\n", sep = "")
+  invisible(x)
+}
+
 #' Aktivera PostGIS-tillägget i en databas
 #'
 #' @param con En aktiv `DBIConnection`.

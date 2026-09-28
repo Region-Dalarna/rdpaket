@@ -1,13 +1,59 @@
-# rddeploy 0.0.0.9004
+# rddeploy 0.0.0.9007
 
 ## fluidPage() i shinyapp-mallens ui.R sätter nu title så webbläsarfliken får rätt text
 
-Ändring som minnebär att webbläsarfliken visar rätt titel när man kör en shinyapp skapad med
+Ändring som innebär att webbläsarfliken visar rätt titel när man kör en shinyapp skapad med
 rddeploy.
 
 ---
+=======
+# rddeploy 0.0.0.9006
+
+## Shinyapp-mallen laddar `rdshinyappar` via `library()` i stället för `source()`
+
+`global.R`-mallen hämtade tidigare `skapa_telemetry()` genom att
+`source()`a `func_shinyappar.R` direkt från GitHub (`raw.githubusercontent.com`)
+vid varje appstart - ett nätverksberoende vid körning, och paketet
+`rdshinyappar` (som redan används av `telemetri_ui()`/`telemetri_server()`
+i mallens `ui.R`/`server.R`) har länge haft samma funktion. Nya
+Shiny-app-projekt får nu `library(rdshinyappar)` i `global.R` i stället.
+
+# rddeploy 0.0.0.9005
+
+## `.Rproj`-filen som saknades i nya Shiny-app-projekt är tillbaka
+
+`shinyapp_skapa_med_github_repo()` och
+`shinyapp_skapa_med_github_repo_forka_befintligt()` skapade ingen
+`.Rproj`-fil, trots att det var tanken. Anropet till
+`usethis::create_project()` föll bort när funktionerna refaktorerades från
+den ursprungliga koden i `Region-Dalarna/funktioner` (`func_API.R`) till
+`rddeploy`s stegfunktioner. Ny intern `intern_scaffold_rproj()` anropas nu
+tidigt i båda flödena och skapar `.Rproj`-filen (`rstudio = TRUE` sätts
+explicit, så den skapas oavsett om man kör från RStudio eller ej).
+
+# rddeploy 0.0.0.9004
+
+## Fixar krasch vid kloning när `grundsokvag` slutar med `/`
+
+`github_lagg_till_repo_fran_github()` och
+`webbsida_med_portal_skapa_med_github_repo()` byggde mål-sökvägen till
+`gert::git_clone()` med `file.path(grundsokvag, repo_namn)`. Eftersom
+`intern_gh_mapp()`/`intern_gh_mapp_an()` alltid lägger till ett avslutande
+`/` gav det ett dubbelt snedstreck (`.../gh//repo`), vilket fick
+`git_clone()` att krascha med det kryptiska felet
+`Error in libgit2::git_clone : invalid argument: 'repo'`. Strippar nu bort
+ev. avslutande snedstreck innan `file.path()` byggs, samma mönster som
+redan användes i `shinyapp_config.R`.
 
 # rddeploy 0.0.0.9003
+
+## `github_commit_push()` visar åter vilka filer som ändrats
+
+`github_commit_push()`/`github_commit_push_analytikernatverket()` skrev bara
+ut fillistan (nya/ändrade/borttagna) när `commit_txt = NULL`, eftersom den
+byggdes som en del av det auto-genererade commit-meddelandet. Angav man ett
+eget `commit_txt` syntes den inte alls. Skriver nu alltid ut fillistan innan
+commit/push, oavsett `commit_txt`.
 
 ## Döljer keyrings ofarliga backend-varning
 
