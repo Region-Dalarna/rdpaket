@@ -57,7 +57,7 @@ skapa_packed_circles(
   bransch_kol_kandidater = c("bransch"),
   bransch_kol_monster = list(c("SNI")),
   bransch_kol_kod_monster = c("kod", "code"),
-  antal_kol_kandidater = c("varde", "antal"),
+  antal_kol_kandidater = c("varde", "antal", "value"),
   antal_kol_monster = list(c("sysselsatta", "belägenhet")),
   antal_kol_prioritet = c("arbetsställe", "dagbefolkning")
 )
@@ -179,4 +179,24 @@ också till fil om \code{spara_bildfil = TRUE}.
 Ritar circle-packing-diagram per grupp (kommun, kön eller hela regionen)
 enligt Region Dalarnas profil. Layout väljs automatiskt: Dalarnas kommuner
 -> geografisk placering, uppdelning på kön/födelseregion -> rutnät.
+}
+\examples{
+\dontrun{
+# Nästan alla parametrar har vettiga standardvärden - det är INTE
+# nödvändigt att sätta dem alla. Det enklaste anropet anger bara data
+# och antal_kol:
+skapa_packed_circles(
+  data = dataset_df,
+  antal_kol = "value"
+)
+
+# Lägger man på kommunerna (grupp_kol) och är det Dalarnas kommuner i
+# datasetet, väljer funktionen automatiskt den geografiska Dalarna-layouten:
+skapa_packed_circles(
+  data = dataset_df,
+  grupp_kol = "region",
+  antal_kol = "value"
+)
+}
+
 }

@@ -250,7 +250,7 @@ spiral_layout <- function(areas) {
 #               branschkodkolumn - se den parametern.)
 #  antal_kol    antal sysselsatta. NULL [default] = auto-detektera: forst en
 #               kolumn vars namn EXAKT matchar (skiftlagesokanslig) nagot i
-#               antal_kol_kandidater (default "varde"/"antal"), annars en
+#               antal_kol_kandidater (default "varde"/"antal"/"value"), annars en
 #               kolumn vars namn innehaller ALLA ord i nagon delmangd i
 #               antal_kol_monster (default sysselsatta+belagenhet). Matchar
 #               det da precis EN kolumn anvands den. Matchar FLERA kolumner:
@@ -500,6 +500,26 @@ hamta_bransch_nyckel <- function(url) {
 #'
 #' @return Ett `ggplot`-objekt (med attributet `bildmatt`). Diagrammet sparas
 #'   också till fil om `spara_bildfil = TRUE`.
+#'
+#' @examples
+#' \dontrun{
+#' # Nästan alla parametrar har vettiga standardvärden - det är INTE
+#' # nödvändigt att sätta dem alla. Det enklaste anropet anger bara data
+#' # och antal_kol:
+#' skapa_packed_circles(
+#'   data = dataset_df,
+#'   antal_kol = "value"
+#' )
+#'
+#' # Lägger man på kommunerna (grupp_kol) och är det Dalarnas kommuner i
+#' # datasetet, väljer funktionen automatiskt den geografiska Dalarna-layouten:
+#' skapa_packed_circles(
+#'   data = dataset_df,
+#'   grupp_kol = "region",
+#'   antal_kol = "value"
+#' )
+#' }
+#'
 #' @export
 skapa_packed_circles <- function(data,
                                  # ====================================================================
@@ -566,7 +586,7 @@ skapa_packed_circles <- function(data,
                                  bransch_kol_kandidater = c("bransch"),          # bransch_kol=NULL: exakta kolumnnamn (case-insensitive) att leta efter forst. Lagg till fler har.
                                  bransch_kol_monster = list(c("SNI")),           # bransch_kol=NULL: hittas ingen exakt traff, leta efter kolumn vars namn innehaller ALLA strangar i nagon delmangd (OR mellan delmangder, case-insensitive). Lagg till fler delmangder har.
                                  bransch_kol_kod_monster = c("kod", "code"),     # bransch_kol=NULL: vid FLERA traffar, ta bort de vars namn tyder pa KOD (bransch_kol ska vara klartext - anvands direkt som legendtext). Meddelas alltid i konsolen nar detta avgor valet.
-                                 antal_kol_kandidater = c("varde", "antal"),     # antal_kol=NULL: exakta kolumnnamn (case-insensitive) att leta efter forst. Lagg till fler har.
+                                 antal_kol_kandidater = c("varde", "antal", "value"),  # antal_kol=NULL: exakta kolumnnamn (case-insensitive) att leta efter forst. Lagg till fler har.
                                  antal_kol_monster = list(c("sysselsatta", "belägenhet")),  # antal_kol=NULL: hittas ingen exakt trakk, leta efter kolumn vars namn innehaller ALLA strangar i nagon delmangd (OR mellan delmangder). Lagg till fler delmangder har, t.ex. list(c("sysselsatta","belägenhet"), c("forvarvsarbetande"))
                                  antal_kol_prioritet = c("arbetsställe", "dagbefolkning")) { # antal_kol=NULL: vid FLERA traffar, foredra en kolumn som innehaller nagot av dessa (case-insensitive). Meddelas alltid i konsolen nar detta avgor valet.
   

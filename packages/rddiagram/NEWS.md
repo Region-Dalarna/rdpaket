@@ -1,3 +1,19 @@
+# rddiagram 0.0.0.9010
+
+## Dokumentation: exempel för `skapa_packed_circles()`
+
+Lade till ett `@examples`-avsnitt som visar att nästan alla parametrar har
+vettiga standardvärden och inte behöver sättas - det enklaste anropet
+anger bara `data` och `antal_kol`, och lägger man till `grupp_kol` (t.ex.
+kommunkolumnen) väljer funktionen automatiskt den geografiska
+Dalarna-layouten.
+
+Lade också till `"value"` i `antal_kol_kandidater` (utöver `"varde"` och
+`"antal"`), så att en kolumn som heter `value` hittas automatiskt när
+`antal_kol` inte anges.
+
+---
+
 # rddiagram 0.0.0.9009
 
 ## Buggfix: `fokusera_varden = NA` kraschade i `SkapaStapelDiagram()`
