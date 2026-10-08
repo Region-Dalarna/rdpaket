@@ -1,3 +1,22 @@
+# rddiagram 0.0.0.9011
+
+## Buggfix: `skapa_packed_circles(grupp_kol = ...)` kraschade med "object 'dalarna_layout' not found"
+
+Hände när funktionen anropades som `rddiagram::skapa_packed_circles(...)`
+utan ett föregående `library(rddiagram)`. Orsaken är en lite okänd
+R-detalj: data i `data/`-mappen (lazydata, som `dalarna_layout`) binds
+inte in i paketets namnrymd förrän paketet *attachas* med
+`library()`/`require()` - att bara ladda namnrymden (vilket
+`paket::funktion()` gör) räcker inte. Det gäller även
+`rddiagram:::dalarna_layout` (trippelkolon) - den slår bara upp direkt i
+namnrymden utan att trigga datainläsningen, så den ger exakt samma fel.
+`rddiagram::dalarna_layout` (dubbelkolon) fungerar däremot alltid, oavsett
+om paketet är attachat eller ej, eftersom `::` går via
+`getExportedValue()` som hanterar lazydata korrekt. `skapa_packed_circles()`
+använder nu den formen internt för sin standard-`layout_tabell`.
+
+---
+
 # rddiagram 0.0.0.9010
 
 ## Dokumentation: exempel för `skapa_packed_circles()`

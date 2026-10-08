@@ -595,7 +595,14 @@ skapa_packed_circles <- function(data,
   geo_metod <- match.arg(geo_metod)
   packning <- match.arg(packning)
 
-  if (is.null(layout_tabell)) layout_tabell <- dalarna_layout
+  # rddiagram::  (inte bara dalarna_layout, och INTE rddiagram:::) - data/-lazydata
+  # binds inte in i namnrymden förrän paketet attachas med library()/require().
+  # Anropas funktionen som rddiagram::skapa_packed_circles() utan ett föregående
+  # library(rddiagram) ger ett obekvalificerat dalarna_layout "object not found",
+  # och det gör även rddiagram:::dalarna_layout (samma sak - :::  slår bara upp
+  # direkt i namnrymden utan att trigga datainläsningen). rddiagram::dalarna_layout
+  # går via getExportedValue(), som hanterar lazydata korrekt oavsett attach-läge.
+  if (is.null(layout_tabell)) layout_tabell <- rddiagram::dalarna_layout
 
   # --- AUTO-LAYOUT: valj layout sjalv om anvandaren inte angett nagon --------
   if (layout == "auto") {
