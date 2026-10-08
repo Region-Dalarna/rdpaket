@@ -61,23 +61,51 @@ spara_som_csv_i_zip <- function(df_list, output_mapp = NULL, zipfilnamn = NA,
 #'   returneras en namngiven lista med en `tibble` per csv-fil.
 #' @param textmonster Teckenvektor med mönster i kolumnnamn som ska läsas
 #'   som text. Matchningen är skiftlägesokänslig. Sätt till `NULL` för att
-#'   inte automatiskt läsa några kolumner som text.
+#'   inte automatiskt läsa några kolumner som text - skriv då eventuella
+#'   egna mönster direkt här i stället för i `textmonster_tillagg`.
+#' @param textmonster_tillagg Egna mönster som läggs TILL standardvärdet i
+#'   `textmonster`, så att man kan lägga till ett eget mönster utan att
+#'   behöva skriva ut (och hålla synkat med) hela standardvektorn.
 #' @param numeriska_monster Teckenvektor med mönster i kolumnnamn som ska
 #'   läsas som numeriska. Matchningen är skiftlägesokänslig. Standard är
 #'   `NULL`.
+#' @param numeriska_monster_tillagg Egna mönster som läggs TILL
+#'   `numeriska_monster`, se `textmonster_tillagg`.
 #'
 #' @return Om `bind_ihop_dataseten = FALSE` returneras en namngiven lista
 #'   med en `tibble` per csv-fil. Om `bind_ihop_dataseten = TRUE` returneras
 #'   en enda `tibble` med allt ihopbundet.
+#'
+#' @examples
+#' \dontrun{
+#' # Standardmönstren för textmonster (kommunkod/lanskod/länskod/regionkod)
+#' # behålls, och "ar_manad" läggs till utan att man behöver skriva ut dem:
+#' csv_fran_zipfiler_inlasning(
+#'   "mina_data.zip",
+#'   textmonster_tillagg = "ar_manad"
+#' )
+#'
+#' # Vill man i stället ENDAST matcha sitt eget mönster (inte standardvärdena),
+#' # anges det som vanligt direkt i textmonster:
+#' csv_fran_zipfiler_inlasning(
+#'   "mina_data.zip",
+#'   textmonster = "ar_manad"
+#' )
+#' }
+#'
 #' @export
 csv_fran_zipfiler_inlasning <- function(
     zip_sokvagar,
     kalla_som_kolumn = FALSE,
     bind_ihop_dataseten = FALSE,
     textmonster = c("kommunkod", "lanskod", "länskod", "regionkod"),
-    numeriska_monster = NULL
+    textmonster_tillagg = NULL,
+    numeriska_monster = NULL,
+    numeriska_monster_tillagg = NULL
 ) {
-  
+  textmonster <- c(textmonster, textmonster_tillagg)
+  numeriska_monster <- c(numeriska_monster, numeriska_monster_tillagg)
+
   per_zip <- stats::setNames(
     lapply(zip_sokvagar, function(zip_path) {
       

@@ -1,3 +1,16 @@
+# rdverktyg 0.0.0.9004
+
+## Nya parametrar
+
+* `csv_fran_zipfiler_inlasning()` har fått `textmonster_tillagg` och
+  `numeriska_monster_tillagg`: egna mönster som läggs TILL standardvärdet
+  i `textmonster`/`numeriska_monster`, i stället för att man måste skriva
+  ut (och hålla synkat med) hela standardvektorn för att lägga till ett
+  eget mönster. Vill man i stället helt ersätta standardmönstren anger
+  man dem som vanligt direkt i `textmonster`/`numeriska_monster`.
+
+---
+
 # rdverktyg 0.0.0.9003
 
 ## Nya funktioner

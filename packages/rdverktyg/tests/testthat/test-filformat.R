@@ -36,6 +36,33 @@ test_that("csv_fran_zipfiler_inlasning läser csv ur zip", {
   expect_true(all(c("zip_fil", "csv_fil") %in% names(ut_bunden2)))
 })
 
+test_that("csv_fran_zipfiler_inlasning: textmonster_tillagg/numeriska_monster_tillagg lägger till utan att ta bort standardvärdena", {
+  skip_if_not_installed("zip")
+  d <- withr::local_tempdir()
+  utils::write.csv(
+    data.frame(kommunkod = "0020", ar_manad = "202401", varde = 1),
+    file.path(d, "en.csv"), row.names = FALSE
+  )
+  z <- file.path(d, "data.zip")
+  zip::zip(z, files = "en.csv", root = d, mode = "cherry-pick")
+
+  # standardmönstret "kommunkod" ska fortfarande ge text (inte tappa inledande nollan),
+  # och tillagt "ar_manad" ska ÄVEN läsas som text
+  ut <- csv_fran_zipfiler_inlasning(z, textmonster_tillagg = "ar_manad")[[1]]
+  expect_identical(ut$kommunkod, "0020")
+  expect_identical(ut$ar_manad, "202401")
+
+  # textmonster = NULL stänger av standardmönstren helt, så kommunkod tappar nollan,
+  # medan textmonster_tillagg fortfarande läggs till (här blir den den enda regeln)
+  ut2 <- csv_fran_zipfiler_inlasning(z, textmonster = NULL, textmonster_tillagg = "ar_manad")[[1]]
+  expect_identical(ut2$kommunkod, 20L)
+  expect_identical(ut2$ar_manad, "202401")
+
+  ut3 <- csv_fran_zipfiler_inlasning(z, numeriska_monster_tillagg = "varde")[[1]]
+  expect_identical(ut3$kommunkod, "0020")
+  expect_identical(ut3$varde, 1)
+})
+
 test_that("skolverket_hitta_startrad hittar första blocket", {
   df <- data.frame(v = c("", "x", "", "a", "b", "c", "d", "e"))
   expect_equal(skolverket_hitta_startrad(df, "v", min_langd = 4), 4)

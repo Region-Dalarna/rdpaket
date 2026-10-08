@@ -9,7 +9,9 @@ csv_fran_zipfiler_inlasning(
   kalla_som_kolumn = FALSE,
   bind_ihop_dataseten = FALSE,
   textmonster = c("kommunkod", "lanskod", "länskod", "regionkod"),
-  numeriska_monster = NULL
+  textmonster_tillagg = NULL,
+  numeriska_monster = NULL,
+  numeriska_monster_tillagg = NULL
 )
 }
 \arguments{
@@ -25,11 +27,19 @@ returneras en namngiven lista med en \code{tibble} per csv-fil.}
 
 \item{textmonster}{Teckenvektor med mönster i kolumnnamn som ska läsas
 som text. Matchningen är skiftlägesokänslig. Sätt till \code{NULL} för att
-inte automatiskt läsa några kolumner som text.}
+inte automatiskt läsa några kolumner som text - skriv då eventuella
+egna mönster direkt här i stället för i \code{textmonster_tillagg}.}
+
+\item{textmonster_tillagg}{Egna mönster som läggs TILL standardvärdet i
+\code{textmonster}, så att man kan lägga till ett eget mönster utan att
+behöva skriva ut (och hålla synkat med) hela standardvektorn.}
 
 \item{numeriska_monster}{Teckenvektor med mönster i kolumnnamn som ska
 läsas som numeriska. Matchningen är skiftlägesokänslig. Standard är
 \code{NULL}.}
+
+\item{numeriska_monster_tillagg}{Egna mönster som läggs TILL
+\code{numeriska_monster}, se \code{textmonster_tillagg}.}
 }
 \value{
 Om \code{bind_ihop_dataseten = FALSE} returneras en namngiven lista
@@ -38,4 +48,22 @@ en enda \code{tibble} med allt ihopbundet.
 }
 \description{
 Läs csv-filer direkt ur en eller flera zip-filer
+}
+\examples{
+\dontrun{
+# Standardmönstren för textmonster (kommunkod/lanskod/länskod/regionkod)
+# behålls, och "ar_manad" läggs till utan att man behöver skriva ut dem:
+csv_fran_zipfiler_inlasning(
+  "mina_data.zip",
+  textmonster_tillagg = "ar_manad"
+)
+
+# Vill man i stället ENDAST matcha sitt eget mönster (inte standardvärdena),
+# anges det som vanligt direkt i textmonster:
+csv_fran_zipfiler_inlasning(
+  "mina_data.zip",
+  textmonster = "ar_manad"
+)
+}
+
 }
