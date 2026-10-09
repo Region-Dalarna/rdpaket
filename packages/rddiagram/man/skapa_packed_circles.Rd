@@ -31,7 +31,7 @@ skapa_packed_circles(
   jamforelse_farg = "grey50",
   jamforelse_alpha = 0.55,
   jamforelse_vinkel = NULL,
-  jamforelse_overlapp = 0.3,
+  jamforelse_overlapp = 0.45,
   jamforelse_textstorlek = 3,
   jamforelse_radbryt = 14,
   spara_bildfil = TRUE,
@@ -113,9 +113,9 @@ skapa_packed_circles(
 
 \item{storlek_namn}{textstorlek for gruppnamn (kommun/kon)}
 
-\item{jamforelse_namn}{etikett under en extra cirkel UTANFOR klungan, t.ex.
-"Ej i arbete eller studier" - en grupp som inte ar en bransch men vars
-storlek ska jamforas mot branscherna. NULL (default) = ingen
+\item{jamforelse_namn}{etikett bredvid en extra cirkel UTANFOR klungan,
+t.ex. "Ej i arbete eller studier" - en grupp som inte ar en bransch men
+vars storlek ska jamforas mot branscherna. NULL (default) = ingen
 jamforelsecirkel. Kraver grupp_kol = NULL (en enda klunga).}
 
 \item{jamforelse_varde}{jamforelsecirkelns storlek, i samma enhet/skala som
@@ -134,7 +134,7 @@ branscherna efter sin storlek (se dokumentation ovan).}
 klungan, som andel av dess EGEN radie (0 = tangerar klungans kant
 utanfor, 1 = dess centrum hamnar pa kanten)}
 
-\item{jamforelse_textstorlek}{textstorlek for etiketten under
+\item{jamforelse_textstorlek}{textstorlek for etiketten bredvid
 jamforelsecirkeln}
 
 \item{jamforelse_radbryt}{max tecken per rad i jamforelsecirkelns etikett;

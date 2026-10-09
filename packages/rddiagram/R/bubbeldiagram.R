@@ -479,9 +479,9 @@ hamta_bransch_nyckel <- function(url) {
 #' @param storlek_skal_text textstorlek for skalbubblor-etiketter
 #' @param storlek_labels textstorlek for siffror i cirklarna
 #' @param storlek_namn textstorlek for gruppnamn (kommun/kon)
-#' @param jamforelse_namn etikett under en extra cirkel UTANFOR klungan, t.ex.
-#'   "Ej i arbete eller studier" - en grupp som inte ar en bransch men vars
-#'   storlek ska jamforas mot branscherna. NULL (default) = ingen
+#' @param jamforelse_namn etikett bredvid en extra cirkel UTANFOR klungan,
+#'   t.ex. "Ej i arbete eller studier" - en grupp som inte ar en bransch men
+#'   vars storlek ska jamforas mot branscherna. NULL (default) = ingen
 #'   jamforelsecirkel. Kraver grupp_kol = NULL (en enda klunga).
 #' @param jamforelse_varde jamforelsecirkelns storlek, i samma enhet/skala som
 #'   antal_kol - cirkeln far radie enligt samma skala som branschcirklarna.
@@ -494,7 +494,7 @@ hamta_bransch_nyckel <- function(url) {
 #' @param jamforelse_overlapp hur mycket jamforelsecirkeln knuffas IN mot
 #'   klungan, som andel av dess EGEN radie (0 = tangerar klungans kant
 #'   utanfor, 1 = dess centrum hamnar pa kanten)
-#' @param jamforelse_textstorlek textstorlek for etiketten under
+#' @param jamforelse_textstorlek textstorlek for etiketten bredvid
 #'   jamforelsecirkeln
 #' @param jamforelse_radbryt max tecken per rad i jamforelsecirkelns etikett;
 #'   0/NULL = ingen brytning
@@ -592,13 +592,13 @@ skapa_packed_circles <- function(data,
 
                                  # --- Jamforelsecirkel: en extra cirkel UTANFOR klungan, t.ex. en grupp
                                  # som inte ar en bransch men ska jamforas i storlek (se dokumentation ovan) ---
-                                 jamforelse_namn   = NULL,                       # etikett under cirkeln, t.ex. "Ej i arbete eller studier"; NULL [default] = ingen jamforelsecirkel. Kraver grupp_kol = NULL (en enda klunga).
+                                 jamforelse_namn   = NULL,                       # etikett bredvid cirkeln, t.ex. "Ej i arbete eller studier"; NULL [default] = ingen jamforelsecirkel. Kraver grupp_kol = NULL (en enda klunga).
                                  jamforelse_varde  = NULL,                       # cirkelns storlek, samma enhet/skala som antal_kol
                                  jamforelse_farg   = "grey50",                   # fyllnadsfarg
                                  jamforelse_alpha  = 0.55,                       # genomskinlighet, 0-1
                                  jamforelse_vinkel = NULL,                       # riktning fran klungans mitt i grader (0=hoger, 90=upp, -90=ner, 180=vanster); NULL [default] = rakna ut automatiskt utifran var cirkeln naturligt skulle hamna om den packades in bland branscherna efter sin storlek
-                                 jamforelse_overlapp = 0.3,                      # hur mycket cirkeln knuffas IN mot klungan, som andel av dess EGEN radie (0 = tangerar klungans kant utanfor, 1 = centrum pa kanten)
-                                 jamforelse_textstorlek = 3.0,                   # textstorlek for etiketten under cirkeln
+                                 jamforelse_overlapp = 0.45,                     # hur mycket cirkeln knuffas IN mot klungan, som andel av dess EGEN radie (0 = tangerar klungans kant utanfor, 1 = centrum pa kanten)
+                                 jamforelse_textstorlek = 3.0,                   # textstorlek for etiketten bredvid cirkeln
                                  jamforelse_radbryt = 14,                        # max tecken per rad i etiketten; 0/NULL = ingen brytning
 
                                  # --- Spara till bildfil (valfritt) ---------------------------------

@@ -1,3 +1,20 @@
+# rddiagram 0.0.0.9015
+
+## Justering: jämförelsecirkeln i `skapa_packed_circles()` sitter lite närmare sina grannar
+
+`jamforelse_overlapp` (standard var `0.3`) höjd till `0.45`, efter
+feedback mot ett riktigt diagram - cirkeln knuffas nu lite mer in mot
+klungan så den sitter lite närmare både den större och den mindre
+branschen den rankningsmässigt ligger mellan. Höj (t.ex. `0.6`) eller
+sänk (mot `0`) `jamforelse_overlapp` själv för att styra avståndet
+ytterligare.
+
+Städade också bort ett par inaktuella "under cirkeln"-kommentarer i
+dokumentationen - etiketten ligger sedan 0.0.0.9013 bredvid cirkeln, inte
+under.
+
+---
+
 # rddiagram 0.0.0.9014
 
 ## Förbättring: jämförelsecirkelns auto-vinkel pekar nu mot de VERKLIGA rankningsgrannarna
