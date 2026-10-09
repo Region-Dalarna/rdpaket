@@ -1293,27 +1293,32 @@ skapa_packed_circles <- function(data,
     r_j <- radie_av_antal(jamforelse_varde)
     R_ring <- klung_r[["Alla"]] * ring_marginal
 
-    # Riktning: om jamforelse_vinkel inte anges explicit, rakna ut VAR cirkeln
-    # naturligt skulle hamna om den packades in bland branscherna efter sin
-    # storlek (t.ex. "mellan tredje och fjarde branschen" om den ar fjarde
-    # storst). En egen, kastad provpackning - paverkar INTE de riktiga
-    # branschernas layout, anvands bara for att harleda en vinkel.
+    # Riktning: om jamforelse_vinkel inte anges explicit, peka mot mitt-
+    # punkten mellan de TVA branscher jamforelsecirkeln rankningsmassigt
+    # hamnar mellan i den REDAN packade, riktiga klungan - branschen den ar
+    # nast storre an, och branschen den ar nast mindre an (deras verkliga
+    # x/y i cirklar, inte en gissning). Da hamnar den tydligt "mellan" just
+    # de tva cirklarna, lika nara bada, i stallet for en mer allman riktning.
+    # Finns bara en granne (storst/minst av alla) anvands dess egen riktning.
+    # Finns ingen granne alls (en enda bransch) fallback: rakt ner.
     if (is.null(jamforelse_vinkel)) {
-      bas_j <- data.frame(antal = df$.antal[df$.grupp == "Alla"], ar_jmf = FALSE)
-      bas_j <- rbind(bas_j, data.frame(antal = jamforelse_varde, ar_jmf = TRUE))
-      bas_j <- bas_j[order(bas_j$antal, decreasing = !storlek_ut), ]
-      lay_j <- if (packning == "spiral") {
-        spiral_layout(bas_j$antal)
+      cirklar_alla <- cirklar[cirklar$.grupp == "Alla", ]
+      mindre <- cirklar_alla[cirklar_alla$.antal < jamforelse_varde, ]
+      storre <- cirklar_alla[cirklar_alla$.antal > jamforelse_varde, ]
+      granne_under <- if (nrow(mindre) > 0) mindre[which.max(mindre$.antal), ] else NULL
+      granne_over  <- if (nrow(storre) > 0) storre[which.min(storre$.antal), ] else NULL
+
+      if (!is.null(granne_under) && !is.null(granne_over)) {
+        mx <- (granne_under$x + granne_over$x) / 2
+        my <- (granne_under$y + granne_over$y) / 2
+      } else if (!is.null(granne_under)) {
+        mx <- granne_under$x; my <- granne_under$y
+      } else if (!is.null(granne_over)) {
+        mx <- granne_over$x; my <- granne_over$y
       } else {
-        packcircles::circleProgressiveLayout(bas_j$antal, sizetype = "area")
+        mx <- 0; my <- -1   # ingen granne alls - rakt ner
       }
-      if (ring_metod == "omslutande") {
-        mc_j <- minsta_omslutande(lay_j$x, lay_j$y, lay_j$radius)
-        lay_j$x <- (lay_j$x - mc_j$cx) / mc_j$R
-        lay_j$y <- (lay_j$y - mc_j$cy) / mc_j$R
-      }
-      i_j <- which(bas_j$ar_jmf)
-      vinkel_j <- atan2(lay_j$y[i_j], lay_j$x[i_j])
+      vinkel_j <- atan2(my, mx)
       if (!is.finite(vinkel_j)) vinkel_j <- -pi / 2   # fallback: rakt ner
     } else {
       vinkel_j <- jamforelse_vinkel * pi / 180

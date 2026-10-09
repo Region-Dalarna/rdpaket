@@ -109,3 +109,33 @@ test_that("skapa_packed_circles: jamforelse_vinkel = NULL ger auto-vinkel, angiv
   expect_true(is.finite(xy_auto$x) && is.finite(xy_auto$y))
   expect_gt(xy_auto$x^2 + xy_auto$y^2, 0)
 })
+
+test_that("skapa_packed_circles: auto-vinkeln pekar mot de verkliga rankningsgrannarna", {
+  skip_if_not_installed("ggplot2")
+  skip_if_not_installed("ggforce")
+  # Vård=2500, Handel=1800, Bygg=900, IT=400
+  df <- test_exempeldata()
+
+  hamta_jmf_vinkel <- function(p) {
+    ar_jmf <- vapply(p$layers, function(l) {
+      inherits(l$geom, "GeomCircle") && is.data.frame(l$data) && "lbl" %in% names(l$data)
+    }, logical(1))
+    xy <- p$layers[[which(ar_jmf)]]$data[c("x", "y")]
+    atan2(xy$y, xy$x)
+  }
+
+  # 1200 rankas mellan Bygg (900) och Handel (1800)
+  v_bygg_handel <- hamta_jmf_vinkel(skapa_packed_circles(
+    data = df, antal_kol = "value", autokoppla_branschnamn_farg = FALSE,
+    jamforelse_namn = "Jmf", jamforelse_varde = 1200, spara_bildfil = FALSE
+  ))
+  # 2200 rankas mellan Handel (1800) och Vård (2500) - en annan grannpar
+  v_handel_vard <- hamta_jmf_vinkel(skapa_packed_circles(
+    data = df, antal_kol = "value", autokoppla_branschnamn_farg = FALSE,
+    jamforelse_namn = "Jmf", jamforelse_varde = 2200, spara_bildfil = FALSE
+  ))
+
+  # Olika grannpar ska (i det har datasetet) ge olika vinkel - annars skulle
+  # logiken inte faktiskt bero på vilka grannar cirkeln hamnar mellan
+  expect_false(isTRUE(all.equal(v_bygg_handel, v_handel_vard, tolerance = 0.05)))
+})

@@ -1,3 +1,24 @@
+# rddiagram 0.0.0.9014
+
+## Förbättring: jämförelsecirkelns auto-vinkel pekar nu mot de VERKLIGA rankningsgrannarna
+
+Byggde vidare på auto-vinkeln för jämförelsecirkeln i `skapa_packed_circles()`
+(se 0.0.0.9013) efter att ha testat mot ett riktigt diagram där cirkeln
+hamnade lite för allmänt placerad ovanför klungan i stället för tydligt
+mellan sina två storleksgrannar.
+
+`jamforelse_vinkel = NULL` (standard) pekar nu mot mittpunkten mellan de
+TVÅ branscher jämförelsecirkeln rankningsmässigt hamnar mellan - branschen
+den är näst större än och branschen den är näst mindre än - läst direkt
+från den redan färdigpackade, riktiga klungan (inte en separat, kastad
+provpackning som bara gav en ungefärlig riktning). Cirkeln hamnar då
+tydligt och symmetriskt mellan just de två bubblorna den rankningsmässigt
+ligger mellan, lika nära båda. Finns bara en granne (störst/minst av alla)
+används dess egen riktning; finns ingen granne alls (en enda bransch)
+faller det tillbaka på rakt ner.
+
+---
+
 # rddiagram 0.0.0.9013
 
 ## Förbättring: jämförelsecirkelns placering i `skapa_packed_circles()`
