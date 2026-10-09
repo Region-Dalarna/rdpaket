@@ -344,7 +344,12 @@ spiral_layout <- function(areas) {
 #               halvgenomskinlig (jamforelse_farg/-alpha) och knuffas delvis
 #               in mot klungans kant (jamforelse_overlapp) sa den ser ut att
 #               hora ihop med klungan utan att forvaxlas med en bransch.
-#               Riktning fran klungans mitt: jamforelse_vinkel (grader).
+#               Riktning fran klungans mitt (jamforelse_vinkel, grader):
+#               NULL [default] = rakna ut automatiskt var cirkeln naturligt
+#               skulle hamna om den packades in bland branscherna efter sin
+#               storlek (t.ex. "mellan tredje och fjarde branschen" om den
+#               ar fjarde storst) - en egen, kastad provpackning som INTE
+#               paverkar de riktiga branschernas layout.
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
@@ -483,7 +488,9 @@ hamta_bransch_nyckel <- function(url) {
 #' @param jamforelse_farg jamforelsecirkelns fyllnadsfarg
 #' @param jamforelse_alpha jamforelsecirkelns genomskinlighet, 0-1
 #' @param jamforelse_vinkel riktning fran klungans mitt i grader (0=hoger,
-#'   90=upp, -90=ner (default), 180=vanster)
+#'   90=upp, -90=ner, 180=vanster). NULL (default) = rakna ut automatiskt
+#'   utifran var cirkeln naturligt skulle hamna om den packades in bland
+#'   branscherna efter sin storlek (se dokumentation ovan).
 #' @param jamforelse_overlapp hur mycket jamforelsecirkeln knuffas IN mot
 #'   klungan, som andel av dess EGEN radie (0 = tangerar klungans kant
 #'   utanfor, 1 = dess centrum hamnar pa kanten)
@@ -589,7 +596,7 @@ skapa_packed_circles <- function(data,
                                  jamforelse_varde  = NULL,                       # cirkelns storlek, samma enhet/skala som antal_kol
                                  jamforelse_farg   = "grey50",                   # fyllnadsfarg
                                  jamforelse_alpha  = 0.55,                       # genomskinlighet, 0-1
-                                 jamforelse_vinkel = -90,                        # riktning fran klungans mitt i grader (0=hoger, 90=upp, -90=ner [default], 180=vanster)
+                                 jamforelse_vinkel = NULL,                       # riktning fran klungans mitt i grader (0=hoger, 90=upp, -90=ner, 180=vanster); NULL [default] = rakna ut automatiskt utifran var cirkeln naturligt skulle hamna om den packades in bland branscherna efter sin storlek
                                  jamforelse_overlapp = 0.3,                      # hur mycket cirkeln knuffas IN mot klungan, som andel av dess EGEN radie (0 = tangerar klungans kant utanfor, 1 = centrum pa kanten)
                                  jamforelse_textstorlek = 3.0,                   # textstorlek for etiketten under cirkeln
                                  jamforelse_radbryt = 14,                        # max tecken per rad i etiketten; 0/NULL = ingen brytning
@@ -1285,22 +1292,66 @@ skapa_packed_circles <- function(data,
   if (!is.null(jamforelse_namn)) {
     r_j <- radie_av_antal(jamforelse_varde)
     R_ring <- klung_r[["Alla"]] * ring_marginal
-    vinkel_j <- jamforelse_vinkel * pi / 180
+
+    # Riktning: om jamforelse_vinkel inte anges explicit, rakna ut VAR cirkeln
+    # naturligt skulle hamna om den packades in bland branscherna efter sin
+    # storlek (t.ex. "mellan tredje och fjarde branschen" om den ar fjarde
+    # storst). En egen, kastad provpackning - paverkar INTE de riktiga
+    # branschernas layout, anvands bara for att harleda en vinkel.
+    if (is.null(jamforelse_vinkel)) {
+      bas_j <- data.frame(antal = df$.antal[df$.grupp == "Alla"], ar_jmf = FALSE)
+      bas_j <- rbind(bas_j, data.frame(antal = jamforelse_varde, ar_jmf = TRUE))
+      bas_j <- bas_j[order(bas_j$antal, decreasing = !storlek_ut), ]
+      lay_j <- if (packning == "spiral") {
+        spiral_layout(bas_j$antal)
+      } else {
+        packcircles::circleProgressiveLayout(bas_j$antal, sizetype = "area")
+      }
+      if (ring_metod == "omslutande") {
+        mc_j <- minsta_omslutande(lay_j$x, lay_j$y, lay_j$radius)
+        lay_j$x <- (lay_j$x - mc_j$cx) / mc_j$R
+        lay_j$y <- (lay_j$y - mc_j$cy) / mc_j$R
+      }
+      i_j <- which(bas_j$ar_jmf)
+      vinkel_j <- atan2(lay_j$y[i_j], lay_j$x[i_j])
+      if (!is.finite(vinkel_j)) vinkel_j <- -pi / 2   # fallback: rakt ner
+    } else {
+      vinkel_j <- jamforelse_vinkel * pi / 180
+    }
     d_j <- R_ring + r_j - jamforelse_overlapp * r_j
-    jmf <- data.frame(
-      x = d_j * cos(vinkel_j),
-      y = d_j * sin(vinkel_j),
-      r = r_j,
-      lbl = radbryt(jamforelse_namn, jamforelse_radbryt)
-    )
-    # Utoka bounding-boxen sa cirkeln (och dess etikett, ungefarligt uppskattad
-    # fran den annu inte slutgiltiga h_tot) inte klipps av panelgranserna.
+    cx_j <- d_j * cos(vinkel_j)
+    cy_j <- d_j * sin(vinkel_j)
+    lbl_j <- radbryt(jamforelse_namn, jamforelse_radbryt)
+
+    # Etiketten placeras SIDLED - till höger om cirkeln ligger på klungans
+    # högra halva, annars till vänster - i höjd med cirkelns eget centrum.
+    # Enklare att hitta öppen yta än att följa cirkelns egen (ibland uppåt
+    # pekande) riktning, och konkurrerar då inte med titelns utrymme ovanför
+    # klungan.
     h_tot0 <- y_max - y_min
-    etikett_hojd <- jamforelse_textstorlek * h_tot0 * 0.004 * 2.2   # ~2 rader + luft
-    y_min <- min(y_min, jmf$y - jmf$r - etikett_hojd)
-    y_max <- max(y_max, jmf$y + jmf$r)
-    x_min <- min(x_min, jmf$x - jmf$r)
-    x_max <- max(x_max, jmf$x + jmf$r)
+    rader_txt <- strsplit(lbl_j, "\n", fixed = TRUE)[[1]]
+    n_rader <- max(length(rader_txt), 1)
+    etikett_halvhojd <- jamforelse_textstorlek * h_tot0 * 0.008 * n_rader
+    max_tecken <- if (length(rader_txt)) max(nchar(rader_txt)) else 0
+    etikett_bredd <- jamforelse_textstorlek * h_tot0 * 0.009 * max_tecken
+    gap_j <- h_tot0 * 0.02
+
+    hoger <- cx_j >= 0   # cirkeln på höger halva -> etikett åt höger (och vice versa)
+    lblx_j <- cx_j + (r_j + gap_j) * if (hoger) 1 else -1
+    lbly_j <- cy_j
+    hjust_j <- if (hoger) 0 else 1
+
+    jmf <- data.frame(
+      x = cx_j, y = cy_j, r = r_j, lbl = lbl_j,
+      lbl_x = lblx_j, lbl_y = lbly_j, lbl_hjust = hjust_j
+    )
+
+    # Utoka bounding-boxen runt BADE cirkeln och etiketten (ungefarligt
+    # uppskattad fran den annu inte slutgiltiga h_tot) sa inget klipps.
+    y_min <- min(y_min, cy_j - max(r_j, etikett_halvhojd))
+    y_max <- max(y_max, cy_j + max(r_j, etikett_halvhojd))
+    x_min <- min(x_min, cx_j - r_j, if (!hoger) lblx_j - etikett_bredd else lblx_j)
+    x_max <- max(x_max, cx_j + r_j, if (hoger) lblx_j + etikett_bredd else lblx_j)
   }
 
   # Spara ringarnas extent separat - xlim baseras pa dessa, inte skalbubblor.
@@ -1331,20 +1382,6 @@ skapa_packed_circles <- function(data,
       data = ringar, ggplot2::aes(x0 = x0, y0 = y0, r = r),
       colour = ring_farg, fill = NA, linewidth = 0.3, inherit.aes = FALSE)
   }
-  if (!is.null(jmf)) {
-    if (!requireNamespace("ggforce", quietly = TRUE))
-      stop("Paketet 'ggforce' kravs for jamforelse_namn.")
-    jmf$lbl_y <- jmf$y - jmf$r - h_tot * 0.015
-    p <- p +
-      ggforce::geom_circle(
-        data = jmf, ggplot2::aes(x0 = x, y0 = y, r = r),
-        fill = jamforelse_farg, alpha = jamforelse_alpha, colour = NA,
-        inherit.aes = FALSE) +
-      ggplot2::geom_text(
-        data = jmf, ggplot2::aes(x = x, y = lbl_y, label = lbl),
-        hjust = 0.5, vjust = 1, size = jamforelse_textstorlek,
-        colour = txt_default, family = font)
-  }
   p <- p +
     ggplot2::geom_polygon(data = polygoner, ggplot2::aes(x, y, group = .uid, fill = .bransch),
                  colour = NA) +
@@ -1363,6 +1400,22 @@ skapa_packed_circles <- function(data,
           legend.margin      = ggplot2::margin(0,0,0,0),
           # liten luft mellan legendtexten och hogerkanten
           plot.margin        = ggplot2::margin(t = 5, r = 18, b = 5, l = 5))
+  if (!is.null(jmf)) {
+    # Ritas EFTER branschpolygonerna sa cirkeln/etiketten aldrig hamnar bakom
+    # en bransch den rakar overlappa (den hamnar ju medvetet nara klungans
+    # kant, och med auto-vinkel kan det bli vilken riktning som helst).
+    if (!requireNamespace("ggforce", quietly = TRUE))
+      stop("Paketet 'ggforce' kravs for jamforelse_namn.")
+    p <- p +
+      ggforce::geom_circle(
+        data = jmf, ggplot2::aes(x0 = x, y0 = y, r = r),
+        fill = jamforelse_farg, alpha = jamforelse_alpha, colour = NA,
+        inherit.aes = FALSE) +
+      ggplot2::geom_text(
+        data = jmf, ggplot2::aes(x = lbl_x, y = lbl_y, label = lbl, hjust = lbl_hjust),
+        vjust = 0.5, size = jamforelse_textstorlek,
+        colour = txt_default, family = font)
+  }
   # Titel centrerad over cirklarna (inte hela panelen) via annotate.
   # Berakna klungornas horisontella mitt fran ring- eller cirkeldata.
   kx_mitt <- (x_min + x_max) / 2

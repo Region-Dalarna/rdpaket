@@ -12,5 +12,5 @@ NULL
 globalVariables(c(
   "dalarna_layout",
   ".antal", ".bransch", ".farg", ".gid", ".grupp", ".lbl", ".uid",
-  "lbl", "x", "x0", "y", "y0"
+  "lbl", "lbl_hjust", "lbl_x", "lbl_y", "x", "x0", "y", "y0"
 ))

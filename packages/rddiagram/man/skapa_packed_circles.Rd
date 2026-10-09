@@ -30,7 +30,7 @@ skapa_packed_circles(
   jamforelse_varde = NULL,
   jamforelse_farg = "grey50",
   jamforelse_alpha = 0.55,
-  jamforelse_vinkel = -90,
+  jamforelse_vinkel = NULL,
   jamforelse_overlapp = 0.3,
   jamforelse_textstorlek = 3,
   jamforelse_radbryt = 14,
@@ -126,7 +126,9 @@ antal_kol - cirkeln far radie enligt samma skala som branschcirklarna.}
 \item{jamforelse_alpha}{jamforelsecirkelns genomskinlighet, 0-1}
 
 \item{jamforelse_vinkel}{riktning fran klungans mitt i grader (0=hoger,
-90=upp, -90=ner (default), 180=vanster)}
+90=upp, -90=ner, 180=vanster). NULL (default) = rakna ut automatiskt
+utifran var cirkeln naturligt skulle hamna om den packades in bland
+branscherna efter sin storlek (se dokumentation ovan).}
 
 \item{jamforelse_overlapp}{hur mycket jamforelsecirkeln knuffas IN mot
 klungan, som andel av dess EGEN radie (0 = tangerar klungans kant

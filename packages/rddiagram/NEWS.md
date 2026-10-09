@@ -1,3 +1,29 @@
+# rddiagram 0.0.0.9013
+
+## Förbättring: jämförelsecirkelns placering i `skapa_packed_circles()`
+
+Byggde vidare på jämförelsecirkeln (`jamforelse_namn`/`jamforelse_varde`,
+se 0.0.0.9012) utifrån att testa mot riktiga diagram:
+
+* `jamforelse_vinkel` är nu `NULL` som standard i stället för fast `-90`
+  (rakt ner): riktningen räknas automatiskt ut från var cirkeln NATURLIGT
+  skulle hamna om den packades in bland branscherna efter sin storlek - en
+  egen, kastad provpackning som inte påverkar de riktiga branschernas
+  layout. En jämförelsecirkel som t.ex. är fjärde störst hamnar då
+  synligt mellan tredje och fjärde största bransch, i vilken riktning det
+  än är. Ange `jamforelse_vinkel` explicit för att styra riktningen
+  manuellt som tidigare.
+* Etiketten placeras nu SIDLED (höger om cirkeln ligger på klungans högra
+  halva, annars vänster) i höjd med cirkelns centrum, i stället för
+  rakt under/över/bredvid i cirkelns egen riktning. Enklare att hitta
+  öppen yta, och konkurrerar inte längre om utrymmet ovanför klungan där
+  titeln ligger - den tidigare varianten kunde krocka med en lång titel
+  när cirkeln hamnade högt upp.
+* R CMD check-NOTE om `lbl_hjust`/`lbl_x`/`lbl_y` (data masking-kolumner
+  som R CMD check inte kände igen) fixad via `globalVariables()`.
+
+---
+
 # rddiagram 0.0.0.9012
 
 ## Ny funktion: jämförelsecirkel i `skapa_packed_circles()`
