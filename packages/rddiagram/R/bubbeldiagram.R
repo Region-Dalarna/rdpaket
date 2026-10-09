@@ -335,6 +335,16 @@ spiral_layout <- function(areas) {
 #                diagrammet (i linje med klungornas vanstra kant). Tom/NULL =
 #                inget ritas. Storlek styrs med storlek_caption (default 3).
 #  bakgrund     "white" eller "black" m.m. (svart = som din DagBef-bild)
+#
+#  jamforelse_namn  etikett for en extra cirkel UTANFOR klungan, t.ex. "Ej i
+#               arbete eller studier" - en grupp som inte ar en bransch men
+#               vars storlek (jamforelse_varde) ska jamforas mot branscherna,
+#               i SAMMA skala (radie_av_antal()). NULL [default] = ingen.
+#               Kraver grupp_kol = NULL (en enda klunga). Ritas gra och
+#               halvgenomskinlig (jamforelse_farg/-alpha) och knuffas delvis
+#               in mot klungans kant (jamforelse_overlapp) sa den ser ut att
+#               hora ihop med klungan utan att forvaxlas med en bransch.
+#               Riktning fran klungans mitt: jamforelse_vinkel (grader).
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
@@ -464,6 +474,23 @@ hamta_bransch_nyckel <- function(url) {
 #' @param storlek_skal_text textstorlek for skalbubblor-etiketter
 #' @param storlek_labels textstorlek for siffror i cirklarna
 #' @param storlek_namn textstorlek for gruppnamn (kommun/kon)
+#' @param jamforelse_namn etikett under en extra cirkel UTANFOR klungan, t.ex.
+#'   "Ej i arbete eller studier" - en grupp som inte ar en bransch men vars
+#'   storlek ska jamforas mot branscherna. NULL (default) = ingen
+#'   jamforelsecirkel. Kraver grupp_kol = NULL (en enda klunga).
+#' @param jamforelse_varde jamforelsecirkelns storlek, i samma enhet/skala som
+#'   antal_kol - cirkeln far radie enligt samma skala som branschcirklarna.
+#' @param jamforelse_farg jamforelsecirkelns fyllnadsfarg
+#' @param jamforelse_alpha jamforelsecirkelns genomskinlighet, 0-1
+#' @param jamforelse_vinkel riktning fran klungans mitt i grader (0=hoger,
+#'   90=upp, -90=ner (default), 180=vanster)
+#' @param jamforelse_overlapp hur mycket jamforelsecirkeln knuffas IN mot
+#'   klungan, som andel av dess EGEN radie (0 = tangerar klungans kant
+#'   utanfor, 1 = dess centrum hamnar pa kanten)
+#' @param jamforelse_textstorlek textstorlek for etiketten under
+#'   jamforelsecirkeln
+#' @param jamforelse_radbryt max tecken per rad i jamforelsecirkelns etikett;
+#'   0/NULL = ingen brytning
 #' @param spara_bildfil TRUE = spara diagrammet som bildfil
 #' @param filnamn filnamn; NULL = autogenereras fran titel/grupp + datum
 #' @param mapp mapp att spara i; NULL = anvand utskriftsmapp() om den finns
@@ -518,6 +545,16 @@ hamta_bransch_nyckel <- function(url) {
 #'   grupp_kol = "region",
 #'   antal_kol = "value"
 #' )
+#'
+#' # En extra, grå och halvgenomskinlig cirkel utanför klungan - t.ex. för att
+#' # jämföra branscherna mot antalet som varken arbetar eller studerar (IVAS).
+#' # Kräver grupp_kol = NULL (en enda klunga):
+#' skapa_packed_circles(
+#'   data = dataset_df,
+#'   antal_kol = "value",
+#'   jamforelse_namn = "Ej i arbete eller studier",
+#'   jamforelse_varde = 18000
+#' )
 #' }
 #'
 #' @export
@@ -545,7 +582,18 @@ skapa_packed_circles <- function(data,
                                  storlek_skal_text = 3.2,                        # textstorlek for skalbubblor-etiketter
                                  storlek_labels = 2.6,                           # textstorlek for siffror i cirklarna
                                  storlek_namn  = 3.0,                            # textstorlek for gruppnamn (kommun/kon)
-                                 
+
+                                 # --- Jamforelsecirkel: en extra cirkel UTANFOR klungan, t.ex. en grupp
+                                 # som inte ar en bransch men ska jamforas i storlek (se dokumentation ovan) ---
+                                 jamforelse_namn   = NULL,                       # etikett under cirkeln, t.ex. "Ej i arbete eller studier"; NULL [default] = ingen jamforelsecirkel. Kraver grupp_kol = NULL (en enda klunga).
+                                 jamforelse_varde  = NULL,                       # cirkelns storlek, samma enhet/skala som antal_kol
+                                 jamforelse_farg   = "grey50",                   # fyllnadsfarg
+                                 jamforelse_alpha  = 0.55,                       # genomskinlighet, 0-1
+                                 jamforelse_vinkel = -90,                        # riktning fran klungans mitt i grader (0=hoger, 90=upp, -90=ner [default], 180=vanster)
+                                 jamforelse_overlapp = 0.3,                      # hur mycket cirkeln knuffas IN mot klungan, som andel av dess EGEN radie (0 = tangerar klungans kant utanfor, 1 = centrum pa kanten)
+                                 jamforelse_textstorlek = 3.0,                   # textstorlek for etiketten under cirkeln
+                                 jamforelse_radbryt = 14,                        # max tecken per rad i etiketten; 0/NULL = ingen brytning
+
                                  # --- Spara till bildfil (valfritt) ---------------------------------
                                  spara_bildfil = TRUE,                           # TRUE = spara diagrammet som bildfil
                                  filnamn       = NULL,                            # filnamn; NULL = autogenereras fran titel/grupp + datum
@@ -593,6 +641,18 @@ skapa_packed_circles <- function(data,
   layout <- match.arg(layout)
   ring_metod <- match.arg(ring_metod)
   geo_metod <- match.arg(geo_metod)
+
+  if (!is.null(jamforelse_namn)) {
+    if (!is.null(grupp_kol)) {
+      stop("jamforelse_namn stods bara nar grupp_kol ar NULL (en enda klunga, ",
+           "layout = \"none\"). Summera/filtrera data till en klunga forst.",
+           call. = FALSE)
+    }
+    if (is.null(jamforelse_varde) || is.na(jamforelse_varde) || jamforelse_varde <= 0) {
+      stop("jamforelse_varde maste anges som ett positivt tal nar jamforelse_namn ar satt.",
+           call. = FALSE)
+    }
+  }
   packning <- match.arg(packning)
 
   # rddiagram::  (inte bara dalarna_layout, och INTE rddiagram:::) - data/-lazydata
@@ -1215,13 +1275,41 @@ skapa_packed_circles <- function(data,
     x_min <- min(cirklar$x - cirklar$radius)
     x_max <- max(cirklar$x + cirklar$radius)
   }
+  # --- Jamforelsecirkel: berakna position/storlek --------------------------
+  # Egen cirkel UTANFOR klungans kant, i "egen" skala via radie_av_antal() -
+  # samma skala som branschcirklarna, sa storleken gar att jamfora rattvist.
+  # jamforelse_overlapp styr hur mycket den knuffas IN mot klungan (0 = tangerar
+  # kanten utanfor). Placeras pa "Alla"-klungans enda ring (grupp_kol = NULL
+  # kravs, kontrollerat ovan).
+  jmf <- NULL
+  if (!is.null(jamforelse_namn)) {
+    r_j <- radie_av_antal(jamforelse_varde)
+    R_ring <- klung_r[["Alla"]] * ring_marginal
+    vinkel_j <- jamforelse_vinkel * pi / 180
+    d_j <- R_ring + r_j - jamforelse_overlapp * r_j
+    jmf <- data.frame(
+      x = d_j * cos(vinkel_j),
+      y = d_j * sin(vinkel_j),
+      r = r_j,
+      lbl = radbryt(jamforelse_namn, jamforelse_radbryt)
+    )
+    # Utoka bounding-boxen sa cirkeln (och dess etikett, ungefarligt uppskattad
+    # fran den annu inte slutgiltiga h_tot) inte klipps av panelgranserna.
+    h_tot0 <- y_max - y_min
+    etikett_hojd <- jamforelse_textstorlek * h_tot0 * 0.004 * 2.2   # ~2 rader + luft
+    y_min <- min(y_min, jmf$y - jmf$r - etikett_hojd)
+    y_max <- max(y_max, jmf$y + jmf$r)
+    x_min <- min(x_min, jmf$x - jmf$r)
+    x_max <- max(x_max, jmf$x + jmf$r)
+  }
+
   # Spara ringarnas extent separat - xlim baseras pa dessa, inte skalbubblor.
   # Skalbubblor ritas med clip = "off" och far ligga utanfor panelen.
   ring_x_min <- x_min; ring_x_max <- x_max
   ring_y_min <- y_min; ring_y_max <- y_max
   h_tot <- y_max - y_min
   w_tot <- x_max - x_min
-  
+
   # Uppskattad texthojd i DATA-enheter for en given ggplot2 'size' (samma
   # kalibreringskonstant, 0.004 * h_tot per storleksenhet, som anvands for
   # gruppnamnen langre ner - approximativt men konsekvent over hela figuren).
@@ -1242,6 +1330,20 @@ skapa_packed_circles <- function(data,
     p <- p + ggforce::geom_circle(
       data = ringar, ggplot2::aes(x0 = x0, y0 = y0, r = r),
       colour = ring_farg, fill = NA, linewidth = 0.3, inherit.aes = FALSE)
+  }
+  if (!is.null(jmf)) {
+    if (!requireNamespace("ggforce", quietly = TRUE))
+      stop("Paketet 'ggforce' kravs for jamforelse_namn.")
+    jmf$lbl_y <- jmf$y - jmf$r - h_tot * 0.015
+    p <- p +
+      ggforce::geom_circle(
+        data = jmf, ggplot2::aes(x0 = x, y0 = y, r = r),
+        fill = jamforelse_farg, alpha = jamforelse_alpha, colour = NA,
+        inherit.aes = FALSE) +
+      ggplot2::geom_text(
+        data = jmf, ggplot2::aes(x = x, y = lbl_y, label = lbl),
+        hjust = 0.5, vjust = 1, size = jamforelse_textstorlek,
+        colour = txt_default, family = font)
   }
   p <- p +
     ggplot2::geom_polygon(data = polygoner, ggplot2::aes(x, y, group = .uid, fill = .bransch),

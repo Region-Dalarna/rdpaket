@@ -26,6 +26,14 @@ skapa_packed_circles(
   storlek_skal_text = 3.2,
   storlek_labels = 2.6,
   storlek_namn = 3,
+  jamforelse_namn = NULL,
+  jamforelse_varde = NULL,
+  jamforelse_farg = "grey50",
+  jamforelse_alpha = 0.55,
+  jamforelse_vinkel = -90,
+  jamforelse_overlapp = 0.3,
+  jamforelse_textstorlek = 3,
+  jamforelse_radbryt = 14,
   spara_bildfil = TRUE,
   filnamn = NULL,
   mapp = NULL,
@@ -104,6 +112,31 @@ skapa_packed_circles(
 \item{storlek_labels}{textstorlek for siffror i cirklarna}
 
 \item{storlek_namn}{textstorlek for gruppnamn (kommun/kon)}
+
+\item{jamforelse_namn}{etikett under en extra cirkel UTANFOR klungan, t.ex.
+"Ej i arbete eller studier" - en grupp som inte ar en bransch men vars
+storlek ska jamforas mot branscherna. NULL (default) = ingen
+jamforelsecirkel. Kraver grupp_kol = NULL (en enda klunga).}
+
+\item{jamforelse_varde}{jamforelsecirkelns storlek, i samma enhet/skala som
+antal_kol - cirkeln far radie enligt samma skala som branschcirklarna.}
+
+\item{jamforelse_farg}{jamforelsecirkelns fyllnadsfarg}
+
+\item{jamforelse_alpha}{jamforelsecirkelns genomskinlighet, 0-1}
+
+\item{jamforelse_vinkel}{riktning fran klungans mitt i grader (0=hoger,
+90=upp, -90=ner (default), 180=vanster)}
+
+\item{jamforelse_overlapp}{hur mycket jamforelsecirkeln knuffas IN mot
+klungan, som andel av dess EGEN radie (0 = tangerar klungans kant
+utanfor, 1 = dess centrum hamnar pa kanten)}
+
+\item{jamforelse_textstorlek}{textstorlek for etiketten under
+jamforelsecirkeln}
+
+\item{jamforelse_radbryt}{max tecken per rad i jamforelsecirkelns etikett;
+0/NULL = ingen brytning}
 
 \item{spara_bildfil}{TRUE = spara diagrammet som bildfil}
 
@@ -196,6 +229,16 @@ skapa_packed_circles(
   data = dataset_df,
   grupp_kol = "region",
   antal_kol = "value"
+)
+
+# En extra, grå och halvgenomskinlig cirkel utanför klungan - t.ex. för att
+# jämföra branscherna mot antalet som varken arbetar eller studerar (IVAS).
+# Kräver grupp_kol = NULL (en enda klunga):
+skapa_packed_circles(
+  data = dataset_df,
+  antal_kol = "value",
+  jamforelse_namn = "Ej i arbete eller studier",
+  jamforelse_varde = 18000
 )
 }
 

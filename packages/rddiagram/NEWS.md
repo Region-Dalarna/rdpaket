@@ -1,3 +1,29 @@
+# rddiagram 0.0.0.9012
+
+## Ny funktion: jämförelsecirkel i `skapa_packed_circles()`
+
+Nya parametrar `jamforelse_namn`/`jamforelse_varde` (+ `jamforelse_farg`,
+`jamforelse_alpha`, `jamforelse_vinkel`, `jamforelse_overlapp`,
+`jamforelse_textstorlek`, `jamforelse_radbryt`) ritar en extra cirkel
+UTANFÖR klungan - t.ex. antalet som varken arbetar eller studerar (IVAS),
+för att visa hur den gruppen skulle ranka storleksmässigt mot branscherna
+utan att förväxlas med en riktig bransch. Cirkelns storlek använder samma
+skala som branschcirklarna (`radie_av_antal()`), den ritas grå och
+halvgenomskinlig som standard, och knuffas delvis in mot klungans kant
+(`jamforelse_overlapp`, standard 0.3) så den ser ut att höra ihop med
+klungan utan att ligga packad bland branscherna. Kräver `grupp_kol = NULL`
+(en enda klunga, `layout = "none"`) - stoppar med ett tydligt fel annars.
+
+Panelens mått (`bildmatt`, och den sparade bildfilens storlek) tar nu med
+jämförelsecirkeln och dess etikett, så inget klipps. OBS: eftersom
+bildbredden normalt beräknas automatiskt utifrån innehållets proportioner
+vid en FAST `bildhojd`, kan en jämförelsecirkel - som gör diagrammet högre
+- göra den automatiska bredden för smal för en lång `titel`. Höj
+`bildbredd` manuellt eller korta titeln om det händer (samma beteende som
+för andra ovanligt höga diagram, inte unikt för jämförelsecirkeln).
+
+---
+
 # rddiagram 0.0.0.9011
 
 ## Buggfix: `skapa_packed_circles(grupp_kol = ...)` kraschade med "object 'dalarna_layout' not found"
