@@ -1,3 +1,29 @@
+# rddiagram 0.0.0.9019
+
+## `caption_hela_bredden = TRUE` är nu standard
+
+Ändrat default för `caption_hela_bredden` i `skapa_packed_circles()` från
+`FALSE` till `TRUE` - `diagram_caption` placeras längst till vänster i
+hela bilden som standard. Sätt `caption_hela_bredden = FALSE` för det
+gamla beteendet (caption bara i linje med klungans vänstra kant).
+
+## Siffror som inte får plats i sin egen cirkel döljs nu automatiskt
+
+`visa_antal = TRUE` kunde tidigare skriva ut en siffra som var bredare än
+cirkeln den stod i - särskilt när grannceller hade olika antal siffror
+(t.ex. "150" bredvid "103 046"), så texten stack ut och krockade med
+grannens etikett. Varje siffra kontrolleras nu mot sin EGEN cirkels
+radie (textbredden räknas från antal tecken, inte bara från den
+generella `antal_min`-tröskeln) - får den inte plats skrivs den inte ut.
+Ingen ny parameter krävs, detta gäller automatiskt.
+
+## Fix: stora, runda tal i etiketter kunde bli vetenskaplig notation
+
+`format()`-anropen för siffror i cirklarna och vid skalbubblorna saknade
+`scientific = FALSE`, så ett runt tal som 100000 kunde skrivas ut som
+"1e+05" istället för "100 000". Upptäckt medan testet för ovanstående fix
+skrevs.
+
 # rddiagram 0.0.0.9018
 
 ## Fix: `caption_hela_bredden = TRUE` krockar inte längre med skalbubblor

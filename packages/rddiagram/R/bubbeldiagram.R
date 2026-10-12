@@ -328,18 +328,23 @@ spiral_layout <- function(areas) {
 #               figuren (storlek_labels), sa att bara siffror som far rimlig
 #               plats visas - oavsett om datan racknar hundratal eller
 #               hundratusental. Ange ett eget tal for att styra manuellt.
+#               Oavsett antal_min kontrolleras ocksa varje enskild siffras
+#               FAKTISKA textbredd (fler siffror = bredare text) mot just
+#               den cirkelns radie - far siffran inte plats ritas den inte,
+#               aven om cirkeln passerade antal_min.
 #  visa_namn    visa gruppnamn
 #  font         typsnitt (din profil: "Poppins") - kor aktivera_font() forst
 #  titel        valfri plot-titel
 #  diagram_caption  valfri bildtext/kalla, placeras vansterstalld UNDER
-#                diagrammet (i linje med klungornas vanstra kant, eller langst
-#                till vanster i hela bilden med caption_hela_bredden = TRUE).
+#                diagrammet - langst till vanster i hela bilden som standard
+#                (caption_hela_bredden = TRUE), eller bara i linje med
+#                klungornas vanstra kant (caption_hela_bredden = FALSE).
 #                Tom/NULL = inget ritas. Storlek styrs med storlek_caption
 #                (default 3).
-#  caption_hela_bredden  FALSE [default] = caption i linje med klungans
-#                vanstra kant, under klungan. TRUE = langst till vanster i
-#                hela bilden OCH under bada klungan och ev. skalbubblor till
-#                vanster om den (sa den aldrig krockar med dem).
+#  caption_hela_bredden  TRUE [default] = langst till vanster i hela bilden
+#                OCH under bade klungan och ev. skalbubblor till vanster om
+#                den (sa den aldrig krockar med dem). FALSE = caption bara i
+#                linje med klungans vanstra kant, under klungan.
 #  bakgrund     "white" eller "black" m.m. (svart = som din DagBef-bild)
 #
 #  jamforelse_namn  etikett for en extra cirkel UTANFOR klungan, t.ex. "Ej i
@@ -470,13 +475,13 @@ hamta_bransch_nyckel <- function(url) {
 #' @param antal_kol kolumnnamn for antal sysselsatta; NULL = auto-detektera (se AVANCERAT for de kolumnlistor autodetekteringen anvander)
 #' @param farg_kol kolumnnamn med hex-farg per rad; NULL = auto-palett
 #' @param diagram_caption valfri bildtext/kalla under diagrammet; NULL = ingen
-#' @param caption_hela_bredden FALSE (default) = caption i linje med klungans
-#'   vanstra kant, under klungan; TRUE = langst till vanster i hela bilden OCH
-#'   under bade klungan och ev. skalbubblor till vanster om den
+#' @param caption_hela_bredden TRUE (default) = caption langst till vanster i
+#'   hela bilden OCH under bade klungan och ev. skalbubblor till vanster om
+#'   den; FALSE = caption bara i linje med klungans vanstra kant, under klungan
 #' @param titel plot-titel som strang, eller NULL
 #' @param bakgrund bakgrundsfarg; "black" ger ljus text och svart panel
 #' @param visa_antal TRUE/FALSE = skriv ut siffror i cirklarna alls
-#' @param antal_min minsta antal for utskriven siffra; NULL = autoberakna fran cirkelstorlek (se dokumentation ovan)
+#' @param antal_min minsta antal for utskriven siffra; NULL = autoberakna fran cirkelstorlek (se dokumentation ovan). Oavsett detta döljs en siffra som inte får plats i just sin egen cirkel (textbredden varierar med antal tecken)
 #' @param visa_namn TRUE/FALSE = visa gruppnamn vid klungorna
 #' @param autokoppla_branschnamn_farg TRUE = upptack branschkod-kolumn (Gxx m.m.) och koppla pa Bransch + HexCode fran nyckelfilen automatiskt
 #' @param skal_bubblor 0 = inga; >0 = antal svarta skalbubblor (storleksreferens)
@@ -586,7 +591,7 @@ skapa_packed_circles <- function(data,
                                  antal_kol     = NULL,                           # kolumnnamn for antal sysselsatta; NULL = auto-detektera (se AVANCERAT for de kolumnlistor autodetekteringen anvander)
                                  farg_kol      = "HexCode",                      # kolumnnamn med hex-farg per rad; NULL = auto-palett
                                  diagram_caption = NULL,                         # valfri bildtext/kalla under diagrammet; NULL = ingen
-                                 caption_hela_bredden = FALSE,                   # FALSE [default] = vansterstalld i linje med klungans vanstra kant; TRUE = vansterstalld langst till vanster i hela bilden (aven forbi ev. skalbubblor)
+                                 caption_hela_bredden = TRUE,                    # TRUE [default] = vansterstalld langst till vanster i hela bilden (aven forbi ev. skalbubblor); FALSE = vansterstalld i linje med klungans vanstra kant
                                  titel         = NULL,                           # plot-titel som strang, eller NULL
                                  bakgrund      = "white",                        # bakgrundsfarg; "black" ger ljus text och svart panel
                                  visa_antal    = FALSE,                          # TRUE/FALSE = skriv ut siffror i cirklarna alls
@@ -1505,8 +1510,8 @@ skapa_packed_circles <- function(data,
       }
     }
     
-    skal_df <- data.frame(x = bx, y = cy, r = r_sv, lbl = format(sv, big.mark = " "))
-    lbl_df  <- data.frame(x = txt_x, y = lbl_y, lbl = format(sv, big.mark = " "))
+    skal_df <- data.frame(x = bx, y = cy, r = r_sv, lbl = format(sv, big.mark = " ", scientific = FALSE))
+    lbl_df  <- data.frame(x = txt_x, y = lbl_y, lbl = format(sv, big.mark = " ", scientific = FALSE))
     p <- p +
       ggforce::geom_circle(data = skal_df, ggplot2::aes(x0 = x, y0 = y, r = r),
                            fill = "black", colour = "black", inherit.aes = FALSE) +
@@ -1540,10 +1545,26 @@ skapa_packed_circles <- function(data,
   } else {
     cirklar$.visa <- cirklar$.antal >= antal_min
   }
-  
+
+  # Extra kontroll: siffrans FAKTISKA bredd (antal tecken varierar - "150"
+  # vs "21 585" vs "103 046") maste ocksa fa plats i just DEN cirkeln - inte
+  # bara vara over tröskeln ovan (som bara antar en ungefarlig, konstant
+  # textbredd). Utan detta kan en lang siffra sticka ut ur en liten cirkel
+  # och krocka med grannens siffra. Kraver att hela textrutans halvdiagonal
+  # ryms innanfor cirkelns radie (centrerad text), med lite marginal (0.85)
+  # sa texten inte nuddar kanten.
+  if (any(cirklar$.visa)) {
+    text_h_lbl <- storlek_labels * h_tot * 0.004
+    char_w_lbl <- text_h_lbl * 0.62
+    n_tecken   <- nchar(format(cirklar$.antal, big.mark = " ", scientific = FALSE))
+    hw <- char_w_lbl * n_tecken / 2
+    hh <- text_h_lbl / 2
+    cirklar$.visa <- cirklar$.visa & (sqrt(hw^2 + hh^2) <= cirklar$radius * 0.85)
+  }
+
   if (visa_antal || visa_labels_vid_skala) {
     cirklar$.lbl <- ifelse(cirklar$.visa,
-                           format(cirklar$.antal, big.mark = " "), "")
+                           format(cirklar$.antal, big.mark = " ", scientific = FALSE), "")
     if (diskreta_labels) {
       # (4) textfarg = morkare/ljusare nyans av bubblans egen farg
       rgbm <- grDevices::col2rgb(cirklar$.farg)

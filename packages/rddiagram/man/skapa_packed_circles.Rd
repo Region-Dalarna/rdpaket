@@ -11,7 +11,7 @@ skapa_packed_circles(
   antal_kol = NULL,
   farg_kol = "HexCode",
   diagram_caption = NULL,
-  caption_hela_bredden = FALSE,
+  caption_hela_bredden = TRUE,
   titel = NULL,
   bakgrund = "white",
   visa_antal = FALSE,
@@ -86,9 +86,9 @@ skapa_packed_circles(
 
 \item{diagram_caption}{valfri bildtext/kalla under diagrammet; NULL = ingen}
 
-\item{caption_hela_bredden}{FALSE (default) = caption i linje med klungans
-vanstra kant, under klungan; TRUE = langst till vanster i hela bilden OCH
-under bade klungan och ev. skalbubblor till vanster om den}
+\item{caption_hela_bredden}{TRUE (default) = caption langst till vanster i
+hela bilden OCH under bade klungan och ev. skalbubblor till vanster om
+den; FALSE = caption bara i linje med klungans vanstra kant, under klungan}
 
 \item{titel}{plot-titel som strang, eller NULL}
 
@@ -96,7 +96,7 @@ under bade klungan och ev. skalbubblor till vanster om den}
 
 \item{visa_antal}{TRUE/FALSE = skriv ut siffror i cirklarna alls}
 
-\item{antal_min}{minsta antal for utskriven siffra; NULL = autoberakna fran cirkelstorlek (se dokumentation ovan)}
+\item{antal_min}{minsta antal for utskriven siffra; NULL = autoberakna fran cirkelstorlek (se dokumentation ovan). Oavsett detta döljs en siffra som inte får plats i just sin egen cirkel (textbredden varierar med antal tecken)}
 
 \item{visa_namn}{TRUE/FALSE = visa gruppnamn vid klungorna}
 

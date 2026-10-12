@@ -139,3 +139,28 @@ test_that("skapa_packed_circles: auto-vinkeln pekar mot de verkliga rankningsgra
   # logiken inte faktiskt bero på vilka grannar cirkeln hamnar mellan
   expect_false(isTRUE(all.equal(v_bygg_handel, v_handel_vard, tolerance = 0.05)))
 })
+
+test_that("skapa_packed_circles doljer siffror som inte far plats i sin egen cirkel", {
+  skip_if_not_installed("ggplot2")
+  df <- data.frame(
+    bransch = c("Stor", "Liten"),
+    HexCode = c("#ff4500", "#add8e6"),
+    value   = c(100000, 1),
+    stringsAsFactors = FALSE
+  )
+  # antal_min = 0 stanger av den generella storleks-troskeln, sa bara
+  # per-cirkel-kontrollen (far siffran plats i just DEN cirkeln) avgor.
+  p <- skapa_packed_circles(
+    data = df, antal_kol = "value", autokoppla_branschnamn_farg = FALSE,
+    visa_antal = TRUE, antal_min = 0, spara_bildfil = FALSE
+  )
+  ar_lbl_lager <- vapply(p$layers, function(l) {
+    inherits(l$geom, "GeomText") && is.data.frame(l$data) && ".lbl" %in% names(l$data)
+  }, logical(1))
+  lbl_data <- p$layers[[which(ar_lbl_lager)]]$data
+
+  expect_equal(lbl_data$.lbl[lbl_data$.antal == 100000], "100 000")
+  # Den extremt lilla cirkeln (value = 1) ar for liten for att ens "1" ska
+  # fa plats - etiketten ska vara tom, inte sticka ut ur cirkeln.
+  expect_equal(lbl_data$.lbl[lbl_data$.antal == 1], "")
+})
