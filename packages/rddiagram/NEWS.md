@@ -1,3 +1,15 @@
+# rddiagram 0.0.0.9016
+
+## Ny funktion: `skapa_packed_circles()` kan lägga på logga direkt
+
+Nya parametrar `logga` (`TRUE` = Region Dalarnas standardlogga, `FALSE` =
+ingen, en sökväg/URL = egen logga) och `logga_storlek` (loggans bredd =
+bildens bredd delat med detta tal, standard `15`) - samma mönster som
+redan finns i `skriv_till_diagramfil()`/`skapa_stapeldiagram()`. `logga`
+är `TRUE` som standard, så befintliga anrop med `spara_bildfil = TRUE`
+får nu en logga nere i högra hörnet utan att något behöver ändras; sätt
+`logga = FALSE` för att slippa den.
+
 # rddiagram 0.0.0.9015
 
 ## Justering: jämförelsecirkeln i `skapa_packed_circles()` sitter lite närmare sina grannar

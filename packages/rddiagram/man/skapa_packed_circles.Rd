@@ -38,6 +38,8 @@ skapa_packed_circles(
   filnamn = NULL,
   mapp = NULL,
   bildhojd = 8,
+  logga = TRUE,
+  logga_storlek = 15,
   layout = c("auto", "geo", "repel", "vinkel", "grid", "none"),
   storlek_ut = TRUE,
   packning = c("spiral", "progressiv"),
@@ -147,6 +149,11 @@ jamforelsecirkeln}
 \item{mapp}{mapp att spara i; NULL = anvand utskriftsmapp() om den finns}
 
 \item{bildhojd}{bildhojd i tum; bredden beraknas dynamiskt om bildbredd = NULL}
+
+\item{logga}{TRUE = Region Dalarnas standardlogga, FALSE = ingen logga,
+en sokvag/URL = egen logga (se \code{add_logo()})}
+
+\item{logga_storlek}{loggans bredd blir bildens bredd delat med detta}
 
 \item{layout}{"auto" = valj sjalv (se ovan)}
 

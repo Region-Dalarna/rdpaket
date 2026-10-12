@@ -502,6 +502,9 @@ hamta_bransch_nyckel <- function(url) {
 #' @param filnamn filnamn; NULL = autogenereras fran titel/grupp + datum
 #' @param mapp mapp att spara i; NULL = anvand utskriftsmapp() om den finns
 #' @param bildhojd bildhojd i tum; bredden beraknas dynamiskt om bildbredd = NULL
+#' @param logga TRUE = Region Dalarnas standardlogga, FALSE = ingen logga,
+#'   en sokvag/URL = egen logga (se `add_logo()`)
+#' @param logga_storlek loggans bredd blir bildens bredd delat med detta
 #' @param layout "auto" = valj sjalv (se ovan)
 #' @param storlek_ut TRUE = storsta cirklarna i ytterkanten; FALSE = i mitten
 #' @param packning "spiral" = orm-coil i storleksordning; "progressiv" = tatast
@@ -606,7 +609,9 @@ skapa_packed_circles <- function(data,
                                  filnamn       = NULL,                            # filnamn; NULL = autogenereras fran titel/grupp + datum
                                  mapp          = NULL,                            # mapp att spara i; NULL = anvand utskriftsmapp() om den finns
                                  bildhojd      = 8,                              # bildhojd i tum; bredden beraknas dynamiskt om bildbredd = NULL
-                                 
+                                 logga         = TRUE,                           # TRUE = Region Dalarnas standardlogga, FALSE = ingen, en sokvag/URL = egen logga
+                                 logga_storlek = 15,                             # loggans bredd blir bildens bredd delat med detta
+
                                  # ====================================================================
                                  # AVANCERAT - dessa behover du sallan andra. Layout valjs automatiskt:
                                  # Dalarnas kommuner -> "geo"; uppdelning pa kon/fodelseregion -> "grid".
@@ -1698,6 +1703,23 @@ skapa_packed_circles <- function(data,
       on.exit(suppressWarnings(showtext::showtext_opts(dpi = 96)), add = TRUE)
     }
     ggplot2::ggsave(full_sokvag, p, width = bb, height = bh, dpi = dpi, bg = bakgrund)
+
+    # 4. Logga (valfritt) - samma monster som skriv_till_diagramfil()
+    if (!isFALSE(logga)) {
+      logga_path <- if (isTRUE(logga)) hamta_logga_path() else logga
+      add_ok <- FALSE
+      for (i in 1:5) {
+        add_ok <- tryCatch({
+          add_logo(full_sokvag, logga_path, "bottom right",
+                   logo_scale = logga_storlek, replace = TRUE)
+          TRUE
+        }, error = function(e) FALSE)
+        if (isTRUE(add_ok)) break
+        Sys.sleep(0.5 * i)
+      }
+      if (!isTRUE(add_ok)) warning("Kunde inte lagga pa logga pa: ", full_sokvag, call. = FALSE)
+    }
+
     message("Diagram sparat: ", full_sokvag,
             sprintf(" (%.1f x %.1f tum)", bb, bh))
   }
