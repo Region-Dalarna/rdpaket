@@ -1,3 +1,13 @@
+# rddiagram 0.0.0.9018
+
+## Fix: `caption_hela_bredden = TRUE` krockar inte längre med skalbubblor
+
+`diagram_caption` med `caption_hela_bredden = TRUE` placeras nu under
+BÅDE klungan och eventuella skalbubblor (`skal_bubblor`), inte bara under
+klungan. Löser krocken som nämndes i NEWS för 0.0.0.9017 - skalbubblorna
+staplas vertikalt kring klungans mitt och kan sticka ner lägre än den, så
+captionens y-position räknas nu från det lägsta av de två.
+
 # rddiagram 0.0.0.9017
 
 ## Ny funktion: `diagram_caption` kan placeras längst till vänster i hela bilden

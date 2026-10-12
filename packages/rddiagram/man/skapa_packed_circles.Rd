@@ -87,8 +87,8 @@ skapa_packed_circles(
 \item{diagram_caption}{valfri bildtext/kalla under diagrammet; NULL = ingen}
 
 \item{caption_hela_bredden}{FALSE (default) = caption i linje med klungans
-vanstra kant; TRUE = langst till vanster i hela bilden (aven forbi ev.
-skalbubblor till vanster om klungan)}
+vanstra kant, under klungan; TRUE = langst till vanster i hela bilden OCH
+under bade klungan och ev. skalbubblor till vanster om den}
 
 \item{titel}{plot-titel som strang, eller NULL}
 

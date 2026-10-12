@@ -337,8 +337,9 @@ spiral_layout <- function(areas) {
 #                Tom/NULL = inget ritas. Storlek styrs med storlek_caption
 #                (default 3).
 #  caption_hela_bredden  FALSE [default] = caption i linje med klungans
-#                vanstra kant. TRUE = langst till vanster i hela bilden (aven
-#                forbi ev. skalbubblor till vanster om klungan).
+#                vanstra kant, under klungan. TRUE = langst till vanster i
+#                hela bilden OCH under bada klungan och ev. skalbubblor till
+#                vanster om den (sa den aldrig krockar med dem).
 #  bakgrund     "white" eller "black" m.m. (svart = som din DagBef-bild)
 #
 #  jamforelse_namn  etikett for en extra cirkel UTANFOR klungan, t.ex. "Ej i
@@ -470,8 +471,8 @@ hamta_bransch_nyckel <- function(url) {
 #' @param farg_kol kolumnnamn med hex-farg per rad; NULL = auto-palett
 #' @param diagram_caption valfri bildtext/kalla under diagrammet; NULL = ingen
 #' @param caption_hela_bredden FALSE (default) = caption i linje med klungans
-#'   vanstra kant; TRUE = langst till vanster i hela bilden (aven forbi ev.
-#'   skalbubblor till vanster om klungan)
+#'   vanstra kant, under klungan; TRUE = langst till vanster i hela bilden OCH
+#'   under bade klungan och ev. skalbubblor till vanster om den
 #' @param titel plot-titel som strang, eller NULL
 #' @param bakgrund bakgrundsfarg; "black" ger ljus text och svart panel
 #' @param visa_antal TRUE/FALSE = skriv ut siffror i cirklarna alls
@@ -1658,12 +1659,16 @@ skapa_packed_circles <- function(data,
   p <- p + ggplot2::coord_equal(xlim = xl, ylim = yl, clip = "off")
 
   # diagram_caption vansterstalld. Standard: i linje med klungans vanstra
-  # kant (som tidigare). caption_hela_bredden = TRUE: vid xl[1], dvs den
-  # FAKTISKA vanstra panelkanten - langst till vanster i hela bilden, aven
-  # forbi ev. skalbubblor till vanster om klungan.
+  # kant (som tidigare), och UNDER klungan (inte nodvandigtvis under ev.
+  # skalbubblor - de kan sticka ner lagre). caption_hela_bredden = TRUE:
+  # x = xl[1], dvs den FAKTISKA vanstra panelkanten - langst till vanster i
+  # hela bilden. Da racknas y ocksa fran det lagsta av klungan OCH
+  # skalbubblorna (min(y_min, skal_y_min)), sa captionen hamnar under BADA
+  # - annars skulle den kunna krocka med skalbubblorna den nu star under.
   if (!is.null(diagram_caption)) {
-    caption_y <- y_min - txt_luft
     caption_x <- if (isTRUE(caption_hela_bredden)) xl[1] else x_min
+    caption_y_ref <- if (isTRUE(caption_hela_bredden)) min(y_min, skal_y_min) else y_min
+    caption_y <- caption_y_ref - txt_luft
     p <- p + ggplot2::annotate("text", x = caption_x, y = caption_y, label = diagram_caption,
                       hjust = 0, vjust = 1, size = storlek_caption,
                       colour = txt_default, family = font)
