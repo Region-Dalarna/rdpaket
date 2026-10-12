@@ -35,6 +35,7 @@ skapa_packed_circles(
   jamforelse_overlapp = 0.45,
   jamforelse_textstorlek = 3,
   jamforelse_radbryt = 14,
+  jamforelse_label = FALSE,
   spara_bildfil = TRUE,
   filnamn = NULL,
   mapp = NULL,
@@ -146,6 +147,11 @@ jamforelsecirkeln}
 
 \item{jamforelse_radbryt}{max tecken per rad i jamforelsecirkelns etikett;
 0/NULL = ingen brytning}
+
+\item{jamforelse_label}{TRUE = skriv ut jamforelse_varde som siffra inne i
+cirkeln (som visa_antal for branschcirklarna); textfarg foljer
+diskreta_labels, storlek foljer storlek_labels. Doljs om den inte far
+plats i cirkeln (som for branschernas siffror)}
 
 \item{spara_bildfil}{TRUE = spara diagrammet som bildfil}
 

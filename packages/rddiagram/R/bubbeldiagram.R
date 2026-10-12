@@ -512,6 +512,10 @@ hamta_bransch_nyckel <- function(url) {
 #'   jamforelsecirkeln
 #' @param jamforelse_radbryt max tecken per rad i jamforelsecirkelns etikett;
 #'   0/NULL = ingen brytning
+#' @param jamforelse_label TRUE = skriv ut jamforelse_varde som siffra inne i
+#'   cirkeln (som visa_antal for branschcirklarna); textfarg foljer
+#'   diskreta_labels, storlek foljer storlek_labels. Doljs om den inte far
+#'   plats i cirkeln (som for branschernas siffror)
 #' @param spara_bildfil TRUE = spara diagrammet som bildfil
 #' @param filnamn filnamn; NULL = autogenereras fran titel/grupp + datum
 #' @param mapp mapp att spara i; NULL = anvand utskriftsmapp() om den finns
@@ -618,6 +622,7 @@ skapa_packed_circles <- function(data,
                                  jamforelse_overlapp = 0.45,                     # hur mycket cirkeln knuffas IN mot klungan, som andel av dess EGEN radie (0 = tangerar klungans kant utanfor, 1 = centrum pa kanten)
                                  jamforelse_textstorlek = 3.0,                   # textstorlek for etiketten bredvid cirkeln
                                  jamforelse_radbryt = 14,                        # max tecken per rad i etiketten; 0/NULL = ingen brytning
+                                 jamforelse_label  = FALSE,                      # TRUE = skriv ut jamforelse_varde SOM SIFFRA inne i cirkeln (som visa_antal for branschcirklarna); textfarg foljer diskreta_labels, storlek foljer storlek_labels. Doljs om den inte far plats (som for branschernas siffror).
 
                                  # --- Spara till bildfil (valfritt) ---------------------------------
                                  spara_bildfil = TRUE,                           # TRUE = spara diagrammet som bildfil
@@ -1440,6 +1445,32 @@ skapa_packed_circles <- function(data,
         data = jmf, ggplot2::aes(x = lbl_x, y = lbl_y, label = lbl, hjust = lbl_hjust),
         vjust = 0.5, size = jamforelse_textstorlek,
         colour = txt_default, family = font)
+
+    # jamforelse_label: siffran INNE i cirkeln (som visa_antal for branscherna)
+    # - foljer diskreta_labels (nyans av jamforelse_farg vs vit/svart) och
+    # storlek_labels, och doljs med samma halvdiagonal-mot-radie-kontroll om
+    # den inte far plats (se antal-etiketterna ovan for branschcirklarna).
+    if (isTRUE(jamforelse_label)) {
+      siffra_j <- format(jamforelse_varde, big.mark = " ", scientific = FALSE)
+      text_h_j <- storlek_labels * h_tot * 0.004
+      hw_j <- text_h_j * 0.62 * nchar(siffra_j) / 2
+      hh_j <- text_h_j / 2
+      if (sqrt(hw_j^2 + hh_j^2) <= r_j * 0.85) {
+        rgbm_j <- grDevices::col2rgb(jamforelse_farg)
+        lum_j  <- (0.299*rgbm_j[1] + 0.587*rgbm_j[2] + 0.114*rgbm_j[3]) / 255
+        if (diskreta_labels) {
+          shift_j <- if (lum_j < 0.5) 90 else -90
+          ny_j <- pmin(255, pmax(0, rgbm_j + shift_j))
+          txt_j <- grDevices::rgb(ny_j[1], ny_j[2], ny_j[3], maxColorValue = 255)
+        } else {
+          txt_j <- if (lum_j < 0.5) "white" else "black"
+        }
+        p <- p + ggplot2::geom_text(
+          data = data.frame(x = cx_j, y = cy_j, lbl = siffra_j),
+          ggplot2::aes(x, y, label = lbl),
+          colour = txt_j, size = storlek_labels, family = font)
+      }
+    }
   }
   # Titel centrerad over cirklarna (inte hela panelen) via annotate.
   # Berakna klungornas horisontella mitt fran ring- eller cirkeldata.

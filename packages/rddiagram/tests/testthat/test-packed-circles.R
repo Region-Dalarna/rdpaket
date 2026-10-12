@@ -164,3 +164,44 @@ test_that("skapa_packed_circles doljer siffror som inte far plats i sin egen cir
   # fa plats - etiketten ska vara tom, inte sticka ut ur cirkeln.
   expect_equal(lbl_data$.lbl[lbl_data$.antal == 1], "")
 })
+
+test_that("skapa_packed_circles: jamforelse_label skriver (eller doljer) siffra i jamforelsecirkeln", {
+  skip_if_not_installed("ggplot2")
+  skip_if_not_installed("ggforce")
+  df <- test_exempeldata()
+
+  hamta_jmf_siffer_lager <- function(p) {
+    ar <- vapply(p$layers, function(l) {
+      inherits(l$geom, "GeomText") && is.data.frame(l$data) &&
+        "lbl" %in% names(l$data) && !("lbl_x" %in% names(l$data))
+    }, logical(1))
+    if (!any(ar)) return(NULL)
+    p$layers[[which(ar)]]$data
+  }
+
+  # FALSE (default): ingen siffra inne i cirkeln
+  p_av <- skapa_packed_circles(
+    data = df, antal_kol = "value", autokoppla_branschnamn_farg = FALSE,
+    jamforelse_namn = "Jmf", jamforelse_varde = 1200, spara_bildfil = FALSE
+  )
+  expect_null(hamta_jmf_siffer_lager(p_av))
+
+  # TRUE: siffran skrivs ut, med tusentalsavgränsare
+  p_pa <- skapa_packed_circles(
+    data = df, antal_kol = "value", autokoppla_branschnamn_farg = FALSE,
+    jamforelse_namn = "Jmf", jamforelse_varde = 1200, jamforelse_label = TRUE,
+    spara_bildfil = FALSE
+  )
+  siffer_data <- hamta_jmf_siffer_lager(p_pa)
+  expect_false(is.null(siffer_data))
+  expect_equal(siffer_data$lbl, "1 200")
+
+  # Extremt liten jamforelse_varde -> siffran far inte plats -> dold helt
+  # (samma per-cirkel-kontroll som for branschernas siffror)
+  p_liten <- skapa_packed_circles(
+    data = df, antal_kol = "value", autokoppla_branschnamn_farg = FALSE,
+    jamforelse_namn = "Jmf", jamforelse_varde = 1, jamforelse_label = TRUE,
+    spara_bildfil = FALSE
+  )
+  expect_null(hamta_jmf_siffer_lager(p_liten))
+})

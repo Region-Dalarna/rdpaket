@@ -1,3 +1,14 @@
+# rddiagram 0.0.0.9020
+
+## Ny parameter: `jamforelse_label` - siffra inne i jämförelsecirkeln
+
+`jamforelse_label = TRUE` skriver ut `jamforelse_varde` som siffra inne i
+jämförelsecirkeln, precis som `visa_antal` gör för branschcirklarna.
+Textfärgen följer `diskreta_labels` (nyans av `jamforelse_farg` om `TRUE`,
+annars vitt/svart efter luminans) och storleken följer `storlek_labels`.
+Döljs automatiskt om siffran inte får plats i cirkeln, med samma kontroll
+som branschernas siffror (0.0.0.9019). Standard är `FALSE` (oförändrat).
+
 # rddiagram 0.0.0.9019
 
 ## `caption_hela_bredden = TRUE` är nu standard
