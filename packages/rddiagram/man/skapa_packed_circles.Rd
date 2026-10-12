@@ -11,6 +11,7 @@ skapa_packed_circles(
   antal_kol = NULL,
   farg_kol = "HexCode",
   diagram_caption = NULL,
+  caption_hela_bredden = FALSE,
   titel = NULL,
   bakgrund = "white",
   visa_antal = FALSE,
@@ -84,6 +85,10 @@ skapa_packed_circles(
 \item{farg_kol}{kolumnnamn med hex-farg per rad; NULL = auto-palett}
 
 \item{diagram_caption}{valfri bildtext/kalla under diagrammet; NULL = ingen}
+
+\item{caption_hela_bredden}{FALSE (default) = caption i linje med klungans
+vanstra kant; TRUE = langst till vanster i hela bilden (aven forbi ev.
+skalbubblor till vanster om klungan)}
 
 \item{titel}{plot-titel som strang, eller NULL}
 

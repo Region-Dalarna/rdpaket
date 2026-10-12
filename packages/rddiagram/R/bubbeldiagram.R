@@ -332,8 +332,13 @@ spiral_layout <- function(areas) {
 #  font         typsnitt (din profil: "Poppins") - kor aktivera_font() forst
 #  titel        valfri plot-titel
 #  diagram_caption  valfri bildtext/kalla, placeras vansterstalld UNDER
-#                diagrammet (i linje med klungornas vanstra kant). Tom/NULL =
-#                inget ritas. Storlek styrs med storlek_caption (default 3).
+#                diagrammet (i linje med klungornas vanstra kant, eller langst
+#                till vanster i hela bilden med caption_hela_bredden = TRUE).
+#                Tom/NULL = inget ritas. Storlek styrs med storlek_caption
+#                (default 3).
+#  caption_hela_bredden  FALSE [default] = caption i linje med klungans
+#                vanstra kant. TRUE = langst till vanster i hela bilden (aven
+#                forbi ev. skalbubblor till vanster om klungan).
 #  bakgrund     "white" eller "black" m.m. (svart = som din DagBef-bild)
 #
 #  jamforelse_namn  etikett for en extra cirkel UTANFOR klungan, t.ex. "Ej i
@@ -464,6 +469,9 @@ hamta_bransch_nyckel <- function(url) {
 #' @param antal_kol kolumnnamn for antal sysselsatta; NULL = auto-detektera (se AVANCERAT for de kolumnlistor autodetekteringen anvander)
 #' @param farg_kol kolumnnamn med hex-farg per rad; NULL = auto-palett
 #' @param diagram_caption valfri bildtext/kalla under diagrammet; NULL = ingen
+#' @param caption_hela_bredden FALSE (default) = caption i linje med klungans
+#'   vanstra kant; TRUE = langst till vanster i hela bilden (aven forbi ev.
+#'   skalbubblor till vanster om klungan)
 #' @param titel plot-titel som strang, eller NULL
 #' @param bakgrund bakgrundsfarg; "black" ger ljus text och svart panel
 #' @param visa_antal TRUE/FALSE = skriv ut siffror i cirklarna alls
@@ -577,6 +585,7 @@ skapa_packed_circles <- function(data,
                                  antal_kol     = NULL,                           # kolumnnamn for antal sysselsatta; NULL = auto-detektera (se AVANCERAT for de kolumnlistor autodetekteringen anvander)
                                  farg_kol      = "HexCode",                      # kolumnnamn med hex-farg per rad; NULL = auto-palett
                                  diagram_caption = NULL,                         # valfri bildtext/kalla under diagrammet; NULL = ingen
+                                 caption_hela_bredden = FALSE,                   # FALSE [default] = vansterstalld i linje med klungans vanstra kant; TRUE = vansterstalld langst till vanster i hela bilden (aven forbi ev. skalbubblor)
                                  titel         = NULL,                           # plot-titel som strang, eller NULL
                                  bakgrund      = "white",                        # bakgrundsfarg; "black" ger ljus text och svart panel
                                  visa_antal    = FALSE,                          # TRUE/FALSE = skriv ut siffror i cirklarna alls
@@ -1437,14 +1446,11 @@ skapa_packed_circles <- function(data,
                       colour = txt_default, family = font)
   }
   
-  # diagram_caption vansterstalld, i linje med klungornas vanstra kant.
-  if (!is.null(diagram_caption)) {
-    caption_y <- y_min - txt_luft
-    p <- p + ggplot2::annotate("text", x = x_min, y = caption_y, label = diagram_caption,
-                      hjust = 0, vjust = 1, size = storlek_caption,
-                      colour = txt_default, family = font)
-  }
-  
+  # diagram_caption laggs till lite langre ner (efter att xl/yl ar slutgiltigt
+  # berakna), sa att caption_hela_bredden = TRUE kan placera texten vid den
+  # FAKTISKA vanstra panelkanten (inkl. ev. skalbubblor) - den kanten ar inte
+  # kand har annu.
+
   # --- (3) Skalbubblor: svarta cirklar staplade vertikalt, minst overst ------
   skal_varden <- NULL
   visa_labels_vid_skala <- isTRUE(labels_visa_skalvarden)
@@ -1650,7 +1656,19 @@ skapa_packed_circles <- function(data,
   pan_w <- xl[2] - xl[1]; pan_h <- yl[2] - yl[1]
   
   p <- p + ggplot2::coord_equal(xlim = xl, ylim = yl, clip = "off")
-  
+
+  # diagram_caption vansterstalld. Standard: i linje med klungans vanstra
+  # kant (som tidigare). caption_hela_bredden = TRUE: vid xl[1], dvs den
+  # FAKTISKA vanstra panelkanten - langst till vanster i hela bilden, aven
+  # forbi ev. skalbubblor till vanster om klungan.
+  if (!is.null(diagram_caption)) {
+    caption_y <- y_min - txt_luft
+    caption_x <- if (isTRUE(caption_hela_bredden)) xl[1] else x_min
+    p <- p + ggplot2::annotate("text", x = caption_x, y = caption_y, label = diagram_caption,
+                      hjust = 0, vjust = 1, size = storlek_caption,
+                      colour = txt_default, family = font)
+  }
+
   # --- Dynamiska bildmatt: matcha duken mot innehallets proportioner ---------
   # Beraknas alltid (aven utan sparande) sa att de kan bifogas objektet och
   # anvandas for forhandsvisning i ratt storlek.

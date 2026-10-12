@@ -1,3 +1,17 @@
+# rddiagram 0.0.0.9017
+
+## Ny funktion: `diagram_caption` kan placeras längst till vänster i hela bilden
+
+Ny parameter `caption_hela_bredden` i `skapa_packed_circles()`. Standard
+(`FALSE`) är som tidigare - caption i linje med klungans vänstra kant.
+Med `caption_hela_bredden = TRUE` placeras den istället vid den faktiska
+vänstra panelkanten, dvs. längst till vänster i hela bilden - förbi
+eventuella skalbubblor (`skal_bubblor`) till vänster om klungan.
+
+Obs: finns både `skal_bubblor` och `caption_hela_bredden = TRUE` kan
+captionen hamna bakom skalbubblorna om den är lång - de delar då samma
+vänstra utrymme.
+
 # rddiagram 0.0.0.9016
 
 ## Ny funktion: `skapa_packed_circles()` kan lägga på logga direkt
