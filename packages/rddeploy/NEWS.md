@@ -1,4 +1,29 @@
-# rddeploy 0.0.0.9007
+# rddeploy 0.0.0.9008
+
+## Fix: `anv_fornamn_efternamn_hamta()` kunde ge fel/krascha på vissa Windows-datorer
+
+Felet rapporterades i en annan session och hade flera orsaker:
+
+- Byte-till-tecken-listan för att rätta till WMI:s teckenkodning
+  (`\x94`, `\x93` m.fl.) var felaktig - matchade ingen riktig kodsida (CP850
+  har t.ex. Ö på `\x99`, inte `\x93`), och på R 4.2+/Windows (som kör UTF-8)
+  är de ensamma bytena inte ens giltig UTF-8, så `gsub()` kunde underkänna
+  mönstret helt.
+- `Get-WmiObject` är borttaget i PowerShell 7+ (ersatt av `Get-CimInstance`).
+- Kommandosträngen byggdes med manuellt eskapade citattecken
+  (`\\\"`) i stället för `system2()` + `shQuote(type = "cmd")`.
+- `Win32_UserAccount` filtrerades bara på `Name`, vilket kan bli mycket
+  långsamt på domänanslutna datorer (räknar upp domänkonton). Filtreras nu
+  även på `Domain`.
+- Å, ä och ö skrevs ut som vanliga tecken i källkoden (regex och
+  varningstext) i stället för `\u`-escapes, vilket ger en WARNING vid
+  `R CMD check` och kan förvanskas beroende på hur paketet byggs.
+
+Löst genom att låta PowerShell sätta `[Console]::OutputEncoding` till UTF-8
+själv och skriva ut `FullName` direkt - då behövs ingen efterhandsrättning
+av enskilda bytes alls.
+
+
 
 ## fluidPage() i shinyapp-mallens ui.R sätter nu title så webbläsarfliken får rätt text
 
