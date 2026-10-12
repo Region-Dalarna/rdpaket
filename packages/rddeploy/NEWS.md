@@ -1,4 +1,30 @@
-# rddeploy 0.0.0.9008
+# rddeploy 0.0.0.9009
+
+## Fix: `anv_fornamn_efternamn_hamta()` kraschade fortfarande på riktig Windows-dator (0.0.0.9008 räckte inte)
+
+0.0.0.9008 satte `[Console]::OutputEncoding = UTF8` i PowerShell-skriptet
+för att få rätt bytes tillbaka, men det testades aldrig på en riktig
+Windows-dator - och räckte inte: `system2(stdout = TRUE)` läser PowerShells
+pipe via Windows egen kodsida (t.ex. CP1252), inte de bytes PowerShell
+faktiskt skrev. Å/ä/ö blev fortfarande ogiltig UTF-8, som nu kraschade i
+`trimws()`/`sub()` med `"input string 1 is invalid UTF-8"` istället för i
+den gamla byte-tabellen.
+
+Löst genom att låta PowerShell Base64-koda `FullName` (`[Convert]::ToBase64String`
+på UTF-8-bytes) innan det skrivs ut, och avkoda Base64 + UTF-8 i R
+(`jsonlite::base64_dec()`, redan ett transitivt beroende via `gh`). Base64
+är ren ASCII och kan inte förvanskas av någon kodsida någonstans i kedjan -
+eliminerar hela den här felklassen i stället för att lappa den. Lade också
+till en `validUTF8()`-koll som extra säkerhetsnät: om avkodningen någonsin
+ger ogiltig UTF-8 (t.ex. trasig indata) returneras `NA_character_` i
+stället för att krascha.
+
+Avkodnings-/städlogiken bröts ut till en intern, testbar funktion
+(`intern_namn_fran_base64()`) och fick egna tester - själva PowerShell-
+anropet går fortfarande bara att testa på Windows, men logiken som
+faktiskt orsakade kraschen gör det nu på alla OS.
+
+
 
 ## Fix: `anv_fornamn_efternamn_hamta()` kunde ge fel/krascha på vissa Windows-datorer
 

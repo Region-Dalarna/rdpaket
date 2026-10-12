@@ -1,6 +1,6 @@
 Package: rddeploy
 Title: Deploy-verktyg för Region Dalarnas GitHub, webbrapporter och Shiny-appar
-Version: 0.0.0.9008
+Version: 0.0.0.9009
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
@@ -22,6 +22,7 @@ Imports:
     gh,
     gitcreds,
     glue,
+    jsonlite,
     purrr,
     tibble
 Suggests:
