@@ -32,21 +32,27 @@ anv_fornamn_efternamn_hamta <- function() {
   # tomt), provas ett andra utan Domain-filter - mer universellt
   # tillforlitligt, om an nagot langsammare.
   #
-  # FullName skickas tillbaka Base64-kodad (inte som vanlig text). Att satta
-  # [Console]::OutputEncoding = UTF8 racker INTE i praktiken - R:s
-  # system2(stdout = TRUE) laser pipen via Windows egen kodsida (t.ex.
-  # CP1252), inte rabytena PowerShell faktiskt skrev, sa a/a/o kan fortfarande
-  # bli ogiltig UTF-8 och krascha pa ett senare sub()/trimws()-anrop (sag
-  # pa en riktig Windows-dator trots [Console]::OutputEncoding). Base64 ar
-  # ren ASCII och ser identisk ut i VARJE kodsida - ingen omkodning nagonstans
-  # i kedjan kan forvanska den. Den gamla, empiriskt felaktiga
-  # byte-till-tecken-tabellen behovs inte langre, oavsett.
+  # FullName skickas tillbaka som en JSON-strang (ConvertTo-Json), inte
+  # Base64 via [Convert]::ToBase64String()/[System.Text.Encoding] - sadana
+  # direkta anrop pa .NET-typer fungerar INTE pa datorer som kor PowerShell
+  # i Constrained Language Mode (vanligt pa hart styrda foretags-/region-
+  # datorer, t.ex. via WDAC/AppLocker). Sag pa en riktig sadan dator:
+  # "Method invocation is supported only on core types in this language
+  # mode". Get-CimInstance/Select-Object ar cmdlets och fungerar fint aven
+  # i Constrained Language Mode - ConvertTo-Json ar ocksa en cmdlet (ingen
+  # [Typ]::Metod()-syntax), sa den fungerar dar med. Den rakar ocksa losa
+  # det ursprungliga kodningsproblemet pa kopet: ConvertTo-Json escapar
+  # icke-ASCII-tecken som \uXXXX som standard, sa utdatan ar ren ASCII och
+  # kan inte forvanskas av nagon kodsida nar R:s system2(stdout = TRUE)
+  # laser PowerShells pipe (den gamla, empiriskt felaktiga byte-till-
+  # tecken-tabellen fran den allra forsta varianten av funktionen behovs
+  # inte langre, oavsett).
   anv <- Sys.getenv("USERNAME")
   dom <- Sys.getenv("USERDOMAIN")
   # try/catch runt HELA CIM-delen (inte bara -ErrorAction SilentlyContinue
   # per cmdlet) sa ett fel nagonstans aldrig lamnar skriptet som helhet med
   # status != 0 - $n blir bara $null om nagot i try-blocket misslyckas,
-  # oavsett orsak, och Base64-konverteringen av ett tomt namn gar alltid bra.
+  # oavsett orsak, och ConvertTo-Json av ett tomt namn gar alltid bra.
   ps <- sprintf(paste(
     "try {",
     "  $f1 = \"Name='%s' AND Domain='%s'\";",
@@ -55,7 +61,7 @@ anv_fornamn_efternamn_hamta <- function() {
     "  if (-not $u) { $u = Get-CimInstance Win32_UserAccount -Filter $f2 -ErrorAction Stop };",
     "  $n = $u | Select-Object -First 1 -ExpandProperty FullName;",
     "} catch { $n = $null };",
-    "[Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes([string]$n))"
+    "[string]$n | ConvertTo-Json -Compress"
   ), anv, dom, anv)
 
   res <- tryCatch(
@@ -78,23 +84,24 @@ anv_fornamn_efternamn_hamta <- function() {
   namn_raw <- res[nzchar(trimws(res))]
   if (length(namn_raw) == 0) return(NA_character_)
 
-  intern_namn_fran_base64(namn_raw[1])
+  intern_namn_fran_json(namn_raw[1])
 }
 
 # Avkodar och stadar FullName-strangen fran anv_fornamn_efternamn_hamta()s
-# Base64-kodade PowerShell-utdata. Utbruten sa den gar att testa pa alla
-# OS (sjalva PowerShell-anropet kraver Windows, den har logiken inte).
-intern_namn_fran_base64 <- function(namn_b64) {
-  namn <- tryCatch({
-    txt <- rawToChar(jsonlite::base64_dec(trimws(namn_b64)))
-    Encoding(txt) <- "UTF-8"
-    txt
-  }, error = function(e) NA_character_)
-  # jsonlite::base64_dec() ar en TOLERANT avkodare - den kastar inte fel pa
-  # trasig/ogiltig Base64, den avkodar bara vad den kan. validUTF8() fangar
-  # da upp resultat som INTE ar giltig UTF-8 INNAN de nar sub()/trimws()
-  # langre ner, som annars kraschar pa sadan text (se testet for detta).
-  if (is.na(namn) || !nzchar(namn) || !validUTF8(namn)) return(NA_character_)
+# JSON-kodade PowerShell-utdata (en enkel JSON-strang, t.ex. "\"Örjan\"").
+# Utbruten sa den gar att testa pa alla OS (sjalva PowerShell-anropet
+# kraver Windows, den har logiken inte).
+intern_namn_fran_json <- function(namn_json) {
+  namn <- tryCatch(jsonlite::fromJSON(trimws(namn_json)),
+                    error = function(e) NA_character_)
+  # fromJSON() kastar fel pa trasig JSON (fangas ovan), men var sakra och
+  # validUTF8()-kolla aven ett lyckat resultat - samma resonemang som for
+  # det tidigare Base64-forsoket: sub()/trimws() langre ner kraschar annars
+  # pa text som inte ar giltig UTF-8.
+  if (!is.character(namn) || length(namn) != 1 || is.na(namn) ||
+        !nzchar(namn) || !validUTF8(namn)) {
+    return(NA_character_)
+  }
 
   namn |>
     sub("[^a-zA-Z\u00e5\u00e4\u00f6\u00c5\u00c4\u00d6 ].*", "", x = _) |>

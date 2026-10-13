@@ -1,4 +1,28 @@
-# rddeploy 0.0.0.9010
+# rddeploy 0.0.0.9011
+
+## Fix: `anv_fornamn_efternamn_hamta()` - `[Convert]::ToBase64String()` blockeras av Constrained Language Mode
+
+0.0.0.9010:s felmeddelande-ytning (ny i den versionen) avslöjade den
+riktiga orsaken till `status 1`: PowerShell på användarens dator kör i
+**Constrained Language Mode** - en säkerhetspolicy som är vanlig på hårt
+styrda företags-/regiondatorer (t.ex. via WDAC/AppLocker). I det läget är
+direkta anrop på godtyckliga .NET-typer som `[Convert]::ToBase64String()`
+och `[System.Text.Encoding]::UTF8.GetBytes()` blockerade
+(`"Method invocation is supported only on core types in this language
+mode"`), medan `Get-CimInstance`/`Select-Object` fungerade fint - de är
+cmdlets, inte `[Typ]::Metod()`-anrop.
+
+Base64-omvägen (0.0.0.9009) byts nu ut mot `ConvertTo-Json` - också en
+cmdlet, så den fungerar i Constrained Language Mode. Den löser
+ursprungsproblemet på köpet: `ConvertTo-Json` escapar icke-ASCII-tecken
+som `\uXXXX` som standard, så utdatan är ren ASCII och kan fortfarande
+inte förvanskas av någon kodsida. `jsonlite::fromJSON()` (samma paket som
+redan användes för Base64-avkodningen) läser tillbaka den i R.
+
+Den interna, testbara hjälpfunktionen döptes om till
+`intern_namn_fran_json()` och testerna uppdaterades till det nya formatet.
+
+
 
 ## Fix: `anv_fornamn_efternamn_hamta()` gav `status 1` på riktig Windows-dator (0.0.0.9009 löste fel orsak)
 
