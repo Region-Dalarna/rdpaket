@@ -103,11 +103,24 @@ intern_namn_fran_json <- function(namn_json) {
     return(NA_character_)
   }
 
+  # perl = TRUE (PCRE) GENOMGAENDE - inte standardlaget (TRE). TRE:s
+  # tolkning av en UTF-8-markerad strang beror pa R-sessionens AKTIVA
+  # LOKAL, och pa Windows kor R som standard i en native (icke-UTF-8)
+  # lokal (t.ex. svensk cp1252), medan PCRE+perl=TRUE alltid tolkar en
+  # UTF-8-markerad strang som UTF-8 oavsett lokal. Verifierat har: korde
+  # TRE-varianten (med \u00e5 m.fl. i teckenklassen) under en icke-UTF-8-
+  # lokal (LC_ALL=C) pa en giltig UTF-8-strang - TRE kraschade direkt
+  # ("unable to translate ... to a wide string"); trimws()s EGEN
+  # perl=TRUE-baserade sub() kraschar pa samma satt om den FAR en redan
+  # trasig strang, vilket ar exakt felet ("input string 1 is invalid
+  # UTF-8") som rapporterades fran en riktig Windows-dator. \p{L} (vilken
+  # Unicode-bokstav som helst) ersatter ocksa den hardkodade a/a/o-listan -
+  # fungerar for alla sprak, inte bara svenska.
   namn |>
-    sub("[^a-zA-Z\u00e5\u00e4\u00f6\u00c5\u00c4\u00d6 ].*", "", x = _) |>
-    sub(" b ", " ", x = _) |>
+    sub("[^\\p{L} ].*", "", x = _, perl = TRUE) |>
+    sub(" b ", " ", x = _, perl = TRUE) |>
     trimws() |>
-    sub("^(\\S+)\\s+(.*)$", "\\2 \\1", x = _)
+    sub("^(\\S+)\\s+(.*)$", "\\2 \\1", x = _, perl = TRUE)
 }
 
 #' Hämta inloggad användares e-postadress via GitHub

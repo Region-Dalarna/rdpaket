@@ -1,4 +1,33 @@
-# rddeploy 0.0.0.9011
+# rddeploy 0.0.0.9012
+
+## Fix: `anv_fornamn_efternamn_hamta()` - hittade den riktiga roten till `"input string 1 is invalid UTF-8"`
+
+Samma felmeddelande som i 0.0.0.9009 (`sub(re, "", x, perl = TRUE)` i
+`trimws()`) kom tillbaka även efter att 0.0.0.9011 (`ConvertTo-Json`,
+bekräftat CLM-säkert och korrekt avkodat med `jsonlite::fromJSON()`)
+garanterat gav en giltig UTF-8-sträng tillbaka från PowerShell. Det
+visade att felet aldrig satt i PowerShell-anropet eller teckenkodningen
+på vägen dit - det satt i R-kodens egen städpipeline.
+
+Rotorsaken: `sub("[^a-zA-ZåäöÅÄÖ ].*", ...)`
+använde standardregex-motorn (TRE), vars tolkning av en UTF-8-märkt
+sträng beror på R-sessionens **aktiva lokal** - och R på Windows kör som
+standard i en icke-UTF-8-lokal (t.ex. svensk `cp1252`), till skillnad
+från de flesta Linux/Mac-sessioner. Verifierat här genom att köra samma
+kod under en icke-UTF-8-lokal (`LC_ALL=C`): TRE kraschade direkt på en
+helt giltig UTF-8-sträng (`"unable to translate ... to a wide string"`) -
+och i mindre tydliga fall kan den producera en sträng som ser ut att gå
+igenom men faktiskt blivit trasig, vilket är precis vad som kraschade i
+`trimws()` ett steg senare på användarens dator.
+
+Löst genom att använda `perl = TRUE` (PCRE) genomgående i hela
+städpipelinen, som alltid tolkar en UTF-8-märkt sträng som UTF-8 oavsett
+systemlokal. `\p{L}` (vilken Unicode-bokstav som helst) ersätter samtidigt
+den hårdkodade å/ä/ö-listan - fungerar nu för namn med vilka bokstäver
+som helst, inte bara svenska. Testsviten kördes grönt både under en
+UTF-8-lokal och under `LC_ALL=C` för att bekräfta fixen.
+
+
 
 ## Fix: `anv_fornamn_efternamn_hamta()` - `[Convert]::ToBase64String()` blockeras av Constrained Language Mode
 
