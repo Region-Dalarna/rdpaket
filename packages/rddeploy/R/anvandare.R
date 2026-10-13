@@ -22,9 +22,15 @@ anv_fornamn_efternamn_hamta <- function() {
   }
 
   # Anvandarnamn och doman tas fran R (inte $env: i PowerShell-strangen), sa
-  # att kommandot slipper nasta citattecken. Filtrering pa bade Name OCH
-  # Domain gor CIM-sokningen snabb aven pa domananslutna datorer - annars
-  # kan Win32_UserAccount utan Domain-filter racka over hela AD-domanen.
+  # att kommandot slipper nasta citattecken. Forsta forsoket filtrerar pa
+  # bade Name OCH Domain (snabbare pa domananslutna datorer - annars kan
+  # Win32_UserAccount utan Domain-filter racka over hela AD-domanen).
+  # Get-CimInstance kan av skal som varierar per Windows-miljo (behorigheter,
+  # CIM-tjanst, VPN till domankontrollant m.m.) kasta ett fel som annars
+  # dodar hela -Command-anropet (sag pa en riktig dator: status 1, ingen
+  # output alls) - se try/catch nedan. Misslyckas forsta forsoket (eller ger
+  # tomt), provas ett andra utan Domain-filter - mer universellt
+  # tillforlitligt, om an nagot langsammare.
   #
   # FullName skickas tillbaka Base64-kodad (inte som vanlig text). Att satta
   # [Console]::OutputEncoding = UTF8 racker INTE i praktiken - R:s
@@ -35,24 +41,41 @@ anv_fornamn_efternamn_hamta <- function() {
   # ren ASCII och ser identisk ut i VARJE kodsida - ingen omkodning nagonstans
   # i kedjan kan forvanska den. Den gamla, empiriskt felaktiga
   # byte-till-tecken-tabellen behovs inte langre, oavsett.
-  filter <- sprintf(
-    "Name=''%s'' AND Domain=''%s''",
-    Sys.getenv("USERNAME"), Sys.getenv("USERDOMAIN")
-  )
+  anv <- Sys.getenv("USERNAME")
+  dom <- Sys.getenv("USERDOMAIN")
+  # try/catch runt HELA CIM-delen (inte bara -ErrorAction SilentlyContinue
+  # per cmdlet) sa ett fel nagonstans aldrig lamnar skriptet som helhet med
+  # status != 0 - $n blir bara $null om nagot i try-blocket misslyckas,
+  # oavsett orsak, och Base64-konverteringen av ett tomt namn gar alltid bra.
   ps <- sprintf(paste(
-    "$n = (Get-CimInstance Win32_UserAccount -Filter '%s').FullName;",
+    "try {",
+    "  $f1 = \"Name='%s' AND Domain='%s'\";",
+    "  $f2 = \"Name='%s'\";",
+    "  $u = Get-CimInstance Win32_UserAccount -Filter $f1 -ErrorAction Stop;",
+    "  if (-not $u) { $u = Get-CimInstance Win32_UserAccount -Filter $f2 -ErrorAction Stop };",
+    "  $n = $u | Select-Object -First 1 -ExpandProperty FullName;",
+    "} catch { $n = $null };",
     "[Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes([string]$n))"
-  ), filter)
+  ), anv, dom, anv)
 
-  namn_raw <- tryCatch(
+  res <- tryCatch(
     system2(
       "powershell",
       c("-NoProfile", "-NonInteractive", "-Command", shQuote(ps, type = "cmd")),
-      stdout = TRUE, stderr = FALSE
+      stdout = TRUE, stderr = TRUE
     ),
     error = function(e) character(0)
   )
-  namn_raw <- namn_raw[nzchar(trimws(namn_raw))]
+  status <- attr(res, "status")
+  if (!is.null(status) && status != 0) {
+    cli::cli_warn(c(
+      "anv_fornamn_efternamn_hamta(): PowerShell-anropet misslyckades (status {status}).",
+      "i" = paste(res, collapse = " ")
+    ))
+    return(NA_character_)
+  }
+
+  namn_raw <- res[nzchar(trimws(res))]
   if (length(namn_raw) == 0) return(NA_character_)
 
   intern_namn_fran_base64(namn_raw[1])

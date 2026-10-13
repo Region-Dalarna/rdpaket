@@ -1,4 +1,29 @@
-# rddeploy 0.0.0.9009
+# rddeploy 0.0.0.9010
+
+## Fix: `anv_fornamn_efternamn_hamta()` gav `status 1` på riktig Windows-dator (0.0.0.9009 löste fel orsak)
+
+0.0.0.9009 löste ett riktigt UTF-8-krasch-problem (och den fixen behövs
+fortfarande), men en användare testade på sin egen dator direkt efteråt
+och fick ett ANNAT fel: `Get-CimInstance`-anropet självt avslutades med
+`status 1` (PowerShell-kommandot kraschade innan det ens hann skriva ut
+något). Exakt varför `Get-CimInstance ... -Filter "Name=... AND
+Domain=..."` kastar ett fel på just den datorn (behörigheter, CIM-tjänst,
+nätverk till domänkontrollant - går inte att veta utan att kunna köra
+PowerShell själv här) spelar numera mindre roll:
+
+- Hela CIM-delen körs nu i ett `try { ... } catch { $n = $null }` i
+  PowerShell-skriptet, i stället för `-ErrorAction SilentlyContinue` per
+  cmdlet (som bara dämpar icke-avbrytande fel, inte alla feltyper). Ett
+  fel ger nu bara ett tomt namn (→ `NA_character_` i R), aldrig en
+  krasch av hela kommandot.
+- Provar först `Name` + `Domain` (snabbare), och faller tillbaka till bara
+  `Name` om det första försöket inte gav något.
+- `system2()` fångar nu även stderr och kommandots exit-status. Misslyckas
+  PowerShell-anropet ändå (t.ex. om PowerShell inte går att starta alls)
+  visas en varning med den riktiga feltexten i stället för tyst `NA`, så
+  nästa fel (om det finns ett) går att diagnostisera utan gissningar.
+
+
 
 ## Fix: `anv_fornamn_efternamn_hamta()` kraschade fortfarande på riktig Windows-dator (0.0.0.9008 räckte inte)
 
