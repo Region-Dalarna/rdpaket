@@ -13,20 +13,15 @@ test_that("intern_namn_fran_json avkodar, stadar och vander ordningen", {
 test_that("intern_namn_fran_json ger NA_character_ istallet for att krascha pa ogiltig indata", {
   # Tomt namn (motsvarar [string]$null | ConvertTo-Json -Compress -> "\"\"")
   expect_identical(intern_namn_fran_json('""'), NA_character_)
-  # Inte ens giltig JSON - fick tidigare (fore JSON-omlaggningen, med Base64)
-  # ge "input string 1 is invalid UTF-8" fran trimws()/sub() pa riktiga
-  # Windows-datorer dar R:s pipe-lasning avkodade PowerShells UTF-8-bytes
-  # med fel kodsida. Nu ska den bara ge NA, aldrig krascha.
+  # Inte ens giltig JSON
   expect_identical(intern_namn_fran_json("inte giltig json!!"), NA_character_)
 })
 
 test_that("intern_namn_fran_json fungerar aven under en icke-UTF-8-lokal", {
   # R pa Windows kor som standard i en native (icke-UTF-8) lokal, t.ex.
-  # svensk cp1252. Standardregexmotorn (TRE) tolkar en UTF-8-markerad
-  # strang olika beroende pa AKTIV lokal och kan krascha/forvanska texten
-  # dar - sag just sa pa en riktig Windows-dator. perl = TRUE (PCRE)
-  # tolkar alltid UTF-8-markerad text som UTF-8, oavsett lokal - detta
-  # testet lasar in och verifierar det uttryckligen under LC_ALL=C.
+  # svensk cp1252. Base R:s sub()/trimws() tolkar en UTF-8-markerad strang
+  # olika beroende pa AKTIV lokal; stringr (stringi/ICU) gor det inte -
+  # detta testet verifierar det uttryckligen under LC_ALL=C.
   skip_on_os("windows")  # Sys.setlocale("LC_CTYPE", "C") beter sig annorlunda pa Windows
   gammal_lokal <- Sys.getlocale("LC_CTYPE")
   install_ok <- tryCatch({
@@ -38,6 +33,24 @@ test_that("intern_namn_fran_json fungerar aven under en icke-UTF-8-lokal", {
 
   j <- function(x) jsonlite::toJSON(x, auto_unbox = TRUE)
   expect_equal(intern_namn_fran_json(j("Andersson Örjan")), "Örjan Andersson")
+})
+
+test_that("intern_namn_fran_json kraschar aldrig pa genuint trasig UTF-8", {
+  # Den FAKTISKA roten till "input string N is invalid UTF-8", rapporterat
+  # upprepade ganger fran en riktig Windows-dator trots flera tidigare
+  # fixar (byte-tabell, [Console]::OutputEncoding, ConvertTo-Json,
+  # perl = TRUE): nagonstans i PowerShell->R-kedjan pa den datorn kunde
+  # sjalva byte-INNEHALLET bli genuint trasigt (inte bara "ratt UTF-8, fel
+  # lokal", som de tidigare fixarna adresserade). Base R:s trimws()/
+  # sub(perl = TRUE) kraschar hart pa sant - stringr/stringi (ICU) gor det
+  # aldrig, vilket ocksa ar hur den ursprungliga, alltid fungerande
+  # func_API.R-versionen (som anvander stringr) betett sig.
+  trasig_utf8 <- rawToChar(as.raw(c(
+    0x22, 0x41, 0x6e, 0x64, 0x65, 0x72, 0x73, 0x73, 0x6f, 0x6e,
+    0x20, 0xe5, 0x72, 0x6a, 0x61, 0x6e, 0x22
+  )))  # "Andersson <trasig byte>rjan" - en ofullstandig multi-byte-sekvens
+  expect_no_error(resultat <- intern_namn_fran_json(trasig_utf8))
+  expect_true(is.na(resultat) || is.character(resultat))
 })
 
 test_that("anv_fornamn_efternamn_hamta ger NA_character_ pa icke-Windows", {

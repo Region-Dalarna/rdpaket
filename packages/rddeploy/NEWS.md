@@ -1,4 +1,35 @@
-# rddeploy 0.0.0.9013
+# rddeploy 0.0.0.9014
+
+## Fix: `anv_fornamn_efternamn_hamta()` - bytt till `stringr`, samma bibliotek som den fungerande `func_API.R`-versionen
+
+Läste den ursprungliga `anv_fornamn_efternamn_hamta()` i
+`Region-Dalarna/funktioner/func_API.R` (den version som alltid fungerat på
+riktiga Windows-datorer, inklusive användarens egen). Den städar namnet med
+`stringr`s funktioner (`str_remove()`, `str_squish()`, `str_replace()`) -
+**inte** base R:s `sub()`/`trimws()`, som rddeploy-versionen av misstag
+byggt om till genom flera omskrivningar.
+
+Det visade sig vara den faktiska, avgörande skillnaden. Verifierat genom
+att mata medvetet TRASIGA UTF-8-bytes (en ofullständig multi-byte-sekvens -
+inte bara giltig UTF-8 under fel lokal, som 0.0.0.9012 adresserade) in i
+båda varianterna:
+
+- Base R:s `trimws()`/`sub(perl = TRUE)` **kraschar direkt** med exakt
+  `"input string 1 is invalid UTF-8"` - felet som rapporterats upprepade
+  gånger genom 0.0.0.9009, 9011, 9012 och 9013, trots riktade fixar varje
+  gång (byte-tabell, `[Console]::OutputEncoding`, `ConvertTo-Json`,
+  `perl = TRUE`).
+- `stringr`/`stringi` (byggt på ICU) **kraschar aldrig** på samma indata -
+  i värsta fall blir resultatet ett namn med något enstaka tecken fel, inte
+  ett stopp.
+
+`stringr` läggs till som ett nytt Imports-beroende. De tidigare,
+riktade fixarna (`Get-CimInstance`, `ConvertTo-Json` för Constrained
+Language Mode-kompatibilitet, den yttre `tryCatch()`-säkerhetsnätet) står
+kvar - det här byter bara ut själva textstädningen mot det bibliotek som
+redan är bevisat pålitligt för uppgiften.
+
+
 
 ## Fix: `anv_fornamn_efternamn_hamta()` - hittade den SISTA, ovaktade `trimws()`-raden
 

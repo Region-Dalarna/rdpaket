@@ -21,13 +21,12 @@ anv_fornamn_efternamn_hamta <- function() {
     return(NA_character_)
   }
 
-  # Hela PowerShell-anropet + stadningen lindas i EN tryCatch har - ett
-  # sista, heltackande sakerhetsnat. "input string N is invalid UTF-8" har
-  # dykt upp pa tre olika stallen over flera omskrivningar (se NEWS for
-  # 0.0.0.9009/9011/9012/9013) trots riktade fixar varje gang - senast i en
-  # rad (namn_raw <- res[nzchar(trimws(res))]) som ligger UTANFOR
-  # intern_namn_fran_json()s egna skydd. Funktionen ska ALDRIG krascha for
-  # anroparen - bara ge NA_character_ i varsta fall, med en varning om vad
+  # Hela PowerShell-anropet + stadningen lindas aven i en tryCatch har - ett
+  # sista, heltackande sakerhetsnat ovanpa stringr-omlaggningen (se NEWS och
+  # kommentarerna langre ner). "input string N is invalid UTF-8" har dykt
+  # upp pa flera olika stallen over flera omskrivningar (se NEWS for
+  # 0.0.0.9009/9011/9012/9013) - funktionen ska ALDRIG krascha for
+  # anroparen, bara ge NA_character_ i varsta fall, med en varning om vad
   # som hande, sa framtida overraskningar syns men stoppar aldrig kodflodet.
   namn <- tryCatch(
     intern_fornamn_efternamn_powershell(anv = Sys.getenv("USERNAME"),
@@ -103,7 +102,7 @@ intern_fornamn_efternamn_powershell <- function(anv, dom) {
     return(NA_character_)
   }
 
-  namn_raw <- res[nzchar(trimws(res))]
+  namn_raw <- res[nzchar(stringr::str_trim(res))]
   if (length(namn_raw) == 0) return(NA_character_)
 
   intern_namn_fran_json(namn_raw[1])
@@ -114,35 +113,39 @@ intern_fornamn_efternamn_powershell <- function(anv, dom) {
 # Utbruten sa den gar att testa pa alla OS (sjalva PowerShell-anropet
 # kraver Windows, den har logiken inte).
 intern_namn_fran_json <- function(namn_json) {
-  namn <- tryCatch(jsonlite::fromJSON(trimws(namn_json)),
+  namn <- tryCatch(jsonlite::fromJSON(stringr::str_trim(namn_json)),
                     error = function(e) NA_character_)
-  # fromJSON() kastar fel pa trasig JSON (fangas ovan), men var sakra och
-  # validUTF8()-kolla aven ett lyckat resultat - samma resonemang som for
-  # det tidigare Base64-forsoket: sub()/trimws() langre ner kraschar annars
-  # pa text som inte ar giltig UTF-8.
-  if (!is.character(namn) || length(namn) != 1 || is.na(namn) ||
-        !nzchar(namn) || !validUTF8(namn)) {
+  if (!is.character(namn) || length(namn) != 1 || is.na(namn) || !nzchar(namn)) {
     return(NA_character_)
   }
 
-  # perl = TRUE (PCRE) GENOMGAENDE - inte standardlaget (TRE). TRE:s
-  # tolkning av en UTF-8-markerad strang beror pa R-sessionens AKTIVA
-  # LOKAL, och pa Windows kor R som standard i en native (icke-UTF-8)
-  # lokal (t.ex. svensk cp1252), medan PCRE+perl=TRUE alltid tolkar en
-  # UTF-8-markerad strang som UTF-8 oavsett lokal. Verifierat har: korde
-  # TRE-varianten (med \u00e5 m.fl. i teckenklassen) under en icke-UTF-8-
-  # lokal (LC_ALL=C) pa en giltig UTF-8-strang - TRE kraschade direkt
-  # ("unable to translate ... to a wide string"); trimws()s EGEN
-  # perl=TRUE-baserade sub() kraschar pa samma satt om den FAR en redan
-  # trasig strang, vilket ar exakt felet ("input string 1 is invalid
-  # UTF-8") som rapporterades fran en riktig Windows-dator. \p{L} (vilken
+  # AVGORANDE: stadningen anvander stringr (stringi/ICU), INTE base R:s
+  # sub()/trimws(). Det ar den verifierade, faktiska skillnaden mot den
+  # ursprungliga func_API.R-versionen (som alltid fungerat pa riktiga
+  # Windows-datorer) - den anvander ocksa stringr (str_remove/str_squish/
+  # str_replace), aldrig base R. Flera omskrivningar hit forsokte losa
+  # "input string N is invalid UTF-8" genom att byta REGEXMOTOR (perl=TRUE)
+  # eller genom att forst SAKERSTALLA giltig UTF-8 (ConvertTo-Json,
+  # validUTF8()) - men roten visade sig vara nagot annat: nagonstans i
+  # kedjan pa just den har hart styrda Windows-datorn (se kommentaren om
+  # Constrained Language Mode ovan - kanske en inloggningsbanner eller
+  # annan text som Group Policy injicerar i PowerShell-sessionen) kan
+  # sjalva BYTE-INNEHALLET bli genuint trasigt - inte bara "ratt UTF-8,
+  # fel lokal". Verifierat har: matade medvetet TRASIGA UTF-8-bytes (en
+  # ofullstandig multi-byte-sekvens, inte bara ratt UTF-8 under fel lokal)
+  # in i bada varianterna - base R:s trimws()/sub(perl=TRUE) KRASCHAR
+  # DIREKT ("input string 1 is invalid UTF-8", exakt felet som
+  # rapporterats upprepade ganger); stringr::str_trim()/str_remove()
+  # kraschar ALDRIG pa samma indata - de hanterar bara de trasiga bytena.
+  # Varsta fallet blir dar ett namn med nagot enstaka fel tecken i stallet
+  # for en krasch - precis sa func-filen alltid betett sig. \p{L} (vilken
   # Unicode-bokstav som helst) ersatter ocksa den hardkodade a/a/o-listan -
   # fungerar for alla sprak, inte bara svenska.
   namn |>
-    sub("[^\\p{L} ].*", "", x = _, perl = TRUE) |>
-    sub(" b ", " ", x = _, perl = TRUE) |>
-    trimws() |>
-    sub("^(\\S+)\\s+(.*)$", "\\2 \\1", x = _, perl = TRUE)
+    stringr::str_remove("[^\\p{L} ].*") |>
+    stringr::str_remove(" b ") |>
+    stringr::str_squish() |>
+    stringr::str_replace("^(\\S+)\\s+(.*)$", "\\2 \\1")
 }
 
 #' Hämta inloggad användares e-postadress via GitHub
