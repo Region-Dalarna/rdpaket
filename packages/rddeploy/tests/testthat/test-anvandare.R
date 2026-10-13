@@ -1,27 +1,36 @@
-test_that("intern_namn_fran_json avkodar, stadar och vander ordningen", {
-  # Samma format som PowerShells `[string]$n | ConvertTo-Json -Compress`
-  j <- function(x) jsonlite::toJSON(x, auto_unbox = TRUE)
+kod <- function(x) paste(utf8ToInt(enc2utf8(x)), collapse = ",")
 
-  # WMI/PowerShell FullName kommer som "Efternamn Fornamn"
-  expect_equal(intern_namn_fran_json(j("Petersson Åsa")), "Åsa Petersson")
-  expect_equal(intern_namn_fran_json(j("Andersson Örjan")), "Örjan Andersson")
+test_that("intern_namn_fran_teckenkoder avkodar, stadar och vander ordningen", {
+  # Samma format som PowerShell-skriptets $kod -join ','
+  expect_equal(intern_namn_fran_teckenkoder(kod("Petersson Åsa")), "Åsa Petersson")
+  expect_equal(intern_namn_fran_teckenkoder(kod("Andersson Örjan")), "Örjan Andersson")
 
-  # Skrap efter namnet (t.ex. fran WMI) stads bort
-  expect_equal(intern_namn_fran_json(j("Andersson Örjan#123")), "Örjan Andersson")
+  # Riktig FullName fran Win32_UserAccount innehaller ofta mer an bara
+  # namnet, t.ex. avdelning/ort efter ett snedstreck - verifierat mot
+  # faktisk utdata fran en anvandares dator: "Moller Peter /Regional
+  # utvecklingsforvaltning /Falun" ska stadas till "Peter Moller".
+  expect_equal(
+    intern_namn_fran_teckenkoder(kod("Möller Peter /Regional utvecklingsförvaltning /Falun")),
+    "Peter Möller"
+  )
+
+  # Skrap efter namnet stads bort aven i enklare fall
+  expect_equal(intern_namn_fran_teckenkoder(kod("Andersson Örjan#123")), "Örjan Andersson")
 })
 
-test_that("intern_namn_fran_json ger NA_character_ istallet for att krascha pa ogiltig indata", {
-  # Tomt namn (motsvarar [string]$null | ConvertTo-Json -Compress -> "\"\"")
-  expect_identical(intern_namn_fran_json('""'), NA_character_)
-  # Inte ens giltig JSON
-  expect_identical(intern_namn_fran_json("inte giltig json!!"), NA_character_)
+test_that("intern_namn_fran_teckenkoder ger NA_character_ istallet for att krascha pa ogiltig indata", {
+  # Tomt namn (motsvarar att PowerShell-skriptet fick ett tomt FullName)
+  expect_identical(intern_namn_fran_teckenkoder(""), NA_character_)
+  # Inte giltiga teckenkoder alls
+  expect_identical(intern_namn_fran_teckenkoder("inte giltiga koder!!"), NA_character_)
+  # Delvis trasig lista (en kod som inte ar ett heltal)
+  expect_identical(intern_namn_fran_teckenkoder("77,x,108"), NA_character_)
 })
 
-test_that("intern_namn_fran_json fungerar aven under en icke-UTF-8-lokal", {
+test_that("intern_namn_fran_teckenkoder fungerar aven under en icke-UTF-8-lokal", {
   # R pa Windows kor som standard i en native (icke-UTF-8) lokal, t.ex.
-  # svensk cp1252. Base R:s sub()/trimws() tolkar en UTF-8-markerad strang
-  # olika beroende pa AKTIV lokal; stringr (stringi/ICU) gor det inte -
-  # detta testet verifierar det uttryckligen under LC_ALL=C.
+  # svensk cp1252. Teckenkoder (rena ASCII-siffror) och intToUtf8() ar
+  # oberoende av detta - verifierar det uttryckligen under LC_ALL=C.
   skip_on_os("windows")  # Sys.setlocale("LC_CTYPE", "C") beter sig annorlunda pa Windows
   gammal_lokal <- Sys.getlocale("LC_CTYPE")
   install_ok <- tryCatch({
@@ -31,26 +40,21 @@ test_that("intern_namn_fran_json fungerar aven under en icke-UTF-8-lokal", {
   skip_if_not(install_ok, "C-lokalen gick inte att satta pa den har plattformen")
   withr::defer(Sys.setlocale("LC_CTYPE", gammal_lokal))
 
-  j <- function(x) jsonlite::toJSON(x, auto_unbox = TRUE)
-  expect_equal(intern_namn_fran_json(j("Andersson Örjan")), "Örjan Andersson")
+  expect_equal(intern_namn_fran_teckenkoder(kod("Andersson Örjan")), "Örjan Andersson")
 })
 
-test_that("intern_namn_fran_json kraschar aldrig pa genuint trasig UTF-8", {
-  # Den FAKTISKA roten till "input string N is invalid UTF-8", rapporterat
-  # upprepade ganger fran en riktig Windows-dator trots flera tidigare
-  # fixar (byte-tabell, [Console]::OutputEncoding, ConvertTo-Json,
-  # perl = TRUE): nagonstans i PowerShell->R-kedjan pa den datorn kunde
-  # sjalva byte-INNEHALLET bli genuint trasigt (inte bara "ratt UTF-8, fel
-  # lokal", som de tidigare fixarna adresserade). Base R:s trimws()/
-  # sub(perl = TRUE) kraschar hart pa sant - stringr/stringi (ICU) gor det
-  # aldrig, vilket ocksa ar hur den ursprungliga, alltid fungerande
-  # func_API.R-versionen (som anvander stringr) betett sig.
-  trasig_utf8 <- rawToChar(as.raw(c(
-    0x22, 0x41, 0x6e, 0x64, 0x65, 0x72, 0x73, 0x73, 0x6f, 0x6e,
-    0x20, 0xe5, 0x72, 0x6a, 0x61, 0x6e, 0x22
-  )))  # "Andersson <trasig byte>rjan" - en ofullstandig multi-byte-sekvens
-  expect_no_error(resultat <- intern_namn_fran_json(trasig_utf8))
-  expect_true(is.na(resultat) || is.character(resultat))
+test_that("intern_namn_fran_teckenkoder kraschar aldrig pa trasig indata", {
+  # Bakgrund (se NEWS 0.0.0.9009-9015): flera tidigare transportmetoder
+  # (byte-tabell, [Console]::OutputEncoding, ConvertTo-Json) visade sig
+  # kunna ge trasiga/felkodade bytes pa riktiga, hart styrda Windows-
+  # datorer, vilket fick base R:s trimws()/sub() att krascha med "input
+  # string N is invalid UTF-8". Teckenkoder (rena ASCII-siffror) kan inte
+  # bli "trasig UTF-8" pa samma satt, men funktionen ska aldrig krascha
+  # oavsett vad den far in.
+  for (indata in c("", "   ", "77,,108", "-1,999999999", "NA", "77 246 108")) {
+    expect_no_error(resultat <- intern_namn_fran_teckenkoder(indata))
+    expect_true(is.na(resultat) || is.character(resultat))
+  }
 })
 
 test_that("anv_fornamn_efternamn_hamta ger NA_character_ pa icke-Windows", {

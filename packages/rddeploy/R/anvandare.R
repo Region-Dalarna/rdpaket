@@ -55,25 +55,33 @@ intern_fornamn_efternamn_powershell <- function(anv, dom) {
   # tomt), provas ett andra utan Domain-filter - mer universellt
   # tillforlitligt, om an nagot langsammare.
   #
-  # FullName skickas tillbaka som en JSON-strang (ConvertTo-Json), inte
-  # Base64 via [Convert]::ToBase64String()/[System.Text.Encoding] - sadana
-  # direkta anrop pa .NET-typer fungerar INTE pa datorer som kor PowerShell
-  # i Constrained Language Mode (vanligt pa hart styrda foretags-/region-
-  # datorer, t.ex. via WDAC/AppLocker). Sag pa en riktig sadan dator:
-  # "Method invocation is supported only on core types in this language
-  # mode". Get-CimInstance/Select-Object ar cmdlets och fungerar fint aven
-  # i Constrained Language Mode - ConvertTo-Json ar ocksa en cmdlet (ingen
-  # [Typ]::Metod()-syntax), sa den fungerar dar med. Den rakar ocksa losa
-  # det ursprungliga kodningsproblemet pa kopet: ConvertTo-Json escapar
-  # icke-ASCII-tecken som \uXXXX som standard, sa utdatan ar ren ASCII och
-  # kan inte forvanskas av nagon kodsida nar R:s system2(stdout = TRUE)
-  # laser PowerShells pipe (den gamla, empiriskt felaktiga byte-till-
-  # tecken-tabellen fran den allra forsta varianten av funktionen behovs
-  # inte langre, oavsett).
+  # FullName skickas tillbaka som en KOMMASEPARERAD LISTA MED TECKENKODER
+  # (t.ex. "77,246,108,108,101,114 ..."), inte Base64 eller ConvertTo-Json.
+  # Tva olika forsok med dessa misslyckades, bada verifierat pa en riktig,
+  # hart styrd Windows-dator:
+  #   - Base64 via [Convert]::ToBase64String()/[System.Text.Encoding]:
+  #     direkta anrop pa .NET-typer fungerar INTE i Constrained Language
+  #     Mode (vanligt pa hart styrda foretags-/regiondatorer, t.ex. via
+  #     WDAC/AppLocker) - "Method invocation is supported only on core
+  #     types in this language mode".
+  #   - ConvertTo-Json: en cmdlet (CLM-saker), men den escapar INTE alltid
+  #     icke-ASCII-tecken som \uXXXX - beror pa PowerShell-version/JSON-
+  #     serialiserare. Pa den har datorn kom RAK (ej \u-escapad) text
+  #     tillbaka, och R:s system2(stdout = TRUE) laste PowerShells pipe via
+  #     Windows egen kodsida, inte ratt bytes - exakt samma grundproblem
+  #     som den allra forsta, empiriskt felaktiga byte-till-tecken-tabellen
+  #     skulle lösa.
+  # Teckenkoder (rena decimala heltal, kommaseparerade) ar immuna mot BADA
+  # problemen: [int]/[char] ar CLM-sakra TYPKONVERTERINGAR (inte metodanrop
+  # pa godtyckliga .NET-typer), och siffror/komman ar ren ASCII som INGEN
+  # kodsida kan forvanska - R bygger tillbaka den riktiga UTF-8-strangen
+  # sjalv via intToUtf8(), oberoende av bade PowerShell-version och
+  # systemets lokal/kodsida.
+  #
   # try/catch runt HELA CIM-delen (inte bara -ErrorAction SilentlyContinue
   # per cmdlet) sa ett fel nagonstans aldrig lamnar skriptet som helhet med
-  # status != 0 - $n blir bara $null om nagot i try-blocket misslyckas,
-  # oavsett orsak, och ConvertTo-Json av ett tomt namn gar alltid bra.
+  # status != 0 - $n blir bara tomt om nagot i try-blocket misslyckas,
+  # oavsett orsak.
   ps <- sprintf(paste(
     "try {",
     "  $f1 = \"Name='%s' AND Domain='%s'\";",
@@ -82,7 +90,9 @@ intern_fornamn_efternamn_powershell <- function(anv, dom) {
     "  if (-not $u) { $u = Get-CimInstance Win32_UserAccount -Filter $f2 -ErrorAction Stop };",
     "  $n = $u | Select-Object -First 1 -ExpandProperty FullName;",
     "} catch { $n = $null };",
-    "[string]$n | ConvertTo-Json -Compress"
+    "if (-not $n) { $n = '' };",
+    "$kod = (([string]$n) -split '') | Where-Object { $_ -ne '' } | ForEach-Object { [int][char]$_ };",
+    "$kod -join ','"
   ), anv, dom, anv)
 
   res <- tryCatch(
@@ -105,16 +115,20 @@ intern_fornamn_efternamn_powershell <- function(anv, dom) {
   namn_raw <- res[nzchar(stringr::str_trim(res))]
   if (length(namn_raw) == 0) return(NA_character_)
 
-  intern_namn_fran_json(namn_raw[1])
+  intern_namn_fran_teckenkoder(namn_raw[1])
 }
 
 # Avkodar och stadar FullName-strangen fran anv_fornamn_efternamn_hamta()s
-# JSON-kodade PowerShell-utdata (en enkel JSON-strang, t.ex. "\"Örjan\"").
-# Utbruten sa den gar att testa pa alla OS (sjalva PowerShell-anropet
-# kraver Windows, den har logiken inte).
-intern_namn_fran_json <- function(namn_json) {
-  namn <- tryCatch(jsonlite::fromJSON(stringr::str_trim(namn_json)),
-                    error = function(e) NA_character_)
+# kommaseparerade teckenkoder (t.ex. "77,246,108,108,101,114 ..."). Utbruten
+# sa den gar att testa pa alla OS (sjalva PowerShell-anropet kraver
+# Windows, den har logiken inte).
+intern_namn_fran_teckenkoder <- function(namn_koder) {
+  koder <- suppressWarnings(as.integer(
+    strsplit(stringr::str_trim(namn_koder), ",", fixed = TRUE)[[1]]
+  ))
+  if (length(koder) == 0 || anyNA(koder)) return(NA_character_)
+
+  namn <- tryCatch(intToUtf8(koder, multiple = FALSE), error = function(e) NA_character_)
   if (!is.character(namn) || length(namn) != 1 || is.na(namn) || !nzchar(namn)) {
     return(NA_character_)
   }

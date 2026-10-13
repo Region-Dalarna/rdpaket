@@ -1,4 +1,42 @@
-# rddeploy 0.0.0.9014
+# rddeploy 0.0.0.9015
+
+## Fix: `anv_fornamn_efternamn_hamta()` gav tyst `NA` - `ConvertTo-Json` escapade inte icke-ASCII trots allt
+
+0.0.0.9014 löste krasch-problemet (bekräftat: ingen krasch längre), men
+funktionen gav fortfarande bara `NA` tillbaka, helt tyst. Fick äntligen se
+den riktiga, obearbetade raden PowerShell skickade tillbaka genom att be
+användaren köra ett diagnostik-skript direkt i R:
+
+```
+"Möller Peter /Regional utvecklingsförvaltning /Falun"
+```
+
+(visades som `M�ller ... f�rvaltning` i konsolen - mojibake.) Två saker
+bekräftades här:
+
+1. `ConvertTo-Json` escapar **inte** alltid icke-ASCII-tecken till
+   `\uXXXX` som antaget i 0.0.0.9011-9013 - beror på PowerShell-
+   version/JSON-serialiserare. På den här datorn kom texten rakt av, och
+   R:s `system2(stdout = TRUE)` läste PowerShells pipe via Windows egen
+   kodsida i stället för rätt bytes - exakt samma grundproblem som
+   `anv_fornamn_efternamn_hamta()` haft från början, fast nu via
+   `ConvertTo-Json` i stället för den ursprungliga byte-tabellen.
+2. Ett riktigt `FullName`-värde innehåller mer än bara namnet - t.ex.
+   `"Efternamn Förnamn /Avdelning /Ort"`. Städlogiken (som redan klipper
+   vid första icke-bokstavstecknet) hanterar detta korrekt, verifierat
+   med exakt den här strängen i ett nytt test.
+
+Bytt transportformat till en **kommaseparerad lista med teckenkoder**
+(t.ex. `"77,246,108,108,101,114 ..."`) i stället för Base64 eller JSON.
+Rena decimala siffror och kommatecken är ASCII som ingen kodsida kan
+förvanska, och bygger inte på att PowerShells JSON-serialiserare beter
+sig på ett visst sätt. R bygger tillbaka den riktiga UTF-8-strängen
+själv med `intToUtf8()` (bas-R, inget nytt beroende). `[int]`/`[char]` är
+typkonverteringar till core-typer, inte metodanrop - fungerar därför även
+i Constrained Language Mode (se 0.0.0.9011). `jsonlite` behövs inte längre
+och tas bort som beroende.
+
+
 
 ## Fix: `anv_fornamn_efternamn_hamta()` - bytt till `stringr`, samma bibliotek som den fungerande `func_API.R`-versionen
 
