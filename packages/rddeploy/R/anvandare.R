@@ -21,6 +21,30 @@ anv_fornamn_efternamn_hamta <- function() {
     return(NA_character_)
   }
 
+  # Hela PowerShell-anropet + stadningen lindas i EN tryCatch har - ett
+  # sista, heltackande sakerhetsnat. "input string N is invalid UTF-8" har
+  # dykt upp pa tre olika stallen over flera omskrivningar (se NEWS for
+  # 0.0.0.9009/9011/9012/9013) trots riktade fixar varje gang - senast i en
+  # rad (namn_raw <- res[nzchar(trimws(res))]) som ligger UTANFOR
+  # intern_namn_fran_json()s egna skydd. Funktionen ska ALDRIG krascha for
+  # anroparen - bara ge NA_character_ i varsta fall, med en varning om vad
+  # som hande, sa framtida overraskningar syns men stoppar aldrig kodflodet.
+  namn <- tryCatch(
+    intern_fornamn_efternamn_powershell(anv = Sys.getenv("USERNAME"),
+                                        dom = Sys.getenv("USERDOMAIN")),
+    error = function(e) {
+      cli::cli_warn(c(
+        "anv_fornamn_efternamn_hamta(): ov\u00e4ntat fel, ger NA_character_.",
+        "i" = conditionMessage(e)
+      ))
+      NA_character_
+    }
+  )
+  if (!is.character(namn) || length(namn) != 1) return(NA_character_)
+  namn
+}
+
+intern_fornamn_efternamn_powershell <- function(anv, dom) {
   # Anvandarnamn och doman tas fran R (inte $env: i PowerShell-strangen), sa
   # att kommandot slipper nasta citattecken. Forsta forsoket filtrerar pa
   # bade Name OCH Domain (snabbare pa domananslutna datorer - annars kan
@@ -47,8 +71,6 @@ anv_fornamn_efternamn_hamta <- function() {
   # laser PowerShells pipe (den gamla, empiriskt felaktiga byte-till-
   # tecken-tabellen fran den allra forsta varianten av funktionen behovs
   # inte langre, oavsett).
-  anv <- Sys.getenv("USERNAME")
-  dom <- Sys.getenv("USERDOMAIN")
   # try/catch runt HELA CIM-delen (inte bara -ErrorAction SilentlyContinue
   # per cmdlet) sa ett fel nagonstans aldrig lamnar skriptet som helhet med
   # status != 0 - $n blir bara $null om nagot i try-blocket misslyckas,

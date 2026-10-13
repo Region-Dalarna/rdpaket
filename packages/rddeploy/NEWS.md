@@ -1,4 +1,28 @@
-# rddeploy 0.0.0.9012
+# rddeploy 0.0.0.9013
+
+## Fix: `anv_fornamn_efternamn_hamta()` - hittade den SISTA, ovaktade `trimws()`-raden
+
+Exakt samma fel som i 0.0.0.9012 kom tillbaka en gång till, oförändrat,
+trots den fixen. Anledningen: `perl = TRUE`-omläggningen i 0.0.0.9012
+skyddade bara **innanför** `intern_namn_fran_json()` - men raden som
+faktiskt kraschade låg ett steg tidigare, i `anv_fornamn_efternamn_hamta()`
+själv (`namn_raw <- res[nzchar(trimws(res))]`), på PowerShells **råa**
+utdata innan den ens hunnit JSON-tolkas. Den raden var aldrig skyddad av
+något av de tidigare försöken.
+
+Det här felet har nu dykt upp på tre olika ställen över fyra
+releaser (0.0.0.9009, 9011, 9012, 9013), trots en riktad fix varje gång.
+I stället för att jaga nästa tänkbara ställe det kan dyka upp på, lindas
+nu **hela** PowerShell-anropet och all efterbehandling i en enda
+`tryCatch()` i `anv_fornamn_efternamn_hamta()` (utbruten till en intern
+hjälpfunktion, `intern_fornamn_efternamn_powershell()`). Funktionen kan nu
+inte krascha överhuvudtaget - vid ett oväntat fel, var det än sitter, ges
+`NA_character_` tillbaka med en varning som visar vad som hände, i stället
+för ett okontrollerat stopp. De riktade fixarna i tidigare releaser
+(ConvertTo-Json, `perl = TRUE`, `\p{L}`) står kvar - det här är ett sista,
+heltäckande säkerhetsnät ovanpå dem.
+
+
 
 ## Fix: `anv_fornamn_efternamn_hamta()` - hittade den riktiga roten till `"input string 1 is invalid UTF-8"`
 
