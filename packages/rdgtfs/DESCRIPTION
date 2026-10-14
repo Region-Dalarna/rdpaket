@@ -13,9 +13,13 @@ Roxygen: list(markdown = TRUE)
 Depends:
     R (>= 4.5.0)
 Imports:
+    data.table,
+    dplyr,
     rdgis,
     rdpostgres,
-    rdverktyg
+    rdverktyg,
+    sf,
+    tidyr
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
