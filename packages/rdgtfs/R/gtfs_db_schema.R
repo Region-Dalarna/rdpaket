@@ -82,6 +82,15 @@ gtfs_begransa_till_tabell <- function(con, schema, tabell, df) {
   df
 }
 
+#' Create current and historical GTFS tables
+#'
+#' Creates the PostGIS tables and indexes needed to load GTFS feeds and their history.
+#' @describeIn rdgtfs-api Create database tables
+#' @param con A DBI database connection.
+#' @param schema Database schema for current GTFS data.
+#' @param gtfs_dataset Dataset kind, `regional` or `sweden_3`.
+#' @return `TRUE` invisibly.
+#' @export
 skapa_tabeller <- function(con, schema = "gtfs", gtfs_dataset = "regional") {
   sweden_3 <- gtfs_kontrollera_dataset(gtfs_dataset)
   schema_h <- gtfs_historiskt_schema(schema)

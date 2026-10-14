@@ -42,6 +42,14 @@ gtfs_las_fil <- function(mapp, filnamn, obligatorisk = FALSE) {
                     encoding = "UTF-8", data.table = FALSE, showProgress = FALSE)
 }
 
+#' Build GTFS shape lines
+#'
+#' Converts ordered GTFS shape points into one `sf` linestring per shape.
+#' @describeIn rdgtfs-api Build shape geometries
+#' @param shapes GTFS `shapes` table with shape IDs, coordinates, and sequence.
+#' @param crs Coordinate reference system for the returned geometries.
+#' @return An `sf` object containing one linestring per shape.
+#' @export
 gtfs_shapes_till_linjer <- function(shapes, crs = 4326) {
   df <- data.frame(
     shape_id = as.character(shapes$shape_id),
@@ -70,6 +78,13 @@ gtfs_shapes_till_linjer <- function(shapes, crs = 4326) {
             geometry      = sf::st_sfc(unname(linjer), crs = crs))
 }
 
+#' Derive GTFS calendar weekdays
+#'
+#' Creates a `calendar` table from active dates in `calendar_dates`.
+#' @describeIn rdgtfs-api Build calendar weekdays
+#' @param calendar_dates_df GTFS `calendar_dates` data frame.
+#' @return A data frame with weekday flags and start/end dates per service.
+#' @export
 gtfs_fyll_calendar_dagar <- function(calendar_dates_df) {
   calendar_dates_df |>
     dplyr::mutate(datum    = gtfs_text_till_datum(date),
@@ -89,6 +104,15 @@ gtfs_fyll_calendar_dagar <- function(calendar_dates_df) {
     )
 }
 
+#' Expand GTFS calendar to dates
+#'
+#' Creates active `calendar_dates` rows from weekday service periods.
+#' @describeIn rdgtfs-api Expand calendar dates
+#' @param calendar_df GTFS `calendar` data frame.
+#' @param skickade_service_id Optional service IDs to expand; `NULL` expands all.
+#' @param exception_kol Exception type to assign to generated dates.
+#' @return A data frame with service ID, date, and exception type.
+#' @export
 gtfs_fyll_calendar_dates_fran_calendar <- function(calendar_df,
                                                    skickade_service_id = NULL,
                                                    exception_kol = 1L) {

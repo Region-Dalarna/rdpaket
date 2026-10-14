@@ -1,3 +1,11 @@
+#' Fetch Trafiklab's Swedish operator lookup table
+#'
+#' Retrieves regional operators and optionally joins Region Dalarna's county names.
+#' @describeIn rdgtfs-api Fetch the operator lookup
+#' @param tabort_na Remove rows without a mapped region code.
+#' @param med_regionnamn Join county names using `rdverktyg`.
+#' @return A data frame containing operator, operator code, and region code.
+#' @export
 gtfs_operatorer_sverige_nyckeltabell_hamta <- function(tabort_na = TRUE,
                                                        med_regionnamn = TRUE) {
   operatorkod_till_regionkod <- c(
@@ -28,6 +36,15 @@ gtfs_operatorer_sverige_nyckeltabell_hamta <- function(tabort_na = TRUE,
   retur_df
 }
 
+#' Download and parse a Trafiklab GTFS feed
+#'
+#' Downloads a selected regional or national feed using a token stored in keyring.
+#' @describeIn rdgtfs-api Download and parse a GTFS feed
+#' @param gtfs_dataset County code, operator code, `sverige_2`, or `sweden_3`.
+#' @param spara_filmap Optional directory for downloaded ZIP and extracted files.
+#' @param test_mode Only check that the feed URL responds; do not download data.
+#' @return A named list of GTFS tables, or `TRUE` invisibly in test mode.
+#' @export
 hamta_gtfs_data <- function(gtfs_dataset = "20",
                             spara_filmap = NA,
                             test_mode = FALSE) {

@@ -1,3 +1,10 @@
+#' Display GTFS shapes on an interactive map
+#'
+#' Uses the optional `mapview` package to render GTFS shape lines.
+#' @describeIn rdgtfs-api Display GTFS shapes
+#' @param gtfs_data GTFS data list containing a `shapes` table.
+#' @return A `mapview` map widget.
+#' @export
 mapview_gtfs <- function(gtfs_data) {
   if (!requireNamespace("mapview", quietly = TRUE)) {
     stop("Paketet 'mapview' krävs för mapview_gtfs() men är inte installerat.", call. = FALSE)
@@ -11,6 +18,17 @@ mapview_gtfs <- function(gtfs_data) {
   mapview::mapview(shapes_lines, zcol = "shape_id", legend = TRUE)
 }
 
+#' Filter GTFS data geographically
+#'
+#' Retains complete trips whose stops intersect a polygon and all dependent rows.
+#' @describeIn rdgtfs-api Filter a feed geographically
+#' @param gtfs_data GTFS object or a `gtfstools` `dt_gtfs` object.
+#' @param polygon An `sf` or `sfc` polygon with a defined coordinate reference system.
+#' @param buffert_km Optional buffer distance around the polygon, in kilometres.
+#' @param gtfs_dataset Dataset kind, `regional` or `sweden_3`.
+#' @param fullstandiga_operatorer Optional agency-name substrings whose complete networks are retained.
+#' @return A filtered GTFS object with related tables kept consistent.
+#' @export
 gtfs_filtrera_geografiskt <- function(gtfs_data, polygon, buffert_km = 0,
                                       gtfs_dataset = "regional",
                                       fullstandiga_operatorer = NULL) {

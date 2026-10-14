@@ -1,3 +1,14 @@
+#' Create current stop-level materialized views
+#'
+#' Builds stop and stop-position departure views for the current GTFS feed.
+#' @describeIn rdgtfs-api Create current stop views
+#' @param con A DBI database connection.
+#' @param schema Database schema containing current GTFS tables.
+#' @param agency_id Optional agency ID filter.
+#' @param agency_namn Optional agency-name substring filter.
+#' @param vy_suffix Optional suffix for generated view names.
+#' @return `TRUE` invisibly.
+#' @export
 skapa_vyer_hallplats <- function(con, schema = "gtfs", agency_id = NULL,
                                  agency_namn = NULL, vy_suffix = NULL) {
   # Om agency_id (eller agency_namn) anges filtreras allt till den operatören,
@@ -130,6 +141,17 @@ skapa_vyer_hallplats <- function(con, schema = "gtfs", agency_id = NULL,
 }
 
 
+#' Create historical stop-level materialized views
+#'
+#' Builds version-aware stop and stop-position departure views.
+#' @describeIn rdgtfs-api Create historical stop views
+#' @param con A DBI database connection.
+#' @param schema Base schema; historical data is read from its `_historisk` schema.
+#' @param agency_id Optional agency ID filter.
+#' @param agency_namn Optional agency-name substring filter.
+#' @param vy_suffix Optional suffix for generated view names.
+#' @return `TRUE` invisibly.
+#' @export
 skapa_vyer_historisk_hallplats <- function(con, schema = "gtfs", agency_id = NULL,
                                            agency_namn = NULL, vy_suffix = NULL) {
   # Historisk motsvarighet till skapa_vyer_hallplats(). schema = grundschemat
@@ -271,6 +293,17 @@ skapa_vyer_historisk_hallplats <- function(con, schema = "gtfs", agency_id = NUL
 }
 
 
+#' Create current route materialized views
+#'
+#' Builds spatial route summaries for the current GTFS feed.
+#' @describeIn rdgtfs-api Create current route views
+#' @param con A DBI database connection.
+#' @param schema Database schema containing current GTFS tables.
+#' @param agency_id Optional agency ID filter.
+#' @param agency_namn Optional agency-name substring filter.
+#' @param vy_suffix Optional suffix for generated view names.
+#' @return `TRUE` invisibly.
+#' @export
 skapa_vyer_linjer <- function(con, schema = "gtfs", agency_id = NULL,
                               agency_namn = NULL, vy_suffix = NULL) {
   # Kolumnen "operator" är operatörsnamnet för linjen, "route_type" den råa
@@ -394,6 +427,17 @@ skapa_vyer_linjer <- function(con, schema = "gtfs", agency_id = NULL,
 }
 
 
+#' Create historical route materialized views
+#'
+#' Builds version-aware spatial route summaries.
+#' @describeIn rdgtfs-api Create historical route views
+#' @param con A DBI database connection.
+#' @param schema Base schema; historical data is read from its `_historisk` schema.
+#' @param agency_id Optional agency ID filter.
+#' @param agency_namn Optional agency-name substring filter.
+#' @param vy_suffix Optional suffix for generated view names.
+#' @return `TRUE` invisibly.
+#' @export
 skapa_vyer_historisk_linjer <- function(con, schema = "gtfs", agency_id = NULL,
                                         agency_namn = NULL, vy_suffix = NULL) {
   # Historisk motsvarighet till skapa_vyer_linjer(). Se den för anmärkning om antal_turer.

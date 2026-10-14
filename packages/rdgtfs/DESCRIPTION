@@ -5,8 +5,9 @@ Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
   )
-Description: GTFS-specifika verktyg för hämtning, bearbetning och
-    användning av kollektivtrafikdata i Region Dalarnas analysarbete.
+Description: GTFS-specifika verktyg för hämtning, normalisering,
+    kalenderhantering, geospatial filtrering, PostGIS-lagring med
+    versionshistorik och förberedelse av data för r5r-analyser.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

@@ -1,3 +1,12 @@
+#' Validate a GTFS feed
+#'
+#' Runs the Google GTFS validator and returns its JSON report.
+#' @describeIn rdgtfs-api Validate a feed
+#' @param gtfs GTFS object or path accepted by `gtfstools`.
+#' @param output_path Directory where the validator writes its report.
+#' @param validator_path Path to the GTFS validator JAR.
+#' @return The validation report, invisibly.
+#' @export
 gtfs_validera <- function(gtfs,
                           output_path    = "validering",
                           validator_path = file.path(getwd(), "gtfstools", "gtfs-validator-v6.0.0.jar")) {
@@ -14,6 +23,14 @@ gtfs_validera <- function(gtfs,
   invisible(rapport)
 }
 
+#' Normalize GTFS data before database upload
+#'
+#' Fixes upload-relevant types and normalizes stop sequence numbers.
+#' @describeIn rdgtfs-api Normalize GTFS for database upload
+#' @param gtfs A named list of GTFS tables.
+#' @param gtfs_dataset Dataset kind, `regional` or `sweden_3`.
+#' @return The normalized GTFS object.
+#' @export
 gtfs_rensa_for_db <- function(gtfs, gtfs_dataset = "regional") {
   sweden_3 <- gtfs_kontrollera_dataset(gtfs_dataset)
 
@@ -48,6 +65,13 @@ gtfs_rensa_for_db <- function(gtfs, gtfs_dataset = "regional") {
   gtfs
 }
 
+#' Clean GTFS data for r5r
+#'
+#' Removes unsupported records and cascade-filters dependent tables.
+#' @describeIn rdgtfs-api Clean GTFS for r5r
+#' @param gtfs A named list of GTFS tables.
+#' @return A GTFS object cleaned for r5r.
+#' @export
 gtfs_rensa_for_r5r <- function(gtfs) {
   gtfs$routes <- gtfs$routes |>
     dplyr::filter(route_type != 1501L) |>
@@ -96,6 +120,16 @@ gtfs_rensa_for_r5r <- function(gtfs) {
   gtfs
 }
 
+#' Read and prepare database GTFS for r5r
+#'
+#' Reads GTFS tables from a database, cleans them, and optionally writes a GTFS ZIP.
+#' @describeIn rdgtfs-api Prepare database GTFS for r5r
+#' @param con A DBI database connection.
+#' @param schema Database schema containing GTFS tables.
+#' @param output_zip Optional path for the generated GTFS ZIP.
+#' @param datum Optional start date; only services active on or after this date remain.
+#' @return The cleaned GTFS object, invisibly if a ZIP is written.
+#' @export
 gtfs_hamta_for_r5r <- function(con,
                                schema     = "gtfs",
                                output_zip = NULL,

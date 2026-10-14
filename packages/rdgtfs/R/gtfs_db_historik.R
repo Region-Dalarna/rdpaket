@@ -41,6 +41,16 @@ hamta_gemensamma_kolumner <- function(con, schema, schema_historisk, tabell) {
   gemensamma
 }
 
+#' Version GTFS database contents
+#'
+#' Archives the current database feed when the incoming calendar has a new end date.
+#' @describeIn rdgtfs-api Version database feeds
+#' @param con A DBI database connection.
+#' @param gtfs_data A named list of incoming GTFS tables.
+#' @param schema Database schema for current GTFS data.
+#' @param vy_operatorer Controls historical views created after an archive; `NULL` disables them.
+#' @return `TRUE` invisibly when a version is created, otherwise `FALSE`.
+#' @export
 versionshantering <- function(con, gtfs_data, schema = "gtfs", vy_operatorer = NA) {
   schema_h <- gtfs_historiskt_schema(schema)
   versions_tabell <- gtfs_db_qname(con, schema_h, "versions")
@@ -141,6 +151,15 @@ versionshantering <- function(con, gtfs_data, schema = "gtfs", vy_operatorer = N
   })
 }
 
+#' Delete old GTFS versions
+#'
+#' Removes historical versions whose end date is older than the requested age.
+#' @describeIn rdgtfs-api Delete old history
+#' @param con A DBI database connection.
+#' @param antal_ar Age threshold in years.
+#' @param schema Base database schema.
+#' @return Deleted version numbers, invisibly.
+#' @export
 radera_gamla_versioner <- function(con, antal_ar, schema = "gtfs") {
   schema_h <- gtfs_historiskt_schema(schema)
   versions_tabell <- gtfs_db_qname(con, schema_h, "versions")
@@ -178,6 +197,17 @@ radera_gamla_versioner <- function(con, antal_ar, schema = "gtfs") {
   })
 }
 
+#' Upload GTFS data to the database
+#'
+#' Replaces current feed tables and writes stop and shape geometries to PostGIS.
+#' @describeIn rdgtfs-api Upload a GTFS feed
+#' @param con A DBI database connection.
+#' @param gtfs_data A named list of GTFS tables.
+#' @param schema Target database schema.
+#' @param gtfs_dataset Dataset kind, `regional` or `sweden_3`.
+#' @param transaktion Run truncate and upload in a transaction.
+#' @return `TRUE` invisibly.
+#' @export
 ladda_upp_till_databas <- function(con, gtfs_data, schema = "gtfs",
                                    gtfs_dataset = "regional", transaktion = FALSE) {
   sweden_3 <- gtfs_kontrollera_dataset(gtfs_dataset)
@@ -255,6 +285,14 @@ ladda_upp_till_databas <- function(con, gtfs_data, schema = "gtfs",
   invisible(TRUE)
 }
 
+#' Populate Dalarna route classifications
+#'
+#' Rebuilds the route classification table using Dalarna-specific line-number rules.
+#' @describeIn rdgtfs-api Create Dalarna route classes
+#' @param con A DBI database connection.
+#' @param schema Database schema containing routes and classification tables.
+#' @return `TRUE` invisibly.
+#' @export
 skapa_tabell_linjeklassificering <- function(con, schema = "gtfs") {
   routes_tabell <- gtfs_db_qname(con, schema, "routes")
   klassificering_tabell <- gtfs_db_qname(con, schema, "linjeklassificering")
@@ -293,6 +331,15 @@ skapa_tabell_linjeklassificering <- function(con, schema = "gtfs") {
   invisible(TRUE)
 }
 
+#' Look up a GTFS agency ID by name
+#'
+#' Matches a case-insensitive substring and errors if the match is missing or ambiguous.
+#' @describeIn rdgtfs-api Look up an agency ID
+#' @param con A DBI database connection.
+#' @param schema Database schema containing the agency table.
+#' @param agency_namn Agency name substring to match.
+#' @return The matching agency ID.
+#' @export
 hamta_agency_id <- function(con, schema = "gtfs", agency_namn) {
   agency_tabell <- gtfs_db_qname(con, schema, "agency")
   namn <- as.character(DBI::dbQuoteString(con, paste0("%", agency_namn, "%")))
