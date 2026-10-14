@@ -7,8 +7,9 @@ Authors@R: c(
   )
 Description: Paraplypaket för Region Dalarnas analysarbete. `library(rd)`
     drar in alla rd-analyspaket på en gång (rdverktyg, rddiagram, rdgis,
-    rdpostgres, rdshinyappar). Deploy- och serverdriftspaketen (rddeploy,
-    rdadminportal) ingår inte - de laddas explicit vid behov.
+    rdpostgres, rdgeorouting, rdgtfs, rdshinyappar). Deploy- och
+    serverdriftspaketen (rddeploy, rdadminportal) ingår inte - de laddas
+    explicit vid behov.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -17,6 +18,7 @@ Depends:
     rddiagram,
     rdgeorouting,
     rdgis,
+    rdgtfs,
     rdpostgres,
     rdshinyappar,
     rdverktyg
@@ -31,6 +33,7 @@ Remotes:
     Region-Dalarna/rdpaket/packages/rdverktyg,
     Region-Dalarna/rdpaket/packages/rddiagram,
     Region-Dalarna/rdpaket/packages/rdgis,
+    Region-Dalarna/rdpaket/packages/rdgtfs,
     Region-Dalarna/rdpaket/packages/rdpostgres,
     Region-Dalarna/rdpaket/packages/rdgeorouting,
     Region-Dalarna/rdpaket/packages/rdshinyappar
