@@ -1,0 +1,41 @@
+Package: rdgtfs
+Title: GTFS-verktyg för Region Dalarnas Analysarbete
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
+    person("Region Dalarna", role = "cph")
+  )
+Description: GTFS-specifika verktyg för hämtning, normalisering,
+    kalenderhantering, geospatial filtrering, PostGIS-lagring med
+    versionshistorik och förberedelse av data för r5r-analyser.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.5.0)
+Imports:
+    data.table,
+    DBI,
+    dplyr,
+    glue,
+    gtfstools,
+    httr,
+    jsonlite,
+    keyring,
+    rdgis,
+    rdpostgres,
+    rdverktyg,
+    rvest,
+    sf,
+    tidyr
+Suggests:
+    mapview,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+URL: https://github.com/Region-Dalarna/rdpaket
+BugReports: https://github.com/Region-Dalarna/rdpaket/issues
+Config/roxygen2/version: 8.1.0
+Remotes:
+    Region-Dalarna/rdpaket/packages/rdgis,
+    Region-Dalarna/rdpaket/packages/rdpostgres,
+    Region-Dalarna/rdpaket/packages/rdverktyg
