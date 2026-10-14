@@ -15,9 +15,12 @@ Depends:
 Imports:
     data.table,
     dplyr,
+    httr,
+    keyring,
     rdgis,
     rdpostgres,
     rdverktyg,
+    rvest,
     sf,
     tidyr
 Suggests:
