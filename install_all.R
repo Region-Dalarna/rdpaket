@@ -8,6 +8,7 @@ paket <- c(
   "rddiagram",
   "rdpostgres",
   "rdgis",
+  "rdgtfs",
   "rdgeorouting",
   "rdshinyappar",
   "rddeploy",
