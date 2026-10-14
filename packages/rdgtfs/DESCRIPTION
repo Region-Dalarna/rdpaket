@@ -14,8 +14,11 @@ Depends:
     R (>= 4.5.0)
 Imports:
     data.table,
+    DBI,
     dplyr,
+    gtfstools,
     httr,
+    jsonlite,
     keyring,
     rdgis,
     rdpostgres,
