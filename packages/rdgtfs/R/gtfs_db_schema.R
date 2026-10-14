@@ -36,9 +36,19 @@ gtfs_fordonstyp_sql <- function() {
 }
 
 gtfs_vy_parametrar <- function(con, schema, agency_id, agency_namn, vy_suffix) {
+  if (length(schema) != 1 || is.na(schema) ||
+      !grepl("^[A-Za-z_][A-Za-z0-9_]*$", schema)) {
+    stop("schema måste vara ett giltigt SQL-schemaidentifierare.", call. = FALSE)
+  }
   if (!is.null(agency_namn)) {
     if (!is.null(agency_id)) stop("Ange antingen agency_id eller agency_namn, inte båda.", call. = FALSE)
     agency_id <- hamta_agency_id(con, schema, agency_namn)
+  }
+  if (!is.null(vy_suffix)) {
+    if (length(vy_suffix) != 1 || is.na(vy_suffix)) {
+      stop("vy_suffix måste vara ett enda värde.", call. = FALSE)
+    }
+    vy_suffix <- gsub("[^a-zA-Z0-9_]", "_", vy_suffix)
   }
   if (!is.null(agency_id) && is.null(vy_suffix)) {
     vy_suffix <- paste0("_", gsub("[^a-z0-9_]", "_", tolower(agency_id)))
