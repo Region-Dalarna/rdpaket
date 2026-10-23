@@ -82,7 +82,7 @@ intern_valj_farger <- function(manual_color, brew_palett, antal_grupper) {
 intern_rd_diagramtema <- function(legend_pos, x_axis_lutning, x_axis_storlek, y_axis_storlek,
                                   y_axis_lutning = 0, legend_storlek = 12,
                                   diagram_titel_storlek = 20, undertitel_hjust = 0.5,
-                                  undertitel_storlek = 11, diagram_caption_storlek = 11,
+                                  undertitel_storlek = 11, diagram_caption_storlek = 9,
                                   manual_x_axis_text_hjust = 0.5, manual_x_axis_text_vjust = 0,
                                   stodlinjer_minor_tabort = FALSE, facet_space_mm = 5.5,
                                   linjediagram = FALSE) {

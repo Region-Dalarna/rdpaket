@@ -126,10 +126,10 @@ SkapaStapelDiagram <- function(
     x_axis_visa_var_xe_etikett = NULL, inkludera_sista_vardet_var_xe_etikett = TRUE,
     x_axis_var_xe_etikett_ta_bort_nast_sista_vardet = FALSE,
     diagram_titel_storlek = 20, undertitel_storlek = 11, undertitel_hjust = 0.5,
-    diagram_caption_storlek = 11,
+    diagram_caption_storlek = 9,
     facet_x_axis_storlek = 8, facet_y_axis_storlek = 8, facet_rubrik_storlek = 12,
     facet_space_diag_horisont = 5.5, facet_oka_avstand_vid_visa_sista_vardet = 1.5,
-    lagg_pa_logga = TRUE, logga_path = NA, logga_scaling = 20,
+    lagg_pa_logga = TRUE, logga_path = NA, logga_scaling = 22,
     logga = NULL, logga_storlek = NULL,
     skriv_till_diagramfil = TRUE, diagramfil_bredd = 12, diagramfil_hojd = 7,
     diagram_bildformat = "png") {

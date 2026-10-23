@@ -73,8 +73,8 @@ SkapaLinjeDiagram <- function(
     legend_vand_ordning = FALSE, legend_rader = NULL, legend_kolumner = NULL,
     legend_byrow = FALSE,
     diagram_titel_storlek = 20, undertitel_storlek = 11, undertitel_hjust = 0.5,
-    diagram_caption_storlek = 11,
-    lagg_pa_logga = TRUE, logga_path = NA, logga_scaling = 15,
+    diagram_caption_storlek = 9,
+    lagg_pa_logga = TRUE, logga_path = NA, logga_scaling = 22,
     logga = NULL, logga_storlek = NULL,
     skriv_till_diagramfil = TRUE, diagramfil_bredd = 12, diagramfil_hojd = 7,
     diagram_bildformat = "png") {
