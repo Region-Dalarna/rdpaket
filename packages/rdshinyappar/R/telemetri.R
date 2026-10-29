@@ -98,6 +98,14 @@ telemetri_ui <- function(telemetry) {
 #' Hämtar exkluderingsmönster från databasen (med hårdkodad fallback om den
 #' inte går att nå), så alla appar kan uppdateras centralt utan kodändring.
 #'
+#' Vi mäter bara sessioner, inte unika användare - `track_anonymous_user`
+#' sätts därför till `FALSE`. Annars sätter shiny.telemetry en cookie med en
+#' anonym men personlig identifierare (365 dagars livslängd) i webbläsaren
+#' för att kunna känna igen återkommande besökare. Måttet visade sig ändå
+#' inte gå att lita på (sessioner och "unika användare" låg nästan exakt
+#' lika i adminportalens statistik för alla appar), så poängen med cookien
+#' försvinner - bättre att slippa den helt.
+#'
 #' @param telemetry Ett Telemetry-objekt från [skapa_telemetry()], eller `NULL`.
 #' @param navigation_id Input-id för navigeringen (flikbytet).
 #' @param forsta_flik Namn på fliken som visas vid start. `NULL` = logga inte
@@ -121,7 +129,8 @@ telemetri_server <- function(telemetry, navigation_id, forsta_flik = NULL) {
     regex <- "(_hovered$|_zoom$|_center$|_bounds$|_mouseover$|_mouseout$|_selected$|_set$)"
   }
 
-  telemetry$start_session(track_inputs = FALSE, navigation_input_id = navigation_id)
+  telemetry$start_session(track_inputs = FALSE, navigation_input_id = navigation_id,
+                          track_anonymous_user = FALSE)
   telemetry$log_all_inputs(excluded_inputs_regex = regex, excluded_inputs = navigation_id)
 
   if (!is.null(forsta_flik)) {
@@ -137,8 +146,8 @@ telemetri_server <- function(telemetry, navigation_id, forsta_flik = NULL) {
 #'   [skapa_telemetry()] lägger till.
 #' @param fran,till `Date` som avgränsar perioden (`NULL` = ingen gräns).
 #'
-#' @return En lista med `antal_sessioner`, `antal_unika_anvandare`, `flikbesok`,
-#'   `per_veckodag`, `per_timme` och `per_veckodag_timme`.
+#' @return En lista med `antal_sessioner`, `flikbesok`, `per_veckodag`,
+#'   `per_timme` och `per_veckodag_timme`.
 #' @export
 hamta_telemetri_data <- function(app_namn, target = c("publik", "intern"), fran = NULL, till = NULL) {
   target <- match.arg(target)
@@ -175,7 +184,6 @@ hamta_telemetri_data <- function(app_namn, target = c("publik", "intern"), fran 
   if (nrow(rader) == 0) {
     return(list(
       antal_sessioner       = 0,
-      antal_unika_anvandare = 0,
       flikbesok             = tom_tabell(c("flik", "antal")),
       per_veckodag          = tom_tabell(c("veckodag", "antal")),
       per_timme             = tom_tabell(c("timme", "antal")),
@@ -185,16 +193,6 @@ hamta_telemetri_data <- function(app_namn, target = c("publik", "intern"), fran 
 
   # ---- Antal sessioner ----
   antal_sessioner <- length(unique(rader$session))
-
-  # ---- Unika användare (via login-eventens username) ----
-  login_rader <- rader[rader$type == "login", ]
-  anvandar_id <- if (nrow(login_rader) > 0) {
-    vapply(login_rader$details, function(d) {
-      parsed <- jsonlite::fromJSON(d)
-      if (!is.null(parsed$username)) parsed$username[1] else NA_character_
-    }, character(1))
-  } else character(0)
-  antal_unika_anvandare <- length(unique(anvandar_id[!is.na(anvandar_id)]))
 
   # ---- Flikbesök (navigation-events) ----
   nav_rader <- rader[rader$type == "navigation", ]
@@ -231,7 +229,6 @@ hamta_telemetri_data <- function(app_namn, target = c("publik", "intern"), fran 
 
   list(
     antal_sessioner       = antal_sessioner,
-    antal_unika_anvandare = antal_unika_anvandare,
     flikbesok             = flikbesok,
     per_veckodag          = per_veckodag,
     per_timme             = per_timme,
@@ -244,7 +241,7 @@ hamta_telemetri_data <- function(app_namn, target = c("publik", "intern"), fran 
 #' Med grundläggande måttal - används för översiktstabellen i adminportalen.
 #'
 #' @return En `data.frame` med `app`, `server`, `antal_sessioner`,
-#'   `antal_unika_anvandare`, `forsta_aktivitet`, `senaste_aktivitet`.
+#'   `forsta_aktivitet`, `senaste_aktivitet`.
 #' @export
 hamta_telemetri_appar <- function() {
   con <- shiny_uppkoppling_las(db_name = "sekretess", db_user = "shiny_las_sekretess")
@@ -268,22 +265,7 @@ hamta_telemetri_appar <- function() {
                       ifelse(grepl("_publik$", df$app_name), "publik", NA_character_))
   df$app <- sub("_(intern|publik)$", "", df$app_name)
 
-  # Unika användare per app måste räknas separat (kräver JSON-parsning av login-events)
-  unika <- vapply(df$app_name, function(namn) {
-    login_rader <- DBI::dbGetQuery(con, "
-      SELECT details FROM shiny_telemetry.event_log
-      WHERE app_name = $1 AND type = 'login'
-    ", params = list(namn))
-    if (nrow(login_rader) == 0) return(0L)
-    id <- vapply(login_rader$details, function(d) {
-      p <- jsonlite::fromJSON(d)
-      if (!is.null(p$username)) p$username[1] else NA_character_
-    }, character(1))
-    length(unique(id[!is.na(id)]))
-  }, integer(1))
-  df$antal_unika_anvandare <- unika
-
-  df[, c("app", "server", "antal_sessioner", "antal_unika_anvandare",
+  df[, c("app", "server", "antal_sessioner",
          "forsta_aktivitet", "senaste_aktivitet")]
 }
 
