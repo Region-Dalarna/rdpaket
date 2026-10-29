@@ -363,10 +363,11 @@ github_pull_lokalt_repo_fran_github <- function(repo, grundsokvag = intern_gh_ma
       return(invisible(NULL))
     }
 
-    resultat <- tryCatch(gert::git_pull(repo = repo_sokvag),
-                         error = function(e) conditionMessage(e))
-    if (is.character(resultat)) {
-      cli::cli_alert_danger("{.val {r}}: {resultat}")
+    fel <- NULL
+    tryCatch(gert::git_pull(repo = repo_sokvag),
+            error = function(e) fel <<- conditionMessage(e))
+    if (!is.null(fel)) {
+      cli::cli_alert_danger("{.val {r}}: {fel}")
     } else {
       cli::cli_alert_success("{.val {r}}: uppdaterad.")
     }
