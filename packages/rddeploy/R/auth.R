@@ -105,8 +105,10 @@ rddeploy_auth_check <- function() {
                         error = function(e) NA_character_)
   git_email <- tryCatch(gert::git_config_global()$value[gert::git_config_global()$name == "user.email"][1],
                         error = function(e) NA_character_)
-  cli::cli_li(if (isTRUE(nzchar(git_name)))  "git user.name: {.val {git_name}}"  else "git user.name: {.red ej satt}")
-  cli::cli_li(if (isTRUE(nzchar(git_email))) "git user.email: {.val {git_email}}" else "git user.email: {.red ej satt}")
+  har_git_name  <- !is.na(git_name)  && nzchar(git_name)
+  har_git_email <- !is.na(git_email) && nzchar(git_email)
+  cli::cli_li(if (har_git_name)  "git user.name: {.val {git_name}}"  else "git user.name: {.red ej satt}")
+  cli::cli_li(if (har_git_email) "git user.email: {.val {git_email}}" else "git user.email: {.red ej satt}")
 
   foraldrade <- intern_foraldrade_keyring_services()
   if (length(foraldrade) > 0) {
@@ -120,7 +122,7 @@ rddeploy_auth_check <- function() {
     }
   }
 
-  redo <- har_token && isTRUE(nzchar(git_name)) && isTRUE(nzchar(git_email))
+  redo <- har_token && har_git_name && har_git_email
   if (redo) {
     cli::cli_alert_success("Allt som krävs för git/GitHub är konfigurerat.")
   } else {
