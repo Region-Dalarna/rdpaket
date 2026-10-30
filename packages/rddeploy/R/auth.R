@@ -140,6 +140,68 @@ rddeploy_auth_check <- function() {
   ))
 }
 
+#' Interaktiv hjälp för att fylla i det som saknas i git/GitHub-uppsättningen
+#'
+#' Kör {.fn rddeploy_auth_check} och frågar, för varje krav som saknas, efter
+#' uppgifterna och sätter dem direkt:
+#' - **GitHub-token**: `gitcreds::gitcreds_set()` (med möjlighet att först
+#'   öppna GitHub och skapa en ny token via `usethis::create_github_token()`
+#'   om man inte redan har en).
+#' - **`user.name`/`user.email`**: `usethis::use_git_config()`, som sätter
+#'   dem globalt för hela datorn.
+#'
+#' Kräver en interaktiv session eftersom den frågar efter uppgifter via
+#' konsolen.
+#'
+#' @return Osynligt: resultatet av en ny `rddeploy_auth_check()` efter att
+#'   eventuella åtgärder genomförts.
+#' @export
+rddeploy_auth_setup <- function() {
+  if (!interactive()) {
+    cli::cli_abort("{.fn rddeploy_auth_setup} kräver en interaktiv session.")
+  }
+  if (!requireNamespace("usethis", quietly = TRUE)) {
+    cli::cli_abort("Paketet {.pkg usethis} krävs. Installera med {.run install.packages(\"usethis\")}.")
+  }
+
+  status <- rddeploy_auth_check()
+  andrat <- FALSE
+
+  if (!status$token) {
+    andrat <- TRUE
+    cli::cli_h3("GitHub-token saknas")
+    svar <- readline(prompt = "Har du redan en personal access token? Skriv 'ja' eller 'nej': ")
+    if (!tolower(trimws(svar)) %in% c("ja", "j", "yes", "y")) {
+      cli::cli_alert_info("Öppnar GitHub i webbläsaren för att skapa en ny token ...")
+      usethis::create_github_token()
+      cli::cli_alert_info("Klistra in den nya token när frågan om token kommer.")
+    }
+    gitcreds::gitcreds_set()
+  }
+
+  git_name_saknas  <- is.na(status$git_name)  || !nzchar(status$git_name)
+  git_email_saknas <- is.na(status$git_email) || !nzchar(status$git_email)
+
+  if (git_name_saknas || git_email_saknas) {
+    andrat <- TRUE
+    cli::cli_h3("Git-identitet saknas")
+    namn  <- if (git_name_saknas)  trimws(readline(prompt = "Ditt namn (används i git-commits): ")) else status$git_name
+    epost <- if (git_email_saknas) trimws(readline(prompt = "Din e-postadress (används i git-commits): ")) else status$git_email
+    if (!nzchar(namn) || !nzchar(epost)) {
+      cli::cli_abort("Namn och e-postadress kan inte vara tomma.")
+    }
+    usethis::use_git_config(user.name = namn, user.email = epost)
+  }
+
+  if (!andrat) {
+    cli::cli_alert_success("Allt som krävs för git/GitHub är redan konfigurerat - inget att göra.")
+    return(invisible(status))
+  }
+
+  cli::cli_h3("Kontrollerar igen")
+  invisible(rddeploy_auth_check())
+}
+
 #' Sätt lokal git-identitet från den globala konfigurationen
 #'
 #' Rensar `GIT_AUTHOR_*`/`GIT_COMMITTER_*` ur miljön (de vinner annars över
