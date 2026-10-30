@@ -185,8 +185,13 @@ rddeploy_auth_setup <- function() {
   if (git_name_saknas || git_email_saknas) {
     andrat <- TRUE
     cli::cli_h3("Git-identitet saknas")
-    namn  <- if (git_name_saknas)  trimws(readline(prompt = "Ditt namn (används i git-commits): ")) else status$git_name
-    epost <- if (git_email_saknas) trimws(readline(prompt = "Din e-postadress (används i git-commits): ")) else status$git_email
+    cli::cli_alert_info(c(
+      "Namnet och e-postadressen sparas i din globala git-config och ",
+      "skrivs in som {.emph författare} på varje commit du gör härifrån - ",
+      "de syns publikt i historiken på GitHub, oavsett vem som äger GitHub-kontot."
+    ))
+    namn  <- if (git_name_saknas)  trimws(readline(prompt = "Ditt för- och efternamn, så som det ska synas på GitHub (t.ex. 'Anna Andersson'): ")) else status$git_name
+    epost <- if (git_email_saknas) trimws(readline(prompt = "Din e-postadress, gärna samma som du loggar in på GitHub med (t.ex. 'anna.andersson@regiondalarna.se'): ")) else status$git_email
     if (!nzchar(namn) || !nzchar(epost)) {
       cli::cli_abort("Namn och e-postadress kan inte vara tomma.")
     }
