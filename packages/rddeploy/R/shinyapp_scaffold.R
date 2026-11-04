@@ -102,9 +102,16 @@ intern_scaffold_renv <- function(sokvag, telemetri = TRUE) {
                  "tidyr", "readr", "ggplot2", "DBI", "RPostgres", "sf",
                  if (isTRUE(telemetri)) "shiny.telemetry")
 
+  # rdshinyappar (behövs för skapa_telemetry()/telemetri_ui()/telemetri_server(),
+  # som global.R/ui.R/server.R anropar när telemetri = TRUE) finns bara på GitHub,
+  # inte CRAN - måste installeras separat, annars hamnar den aldrig i renv.lock
+  # och library(rdshinyappar) i global.R kraschar appen efter renv::restore().
+  github_pat <- if (isTRUE(telemetri)) tryCatch(rddeploy_pat(), error = function(e) "") else ""
+
   callr::r(
-    func = function(project, packages) {
+    func = function(project, packages, telemetri, github_pat) {
       Sys.setenv(RENV_CONFIG_REPOS_OVERRIDE = "https://cloud.r-project.org")
+      if (nzchar(github_pat)) Sys.setenv(GITHUB_PAT = github_pat)
       options(repos = c(CRAN = "https://cloud.r-project.org"))
       renv::init(project = project, bare = TRUE, restart = FALSE, load = TRUE)
       ap <- utils::available.packages()
@@ -114,10 +121,15 @@ intern_scaffold_renv <- function(sokvag, telemetri = TRUE) {
       alla <- setdiff(unique(c(packages, unlist(deps, use.names = FALSE))), c("R", NA))
       renv::install(alla, project = project,
                     library = renv::paths$library(project = project), prompt = FALSE)
+      if (isTRUE(telemetri)) {
+        renv::install("Region-Dalarna/rdpaket/packages/rdshinyappar", project = project,
+                      library = renv::paths$library(project = project), prompt = FALSE)
+      }
       renv::snapshot(project = project, prompt = FALSE)
       renv::restore(project = project, prompt = FALSE)
     },
-    args = list(project = sub("/$", "", sokvag), packages = paket_app)
+    args = list(project = sub("/$", "", sokvag), packages = paket_app,
+               telemetri = isTRUE(telemetri), github_pat = github_pat)
   )
   cli::cli_alert_success("renv initierat, grundpaket installerade, renv.lock skapad.")
   invisible(sokvag)

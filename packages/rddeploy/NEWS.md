@@ -1,3 +1,28 @@
+# rddeploy 0.0.0.9021
+
+## Fix: nya Shiny-appar med telemetri saknade `rdshinyappar` i renv.lock
+
+`intern_scaffold_renv()` installerade aldrig `rdshinyappar` (GitHub-paketet
+som `skapa_telemetry()`/`telemetri_ui()`/`telemetri_server()` kommer från,
+och som genererad `global.R` alltid gör `library(rdshinyappar)` på när
+`telemetri = TRUE`, standardvärdet). Paketlistan som installerades innehöll
+bara CRAN-paket, och `renv::install()` tvingades till ren CRAN-källa via
+`RENV_CONFIG_REPOS_OVERRIDE`.
+
+Konsekvensen: `renv::snapshot()` hoppade tyst över `rdshinyappar` (bara en
+informationsrad, inget fel), så `renv.lock` för en nyskapad app saknade
+paketet helt. `renv::restore()` - som den genererade READMEn ber om efter
+klon - installerade då aldrig `rdshinyappar`, och appen kraschade direkt på
+`library(rdshinyappar)` i `global.R`. Det här drabbade hela appen, inte
+bara telemetri, eftersom `telemetri = TRUE` är standard.
+
+`intern_scaffold_renv()` installerar nu `rdshinyappar` explicit från
+`Region-Dalarna/rdpaket/packages/rdshinyappar` innan `renv::snapshot()`
+körs, när `telemetri = TRUE`. Verifierat genom en riktig
+`renv::init()`/`install()`/`snapshot()`/`restore()`-körning mot en
+genererad `global.R` - `rdshinyappar` hamnar nu korrekt i `renv.lock` som
+en GitHub-källa.
+
 # rddeploy 0.0.0.9020
 
 ## Nya Shiny-appar kan ange en beskrivning för landningssidans kort
