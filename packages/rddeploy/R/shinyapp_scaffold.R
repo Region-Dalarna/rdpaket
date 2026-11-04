@@ -43,7 +43,8 @@ intern_scaffold_appfiler <- function(sokvag, cfg) {
                     list(github_repo = cfg$github_repo, telemetri_block = telemetri_block))
   intern_skriv_mall("shinyapp", "ui.R", file.path(sokvag, "ui.R"),
                     list(github_repo = cfg$github_repo, rapport_titel = cfg$rapport_titel,
-                         telemetri_ui_rad = telemetri_ui_rad))
+                         telemetri_ui_rad = telemetri_ui_rad,
+                         app_beskrivning_rad = cfg$app_beskrivning_rad %||% intern_beskrivning_rad(NA_character_)))
   intern_skriv_mall("shinyapp", "server.R", file.path(sokvag, "server.R"),
                     list(telemetri_server_rad = telemetri_server_rad))
   intern_skriv_mall("shinyapp", "app.css", file.path(sokvag, "www", "app.css"),
@@ -203,6 +204,8 @@ intern_preflight <- function(sokvag, grundsokvag, force, extra = NULL) {
 #' @param initiera_renv Kör renv-bootstrap (kräver `renv` + `callr`).
 #' @param skapa_github_repo Skapa git-repo och GitHub-repo (annars bara lokala filer).
 #' @param force Hoppa över den interaktiva bekräftelsen.
+#' @param beskrivning En mening om vad appen visar, för landningssidans kort.
+#'   Se [shinyapp_config()].
 #'
 #' @return Osynligt: sökvägen till det lokala projektet.
 #' @export
@@ -217,11 +220,13 @@ shinyapp_skapa_med_github_repo <- function(github_repo,
                                            config            = NULL,
                                            initiera_renv     = TRUE,
                                            skapa_github_repo = TRUE,
-                                           force             = FALSE) {
+                                           force             = FALSE,
+                                           beskrivning       = NA_character_) {
   cfg <- config %||% shinyapp_config(
     github_repo = github_repo, github_org = github_org, rapport_titel = rapport_titel,
     rapport_undertitel = rapport_undertitel, grundsokvag = grundsokvag,
-    behorighet_team = behorighet_team, target = match.arg(target), telemetri = telemetri
+    behorighet_team = behorighet_team, target = match.arg(target), telemetri = telemetri,
+    beskrivning = beskrivning
   )
   sokvag <- cfg$sokvag_proj
 

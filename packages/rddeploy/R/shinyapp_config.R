@@ -14,6 +14,9 @@
 #'   eller `"intern"`.
 #' @param telemetri Lägg in `shiny.telemetry`-boilerplate för användnings-
 #'   statistik.
+#' @param beskrivning En mening om vad appen visar, för landningssidans kort
+#'   (`APP_BESKRIVNING` i `ui.R`). `NA` (standard) ger en bortkommenterad
+#'   påminnelse i stället.
 #'
 #' @return Ett `rddeploy_shinyapp_config`-objekt (en validerad lista).
 #' @export
@@ -24,7 +27,8 @@ shinyapp_config <- function(github_repo,
                             grundsokvag       = intern_gh_mapp(),
                             behorighet_team   = intern_behorighet_team(),
                             target            = c("publik", "intern"),
-                            telemetri         = TRUE) {
+                            telemetri         = TRUE,
+                            beskrivning       = NA_character_) {
   target <- match.arg(target)
   if (missing(github_repo) || !nzchar(github_repo)) {
     cli::cli_abort("{.arg github_repo} måste anges.")
@@ -43,6 +47,8 @@ shinyapp_config <- function(github_repo,
       behorighet_team    = behorighet_team,
       target             = target,
       telemetri          = isTRUE(telemetri),
+      beskrivning        = beskrivning,
+      app_beskrivning_rad = intern_beskrivning_rad(beskrivning),
       sokvag_proj        = file.path(sub("/+$", "", grundsokvag), github_repo)
     ),
     class = "rddeploy_shinyapp_config"

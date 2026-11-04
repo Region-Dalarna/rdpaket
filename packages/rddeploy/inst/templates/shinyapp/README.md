@@ -7,7 +7,7 @@ Samhällsanalys, Region Dalarna.
 
 Appfilerna ligger **direkt i repo-roten** (så att Shiny Server kör appen utan omväg):
 
-- `ui.R`, `server.R`, `global.R`
+- `ui.R`, `server.R`, `global.R` - `ui.R` innehåller raden `APP_BESKRIVNING <- '...'` (eller en bortkommenterad påminnelse om den saknas), som landningssidan visar på appens kort
 - `www/` för favicon, logotyp, CSS (`regiondalarna_ruf.css` + `app.css`) och `fonts/`
 - `R/` för hjälpfunktioner
 - `_dependencies.R` i root listar alla paket appen använder (läses av `renv::dependencies()`, körs aldrig)

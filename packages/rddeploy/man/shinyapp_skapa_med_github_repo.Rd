@@ -16,7 +16,8 @@ shinyapp_skapa_med_github_repo(
   config = NULL,
   initiera_renv = TRUE,
   skapa_github_repo = TRUE,
-  force = FALSE
+  force = FALSE,
+  beskrivning = NA_character_
 )
 }
 \arguments{
@@ -29,6 +30,9 @@ shinyapp_skapa_med_github_repo(
 \item{skapa_github_repo}{Skapa git-repo och GitHub-repo (annars bara lokala filer).}
 
 \item{force}{Hoppa över den interaktiva bekräftelsen.}
+
+\item{beskrivning}{En mening om vad appen visar, för landningssidans kort.
+Se \code{\link[=shinyapp_config]{shinyapp_config()}}.}
 }
 \value{
 Osynligt: sökvägen till det lokala projektet.

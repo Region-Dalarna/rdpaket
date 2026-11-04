@@ -1,5 +1,7 @@
 source('global.R')
 
+<<app_beskrivning_rad>>
+
 shinyUI(
   fluidPage(
     title = '<<rapport_titel>>',

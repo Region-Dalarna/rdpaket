@@ -1,3 +1,28 @@
+# rddeploy 0.0.0.9020
+
+## Nya Shiny-appar kan ange en beskrivning för landningssidans kort
+
+`shinyapp_config()`/`shinyapp_skapa_med_github_repo()` har fått en ny
+parameter `beskrivning` (sist, bakåtkompatibel). Anges den skrivs raden
+`APP_BESKRIVNING <- '...'` in i den genererade `ui.R` direkt vid toppen av
+filen (annars en bortkommenterad påminnelse) - landningssidans generator i
+`Region-Dalarna/landningssida` läser raden och visar texten på appens kort
+i stället för webbadressen.
+
+Citattecken väljs automatiskt: enkla som standard, dubbla om texten
+innehåller en apostrof, och om texten då också innehåller dubbla
+citattecken byts de inre förekomsterna mot ett typografiskt citattecken.
+Text med backslash eller radbrytning avvisas (landningssidans regex klarar
+inte det); text längre än ca 120 tecken ger en varning men stoppar inte.
+
+Ny funktion `shinyapp_beskrivning_satt(appnamn, beskrivning, lokal_root)`
+sätter eller uppdaterar raden i en redan skapad apps `ui.R` lokalt - letar
+upp en aktiv `APP_TITEL`-rad att infoga efter, eller stoppar med instruktion
+om ingen sådan rad finns. Skriver bara lokalt, committar/pushar/publicerar
+ingenting.
+
+---
+
 # rddeploy 0.0.0.9015
 
 ## Fix: `anv_fornamn_efternamn_hamta()` gav tyst `NA` - `ConvertTo-Json` escapade inte icke-ASCII trots allt

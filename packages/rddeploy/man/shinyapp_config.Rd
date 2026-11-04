@@ -12,7 +12,8 @@ shinyapp_config(
   grundsokvag = intern_gh_mapp(),
   behorighet_team = intern_behorighet_team(),
   target = c("publik", "intern"),
-  telemetri = TRUE
+  telemetri = TRUE,
+  beskrivning = NA_character_
 )
 }
 \arguments{
@@ -34,6 +35,10 @@ eller \code{"intern"}.}
 
 \item{telemetri}{Lägg in \code{shiny.telemetry}-boilerplate för användnings-
 statistik.}
+
+\item{beskrivning}{En mening om vad appen visar, för landningssidans kort
+(\code{APP_BESKRIVNING} i \code{ui.R}). \code{NA} (standard) ger en bortkommenterad
+påminnelse i stället.}
 }
 \value{
 Ett \code{rddeploy_shinyapp_config}-objekt (en validerad lista).
