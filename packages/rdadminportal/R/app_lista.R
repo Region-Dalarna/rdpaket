@@ -72,7 +72,7 @@ landningssida_synka_app_lista <- function(target = c("publik", "intern"),
 #' @param visa_borttagna Ta även med `status = 'borttagen'`.
 #'
 #' @return En `data.frame` med `namn`, `typ`, `status`, `senast_sedd`,
-#'   `exkluderad`, `ikon`.
+#'   `exkluderad`, `ikon`, `beskrivning`.
 #' @export
 landningssida_app_oversikt <- function(target = c("publik", "intern"),
                                        visa_borttagna = FALSE) {
@@ -82,10 +82,11 @@ landningssida_app_oversikt <- function(target = c("publik", "intern"),
   status_villkor <- if (visa_borttagna) "" else "AND a.status = 'aktiv'"
   DBI::dbGetQuery(con, sprintf("
     SELECT a.namn, a.typ, a.status, a.senast_sedd,
-           (e.namn IS NOT NULL) AS exkluderad, i.ikon
+           (e.namn IS NOT NULL) AS exkluderad, i.ikon, b.beskrivning
     FROM adminshiny.landningssida_app a
-    LEFT JOIN adminshiny.landningssida_exkludering e ON e.server = a.server AND e.namn = a.namn
-    LEFT JOIN adminshiny.landningssida_ikon i        ON i.server = a.server AND i.namn = a.namn
+    LEFT JOIN adminshiny.landningssida_exkludering e  ON e.server = a.server AND e.namn = a.namn
+    LEFT JOIN adminshiny.landningssida_ikon i         ON i.server = a.server AND i.namn = a.namn
+    LEFT JOIN adminshiny.landningssida_beskrivning b  ON b.server = a.server AND b.namn = a.namn
     WHERE a.server = $1 %s
     ORDER BY a.typ, a.namn", status_villkor), params = list(target))
 }

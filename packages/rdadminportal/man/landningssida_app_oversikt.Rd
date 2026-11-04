@@ -16,7 +16,7 @@ landningssida_app_oversikt(
 }
 \value{
 En \code{data.frame} med \code{namn}, \code{typ}, \code{status}, \code{senast_sedd},
-\code{exkluderad}, \code{ikon}.
+\code{exkluderad}, \code{ikon}, \code{beskrivning}.
 }
 \description{
 Samlad översikt över appar/rapporter med exkluderingsstatus och ikon

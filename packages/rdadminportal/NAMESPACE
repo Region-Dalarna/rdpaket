@@ -2,6 +2,9 @@
 
 export(kor_cron_jobb)
 export(landningssida_app_oversikt)
+export(landningssida_beskrivning_koppla)
+export(landningssida_beskrivning_lista)
+export(landningssida_beskrivning_ta_bort_koppling)
 export(landningssida_exkludera)
 export(landningssida_ikoner_bladdra)
 export(landningssida_ikoner_koppla)
