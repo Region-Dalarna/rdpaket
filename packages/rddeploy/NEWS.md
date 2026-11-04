@@ -1,3 +1,26 @@
+# rddeploy 0.0.0.9022
+
+## Ny funktion: `landningssida_publicera()`
+
+Landningssidan (repot `landningssida`) är ingen vanlig Shiny-app - till
+skillnad från en app som hör hemma på en enda server ska den normalt
+publiceras till **både** publik och intern server, och har därför
+medvetet ingen `_publicering_till_server.yml`. Att köra
+`shinyapp_publicera()` två gånger manuellt med olika `target` funkar, men
+är lätt att glömma hälften av.
+
+`landningssida_publicera(target = c("publik", "intern"))` gör det i ett
+anrop - en tunn wrapper som loopar över target och anropar
+`shinyapp_publicera("landningssida", target = t)` för varje. Ingen ändring
+av `shinyapp_publicera()` själv, så vanliga Shiny-appars beteende (enda
+target, läst från `_publicering_till_server.yml`) påverkas inte.
+
+Skriver också ut landningssidans faktiska URL per target
+(`shiny.regiondalarna.se` publikt, `samhallsanalys.ltdalarna.se` internt -
+hämtat från `publik/` respektive `intern/generera_landningssida.sh` i
+repot), eftersom de skiljer sig från både `intern_shiny_host()` och
+`intern_portal_host()`.
+
 # rddeploy 0.0.0.9021
 
 ## Fix: nya Shiny-appar med telemetri saknade `rdshinyappar` i renv.lock

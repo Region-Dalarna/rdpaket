@@ -284,3 +284,54 @@ shinyapp_flytta <- function(github_repo,
   cli::cli_alert_info("Ny URL: {.url {intern_shinyapp_app_url(github_repo, nytt)}}")
   invisible(TRUE)
 }
+
+# Landningssidans faktiska domäner (se publik/intern generera_landningssida.sh
+# i repot landningssida) - skiljer sig från intern_shiny_host()/intern_portal_host(),
+# eftersom landningssidan publikt ligger på Shiny-värden men internt på
+# portal-värden. Egen liten tabell här i stället för att återanvända någon av
+# de två, så meddelandet nedan stämmer med var sidan faktiskt nås.
+intern_landningssida_host <- function(target) {
+  switch(target,
+    publik = "shiny.regiondalarna.se",
+    intern = "samhallsanalys.ltdalarna.se",
+    cli::cli_abort("Okänt target: {.val {target}}")
+  )
+}
+
+#' Publicera landningssidan till en eller båda servrarna
+#'
+#' Tunn wrapper runt [shinyapp_publicera()] för repot `landningssida`.
+#' Landningssidan har (medvetet) ingen `_publicering_till_server.yml` - till
+#' skillnad från en vanlig Shiny-app hör den inte hemma på en enda server,
+#' utan ska normalt publiceras till båda. Den här funktionen gör det i ett
+#' anrop i stället för att du manuellt behöver komma ihåg att köra
+#' [shinyapp_publicera()] två gånger med olika `target`.
+#'
+#' @param target `"publik"`, `"intern"`, eller båda (standard). Flera värden
+#'   publicerar till var och en i tur och ordning.
+#' @param grundsokvag Lokal föräldermapp till `landningssida`. Standard:
+#'   [rddeploy-config] `gh_mapp`.
+#' @param tvinga_omdeploy Se [shinyapp_publicera()] - gäller för varje target.
+#'
+#' @return Osynligt: en named logical vector (en post per target), `TRUE` om
+#'   något pushades för det målet.
+#' @export
+landningssida_publicera <- function(target = c("publik", "intern"),
+                                    grundsokvag = intern_gh_mapp(),
+                                    tvinga_omdeploy = FALSE) {
+  target <- match.arg(target, c("publik", "intern"), several.ok = TRUE)
+  target <- unique(target)
+
+  resultat <- logical(length(target))
+  names(resultat) <- target
+  for (t in target) {
+    pushat <- shinyapp_publicera("landningssida", target = t,
+                                 grundsokvag = grundsokvag,
+                                 tvinga_omdeploy = tvinga_omdeploy)
+    resultat[[t]] <- isTRUE(pushat)
+    if (isTRUE(pushat)) {
+      cli::cli_alert_info("landningssida ({t}): {.url https://{intern_landningssida_host(t)}}")
+    }
+  }
+  invisible(resultat)
+}
