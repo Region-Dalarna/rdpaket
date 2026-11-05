@@ -75,7 +75,7 @@ rdpaket_uppdatera_alla <- function(paket = NULL,
 
 # Alla rd*-paket i monorepot, i den beroendeordning install_all.R använder.
 rdpaket_alla_paketnamn <- c(
-  "rdverktyg", "rddiagram", "rdpostgres", "rdgis", "rdgeorouting",
+  "rdverktyg", "rddiagram", "rdpostgres", "rdgis", "rdgtfs", "rdgeorouting",
   "rdshinyappar", "rddeploy", "rdadminportal", "rd"
 )
 
