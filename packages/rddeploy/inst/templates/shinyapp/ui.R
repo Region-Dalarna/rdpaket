@@ -2,9 +2,11 @@ source('global.R')
 
 <<app_beskrivning_rad>>
 
+APP_TITEL <- '<<rapport_titel>>'
+
 shinyUI(
   fluidPage(
-    title = '<<rapport_titel>>',
+    title = APP_TITEL,  # webbläsarflikens rubrik
     tags$head(
       tags$link(rel = 'icon', type = 'image/x-icon', href = 'favicon.ico'),
       tags$link(rel = 'stylesheet', type = 'text/css', href = 'regiondalarna_ruf.css'),
@@ -14,7 +16,7 @@ shinyUI(
     # ---- Header (matchar .rd-header i regiondalarna_ruf.css) --------------
     tags$div(
       class = 'rd-header',
-      tags$div(class = 'rd-header__title', '<<rapport_titel>>'),
+      tags$div(class = 'rd-header__title', APP_TITEL),
       tags$a(
         class  = 'rd-header__right',
         href   = 'https://www.regiondalarna.se',

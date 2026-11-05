@@ -33,3 +33,10 @@ Osynligt: sökvägen till det lokala projektet.
 Appkoden hämtas till \verb{app/} med \verb{git subtree} (kräver git-CLI). Repo-roten
 får deploy-workflows som pekar på \verb{app/}.
 }
+\details{
+\code{rapport_titel} används bara i README.md för det nya repot - \code{app/ui.R}
+kopieras oförändrad från källrepot via \verb{git subtree}, så webbläsarflikens
+rubrik och det blå fältet styrs av vad källrepots egen \code{ui.R} redan har
+(\verb{title =} i \code{fluidPage()} och \code{rd-header__title}). Stämmer inte det i
+källrepot måste \code{app/ui.R} rättas för hand efter att forken är skapad.
+}

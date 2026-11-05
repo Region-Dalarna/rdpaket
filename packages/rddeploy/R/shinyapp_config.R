@@ -6,7 +6,10 @@
 #' @param github_repo Namn på repo och Shiny-app (mapp på servern).
 #' @param github_org Organisation, eller `NULL` för privat konto. Standard:
 #'   [rddeploy-config] `gh_org`.
-#' @param rapport_titel Titel som visas i appen. Standard: `github_repo`.
+#' @param rapport_titel Titel som visas både i det blå fältet i appen och i
+#'   webbläsarflikens rubrik. Standard: `github_repo` (ger t.ex. en flik med
+#'   texten "elevhalsa" i stället för en riktig titel - ange gärna en läsbar
+#'   titel, t.ex. "Elevhälsa").
 #' @param rapport_undertitel Valfri undertitel.
 #' @param grundsokvag Lokal föräldermapp. Standard: [rddeploy-config] `gh_mapp`.
 #' @param behorighet_team GitHub-team som får push-behörighet (`NULL` = inget).
@@ -32,6 +35,9 @@ shinyapp_config <- function(github_repo,
   target <- match.arg(target)
   if (missing(github_repo) || !nzchar(github_repo)) {
     cli::cli_abort("{.arg github_repo} måste anges.")
+  }
+  if (missing(rapport_titel)) {
+    cli::cli_inform(c("i" = "{.arg rapport_titel} angavs inte - rubriken i appen och webbläsarfliken blir reponamnet {.val {github_repo}}."))
   }
   if (!grepl("^[A-Za-z0-9_.-]+$", github_repo)) {
     cli::cli_abort("{.arg github_repo} får bara innehålla bokstäver, siffror, {.val _.-}.")

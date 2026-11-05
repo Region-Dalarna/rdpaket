@@ -22,7 +22,10 @@ shinyapp_config(
 \item{github_org}{Organisation, eller \code{NULL} för privat konto. Standard:
 \link{rddeploy-config} \code{gh_org}.}
 
-\item{rapport_titel}{Titel som visas i appen. Standard: \code{github_repo}.}
+\item{rapport_titel}{Titel som visas både i det blå fältet i appen och i
+webbläsarflikens rubrik. Standard: \code{github_repo} (ger t.ex. en flik med
+texten "elevhalsa" i stället för en riktig titel - ange gärna en läsbar
+titel, t.ex. "Elevhälsa").}
 
 \item{rapport_undertitel}{Valfri undertitel.}
 

@@ -234,6 +234,10 @@ shinyapp_skapa_med_github_repo <- function(github_repo,
                                            skapa_github_repo = TRUE,
                                            force             = FALSE,
                                            beskrivning       = NA_character_) {
+  if (missing(rapport_titel) && is.null(config)) {
+    cli::cli_inform(c("i" = "{.arg rapport_titel} angavs inte - rubriken i appen och webbläsarfliken blir reponamnet {.val {github_repo}}."))
+  }
+
   cfg <- config %||% shinyapp_config(
     github_repo = github_repo, github_org = github_org, rapport_titel = rapport_titel,
     rapport_undertitel = rapport_undertitel, grundsokvag = grundsokvag,
@@ -269,6 +273,12 @@ shinyapp_skapa_med_github_repo <- function(github_repo,
 #' Appkoden hämtas till `app/` med `git subtree` (kräver git-CLI). Repo-roten
 #' får deploy-workflows som pekar på `app/`.
 #'
+#' `rapport_titel` används bara i README.md för det nya repot - `app/ui.R`
+#' kopieras oförändrad från källrepot via `git subtree`, så webbläsarflikens
+#' rubrik och det blå fältet styrs av vad källrepots egen `ui.R` redan har
+#' (`title =` i `fluidPage()` och `rd-header__title`). Stämmer inte det i
+#' källrepot måste `app/ui.R` rättas för hand efter att forken är skapad.
+#'
 #' @param github_repo,github_org,rapport_titel,grundsokvag,behorighet_team,target
 #'   Se [shinyapp_config()].
 #' @param force Hoppa över den interaktiva bekräftelsen.
@@ -292,6 +302,10 @@ shinyapp_skapa_med_github_repo_forka_befintligt <- function(github_repo,
   }
   if (nchar(Sys.which("git")) == 0) {
     cli::cli_abort("Fork-varianten kräver git-CLI i PATH (för {.code git subtree}).")
+  }
+
+  if (missing(rapport_titel)) {
+    cli::cli_inform(c("i" = "{.arg rapport_titel} angavs inte - rubriken i appen och webbläsarfliken blir reponamnet {.val {github_repo}}."))
   }
 
   cfg <- shinyapp_config(github_repo = github_repo, github_org = github_org,
