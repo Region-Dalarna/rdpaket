@@ -1,3 +1,13 @@
+# rddiagramkatalog 0.0.0.9019
+
+Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (24 av 53
+nu klara):
+
+- `diag_huv_ink_kalla_bakgrund_scb`
+- `diag_inr_flytt_in_ut_netto_per_alder_scb`
+- `diag_inr_flytt_in_ut_netto_tidsserie_per_alder_scb`
+- `diag_nettoinkomst_kon_aldersgrupp_scb`
+
 # rddiagramkatalog 0.0.0.9018
 
 Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (20 av 53
