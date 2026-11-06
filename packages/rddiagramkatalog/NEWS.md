@@ -1,3 +1,48 @@
+# rddiagramkatalog 0.0.0.9028
+
+Migrerade 7 diagram som läser indata från lokala/manuellt underhållna
+filer (G:-enheten eller en delad GitHub-nyckel), i stället för en
+live-API-hämtning. Lade samtidigt till konsekvent härdning av denna typ
+av indata (se diskussion i chatten):
+
+- `diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb` (ex.
+  diag_bas_syss_bransch_jmfr_manad_1ar_tillbaka.R)
+- `diag_sysselsatta_andel_scb` (ex. diagram_andel_forvarvsarbetande_bransch.R)
+- `diag_sysselsatta_forandring_bransch_scb` (ex. diagram_forandring_sysselsatta_bransch.R)
+- `diag_sysselsatta_forandring_bransch_kommun_scb` (ex. diagram_forandring_sysselsatta_bransch_kommun.R)
+- `diag_50proc_lonesumma_nms` (ex. diagram_50_proc_lonesumma_NMS.R)
+- `diag_examen_hogskolan_nms` (ex. diagram_examen_hogskolan_NMS.R)
+- `diag_utb_niva_bakgr_alder_nms` (ex. diagram_utb_bakgr_alder_NMS.R)
+
+Nya interna hjälpfunktioner (R/intern_indata.R):
+- `intern_meddela_manuell_datakalla()` - skriver alltid ut varifrån data
+  kommer och att den är en manuell ögonblicksbild som måste uppdateras
+  manuellt, inte en live-hämtning.
+- `intern_sakerstall_indatafil()` - validerar att en specifik indatafil
+  (hel sökväg inkl. filnamn) finns, med ett tydligt fel om den saknas
+  eller flyttats - i stället för det kryptiska "cannot open file" som
+  annars dyker upp långt senare.
+- `intern_hamta_senaste_fil()` - hittar senaste filen i en mapp som
+  matchar ett mönster, med ett tydligt fel om ingen fil matchar - i
+  stället för det obegripliga felet `which.max()` annars ger på en tom
+  träfflista.
+- `intern_hamta_branschnyckel()` - hämtar Region Dalarnas delade
+  bransch-/färgnyckel från GitHub-repot `depot` i stället för en lokal
+  G:-kopia (fyra av skripten ovan + den redan migrerade
+  `diag_forandr_branscher_bubblor_scb`, som uppdaterades att använda
+  samma delade hjälpfunktion).
+
+Fixade även samma typ av "Excel-export kördes aldrig"-bugg som i
+tidigare omgångar, den här gången i diag_sysselsatta_andel_scb och
+diag_examen_hogskolan_nms.
+
+`diagram_arb_stallen_mm_ejAPI.R` migrerades INTE - skriptet är enligt
+sin egen kommentar och en print()-varning i originalet inte längre
+underhållet och ersatt av `diagram_arb_stallen_mm_foretagarna.R`, som
+hämtar data live från foretagsklimat.se i stället för G:. Den är
+kandidat för en separat migrering (inget G:-beroende, så den faller
+utanför denna omgångs tema).
+
 # rddiagramkatalog 0.0.0.9027
 
 Gjorde returvärdet konsekvent för de tre diagramfunktioner som

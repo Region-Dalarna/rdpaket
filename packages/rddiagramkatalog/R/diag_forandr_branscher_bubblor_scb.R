@@ -49,11 +49,7 @@ diag_forandr_branscher_bubblor_scb <- function(region_vekt ="20",
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil || spara_data)
 
   # hämta branschnyckel från Region Dalarnas github-repo depot
-  url_xlsx <- "https://raw.githubusercontent.com/Region-Dalarna/depot/main/Bransch_Gxx_farger.xlsx"
-  temp_xlsx <- tempfile(fileext = ".xlsx")
-  download.file(url_xlsx, temp_xlsx, mode = "wb", quiet = TRUE)
-  branschtabell <- readxl::read_xlsx(temp_xlsx)
-  unlink(temp_xlsx)
+  branschtabell <- intern_hamta_branschnyckel()
 
   # OBS: originalet satte här en variabel med stort "V" (Valda_ar) i det här fallet, men läste sedan
   # alltid det gement stavade valda_ar längre ner - vilket kraschade varje gång man skickade med både
