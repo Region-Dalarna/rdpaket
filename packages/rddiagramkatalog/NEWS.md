@@ -1,3 +1,15 @@
+# rddiagramkatalog 0.0.0.9020
+
+Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (28 av 53
+nu klara):
+
+- `diag_pendling_over_kommungrans_scb`
+- `diag_pendling_over_lans_fa_grans_scb`
+- `diag_arbetsmarknadsstatus_senastear_scb` (ex. diagram_arbetsmarknadsstatus_senastear.R)
+- `diag_arbetsmarknadsstatus_tidsserie_scb` (ex. diagram_arbetsmarknadsstatus_tidsserie_SCB.R)
+
+Dessutom: fetstilta rubrikraderna i `diagramkatalog_utforska()`s hjälpruta.
+
 # rddiagramkatalog 0.0.0.9019
 
 Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (24 av 53
