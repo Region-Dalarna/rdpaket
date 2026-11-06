@@ -1,10 +1,10 @@
-#' Bläddra och sök bland diagramfunktionerna (RStudio-addin)
+#' Utforska och sök bland diagramfunktionerna (RStudio-addin)
 #'
 #' Öppnar ett eget, större fönster ovanpå RStudio där man kan söka bland
 #' paketets diagramfunktioner (samma sökning som [sok_diagram()]), läsa
 #' hjälptexten för en vald funktion, fylla i parametrar, och antingen köra
 #' diagrammet direkt för en förhandsvisning eller infoga motsvarande R-kod i
-#' det aktiva skriptet. Nås enklast via RStudios Addins-meny ("Bläddra
+#' det aktiva skriptet. Nås enklast via RStudios Addins-meny ("Utforska
 #' diagramkatalog").
 #'
 #' Parameterformuläret byggs generiskt utifrån `formals()` för den valda
@@ -25,11 +25,11 @@
 #'
 #' @return Ingenting (anropas interaktivt). Avslutas med `stopApp()`.
 #' @export
-diagramkatalog_bladdra <- function() {
+diagramkatalog_utforska <- function() {
   if (!requireNamespace("shiny", quietly = TRUE) ||
       !requireNamespace("miniUI", quietly = TRUE)) {
     stop(
-      "Paketen 'shiny' och 'miniUI' krävs för diagramkatalog_bladdra().\n",
+      "Paketen 'shiny' och 'miniUI' krävs för diagramkatalog_utforska().\n",
       "Installera med: install.packages(c(\"shiny\", \"miniUI\"))",
       call. = FALSE
     )

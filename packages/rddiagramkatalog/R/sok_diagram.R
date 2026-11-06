@@ -37,7 +37,7 @@ intern_diagram_index <- function() {
     }
   )
   # Enbart diag_*()-funktionerna - inte paketets egna katalogverktyg
-  # (sok_diagram(), diagramkatalog_bladdra()), som också är exporterade men
+  # (sok_diagram(), diagramkatalog_utforska()), som också är exporterade men
   # inte är diagram att söka fram.
   funktioner <- sort(grep("^diag_", getNamespaceExports("rddiagramkatalog"), value = TRUE))
 
@@ -112,7 +112,7 @@ intern_kopiera_till_urklipp <- function(funktionsnamn) {
 #'
 #' @return En `data.frame` med kolumnerna `funktion` och `titel`, en rad per
 #'   matchande funktion. Skriv `?funktionsnamn` för att läsa mer om en
-#'   specifik funktion, eller `diagramkatalog_bladdra()` för att söka och
+#'   specifik funktion, eller `diagramkatalog_utforska()` för att söka och
 #'   fylla i parametrar i ett grafiskt gränssnitt.
 #'
 #' @examples

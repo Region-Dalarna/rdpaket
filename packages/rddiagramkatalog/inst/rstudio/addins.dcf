@@ -1,4 +1,4 @@
-Name: Bläddra diagramkatalog
+Name: Utforska diagramkatalog
 Description: Sök bland diagramfunktionerna, fyll i parametrar och visa eller infoga koden
-Binding: diagramkatalog_bladdra
+Binding: diagramkatalog_utforska
 Interactive: true

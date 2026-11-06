@@ -1,3 +1,10 @@
+# rddiagramkatalog 0.0.0.9007
+
+- `diagramkatalog_bladdra()` har döpts om till `diagramkatalog_utforska()`
+  - "bläddra" fångade bara en del av vad funktionen faktiskt gör (söka,
+  läsa hjälp, fylla i parametrar, inte bara skumma en lista). Addinet i
+  RStudios Addins-meny heter nu "Utforska diagramkatalog".
+
 # rddiagramkatalog 0.0.0.9006
 
 - `diagramkatalog_bladdra()` har fått en knapp "Visa hjälp" som öppnar den

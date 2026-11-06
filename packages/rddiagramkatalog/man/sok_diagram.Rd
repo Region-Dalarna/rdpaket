@@ -33,7 +33,7 @@ behöva ange parametern vid varje anrop:
 \value{
 En \code{data.frame} med kolumnerna \code{funktion} och \code{titel}, en rad per
 matchande funktion. Skriv \code{?funktionsnamn} för att läsa mer om en
-specifik funktion, eller \code{diagramkatalog_bladdra()} för att söka och
+specifik funktion, eller \code{diagramkatalog_utforska()} för att söka och
 fylla i parametrar i ett grafiskt gränssnitt.
 }
 \description{
