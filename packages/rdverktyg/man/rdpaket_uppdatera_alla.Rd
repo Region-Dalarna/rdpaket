@@ -9,6 +9,7 @@ rdpaket_uppdatera_alla(
   repo = "Region-Dalarna/rdpaket",
   gren = "main",
   installera = TRUE,
+  installera_saknade_paket = FALSE,
   pat = NULL
 )
 }
@@ -22,6 +23,11 @@ lokalt.}
 \item{gren}{Gren att jämföra och installera från.}
 
 \item{installera}{Om \code{FALSE} görs bara en kontroll - inget installeras.}
+
+\item{installera_saknade_paket}{Om \code{paket} inte anges: om \code{TRUE}
+installeras även de \verb{rd*}-paket som inte redan är installerade lokalt. Om
+\code{FALSE} (standard) skrivs i stället ett meddelande ut med vilka paket som
+saknas och hur man installerar dem.}
 
 \item{pat}{Valfri GitHub-PAT, se \code{\link[=source_utan_cache]{source_utan_cache()}}.}
 }

@@ -13,6 +13,10 @@
 #' @param repo GitHub-repo (`"ägare/repo"`) där paketen ligger.
 #' @param gren Gren att jämföra och installera från.
 #' @param installera Om `FALSE` görs bara en kontroll - inget installeras.
+#' @param installera_saknade_paket Om `paket` inte anges: om `TRUE`
+#'   installeras även de `rd*`-paket som inte redan är installerade lokalt. Om
+#'   `FALSE` (standard) skrivs i stället ett meddelande ut med vilka paket som
+#'   saknas och hur man installerar dem.
 #' @param pat Valfri GitHub-PAT, se [source_utan_cache()].
 #'
 #' @return Osynligt en `data.frame` med en rad per kontrollerat paket:
@@ -22,12 +26,35 @@ rdpaket_uppdatera_alla <- function(paket = NULL,
                                     repo = "Region-Dalarna/rdpaket",
                                     gren = "main",
                                     installera = TRUE,
+                                    installera_saknade_paket = FALSE,
                                     pat = NULL) {
   if (is.null(paket)) {
     paket <- Filter(
       function(p) requireNamespace(p, quietly = TRUE),
       rdpaket_alla_paketnamn
     )
+    saknade_paket <- setdiff(rdpaket_alla_paketnamn, paket)
+
+    if (length(saknade_paket) > 0) {
+      if (installera_saknade_paket) {
+        if (!requireNamespace("remotes", quietly = TRUE)) {
+          stop("Paketet 'remotes' krävs för att installera nya paket.", call. = FALSE)
+        }
+        for (p in saknade_paket) {
+          message("Installerar ", p, " (var inte installerat tidigare).")
+          remotes::install_github(
+            repo, subdir = paste0("packages/", p), ref = gren, upgrade = "never"
+          )
+        }
+        paket <- c(paket, saknade_paket)
+      } else {
+        message(
+          "Följande rd*-paket i '", repo, "' är inte installerade: ",
+          paste(saknade_paket, collapse = ", "), ".\n",
+          "Installera dem med rdpaket_uppdatera_alla(installera_saknade_paket = TRUE)."
+        )
+      }
+    }
   }
   if (length(paket) == 0) {
     message("Inga rd*-paket från '", repo, "' är installerade.")
@@ -75,8 +102,8 @@ rdpaket_uppdatera_alla <- function(paket = NULL,
 
 # Alla rd*-paket i monorepot, i den beroendeordning install_all.R använder.
 rdpaket_alla_paketnamn <- c(
-  "rdverktyg", "rddiagram", "rdpostgres", "rdgis", "rdgtfs", "rdgeorouting",
-  "rdshinyappar", "rddeploy", "rdadminportal", "rd"
+  "rdverktyg", "rddiagram", "rddiagramkatalog", "rdpostgres", "rdgis", "rdgtfs",
+  "rdgeorouting", "rdshinyappar", "rddeploy", "rdadminportal", "rd"
 )
 
 #' @noRd
