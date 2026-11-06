@@ -6,23 +6,23 @@
 \usage{
 diag_fodelsetal_globalt_varldsbanken(
   diagram_capt = "Källa: Världsbanken\\nBearbetning: Samhällsanalys, Region Dalarna",
-  output_mapp = NA,
+  utmapp = rdverktyg::utskriftsmapp(),
   diag_fargvekt = NA,
-  returnera_dataframe_global_environment = FALSE,
-  skriv_bildfil = TRUE,
+  returnera_data = FALSE,
+  skriv_diagramfil = TRUE,
   demo = FALSE
 )
 }
 \arguments{
 \item{diagram_capt}{Diagrammets källtext.}
 
-\item{output_mapp}{Mapp där diagram ska sparas, NA = standardmappen från \code{rdverktyg::utskriftsmapp()}.}
+\item{utmapp}{Mapp där diagram ska sparas. Måste finnas om \code{skriv_diagramfil = TRUE}.}
 
 \item{diag_fargvekt}{Valfri färgvektor, standard: \code{rddiagram::diagramfarger("rd_primar_atta")}.}
 
-\item{returnera_dataframe_global_environment}{Skall data returneras till global environment.}
+\item{returnera_data}{Skall data returneras till global environment.}
 
-\item{skriv_bildfil}{Sparar figuren till \code{output_mapp}.}
+\item{skriv_diagramfil}{TRUE om diagram ska skrivas till fil.}
 
 \item{demo}{Sätts till TRUE om man bara vill se ett exempel på diagrammet i webbläsaren.}
 }

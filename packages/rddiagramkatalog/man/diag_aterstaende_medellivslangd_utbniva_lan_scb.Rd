@@ -7,10 +7,10 @@
 \usage{
 diag_aterstaende_medellivslangd_utbniva_lan_scb(
   region_vekt = "20",
-  ar_vekt = "*",
+  tid_koder = "*",
   cont_var_klartext = "Antal återstående år",
   vald_alder = "30 år",
-  diag_fargvektor = NA,
+  diag_fargvekt = NA,
   visa_logga_i_diagram = TRUE,
   logga_sokvag = NA,
   diagramtitel_tabort = FALSE,
@@ -22,19 +22,20 @@ diag_aterstaende_medellivslangd_utbniva_lan_scb(
   ggobjektfilnamn_utan_tid = FALSE,
   excel_mapp = NA,
   demo = FALSE,
-  utmapp = "G:/Samhällsanalys/API/Fran_R/utskrift/"
+  utmapp = rdverktyg::utskriftsmapp()
 )
 }
 \arguments{
 \item{region_vekt}{Region(er).}
 
-\item{ar_vekt}{\code{"*"} = alla år, \code{"9999"} = senaste år.}
+\item{tid_koder}{Vilka år som ska hämtas. \code{"*"} = alla, \code{"9999"} = senaste,
+eller \code{"2015:9999"} för "från 2015 till och med senaste tillgängliga år".}
 
 \item{cont_var_klartext}{Är främst den relevanta variabeln för oss att använda i denna tabell.}
 
 \item{vald_alder}{Ålder för återstående medellivslängd. Finns: \code{"30 år"}, \code{"31 år"}, \code{"32 år"} ... t.o.m. \code{"93 år"}, \code{"94 år"}, \code{"95+ år"}.}
 
-\item{diag_fargvektor}{Valbar färgvektor för diagrammet.}
+\item{diag_fargvekt}{Valbar färgvektor för diagrammet.}
 
 \item{visa_logga_i_diagram}{TRUE om logga ska visas i diagrammet.}
 
@@ -56,7 +57,7 @@ diag_aterstaende_medellivslangd_utbniva_lan_scb(
 
 \item{demo}{Sätts till TRUE om man bara vill se ett exempel på diagrammet i webbläsaren.}
 
-\item{utmapp}{Mapp där diagrammet sparas.}
+\item{utmapp}{Mapp där diagrammet sparas. Måste finnas om \code{skriv_diagramfil = TRUE}.}
 }
 \value{
 En namngiven lista med ett \code{ggplot}-objekt.

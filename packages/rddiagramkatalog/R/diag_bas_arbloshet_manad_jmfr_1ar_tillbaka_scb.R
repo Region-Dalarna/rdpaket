@@ -4,29 +4,35 @@
 #' given månad och samma månad ett antal månader tillbaka, uppdelat på
 #' region och, valfritt, inrikes/utrikes födda.
 #'
-#' @param vald_region NA = jämförelse mellan länen, annars jämförs kommuner i de regioner vars länskoder man skickar med.
+#' @param region_vekt NA = jämförelse mellan länen, annars jämförs kommuner i de regioner vars länskoder man skickar med.
 #' @param diagram_capt Diagrammets källtext.
-#' @param output_mapp Mapp där diagram ska sparas.
-#' @param tid_koder Vilken månad som ska jämföras, `"9999"` ger senaste.
+#' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
+#' @param tid_koder Vilken månad som ska jämföras (slutpunkten), `"9999"` ger senaste. OBS: till skillnad från flera andra funktioner i paketet anger denna EN period att jämföra mot, inte ett intervall - `"start:9999"`-mönstret stöds inte här.
 #' @param dela_upp_utrikes Sätts till FALSE om man vill ha förändring i arbetslöshet totalt, dvs. inte uppdelat på inrikes/utrikes-födda.
 #' @param returnera_data Sätts till TRUE om man vill returnera data till R-studios global environment.
 #' @param jamfor_antal_manader_bakat Antal månader tillbaka som jämförelsen görs mot.
 #' @param visa_dataetiketter Visa dataetiketter.
+#' @param skriv_diagramfil TRUE om diagram ska skrivas till fil.
 #' @param demo Sätts till TRUE om man bara vill se ett exempel på diagrammet i webbläsaren.
 #'
 #' @return En namngiven lista med ett `ggplot`-objekt.
 #' @export
 diag_bas_arbloshet_manad_jmfr_1ar_tillbaka_scb <- function(
-    vald_region = NA,
+    region_vekt = NA,
     diagram_capt = "Källa: SCB:s öppna statistikdatabas\nBearbetning: Samhällsanalys, Region Dalarna",
-    output_mapp = "G:/Samhällsanalys/API/Fran_R/Utskrift/",
+    utmapp = rdverktyg::utskriftsmapp(),
     tid_koder = "9999",
     dela_upp_utrikes = TRUE,
     returnera_data = FALSE,
     jamfor_antal_manader_bakat = 12,
     visa_dataetiketter = FALSE,
+    skriv_diagramfil = FALSE,
     demo = FALSE
     ) {
+
+# Ändrat så att man även kan jämföra förändring i arbetslöshet totalt, dvs. inte uppdelat på utrikes/inrikes födda Jon 2026-06-24
+# Det går dessutom att returnera data till global environment
+# SCB har lagt till ett längre streck mellan åren i åldersgrupper. Har ändrat nedan. Jon 2026-08-25
 
   # om parametern demo är satt till TRUE så öppnas en flik i webbläsaren med ett exempel på hur diagrammet ser ut och därefter avslutas funktionen
   # demofilen måste läggas upp på webben för att kunna öppnas, vi lägger den på Region Dalarnas github-repo som heter utskrivna_diagram
@@ -38,9 +44,11 @@ diag_bas_arbloshet_manad_jmfr_1ar_tillbaka_scb <- function(
     rdverktyg::stop_tyst()
   }
 
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
+
   gg_list <- list()
 
-  hamta_region <- if (all(is.na(vald_region))) rdverktyg::hamtaAllaLan(FALSE) else rdverktyg::hamtakommuner(lan = vald_region, tamedlan = TRUE, tamedriket = TRUE)
+  hamta_region <- if (all(is.na(region_vekt))) rdverktyg::hamtaAllaLan(FALSE) else rdverktyg::hamtakommuner(lan = region_vekt, tamedlan = TRUE, tamedriket = TRUE)
 
   # Om man vill dela upp utrikes hanteras det här. "*" ger tre facetter
   # (inrikes född/totalt/utrikes född) - till skillnad från Kon nedan är
@@ -131,11 +139,12 @@ diag_bas_arbloshet_manad_jmfr_1ar_tillbaka_scb <- function(
     manual_x_axis_text_vjust = 1,
     manual_x_axis_text_hjust = 1,
     manual_color = if(dela_upp_utrikes == TRUE){rddiagram::diagramfarger("rus_sex")} else {rddiagram::diagramfarger("rus_sex")[1]},
-    output_mapp = output_mapp,
+    output_mapp = utmapp,
     facet_sort = TRUE,
     facet_grp = if(dela_upp_utrikes == TRUE){"födelseregion"} else {NULL},
     facet_scale = "free_x",
-    facet_legend_bottom = FALSE
+    facet_legend_bottom = FALSE,
+    skriv_till_diagramfil = skriv_diagramfil
   )
 
   gg_list <- c(gg_list, list(gg_obj))

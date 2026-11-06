@@ -5,12 +5,12 @@
 #' för senaste år.
 #'
 #' @param region_vekt Region vi är intresserade av. Gäller diagrammet med bakgrundsuppdelning.
-#' @param output_mapp_figur Mapp där figur sparas.
+#' @param utmapp Mapp där figur sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param output_mapp_data Mapp där data sparas.
 #' @param filnamn_data Filnamn för sparad data.
-#' @param spara_figur Sparar figuren till `output_mapp_figur`.
+#' @param skriv_diagramfil TRUE om diagram ska skrivas till fil.
 #' @param kon_klartext Alternativet är `"samtliga anställda"` för att undvika könsuppdelning. Vill man ha alla tre i datafilen som returneras sätts denna till `"*"`. Det blir enbart kvinnor och män i diagrammet.
-#' @param valda_farger Vilka färger som ska användas i diagram.
+#' @param diag_fargvekt Vilka färger som ska användas i diagram.
 #' @param diag_lan Skapar ett diagram där alla län jämförs.
 #' @param diag_bakgrund Skapar ett diagram där bakgrund i samma län jämförs.
 #' @param returnera_figur Skall figur returneras (i en lista).
@@ -19,13 +19,13 @@
 #'
 #' @return En namngiven lista med `ggplot`-objekt.
 #' @export
-diag_matchning_lan <- function(region_vekt = "20",
-                               output_mapp_figur = "G:/Samhällsanalys/Statistik/Näringsliv/basfakta/",
+diag_matchning_lan_scb <- function(region_vekt = "20",
+                               utmapp = rdverktyg::utskriftsmapp(),
                                output_mapp_data = NA,
                                filnamn_data = "matchning.xlsx",
-                               spara_figur = TRUE,
+                               skriv_diagramfil = TRUE,
                                kon_klartext = c("män", "kvinnor"),
-                               valda_farger = rddiagram::diagramfarger("kon"),
+                               diag_fargvekt = rddiagram::diagramfarger("kon"),
                                diag_lan = TRUE,
                                diag_bakgrund = TRUE,
                                returnera_figur = TRUE,
@@ -48,6 +48,8 @@ diag_matchning_lan <- function(region_vekt = "20",
     if (length(demo_url) > 1) cat(paste0(length(demo_url), " diagram har öppnats i webbläsaren."))
     rdverktyg::stop_tyst()
   }
+
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
   # Det som står under diagrammet
   diagram_capt <- "Källa: BAS i SCB:s öppna statistikdatabas\nBearbetning: Samhällsanalys, Region Dalarna\nDiagramförklaring: Branschens andel av totalt antal förvärvsarbetande"
@@ -103,16 +105,16 @@ diag_matchning_lan <- function(region_vekt = "20",
       skickad_x_grupp = ifelse("samtliga anställda" %in% kon_klartext,NA,"kön"),
       manual_x_axis_text_vjust=1,
       manual_x_axis_text_hjust=1,
-      manual_color = valda_farger,
+      manual_color = diag_fargvekt,
       diagram_titel = diagram_titel,
       diagram_capt =  diagram_capt,
       y_axis_100proc = TRUE,
       x_axis_sort_value = TRUE,
       x_axis_lutning = 45,
       manual_y_axis_title = "procent",
-      output_mapp = output_mapp_figur,
+      output_mapp = utmapp,
       filnamn_diagram = diagramfil,
-      skriv_till_diagramfil = spara_figur)
+      skriv_till_diagramfil = skriv_diagramfil)
 
     gg_list <- c(gg_list, list(gg_obj))
 
@@ -134,7 +136,7 @@ diag_matchning_lan <- function(region_vekt = "20",
       skickad_x_var = "fodelseland",
       skickad_y_var = "matchningsgrad",
       skickad_x_grupp = ifelse("samtliga anställda" %in% kon_klartext,NA,"kön"),
-      manual_color = valda_farger,
+      manual_color = diag_fargvekt,
       diagram_titel = diagram_titel,
       diagram_capt =  diagram_capt,
       x_axis_sort_value = TRUE,
@@ -142,9 +144,9 @@ diag_matchning_lan <- function(region_vekt = "20",
       y_axis_100proc = TRUE,
       diagram_liggande = TRUE,
       manual_y_axis_title="procent",
-      output_mapp = output_mapp_figur,
+      output_mapp = utmapp,
       filnamn_diagram = diagramfil,
-      skriv_till_diagramfil = spara_figur)
+      skriv_till_diagramfil = skriv_diagramfil)
 
     gg_list <- c(gg_list, list(gg_obj))
   }

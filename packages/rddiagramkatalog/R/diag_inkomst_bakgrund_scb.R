@@ -3,26 +3,26 @@
 #' Stapeldiagram över förvärvsinkomst uppdelat på vistelsetid i Sverige,
 #' för utrikes födda jämfört med inrikes födda. Från integrationsrapporten.
 #'
-#' @param region Region (max 1 åt gången).
+#' @param region_vekt Region (max 1 åt gången).
 #' @param visa_logga_i_diagram TRUE om logga ska visas i diagrammet.
 #' @param logga_sokvag Sökväg till logga.
-#' @param output_mapp Mapp där diagram ska sparas, NA = sparas ingen fil.
+#' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param inkomst_typ Finns `"Medianinkomst, tkr"`, `"Medelinkomst, tkr"`. Max 1 åt gången.
-#' @param skriv_diagrambildfil TRUE om diagram ska skrivas till fil.
+#' @param skriv_diagramfil TRUE om diagram ska skrivas till fil.
 #' @param alder_klartext Finns: `"20+ år"`, `"20–64 år"`, `"20–65 år"`, `"65+ år"`, `"66+ år"`. Max 1 åt gången.
-#' @param returnera_data_rmarkdown Skall data returneras till global environment.
+#' @param returnera_data Skall data returneras till global environment.
 #' @param demo Sätts till TRUE om man bara vill se ett exempel på diagrammet i webbläsaren.
 #'
 #' @return En namngiven lista med ett `ggplot`-objekt.
 #' @export
-diag_inkomst_bakgrund_scb <- function(region = "20",
+diag_inkomst_bakgrund_scb <- function(region_vekt = "20",
                                       visa_logga_i_diagram = FALSE,
                                       logga_sokvag = NA,
-                                      output_mapp = "G:/Samhällsanalys/API/Fran_R/utskrift/",
+                                      utmapp = rdverktyg::utskriftsmapp(),
                                       inkomst_typ = "Medianinkomst, tkr",
-                                      skriv_diagrambildfil = FALSE,
+                                      skriv_diagramfil = FALSE,
                                       alder_klartext = "20–64 år",
-                                      returnera_data_rmarkdown = FALSE,
+                                      returnera_data = FALSE,
                                       demo = FALSE
 ) {
 
@@ -36,6 +36,8 @@ diag_inkomst_bakgrund_scb <- function(region = "20",
     rdverktyg::stop_tyst()
   }
 
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
+
   # Tabellen TAB5278 (v2) har redan använts direkt (Tid = "9999" förstås
   # av pxweb2r::pxweb2_get_data(, quiet = TRUE) som "senaste period" via dess egen
   # latest_period_code-inställning), så inget bakomliggande hamta_data-
@@ -43,7 +45,7 @@ diag_inkomst_bakgrund_scb <- function(region = "20",
   forvarvsinkomst_df <- pxweb2r::pxweb2_get_data(
     table = "TAB5278",
     query = list(
-      Region = region,
+      Region = region_vekt,
       Kon = "*",
       Fodelseregion = "*",
       VistelsetidUF = "*",
@@ -69,7 +71,7 @@ diag_inkomst_bakgrund_scb <- function(region = "20",
           ))
 
 
-  if(returnera_data_rmarkdown == TRUE){
+  if(returnera_data == TRUE){
     assign("forvarvsinkomst_df", forvarvsinkomst_df, envir = .GlobalEnv)
   }
 
@@ -98,11 +100,11 @@ diag_inkomst_bakgrund_scb <- function(region = "20",
     manual_x_axis_title = "Vistelsetid i Sverige",
     y_axis_100proc = FALSE,
     x_axis_lutning = 0,
-    output_mapp = output_mapp,
+    output_mapp = utmapp,
     filnamn_diagram = diagramfilnamn,
     lagg_pa_logga = visa_logga_i_diagram,
     logga_path = logga_sokvag,
-    skriv_till_diagramfil = skriv_diagrambildfil)
+    skriv_till_diagramfil = skriv_diagramfil)
 
 
   gg_list <- c(gg_list, list(gg_obj))

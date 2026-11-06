@@ -6,20 +6,22 @@
 #' män i Dalarna".
 #'
 #' @param region_vekt Län, max 1 åt gången.
-#' @param output_mapp Mapp där diagram ska sparas.
+#' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param diag_senaste_ar Skapa diagram för senaste året.
 #' @param diag_linje Skapa linjediagram över tid.
 #' @param returnera_data Skall data returneras till global environment.
-#' @param spara_figur Sparar figuren till `output_mapp`.
+#' @param skriv_diagramfil TRUE om diagram ska skrivas till fil.
 #'
 #' @return En namngiven lista med `ggplot`-objekt.
 #' @export
-diag_chefer<-function(region_vekt = "20",
-                      output_mapp = "G:/Samhällsanalys/Statistik/Näringsliv/basfakta/",
+diag_chefer_scb <- function(region_vekt = "20",
+                      utmapp = rdverktyg::utskriftsmapp(),
                       diag_senaste_ar = TRUE,
                       diag_linje = TRUE,
                       returnera_data = FALSE,
-                      spara_figur = TRUE){
+                      skriv_diagramfil = TRUE){
+
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
   gg_list <- list()
 
@@ -86,9 +88,9 @@ diag_chefer<-function(region_vekt = "20",
       stodlinjer_avrunda_fem = TRUE,
       x_axis_sort_value = FALSE,
       manual_y_axis_title="procent",
-      output_mapp = output_mapp,
+      output_mapp = utmapp,
       filnamn_diagram = diagramfilnamn,
-      skriv_till_diagramfil = spara_figur)
+      skriv_till_diagramfil = skriv_diagramfil)
 
     gg_list <- c(gg_list, list(gg_obj))
     names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfilnamn, ".png")
@@ -113,9 +115,9 @@ diag_chefer<-function(region_vekt = "20",
       diagram_capt =  diagram_capt,
       stodlinjer_avrunda_fem = TRUE,
       berakna_index = TRUE,
-      output_mapp = output_mapp,
+      output_mapp = utmapp,
       filnamn_diagram = diagramfilnamn,
-      skriv_till_diagramfil = spara_figur)
+      skriv_till_diagramfil = skriv_diagramfil)
 
     gg_list <- c(gg_list, list(gg_obj))
     names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfilnamn, ".png")

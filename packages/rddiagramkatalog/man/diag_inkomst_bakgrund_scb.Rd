@@ -5,33 +5,33 @@
 \title{Diagram: förvärvsinkomst efter bakgrund (vistelsetid i Sverige)}
 \usage{
 diag_inkomst_bakgrund_scb(
-  region = "20",
+  region_vekt = "20",
   visa_logga_i_diagram = FALSE,
   logga_sokvag = NA,
-  output_mapp = "G:/Samhällsanalys/API/Fran_R/utskrift/",
+  utmapp = rdverktyg::utskriftsmapp(),
   inkomst_typ = "Medianinkomst, tkr",
-  skriv_diagrambildfil = FALSE,
+  skriv_diagramfil = FALSE,
   alder_klartext = "20–64 år",
-  returnera_data_rmarkdown = FALSE,
+  returnera_data = FALSE,
   demo = FALSE
 )
 }
 \arguments{
-\item{region}{Region (max 1 åt gången).}
+\item{region_vekt}{Region (max 1 åt gången).}
 
 \item{visa_logga_i_diagram}{TRUE om logga ska visas i diagrammet.}
 
 \item{logga_sokvag}{Sökväg till logga.}
 
-\item{output_mapp}{Mapp där diagram ska sparas, NA = sparas ingen fil.}
+\item{utmapp}{Mapp där diagram ska sparas. Måste finnas om \code{skriv_diagramfil = TRUE}.}
 
 \item{inkomst_typ}{Finns \code{"Medianinkomst, tkr"}, \code{"Medelinkomst, tkr"}. Max 1 åt gången.}
 
-\item{skriv_diagrambildfil}{TRUE om diagram ska skrivas till fil.}
+\item{skriv_diagramfil}{TRUE om diagram ska skrivas till fil.}
 
 \item{alder_klartext}{Finns: \code{"20+ år"}, \code{"20–64 år"}, \code{"20–65 år"}, \code{"65+ år"}, \code{"66+ år"}. Max 1 åt gången.}
 
-\item{returnera_data_rmarkdown}{Skall data returneras till global environment.}
+\item{returnera_data}{Skall data returneras till global environment.}
 
 \item{demo}{Sätts till TRUE om man bara vill se ett exempel på diagrammet i webbläsaren.}
 }

@@ -6,20 +6,20 @@
 #' och världsdelsindelning kommer från paketet `countrycode`.
 #'
 #' @param diagram_capt Diagrammets källtext.
-#' @param output_mapp Mapp där diagram ska sparas, NA = standardmappen från `rdverktyg::utskriftsmapp()`.
+#' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param diag_fargvekt Valfri färgvektor, standard: `rddiagram::diagramfarger("rd_primar_atta")`.
-#' @param returnera_dataframe_global_environment Skall data returneras till global environment.
-#' @param skriv_bildfil Sparar figuren till `output_mapp`.
+#' @param returnera_data Skall data returneras till global environment.
+#' @param skriv_diagramfil TRUE om diagram ska skrivas till fil.
 #' @param demo Sätts till TRUE om man bara vill se ett exempel på diagrammet i webbläsaren.
 #'
 #' @return En namngiven lista med ett `ggplot`-objekt.
 #' @export
 diag_fodelsetal_globalt_varldsbanken <- function(
     diagram_capt = "Källa: Världsbanken\nBearbetning: Samhällsanalys, Region Dalarna",
-    output_mapp = NA,
+    utmapp = rdverktyg::utskriftsmapp(),
     diag_fargvekt = NA,
-    returnera_dataframe_global_environment = FALSE,
-    skriv_bildfil = TRUE,
+    returnera_data = FALSE,
+    skriv_diagramfil = TRUE,
     demo = FALSE
 ) {
 
@@ -38,15 +38,7 @@ diag_fodelsetal_globalt_varldsbanken <- function(
     diag_fargvekt <- rddiagram::diagramfarger("rd_primar_atta")[c(1,2,3,4,5,6,8,7)]
   }
 
-  if (skriv_bildfil) {
-    if (all(is.na(output_mapp))) {
-      if (dir.exists(rdverktyg::utskriftsmapp())) {
-        output_mapp <- rdverktyg::utskriftsmapp()
-      } else {
-        stop("Ingen output-mapp angiven, kör funktionen igen och ge parametern output-mapp ett värde.")
-      }
-    }
-  }
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
   # Bygg landstabell med 2- och 3-bokstavskoder, svenskt namn och världsdel.
   # Filtrerar bort historiska/icke-länder (saknar iso3n, t.ex. Tjeckoslovakien,
@@ -105,7 +97,7 @@ diag_fodelsetal_globalt_varldsbanken <- function(
                   varldsdel = factor(varldsdel, levels = c(unique(varldsdel[varldsdel != "Sverige"]), "Sverige")))
 
   # returnera datasetet till global environment, bl.a. bra när man skapar Rmarkdown-rapporter
-  if(returnera_dataframe_global_environment == TRUE){
+  if(returnera_data == TRUE){
     assign("fodelsetal_globalt_varldsbanken_df", diagram_df, envir = .GlobalEnv)
   }
 
@@ -129,9 +121,9 @@ diag_fodelsetal_globalt_varldsbanken <- function(
     x_axis_lutning = 0,
     fokusera_varden = list(list(geom = "rect", ymin=2.09, ymax=2.11, xmin=0, xmax=Inf, alpha=1, fill="grey20")),
     manual_color = diag_fargvekt,
-    skriv_till_diagramfil = skriv_bildfil,
+    skriv_till_diagramfil = skriv_diagramfil,
     diagramfil_hojd = 10,
-    output_mapp = output_mapp
+    output_mapp = utmapp
   )
 
   gg_list <- list(gg_obj)

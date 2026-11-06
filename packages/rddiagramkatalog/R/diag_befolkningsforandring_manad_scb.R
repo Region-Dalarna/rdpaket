@@ -9,10 +9,11 @@
 #' @param facet_region Facet:a diagrammen på region.
 #' @param befforandr_klartext Vilka befolkningsförändringsvariabler som ska hämtas och visas.
 #' @param kon_klartext Kön, `"totalt"` ger inte könsuppdelning.
-#' @param tid_koder Vilka tidsperioder som ska hämtas.
+#' @param tid_koder Vilka tidsperioder som ska hämtas. `"*"` = alla, `"9999"` = senaste,
+#'   eller `"2021M01:9999"` för "från januari 2021 till och med senaste tillgängliga månad".
 #' @param nth_etikett Visa var n:te etikett på x-axeln när diagrammen inte är facet:ade på region.
 #' @param skriv_diagramfil TRUE om diagram ska skrivas till fil.
-#' @param utmapp Mapp där diagram ska sparas.
+#' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param diagram_capt Diagrammets källtext.
 #'
 #' @return En namngiven lista med `ggplot`-objekt, ett per kombination av variabel och region.
@@ -43,6 +44,8 @@ diag_befolkningsforandring_manad_scb <- function(region_vekt = "20",
   # oförändrade (samma kod/etikett i båda tabellerna).
   kon_klartext_ckm <- ifelse(tolower(kon_klartext) == "totalt", "TotSa", kon_klartext)
 
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
+
   beffor_df_historik <- pxweb2r::pxweb2_get_data(
     table = "TAB1625",
     query = list(
@@ -50,7 +53,7 @@ diag_befolkningsforandring_manad_scb <- function(region_vekt = "20",
       Forandringar = befforandr_klartext,
       Kon = kon_klartext,
       ContentsCode = "Befolkning",
-      Tid = tid_koder
+      Tid = intern_tolka_tidskoder("TAB1625", tid_koder)
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 
@@ -61,7 +64,7 @@ diag_befolkningsforandring_manad_scb <- function(region_vekt = "20",
       Forandringar = befforandr_klartext,
       Kon = kon_klartext_ckm,
       ContentsCode = "Befolkning",
-      Tid = tid_koder
+      Tid = intern_tolka_tidskoder("TAB6473", tid_koder)
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 

@@ -3,28 +3,30 @@
 #' Två diagram för trångboddhet uppdelat på inrikes och utrikes födda, som
 #' antal respektive andel. Används primärt i integrationsrapporten.
 #'
-#' @param region Region (max 1 åt gången).
+#' @param region_vekt Region (max 1 åt gången).
 #' @param visa_logga_i_diagram TRUE om logga ska visas i diagrammet.
 #' @param logga_sokvag Sökväg till logga.
-#' @param output_mapp Mapp där diagram ska sparas, NA = sparas ingen fil.
-#' @param skriv_diagrambildfil TRUE om diagram ska skrivas till fil.
+#' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
+#' @param skriv_diagramfil TRUE om diagram ska skrivas till fil.
 #' @param diag_antal Skapa diagram över antal.
 #' @param diag_andel Skapa diagram över andel (summerar till 100 procent).
 #' @param jmf_ar Jämförelseår. `"9999"` ger senaste år, `"2013"` är första år.
-#' @param returnera_data_rmarkdown Skall data returneras till global environment.
+#' @param returnera_data Skall data returneras till global environment.
 #'
 #' @return En namngiven lista med `ggplot`-objekt.
 #' @export
-diag_trangboddhet_inrikes_utrikes <- function(region = "20",
+diag_trangboddhet_inrikes_utrikes_scb <- function(region_vekt = "20",
                                               visa_logga_i_diagram = FALSE,
                                               logga_sokvag = NA,
-                                              output_mapp = "G:/Samhällsanalys/API/Fran_R/utskrift/",
-                                              skriv_diagrambildfil = FALSE,
+                                              utmapp = rdverktyg::utskriftsmapp(),
+                                              skriv_diagramfil = FALSE,
                                               diag_antal = TRUE,
                                               diag_andel = TRUE,
                                               jmf_ar = c("2012","2018","9999"),
-                                              returnera_data_rmarkdown = FALSE
+                                              returnera_data = FALSE
 ) {
+
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
   gg_list <- list()
 
@@ -32,7 +34,7 @@ diag_trangboddhet_inrikes_utrikes <- function(region = "20",
   trangboddhet_df <- pxweb2r::pxweb2_get_data(
     table = "TAB5089",
     query = list(
-      Region = region,
+      Region = region_vekt,
       Trangboddhet = "*",
       Fodelseregion = "*",
       Alder = "totalt",
@@ -56,7 +58,7 @@ diag_trangboddhet_inrikes_utrikes <- function(region = "20",
 
 
 
-  if(returnera_data_rmarkdown == TRUE){
+  if(returnera_data == TRUE){
     assign("trangboddhet_df", trangboddhet_df, envir = .GlobalEnv)
   }
 
@@ -89,9 +91,9 @@ diag_trangboddhet_inrikes_utrikes <- function(region = "20",
                                             x_axis_lutning = 0,
                                             lagg_pa_logga = visa_logga_i_diagram,
                                             logga_path = logga_sokvag,
-                                            output_mapp = output_mapp,
+                                            output_mapp = utmapp,
                                             filnamn_diagram = diagramfilnamn,
-                                            skriv_till_diagramfil = skriv_diagrambildfil)
+                                            skriv_till_diagramfil = skriv_diagramfil)
 
 
     gg_list <- c(gg_list, list(gg_obj))
@@ -123,9 +125,9 @@ diag_trangboddhet_inrikes_utrikes <- function(region = "20",
                                             x_axis_lutning = 0,
                                             lagg_pa_logga = visa_logga_i_diagram,
                                             logga_path = logga_sokvag,
-                                            output_mapp = output_mapp,
+                                            output_mapp = utmapp,
                                             filnamn_diagram = diagramfilnamn,
-                                            skriv_till_diagramfil = skriv_diagrambildfil)
+                                            skriv_till_diagramfil = skriv_diagramfil)
 
 
     gg_list <- c(gg_list, list(gg_obj))

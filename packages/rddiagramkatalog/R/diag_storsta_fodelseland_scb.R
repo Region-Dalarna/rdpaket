@@ -5,34 +5,38 @@
 #' eller bara visa senaste året.
 #'
 #' @param region_vekt Region (max 1 län).
-#' @param output_mapp_figur Outputmapp för figur.
-#' @param spara_figur Sparar figuren till `output_mapp_figur`.
-#' @param tid_koder Vilka år som ska hämtas, standard alla från 2000.
+#' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
+#' @param skriv_diagramfil Sparar figuren till `utmapp`.
+#' @param tid_koder Vilka år som ska hämtas. Standard alla från 2000 (`"*"`).
+#'   Kan även anges som `"2015:9999"` för "från 2015 till och med senaste
+#'   tillgängliga år".
 #' @param returnera_figur Returnerar en figur.
 #' @param jmf_ar Jämförs mot detta år (utöver första och sista år i `tid_koder`).
 #' @param ar_sortering Vilket år länderna ska sorteras på (högst till lägst).
 #' @param antal_lander Antal länder som visas i diagrammet.
-#' @param valda_farger Valfri färgvektor, standard: `rddiagram::diagramfarger("rus_sex")`.
+#' @param diag_fargvekt Valfri färgvektor, standard: `rddiagram::diagramfarger("rus_sex")`.
 #' @param visa_logga_i_diagram TRUE om logga ska visas i diagrammet.
 #' @param logga_sokvag Sökväg till logga.
 #' @param returnera_data Skall data returneras.
 #'
 #' @return En namngiven lista med ett `ggplot`-objekt.
 #' @export
-diagram_storsta_fodelseland <- function(region_vekt = "20",
-                                        output_mapp_figur = "G:/Samhällsanalys/Statistik/Näringsliv/basfakta/",
-                                        spara_figur = FALSE,
+diag_storsta_fodelseland_scb <- function(region_vekt = "20",
+                                        utmapp = rdverktyg::utskriftsmapp(),
+                                        skriv_diagramfil = FALSE,
                                         tid_koder = "*",
                                         returnera_figur = TRUE,
                                         jmf_ar = 2010,
                                         ar_sortering = 3,
                                         antal_lander = 10,
-                                        valda_farger = NA,
+                                        diag_fargvekt = NA,
                                         visa_logga_i_diagram = FALSE,
                                         logga_sokvag = NA,
                                         returnera_data = FALSE) {
 
-  if (all(is.na(valda_farger))) valda_farger <- rddiagram::diagramfarger("rus_sex")
+  if (all(is.na(diag_fargvekt))) diag_fargvekt <- rddiagram::diagramfarger("rus_sex")
+
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
   gg_list <- list()
   region_namn <- rdverktyg::skapa_kortnamn_lan(rdverktyg::hamtaregion_kod_namn(region_vekt)$region)
@@ -47,7 +51,7 @@ diagram_storsta_fodelseland <- function(region_vekt = "20",
       Fodelseregion = "*",
       Kon = NA,
       ContentsCode = "*",
-      Tid = "*"
+      Tid = intern_tolka_tidskoder("TAB6030", tid_koder)
     ), quiet = TRUE) |>
     dplyr::mutate(region = rdverktyg::skapa_kortnamn_lan(region)) |>
       dplyr::rename(regionkod = region_kod,
@@ -84,7 +88,7 @@ diagram_storsta_fodelseland <- function(region_vekt = "20",
                                skickad_x_var = "födelseregion",
                                skickad_y_var = "Antal",
                                skickad_x_grupp = "år",
-                               manual_color = valda_farger,
+                               manual_color = diag_fargvekt,
                                diagram_titel = diagram_titel,
                                manual_x_axis_text_vjust = 1,
                                manual_x_axis_text_hjust = 1,
@@ -93,13 +97,13 @@ diagram_storsta_fodelseland <- function(region_vekt = "20",
                                x_axis_sort_grp = ar_sortering,
                                legend_tabort = ifelse(length(unique(storsta_fodelseland_df$år)) == 1, TRUE, FALSE),
                                diagram_capt = diagram_capt,
-                               output_mapp = output_mapp_figur,
+                               output_mapp = utmapp,
                                stodlinjer_avrunda_fem = TRUE,
                                lagg_pa_logga = visa_logga_i_diagram,
                                logga_path = logga_sokvag,
                                manual_y_axis_title = "",
                                filnamn_diagram = diagramfilnamn,
-                               skriv_till_diagramfil = spara_figur)
+                               skriv_till_diagramfil = skriv_diagramfil)
 
   gg_list <- c(gg_list, list(gg_obj))
   names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfilnamn, ".png")

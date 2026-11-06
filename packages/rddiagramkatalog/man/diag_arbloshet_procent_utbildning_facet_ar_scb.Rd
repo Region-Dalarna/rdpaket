@@ -12,13 +12,14 @@ diag_arbloshet_procent_utbildning_facet_ar_scb(
   ta_med_tidigare_data = TRUE,
   lagga_till_punkter = FALSE,
   titel_bredd = 80,
+  tid_koder = "*",
   diagram_capt =
     "Källa: SCB:s öppna statistikdatabas, Arbetsmarknadsställning (U1a)\\nBearbetning: Samhällsanalys, Region Dalarna",
-  output_mapp = NA,
+  utmapp = rdverktyg::utskriftsmapp(),
   diag_fargvekt = NA,
-  skickad_logga_path = NA,
-  ta_med_logga = TRUE,
-  skriv_till_diagramfil = TRUE,
+  logga_sokvag = NA,
+  visa_logga_i_diagram = TRUE,
+  skriv_diagramfil = TRUE,
   facet_scale = "fixed",
   demo = FALSE
 )
@@ -36,17 +37,22 @@ diag_arbloshet_procent_utbildning_facet_ar_scb(
 
 \item{titel_bredd}{Radbrytningsbredd för diagramtiteln.}
 
+\item{tid_koder}{Vilka år som ska hämtas, per tabell. \code{"*"} = alla, \code{"9999"} = senaste,
+eller \code{"2015:9999"} för "från 2015 till och med senaste tillgängliga år".
+Om intervallet inte täcker TAB5400 (2006-2018) hoppas den tabellen
+automatiskt över, även om \code{ta_med_tidigare_data = TRUE}.}
+
 \item{diagram_capt}{Diagrammets källtext.}
 
-\item{output_mapp}{Mapp där diagram ska sparas, NA = standardmappen från \code{rdverktyg::utskriftsmapp()}.}
+\item{utmapp}{Mapp där diagram ska sparas. Måste finnas om \code{skriv_diagramfil = TRUE}.}
 
 \item{diag_fargvekt}{Valfri färgvektor, standard: \code{rddiagram::diagramfarger("rus_sex")}.}
 
-\item{skickad_logga_path}{NA om man vill köra med standardloggan, bra att sätta en lokal om man är på resande fot.}
+\item{logga_sokvag}{NA om man vill köra med standardloggan, bra att sätta en lokal om man är på resande fot.}
 
-\item{ta_med_logga}{TRUE om logga ska visas i diagrammet.}
+\item{visa_logga_i_diagram}{TRUE om logga ska visas i diagrammet.}
 
-\item{skriv_till_diagramfil}{TRUE om diagram ska skrivas till fil.}
+\item{skriv_diagramfil}{TRUE om diagram ska skrivas till fil.}
 
 \item{facet_scale}{\code{"fixed"} gör att nivåerna/inriktningarna går att jämföra rakt av, \code{"free_y"} ger varje facet egen skala.}
 

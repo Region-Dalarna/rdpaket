@@ -6,26 +6,27 @@
 \title{Diagram: förändring i arbetslöshet jämfört med samma månad föregående år}
 \usage{
 diag_bas_arbloshet_manad_jmfr_1ar_tillbaka_scb(
-  vald_region = NA,
+  region_vekt = NA,
   diagram_capt =
     "Källa: SCB:s öppna statistikdatabas\\nBearbetning: Samhällsanalys, Region Dalarna",
-  output_mapp = "G:/Samhällsanalys/API/Fran_R/Utskrift/",
+  utmapp = rdverktyg::utskriftsmapp(),
   tid_koder = "9999",
   dela_upp_utrikes = TRUE,
   returnera_data = FALSE,
   jamfor_antal_manader_bakat = 12,
   visa_dataetiketter = FALSE,
+  skriv_diagramfil = FALSE,
   demo = FALSE
 )
 }
 \arguments{
-\item{vald_region}{NA = jämförelse mellan länen, annars jämförs kommuner i de regioner vars länskoder man skickar med.}
+\item{region_vekt}{NA = jämförelse mellan länen, annars jämförs kommuner i de regioner vars länskoder man skickar med.}
 
 \item{diagram_capt}{Diagrammets källtext.}
 
-\item{output_mapp}{Mapp där diagram ska sparas.}
+\item{utmapp}{Mapp där diagram ska sparas. Måste finnas om \code{skriv_diagramfil = TRUE}.}
 
-\item{tid_koder}{Vilken månad som ska jämföras, \code{"9999"} ger senaste.}
+\item{tid_koder}{Vilken månad som ska jämföras (slutpunkten), \code{"9999"} ger senaste. OBS: till skillnad från flera andra funktioner i paketet anger denna EN period att jämföra mot, inte ett intervall - \code{"start:9999"}-mönstret stöds inte här.}
 
 \item{dela_upp_utrikes}{Sätts till FALSE om man vill ha förändring i arbetslöshet totalt, dvs. inte uppdelat på inrikes/utrikes-födda.}
 
@@ -34,6 +35,8 @@ diag_bas_arbloshet_manad_jmfr_1ar_tillbaka_scb(
 \item{jamfor_antal_manader_bakat}{Antal månader tillbaka som jämförelsen görs mot.}
 
 \item{visa_dataetiketter}{Visa dataetiketter.}
+
+\item{skriv_diagramfil}{TRUE om diagram ska skrivas till fil.}
 
 \item{demo}{Sätts till TRUE om man bara vill se ett exempel på diagrammet i webbläsaren.}
 }

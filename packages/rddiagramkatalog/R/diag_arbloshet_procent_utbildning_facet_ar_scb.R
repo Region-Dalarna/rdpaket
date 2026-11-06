@@ -31,12 +31,16 @@
 #' @param ta_med_tidigare_data TRUE = slå ihop med TAB5400 (2006-2018) till en tidsserie 2006-2024.
 #' @param lagga_till_punkter TRUE lägger till punkter vid varje observation.
 #' @param titel_bredd Radbrytningsbredd för diagramtiteln.
+#' @param tid_koder Vilka år som ska hämtas, per tabell. `"*"` = alla, `"9999"` = senaste,
+#'   eller `"2015:9999"` för "från 2015 till och med senaste tillgängliga år".
+#'   Om intervallet inte täcker TAB5400 (2006-2018) hoppas den tabellen
+#'   automatiskt över, även om `ta_med_tidigare_data = TRUE`.
 #' @param diagram_capt Diagrammets källtext.
-#' @param output_mapp Mapp där diagram ska sparas, NA = standardmappen från `rdverktyg::utskriftsmapp()`.
+#' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param diag_fargvekt Valfri färgvektor, standard: `rddiagram::diagramfarger("rus_sex")`.
-#' @param skickad_logga_path NA om man vill köra med standardloggan, bra att sätta en lokal om man är på resande fot.
-#' @param ta_med_logga TRUE om logga ska visas i diagrammet.
-#' @param skriv_till_diagramfil TRUE om diagram ska skrivas till fil.
+#' @param logga_sokvag NA om man vill köra med standardloggan, bra att sätta en lokal om man är på resande fot.
+#' @param visa_logga_i_diagram TRUE om logga ska visas i diagrammet.
+#' @param skriv_diagramfil TRUE om diagram ska skrivas till fil.
 #' @param facet_scale `"fixed"` gör att nivåerna/inriktningarna går att jämföra rakt av, `"free_y"` ger varje facet egen skala.
 #' @param demo Sätts till TRUE om man bara vill se ett exempel på diagrammet i webbläsaren.
 #'
@@ -49,12 +53,13 @@ diag_arbloshet_procent_utbildning_facet_ar_scb <- function(
     ta_med_tidigare_data = TRUE,
     lagga_till_punkter = FALSE,
     titel_bredd = 80,
+    tid_koder = "*",
     diagram_capt = "Källa: SCB:s öppna statistikdatabas, Arbetsmarknadsställning (U1a)\nBearbetning: Samhällsanalys, Region Dalarna",
-    output_mapp = NA,
+    utmapp = rdverktyg::utskriftsmapp(),
     diag_fargvekt = NA,
-    skickad_logga_path = NA,
-    ta_med_logga = TRUE,
-    skriv_till_diagramfil = TRUE,
+    logga_sokvag = NA,
+    visa_logga_i_diagram = TRUE,
+    skriv_diagramfil = TRUE,
     facet_scale = "fixed",
     demo = FALSE
     ) {
@@ -90,29 +95,33 @@ diag_arbloshet_procent_utbildning_facet_ar_scb <- function(
     diag_fargvekt <- rddiagram::diagramfarger("rus_sex")
   }
 
-  if (all(is.na(output_mapp))) {
-    output_mapp <- rdverktyg::utskriftsmapp()
-  }
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
   # Länk till tabell: https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__AM__AM0208__AM0208C/ArbStallnU1Ar/
   # ContentsCode hämtas som text (inte kod) - A = förvärvsarbetande, B = inskrivna arbetslösa på
   # Arbetsförmedlingen. Arbetskraften = A + B (C, "inte i arbetskraften", räknas INTE in i nämnaren).
-  hamta_tabell <- function(tabell) {
+  hamta_tabell <- function(tabell, tid) {
     pxweb2r::pxweb2_get_data(
       table = tabell,
       query = list(
         Region = region_vekt,
         Utbildngrupp = utb_vekt,
         ContentsCode = c("Förvärvsarbetande (A)", "Inskrivna arbetslösa på Arbetsförmedlingen (B)"),
-        Tid = "*"
+        Tid = tid
       ), quiet = TRUE)
   }
 
   # TAB6367 (2019-2024) och - om ta_med_tidigare_data - TAB5400 (2006-2018, fryst historisk data)
   # har identiska dimensioner/kolumnnamn och överlappar inte i tid, så de kan radbindas direkt.
-  arbl_raw <- hamta_tabell("TAB6367")
+  arbl_raw <- hamta_tabell("TAB6367", intern_tolka_tidskoder("TAB6367", tid_koder))
   if (ta_med_tidigare_data) {
-    arbl_raw <- dplyr::bind_rows(arbl_raw, hamta_tabell("TAB5400"))
+    # Om det begärda intervallet inte täcker TAB5400 alls (t.ex. tid_koder = "2020:9999")
+    # blir tid_5400 en tom vektor - hoppa då över tabellen i stället för att skicka en
+    # tom Tid-fråga till API:et.
+    tid_5400 <- intern_tolka_tidskoder("TAB5400", tid_koder)
+    if (length(tid_5400) > 0) {
+      arbl_raw <- dplyr::bind_rows(arbl_raw, hamta_tabell("TAB5400", tid_5400))
+    }
   }
 
   arbl_df <- arbl_raw |>
@@ -153,10 +162,10 @@ diag_arbloshet_procent_utbildning_facet_ar_scb <- function(
     facet_x_axis_storlek = 8,
     facet_legend_bottom = TRUE,
     stodlinjer_avrunda_fem = TRUE,
-    skriv_till_diagramfil = skriv_till_diagramfil,
-    lagg_pa_logga = ta_med_logga,
-    logga_path = skickad_logga_path,
-    output_mapp = output_mapp,
+    skriv_till_diagramfil = skriv_diagramfil,
+    lagg_pa_logga = visa_logga_i_diagram,
+    logga_path = logga_sokvag,
+    output_mapp = utmapp,
     filnamn_diagram = diagramfil)
 
   retur_list <- list(gg_obj)

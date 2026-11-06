@@ -4,10 +4,11 @@
 #' på utbildningsnivå och kön.
 #'
 #' @param region_vekt Region(er).
-#' @param ar_vekt `"*"` = alla år, `"9999"` = senaste år.
+#' @param tid_koder Vilka år som ska hämtas. `"*"` = alla, `"9999"` = senaste,
+#'   eller `"2015:9999"` för "från 2015 till och med senaste tillgängliga år".
 #' @param cont_var_klartext Är främst den relevanta variabeln för oss att använda i denna tabell.
 #' @param vald_alder Ålder för återstående medellivslängd. Finns: `"30 år"`, `"31 år"`, `"32 år"` ... t.o.m. `"93 år"`, `"94 år"`, `"95+ år"`.
-#' @param diag_fargvektor Valbar färgvektor för diagrammet.
+#' @param diag_fargvekt Valbar färgvektor för diagrammet.
 #' @param visa_logga_i_diagram TRUE om logga ska visas i diagrammet.
 #' @param logga_sokvag Sökväg till logga.
 #' @param diagramtitel_tabort TRUE om diagramtitel ska tas bort.
@@ -18,16 +19,16 @@
 #' @param ggobjektfilnamn_utan_tid Om TRUE så tas t.ex. året inte med i filnamnet, vilket passar bättre i vissa sammanhang när man vill använda objektsnamnet utan att ändra vid varje uppdatering.
 #' @param excel_mapp Mapp där excelfil ska sparas, NA = sparas ingen fil.
 #' @param demo Sätts till TRUE om man bara vill se ett exempel på diagrammet i webbläsaren.
-#' @param utmapp Mapp där diagrammet sparas.
+#' @param utmapp Mapp där diagrammet sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #'
 #' @return En namngiven lista med ett `ggplot`-objekt.
 #' @export
 diag_aterstaende_medellivslangd_utbniva_lan_scb <- function(
     region_vekt = "20",
-    ar_vekt = "*",
+    tid_koder = "*",
     cont_var_klartext = "Antal återstående år",
     vald_alder = "30 år",
-    diag_fargvektor = NA,
+    diag_fargvekt = NA,
     visa_logga_i_diagram = TRUE,
     logga_sokvag = NA,
     diagramtitel_tabort = FALSE,
@@ -38,7 +39,7 @@ diag_aterstaende_medellivslangd_utbniva_lan_scb <- function(
     ggobjektfilnamn_utan_tid = FALSE,
     excel_mapp = NA,
     demo = FALSE,
-    utmapp = "G:/Samhällsanalys/API/Fran_R/utskrift/"
+    utmapp = rdverktyg::utskriftsmapp()
     ) {
 
   # =======================================================================================================================
@@ -61,7 +62,9 @@ diag_aterstaende_medellivslangd_utbniva_lan_scb <- function(
     rdverktyg::stop_tyst()
   }
 
-  diag_fargvektor <- if (all(is.na(diag_fargvektor))) rddiagram::diagramfarger("rus_sex")[c(5,1,3)] else diag_fargvektor
+  diag_fargvekt <- if (all(is.na(diag_fargvekt))) rddiagram::diagramfarger("rus_sex")[c(5,1,3)] else diag_fargvekt
+
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
   gg_list <- list()
 
@@ -74,7 +77,7 @@ diag_aterstaende_medellivslangd_utbniva_lan_scb <- function(
       Kon = c("män", "kvinnor"),
       Alder = vald_alder,
       ContentsCode = cont_var_klartext,
-      Tid = ar_vekt
+      Tid = intern_tolka_tidskoder("TAB4879", tid_koder)
     ), quiet = TRUE)
 
   new_name <- unique(medellivslangd_df$tabellinnehåll)
@@ -106,7 +109,7 @@ diag_aterstaende_medellivslangd_utbniva_lan_scb <- function(
     y_axis_borjar_pa_noll = FALSE,
     filnamn_diagram = diagramfil,
     manual_x_axis_title = "årsintervall",
-    manual_color = diag_fargvektor,
+    manual_color = diag_fargvekt,
     lagg_pa_logga = visa_logga_i_diagram,
     facet_x_axis_storlek = x_axel_stlk,
     facet_y_axis_storlek = y_axel_stlk,

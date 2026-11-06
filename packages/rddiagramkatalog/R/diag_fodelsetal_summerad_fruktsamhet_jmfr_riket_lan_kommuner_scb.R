@@ -5,18 +5,18 @@
 #' som en referenslinje.
 #'
 #' @param region_vekt Regioner att visa. `"00"` eller NA ger alla län.
-#' @param output_fold Outputmapp. NA = standardmappen från `rdverktyg::utskriftsmapp()`.
+#' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param diag_fargvekt Valfri färgvektor, standard: `rddiagram::diagramfarger("rus_sex")`.
 #' @param visa_dataetiketter Visa dataetiketter.
 #' @param visa_var_xte_etikett Visa var x:te etikett på x-axeln.
 #' @param ta_bort_nast_sista_etikett Ta bort näst sista etiketten på x-axeln.
-#' @param skriv_diagramfil Sparar figuren till `output_fold`.
+#' @param skriv_diagramfil TRUE om diagram ska skrivas till fil.
 #'
 #' @return En namngiven lista med ett `ggplot`-objekt.
 #' @export
-diag_fodelsetal_summerad_fruktsamhet_jmfr_riket_lan_kommuner <- function(
+diag_fodelsetal_summerad_fruktsamhet_jmfr_riket_lan_kommuner_scb <- function(
     region_vekt = "20",
-    output_fold = NA,
+    utmapp = rdverktyg::utskriftsmapp(),
     diag_fargvekt = NA,
     visa_dataetiketter = FALSE,
     visa_var_xte_etikett = NA,
@@ -27,14 +27,8 @@ diag_fodelsetal_summerad_fruktsamhet_jmfr_riket_lan_kommuner <- function(
   if (all(is.na(diag_fargvekt))) {
     diag_fargvekt <- rddiagram::diagramfarger("rus_sex")
   }
-  # publicerad 11 juni 2024
-  if (all(is.na(output_fold))) {
-    if (dir.exists(rdverktyg::utskriftsmapp())) {
-      output_fold <- rdverktyg::utskriftsmapp()
-    } else {
-      stop("Ingen output-mapp angiven, kör funktionen igen och ge parametern output_fold ett värde.")
-    }
-  }
+
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
   # ============================ Dalarna, riket och länets kommuner ============================
 
@@ -108,7 +102,7 @@ diag_fodelsetal_summerad_fruktsamhet_jmfr_riket_lan_kommuner <- function(
     manual_x_axis_text_hjust = 1,
     manual_color = rddiagram::diagramfarger("rus_sex")[c(3, 2, 1)],
     fokusera_varden = list(list(geom = "rect", ymin=2.097, ymax=2.103, xmin=0, xmax=Inf, alpha=1, fill="black")),
-    output_mapp = output_fold,
+    output_mapp = utmapp,
     skriv_till_diagramfil = FALSE,
     facet_grp = "region",
     facet_scale = "fixed",
@@ -136,7 +130,7 @@ diag_fodelsetal_summerad_fruktsamhet_jmfr_riket_lan_kommuner <- function(
   if (skriv_diagramfil) {
   suppressMessages(
   rddiagram::skriv_till_diagramfil(dia_med_legend,
-                        output_mapp = output_fold,
+                        output_mapp = utmapp,
                         filnamn_diagram = diagramfil)
   )}
   return(gg_list)

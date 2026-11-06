@@ -5,7 +5,7 @@
 \title{Diagram: arbetslöshet eller sysselsättningsgrad per åldersgrupp och kön (BAS)}
 \usage{
 diag_bas_syss_arbloshet_aldersgrupp_kon_scb(
-  vald_region = "20",
+  region_vekt = "20",
   vald_alder = c("16-19 år", "20-24 år", "25-29 år", "30-34 år", "35-39 år",
     "40-44 år", "45-49 år", "50-54 år", "55-59 år", "60-64 år", "65-69 år",
     "70-74 år"),
@@ -13,14 +13,16 @@ diag_bas_syss_arbloshet_aldersgrupp_kon_scb(
   skriv_diagramfil = TRUE,
   diagram_capt =
     "Källa: Befolkningens arbetsmarknadsstatus (BAS), SCB:s öppna statistikdatabas\\nBearbetning: Samhällsanalys, Region Dalarna",
-  logga_i_diagram = NA,
+  visa_logga_i_diagram = FALSE,
+  logga_sokvag = NA,
   diag_fargvekt = NA,
+  tid_koder = "*",
   demo = FALSE,
-  utmapp
+  utmapp = rdverktyg::utskriftsmapp()
 )
 }
 \arguments{
-\item{vald_region}{Region.}
+\item{region_vekt}{Region.}
 
 \item{vald_alder}{Åldersgrupper att inkludera.}
 
@@ -30,13 +32,20 @@ diag_bas_syss_arbloshet_aldersgrupp_kon_scb(
 
 \item{diagram_capt}{Diagrammets källtext.}
 
-\item{logga_i_diagram}{Sökväg till logga, eller NA för ingen logga.}
+\item{visa_logga_i_diagram}{TRUE om logga ska visas i diagrammet.}
+
+\item{logga_sokvag}{Sökväg till logga.}
 
 \item{diag_fargvekt}{Valfri färgvektor, standard: \code{rddiagram::diagramfarger("kon")}.}
 
+\item{tid_koder}{Vilka tidsperioder som ska hämtas. \code{"*"} = alla, \code{"9999"} = senaste,
+eller \code{"2021M01:9999"} för "från januari 2021 till och med senaste tillgängliga månad".
+Diagrammet visar alltid bara den senaste hämtade perioden, så detta styr
+bara hur mycket historik som hämtas, inte vad som visas.}
+
 \item{demo}{Sätts till TRUE om man bara vill se ett exempel på diagrammet i webbläsaren.}
 
-\item{utmapp}{Mapp där diagrammet sparas.}
+\item{utmapp}{Mapp där diagrammet sparas. Måste finnas om \code{skriv_diagramfil = TRUE}.}
 }
 \value{
 En lista med ett \code{ggplot}-objekt per kombination av region och innehållsvariabel.

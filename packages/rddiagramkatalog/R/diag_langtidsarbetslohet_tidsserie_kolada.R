@@ -4,30 +4,36 @@
 #' uppdelat på kön.
 #'
 #' @param region_vekt Regionkod(er), t.ex. `"20"` för Dalarnas län.
+#' @param tid_koder Vilka år som ska hämtas, som en sträng `"start:slut"`
+#'   (t.ex. `"2011:9999"`, där `"9999"` betyder "till och med senaste
+#'   tillgängliga år") eller en vanlig heltalsvektor, t.ex. `2015:2024`.
 #' @param output_mapp_data Outputmapp för data.
-#' @param output_mapp_figur Outputmapp för figur.
-#' @param spara_figur Sparar figuren till `output_mapp_figur`.
+#' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
+#' @param skriv_diagramfil TRUE om diagram ska skrivas till fil.
 #' @param returnera_figur Returnerar en figur.
-#' @param valda_farger Valfri färgvektor, standard: `rddiagram::diagramfarger("kon")`.
+#' @param diag_fargvekt Valfri färgvektor, standard: `rddiagram::diagramfarger("kon")`.
 #' @param returnera_data Skall data returneras.
 #'
 #' @return En namngiven lista med ett `ggplot`-objekt.
 #' @export
-diagram_langtidsarbetslohet_tidsserie <- function(region_vekt = "20",
+diag_langtidsarbetslohet_tidsserie_kolada <- function(region_vekt = "20",
+                                                   tid_koder = "2011:9999",
                                                    output_mapp_data = NA,
-                                                   output_mapp_figur = "G:/Samhällsanalys/Statistik/Näringsliv/basfakta/",
-                                                   spara_figur = TRUE,
+                                                   utmapp = rdverktyg::utskriftsmapp(),
+                                                   skriv_diagramfil = TRUE,
                                                    returnera_figur = TRUE,
-                                                   valda_farger = NA,
+                                                   diag_fargvekt = NA,
                                                    returnera_data = FALSE) {
 
-  if (all(is.na(valda_farger))) valda_farger <- rddiagram::diagramfarger("kon")
+  if (all(is.na(diag_fargvekt))) diag_fargvekt <- rddiagram::diagramfarger("kon")
+
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
   gg_list <- list()
 
   långtidsarbetslöshet <- rdverktyg::hamta_kolada_df(kpi_id = c("N03926"),
                                           valda_kommuner = region_vekt,
-                                          valda_ar = 2011:2100,
+                                          valda_ar = intern_tolka_ar_intervall(tid_koder),
                                           konsuppdelat = TRUE) |>
     dplyr::mutate(kon = tolower(kon))
 
@@ -49,11 +55,11 @@ diagram_langtidsarbetslohet_tidsserie <- function(region_vekt = "20",
     diagram_capt = diagram_capt,
     manual_y_axis_title = "procent",
     x_axis_lutning = 0,
-    manual_color = valda_farger,
+    manual_color = diag_fargvekt,
     lagg_pa_logga = FALSE,
-    output_mapp = output_mapp_figur,
+    output_mapp = utmapp,
     filnamn_diagram = diagramfilnamn,
-    skriv_till_diagramfil = spara_figur)
+    skriv_till_diagramfil = skriv_diagramfil)
 
   gg_list <- c(gg_list, list(gg_obj))
   names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfilnamn, "\\.png")

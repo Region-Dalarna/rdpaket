@@ -6,22 +6,24 @@
 #' publika Excel-export, inte från SCB.
 #'
 #' @param region_vekt Ett län åt gången, inte Sverige.
-#' @param output_mapp Mapp där diagram ska sparas.
+#' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param diag_stapel Skapa stapeldiagram.
 #' @param diag_forandring Skapa linjediagram över förändring.
 #' @param variabel Finns `"Antal vårdare"`, `"Antal sjuka"`, `"Belopp"`, `"Nettodagar"`. Går att välja flera.
-#' @param spara_diagrambildfil TRUE om diagram ska skrivas till fil.
-#' @param spara_dataframe_till_global_environment Skall data sparas till global environment.
+#' @param skriv_diagramfil TRUE om diagram ska skrivas till fil.
+#' @param returnera_data Skall data returneras till global environment.
 #'
 #' @return En namngiven lista med `ggplot`-objekt.
 #' @export
-diag_narstaendepenning <- function(region_vekt = "20",
-                                   output_mapp = "G:/Samhällsanalys/Statistik/Näringsliv/basfakta/",
+diag_narstaendepenning_forsakringskassan <- function(region_vekt = "20",
+                                   utmapp = rdverktyg::utskriftsmapp(),
                                    diag_stapel = TRUE,
                                    diag_forandring = FALSE,
                                    variabel = "Antal vårdare",
-                                   spara_diagrambildfil = FALSE,
-                                   spara_dataframe_till_global_environment = FALSE){
+                                   skriv_diagramfil = FALSE,
+                                   returnera_data = FALSE){
+
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
   # Adresser till data
   path = c("https://www.forsakringskassan.se/api/sprstatistikrapportera/public/v1/np-antal-mottagare-belopp-dagar/NPAntalBeloppDagarLan.xlsx")
@@ -34,7 +36,7 @@ diag_narstaendepenning <- function(region_vekt = "20",
     dplyr::mutate(Län = stringr::str_replace(Län, "^[^\\p{L}]*", "")) |>
     dplyr::select(-kolumnnamn)
 
-  if(spara_dataframe_till_global_environment){
+  if(returnera_data){
     assign("narstaendepenning_df", narstaendepenning_df, envir = .GlobalEnv)
   }
 
@@ -71,9 +73,9 @@ diag_narstaendepenning <- function(region_vekt = "20",
         stodlinjer_avrunda_fem = TRUE,
         diagram_titel = diagramtitel,
         diagram_capt =  diagram_capt,
-        output_mapp = output_mapp,
+        output_mapp = utmapp,
         filnamn_diagram = diagramfilnamn,
-        skriv_till_diagramfil = spara_diagrambildfil)
+        skriv_till_diagramfil = skriv_diagramfil)
 
       gg_list <- c(gg_list, list(gg_obj))
       names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfilnamn, ".png")
@@ -105,9 +107,9 @@ diag_narstaendepenning <- function(region_vekt = "20",
            berakna_index = TRUE,
            diagram_titel = diagramtitel,
            diagram_capt =  diagram_capt,
-           output_mapp = output_mapp,
+           output_mapp = utmapp,
            filnamn_diagram = diagramfilnamn,
-           skriv_till_diagramfil = spara_diagrambildfil)
+           skriv_till_diagramfil = skriv_diagramfil)
 
          gg_list <- c(gg_list, list(gg_obj))
          names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfilnamn, ".png")

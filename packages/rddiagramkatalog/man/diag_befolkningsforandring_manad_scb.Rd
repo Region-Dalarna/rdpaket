@@ -29,13 +29,14 @@ diag_befolkningsforandring_manad_scb(
 
 \item{kon_klartext}{Kön, \code{"totalt"} ger inte könsuppdelning.}
 
-\item{tid_koder}{Vilka tidsperioder som ska hämtas.}
+\item{tid_koder}{Vilka tidsperioder som ska hämtas. \code{"*"} = alla, \code{"9999"} = senaste,
+eller \code{"2021M01:9999"} för "från januari 2021 till och med senaste tillgängliga månad".}
 
 \item{nth_etikett}{Visa var n:te etikett på x-axeln när diagrammen inte är facet:ade på region.}
 
 \item{skriv_diagramfil}{TRUE om diagram ska skrivas till fil.}
 
-\item{utmapp}{Mapp där diagram ska sparas.}
+\item{utmapp}{Mapp där diagram ska sparas. Måste finnas om \code{skriv_diagramfil = TRUE}.}
 
 \item{diagram_capt}{Diagrammets källtext.}
 }
