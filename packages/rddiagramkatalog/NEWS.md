@@ -1,3 +1,13 @@
+# rddiagramkatalog 0.0.0.9005
+
+- Fix: `sok_diagram()` och `diagramkatalog_bladdra()` listade tidigare sig
+  själva (och varandra) bland diagrammen, eftersom sökindexet byggdes av
+  alla exporterade funktioner i paketet, inte bara `diag_*()`-funktionerna.
+  Filtrerar nu till funktionsnamn som börjar med `diag_`.
+- `diagramkatalog_bladdra()` öppnas nu i ett eget, större dialogfönster
+  ovanpå RStudio (`shiny::dialogViewer()`, 1100x750) i stället för det
+  mindre, fasta Viewer-fönstret.
+
 # rddiagramkatalog 0.0.0.9004
 
 - `sok_diagram()` lägger nu, som standard, de matchande funktionsnamnen i

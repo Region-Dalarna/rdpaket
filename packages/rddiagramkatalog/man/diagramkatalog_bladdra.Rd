@@ -10,7 +10,7 @@ diagramkatalog_bladdra()
 Ingenting (anropas interaktivt). Avslutas med \code{stopApp()}.
 }
 \description{
-Öppnar ett gränssnitt i RStudios Viewer-ruta där man kan söka bland
+Öppnar ett eget, större fönster ovanpå RStudio där man kan söka bland
 paketets diagramfunktioner (samma sökning som \code{\link[=sok_diagram]{sok_diagram()}}), fylla i
 parametrar för en vald funktion, och antingen köra diagrammet direkt för
 en förhandsvisning eller infoga motsvarande R-kod i det aktiva skriptet.

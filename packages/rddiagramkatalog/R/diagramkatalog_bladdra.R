@@ -1,6 +1,6 @@
 #' Bläddra och sök bland diagramfunktionerna (RStudio-addin)
 #'
-#' Öppnar ett gränssnitt i RStudios Viewer-ruta där man kan söka bland
+#' Öppnar ett eget, större fönster ovanpå RStudio där man kan söka bland
 #' paketets diagramfunktioner (samma sökning som [sok_diagram()]), fylla i
 #' parametrar för en vald funktion, och antingen köra diagrammet direkt för
 #' en förhandsvisning eller infoga motsvarande R-kod i det aktiva skriptet.
@@ -145,5 +145,5 @@ diagramkatalog_bladdra <- function() {
     shiny::observeEvent(input$done, shiny::stopApp())
   }
 
-  shiny::runGadget(ui, server, viewer = shiny::paneViewer())
+  shiny::runGadget(ui, server, viewer = shiny::dialogViewer("Diagramkatalog", width = 1100, height = 750))
 }
