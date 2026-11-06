@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9012
+
+- `diagramkatalog_utforska()` scrollar nu automatiskt ner till diagrammet
+  när "Visa diagram" är klar, så det inte hamnar utom synhåll under ett
+  långt parameterformulär.
+
 # rddiagramkatalog 0.0.0.9011
 
 - "Visa hjälp" i `diagramkatalog_utforska()` visar nu hjälptexten i en egen

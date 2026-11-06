@@ -51,6 +51,16 @@ diagramkatalog_utforska <- function() {
   }
 
   ui <- miniUI::miniPage(
+    # Scrollar automatiskt ner till diagrammet när det är klart - annars
+    # kan det hamna utom synhåll under ett långt parameterformulär i den
+    # scrollbara högerrutan. scrollIntoView() hanterar den inbäddade
+    # scrollningen i rutan automatiskt, inga koordinater att räkna ut.
+    shiny::tags$script(shiny::HTML(
+      "Shiny.addCustomMessageHandler('rddiagramkatalog_scrolla_till_diagram', function(id) {
+         var el = document.getElementById(id);
+         if (el) { el.scrollIntoView({behavior: 'smooth', block: 'start'}); }
+       });"
+    )),
     miniUI::gadgetTitleBar(
       "Diagramkatalog",
       # OBS: right måste vara EN tagg, inte en tagList() med flera knappar -
@@ -154,7 +164,10 @@ diagramkatalog_utforska <- function() {
         # eval()-anropet mot API:et sker - inte i observeEvent() ovanför,
         # vars kod körs klart innan renderPlot() faktiskt utvärderas.
         notis_id <- shiny::showNotification("Skapar diagram...", duration = NULL, type = "message")
-        on.exit(shiny::removeNotification(notis_id), add = TRUE)
+        on.exit({
+          shiny::removeNotification(notis_id)
+          session$sendCustomMessage("rddiagramkatalog_scrolla_till_diagram", "forhandsvisning")
+        }, add = TRUE)
 
         resultat <- tryCatch(eval(parse(text = kod)), error = function(e) {
           shiny::showNotification(paste("Fel:", conditionMessage(e)), type = "error", duration = NULL)
