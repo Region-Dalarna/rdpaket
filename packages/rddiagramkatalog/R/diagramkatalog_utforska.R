@@ -223,7 +223,8 @@ diagramkatalog_utforska <- function() {
           intern_funktion_hjalptext(vald_fn())
         ),
         size = "l",
-        easyClose = TRUE
+        easyClose = TRUE,
+        footer = shiny::modalButton("Cancel")
       ))
     })
 

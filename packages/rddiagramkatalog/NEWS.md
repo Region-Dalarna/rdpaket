@@ -1,3 +1,8 @@
+# rddiagramkatalog 0.0.0.9014
+
+- Knappen i hjälprutan ("Visa hjälp") heter nu "Cancel" i stället för
+  Shinys standardtext "Dismiss".
+
 # rddiagramkatalog 0.0.0.9013
 
 - Exempeldiagram tillagda: `man/figures/<funktion>.png`, ett diagram per
