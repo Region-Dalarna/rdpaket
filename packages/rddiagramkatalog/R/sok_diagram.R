@@ -53,6 +53,24 @@ intern_funktion_hjalptext <- function(fn) {
   paste(buffer, collapse = "\n")
 }
 
+# Samma hjälptext som intern_funktion_hjalptext(), men som HTML med
+# rubrikraderna ("Description:", "Arguments:", "Usage:" osv. - precis de
+# rader Rd2txt() skriver utan inledande blanksteg och med ett avslutande
+# kolon) i fetstil. Används av diagramkatalog_utforska()s hjälpruta -
+# övriga rader HTML-eskapas manuellt eftersom de injiceras rått via
+# shiny::HTML() för att <strong>-taggarna ska tolkas som markup.
+#' @noRd
+intern_funktion_hjalptext_html <- function(fn) {
+  text <- intern_funktion_hjalptext(fn)
+  rader <- strsplit(text, "\n", fixed = TRUE)[[1]]
+  rader <- gsub("&", "&amp;", rader, fixed = TRUE)
+  rader <- gsub("<", "&lt;", rader, fixed = TRUE)
+  rader <- gsub(">", "&gt;", rader, fixed = TRUE)
+  ar_rubrik <- grepl("^[A-Za-zÅÄÖåäö][A-Za-zÅÄÖåäö ]*:$", rader)
+  rader[ar_rubrik] <- paste0("<strong>", rader[ar_rubrik], "</strong>")
+  paste(rader, collapse = "\n")
+}
+
 # Bygger sökindexet: en rad per exporterad diag_*()-funktion, med titel,
 # beskrivning och parameterdokumentation (allt från .Rd-filen, dvs. samma
 # text som visas av ?funktionsnamn) hopslaget till en sökbar textsträng.

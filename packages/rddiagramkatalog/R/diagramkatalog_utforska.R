@@ -220,7 +220,7 @@ diagramkatalog_utforska <- function() {
         title = vald_fn(),
         shiny::tags$pre(
           style = "white-space: pre-wrap; font-family: monospace; font-size: 12px;",
-          intern_funktion_hjalptext(vald_fn())
+          shiny::HTML(intern_funktion_hjalptext_html(vald_fn()))
         ),
         size = "l",
         easyClose = TRUE,
