@@ -14,9 +14,28 @@ intern_rd_text <- function(rd, tag) {
 # Bygger sökindexet: en rad per exporterad diag_*()-funktion, med titel,
 # beskrivning och parameterdokumentation (allt från .Rd-filen, dvs. samma
 # text som visas av ?funktionsnamn) hopslaget till en sökbar textsträng.
+#
+# tools::Rd_db() läser paketets ihoppackade lazy-load-hjälpdatabas
+# (help/rddiagramkatalog.rdb) - en resurs som kan bli tillfälligt låst eller
+# skadad oberoende av koden här (t.ex. av OneDrive-synk eller ett
+# antivirusprogram som håller filen låst mitt i en installation på Windows).
+# Ger ett begripligt, handlingsbart felmeddelande i stället för R:s kryptiska
+# "lazy-load database is corrupt"/"internal error in R_decompress1".
 #' @noRd
 intern_diagram_index <- function() {
-  rd_db <- tools::Rd_db("rddiagramkatalog")
+  rd_db <- tryCatch(
+    tools::Rd_db("rddiagramkatalog"),
+    error = function(e) {
+      stop(
+        "Kunde inte läsa rddiagramkatalogs hjälpdatabas (", conditionMessage(e), ").\n",
+        "Prova först att starta om R/RStudio och försök igen - det brukar bero på en\n",
+        "tillfällig låsning av hjälpfilerna. Om felet består, installera om paketet:\n",
+        "  remove.packages(\"rddiagramkatalog\")\n",
+        "  rdverktyg::rdpaket_uppdatera_alla(installera_saknade_paket = TRUE)",
+        call. = FALSE
+      )
+    }
+  )
   funktioner <- sort(getNamespaceExports("rddiagramkatalog"))
 
   rader <- lapply(funktioner, function(fn) {
@@ -49,6 +68,22 @@ intern_diagram_index_cached <- function(forcera_omladdning = FALSE) {
   .rddiagramkatalog_cache$index
 }
 
+# Kopierar en eller flera funktionsnamn (en per rad) till urklippshanteraren.
+# Misslyckas tyst (returnerar FALSE) om paketet clipr inte är installerat
+# eller om ingen urklippshanterare finns tillgänglig (t.ex. en headless
+# Linux-miljö utan xclip/xsel) - urklippskopiering är bara en bekvämlighet
+# och ska aldrig få ett sok_diagram()-anrop att krascha.
+#' @noRd
+intern_kopiera_till_urklipp <- function(funktionsnamn) {
+  if (!requireNamespace("clipr", quietly = TRUE) || !clipr::clipr_available()) {
+    return(invisible(FALSE))
+  }
+  tryCatch({
+    clipr::write_clip(paste(funktionsnamn, collapse = "\n"))
+    invisible(TRUE)
+  }, error = function(e) invisible(FALSE))
+}
+
 #' Sök bland diagramfunktionerna i katalogen
 #'
 #' Söker igenom titel, beskrivning och parameterdokumentation för alla
@@ -62,6 +97,15 @@ intern_diagram_index_cached <- function(forcera_omladdning = FALSE) {
 #' @param forcera_omladdning Om `TRUE` byggs sökindexet om från paketets
 #'   `.Rd`-filer igen, i stället för att återanvända den cachade versionen
 #'   från föregående anrop i samma session.
+#' @param funktionsnamn_lagg_i_urklippshanteraren Om `TRUE` (standard) läggs
+#'   de matchande funktionsnamnen (en per rad) i urklippshanteraren, så de är
+#'   redo att klistras in. Kräver paketet `clipr`
+#'   (`install.packages("clipr")`) - om det inte finns installerat, eller
+#'   ingen urklippshanterare är tillgänglig, hoppas kopieringen bara tyst
+#'   över. Standardvärdet styrs av `options(rddiagramkatalog.kopiera_funktionsnamn = ...)`,
+#'   så man kan stänga av det permanent (t.ex. i sin `.Rprofile`) utan att
+#'   behöva ange parametern vid varje anrop:
+#'   `options(rddiagramkatalog.kopiera_funktionsnamn = FALSE)`.
 #'
 #' @return En `data.frame` med kolumnerna `funktion` och `titel`, en rad per
 #'   matchande funktion. Skriv `?funktionsnamn` för att läsa mer om en
@@ -72,14 +116,21 @@ intern_diagram_index_cached <- function(forcera_omladdning = FALSE) {
 #' \dontrun{
 #' sok_diagram("arbetslöshet")
 #' sok_diagram(c("scb", "kön"))
+#' sok_diagram("gini", funktionsnamn_lagg_i_urklippshanteraren = FALSE)
 #' }
 #' @export
-sok_diagram <- function(sokord, forcera_omladdning = FALSE) {
+sok_diagram <- function(sokord, forcera_omladdning = FALSE,
+                         funktionsnamn_lagg_i_urklippshanteraren = getOption("rddiagramkatalog.kopiera_funktionsnamn", TRUE)) {
   index <- intern_diagram_index_cached(forcera_omladdning)
   matchar <- Reduce(`&`, lapply(sokord, function(ord) {
     grepl(ord, index$sokbar_text, ignore.case = TRUE)
   }))
   resultat <- index[matchar, c("funktion", "titel")]
   rownames(resultat) <- NULL
+
+  if (funktionsnamn_lagg_i_urklippshanteraren && nrow(resultat) > 0) {
+    intern_kopiera_till_urklipp(resultat$funktion)
+  }
+
   resultat
 }

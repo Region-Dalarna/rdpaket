@@ -4,7 +4,12 @@
 \alias{sok_diagram}
 \title{Sök bland diagramfunktionerna i katalogen}
 \usage{
-sok_diagram(sokord, forcera_omladdning = FALSE)
+sok_diagram(
+  sokord,
+  forcera_omladdning = FALSE,
+  funktionsnamn_lagg_i_urklippshanteraren =
+    getOption("rddiagramkatalog.kopiera_funktionsnamn", TRUE)
+)
 }
 \arguments{
 \item{sokord}{Ett eller flera sökord. Om flera ord anges måste alla matcha
@@ -14,6 +19,16 @@ valfri ordning och på valfri plats).}
 \item{forcera_omladdning}{Om \code{TRUE} byggs sökindexet om från paketets
 \code{.Rd}-filer igen, i stället för att återanvända den cachade versionen
 från föregående anrop i samma session.}
+
+\item{funktionsnamn_lagg_i_urklippshanteraren}{Om \code{TRUE} (standard) läggs
+de matchande funktionsnamnen (en per rad) i urklippshanteraren, så de är
+redo att klistras in. Kräver paketet \code{clipr}
+(\code{install.packages("clipr")}) - om det inte finns installerat, eller
+ingen urklippshanterare är tillgänglig, hoppas kopieringen bara tyst
+över. Standardvärdet styrs av \code{options(rddiagramkatalog.kopiera_funktionsnamn = ...)},
+så man kan stänga av det permanent (t.ex. i sin \code{.Rprofile}) utan att
+behöva ange parametern vid varje anrop:
+\code{options(rddiagramkatalog.kopiera_funktionsnamn = FALSE)}.}
 }
 \value{
 En \code{data.frame} med kolumnerna \code{funktion} och \code{titel}, en rad per
@@ -31,5 +46,6 @@ delsträngar var som helst i dokumentationen - inte bara i funktionsnamnet.
 \dontrun{
 sok_diagram("arbetslöshet")
 sok_diagram(c("scb", "kön"))
+sok_diagram("gini", funktionsnamn_lagg_i_urklippshanteraren = FALSE)
 }
 }

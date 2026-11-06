@@ -1,3 +1,20 @@
+# rddiagramkatalog 0.0.0.9004
+
+- `sok_diagram()` lägger nu, som standard, de matchande funktionsnamnen i
+  urklippshanteraren (en per rad), redo att klistras in. Styrs av den nya
+  parametern `funktionsnamn_lagg_i_urklippshanteraren` (standard `TRUE`),
+  vars eget standardvärde läses från
+  `options(rddiagramkatalog.kopiera_funktionsnamn = ...)` - så det går att
+  stänga av permanent (t.ex. i `.Rprofile`) utan att ange parametern vid
+  varje anrop. Kräver paketet `clipr`; hoppar annars bara tyst över
+  kopieringen.
+- `sok_diagram()` ger nu ett begripligt, handlingsbart felmeddelande om
+  paketets hjälpdatabas inte kan läsas (t.ex. "lazy-load database is
+  corrupt"/"internal error in R_decompress1"), i stället för R:s kryptiska
+  originalfel. Det här är ofta en tillfällig låsning av hjälpfilerna (t.ex.
+  OneDrive-synk eller ett antivirusprogram) som löser sig vid en omstart av
+  R/RStudio.
+
 # rddiagramkatalog 0.0.0.9003
 
 Sök- och bläddringsfunktionalitet för katalogen:
