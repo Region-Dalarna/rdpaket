@@ -1,3 +1,22 @@
+# rddiagramkatalog 0.0.0.9003
+
+Sök- och bläddringsfunktionalitet för katalogen:
+
+- `sok_diagram(sokord)` söker igenom titel, beskrivning och parameter-
+  dokumentation (samma text som `?funktionsnamn` visar) för alla
+  diagramfunktioner och returnerar de som matchar. Bygger sökindexet från
+  paketets installerade `.Rd`-filer (`tools::Rd_db()`), inte källkoden, så
+  det fungerar oavsett hur paketet installerats och kräver inget separat
+  register att hålla uppdaterat när fler diagram läggs till.
+- `diagramkatalog_bladdra()` öppnar ett grafiskt gränssnitt (RStudio-addin,
+  "Bläddra diagramkatalog" i Addins-menyn) där man söker, väljer en
+  funktion, fyller i parametrar i ett formulär som byggs generiskt från
+  funktionens `formals()` (fungerar automatiskt för alla diagram, även
+  framtida tillskott), och antingen förhandsvisar diagrammet eller infogar
+  den färdiga koden i det aktiva skriptet. Kräver `shiny` och `miniUI`
+  (valfria beroenden, bara nödvändiga för denna funktion); "Infoga kod"
+  kräver dessutom `rstudioapi` och att man kör RStudio.
+
 # rddiagramkatalog 0.0.0.9002
 
 Konsekvent namngivning över alla 15 pilotfunktioner:
