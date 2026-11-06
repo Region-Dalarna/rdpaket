@@ -1,3 +1,22 @@
+# rddiagramkatalog 0.0.0.9021
+
+Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (32 av 53
+nu klara):
+
+- `diag_befolkningsforandring_scb` (ex. diagram_befolkningsforandring.R)
+- `diag_befolkningsforandring_region_kon_ar_scb` (ex. diagram_befolkningsforandring_region_kon_ar_SCB.R)
+- `diag_flytt_inrikes_aldersgrupper_scb` (ex. diagram_flytt_inrikes_aldersgrupper_SCB.R)
+- `diag_flytt_inrikes_utrikes_netto_scb` (ex. diagram_flytt_inrikes_utrikes_netto_SCB.R)
+
+Fixade även två buggar som grävdes fram under migreringen:
+- `diag_befolkningsforandring_scb`: Excel-exporten (output_mapp_data/
+  filnamn_data) kördes aldrig i praktiken eftersom funktionen returnerade
+  före den koden när returnera_figur = TRUE (standardvärdet). Exporten
+  görs nu alltid innan returneringen.
+- `diag_flytt_inrikes_utrikes_netto_scb`: flyttnetto-diagrammet skrevs
+  alltid till fil via ett ovillkorat ggsave()-anrop, oavsett
+  skriv_diagramfil. Villkorat nu så att parametern faktiskt styr.
+
 # rddiagramkatalog 0.0.0.9020
 
 Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (28 av 53
