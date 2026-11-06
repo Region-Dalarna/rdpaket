@@ -38,7 +38,14 @@ diagramkatalog_utforska <- function() {
   index <- intern_diagram_index_cached()
 
   ui <- miniUI::miniPage(
-    miniUI::gadgetTitleBar("Diagramkatalog", right = NULL),
+    miniUI::gadgetTitleBar(
+      "Diagramkatalog",
+      right = shiny::tagList(
+        miniUI::miniTitleBarButton("visa", "Visa diagram", primary = TRUE),
+        miniUI::miniTitleBarButton("hjalp", "Visa hjälp", primary = TRUE),
+        miniUI::miniTitleBarButton("infoga", "Infoga kod", primary = TRUE)
+      )
+    ),
     miniUI::miniContentPanel(
       shiny::fillRow(
         flex = c(2, 3),
@@ -50,12 +57,6 @@ diagramkatalog_utforska <- function() {
         shiny::div(
           style = "padding: 10px; overflow-y: auto; height: 100%;",
           shiny::uiOutput("parameterformular"),
-          shiny::fluidRow(
-            shiny::column(4, shiny::actionButton("visa", "Visa diagram", class = "btn-primary", width = "100%")),
-            shiny::column(4, shiny::actionButton("hjalp", "Visa hjälp", width = "100%")),
-            shiny::column(4, shiny::actionButton("infoga", "Infoga kod", width = "100%"))
-          ),
-          shiny::hr(),
           shiny::plotOutput("forhandsvisning", height = "380px")
         )
       )

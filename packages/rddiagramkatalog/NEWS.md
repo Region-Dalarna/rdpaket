@@ -1,3 +1,11 @@
+# rddiagramkatalog 0.0.0.9008
+
+- Knapparna "Visa diagram", "Visa hjälp" och "Infoga kod" i
+  `diagramkatalog_utforska()` sitter nu i den övre listen bredvid "Cancel",
+  som blåa knappar (samma stil som gadgetens "Done"-knapp normalt har) för
+  att synas tydligt mot den grå Cancel-knappen - i stället för att ligga i
+  en rad under parameterformuläret.
+
 # rddiagramkatalog 0.0.0.9007
 
 - `diagramkatalog_bladdra()` har döpts om till `diagramkatalog_utforska()`
