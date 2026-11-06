@@ -1,3 +1,16 @@
+# rddiagramkatalog 0.0.0.9023
+
+Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (40 av 53
+nu klara):
+
+- `diag_inflyttlan_utflyttlan_scb` (ex. diagram_inflyttlan_utflyttlan_SCB.R)
+- `diag_inkomst_scb` (ex. diagram_inkomst_region_aldersgrupper_kv_man.R)
+- `diag_kvalifikationskrav_scb` (ex. diagram_kvalifikationskrav_SCB.R)
+- `diag_lediga_jobb_tid_sektor_scb` (ex. diagram_lediga_jobb_E1.R)
+
+Fixade även samma typ av "Excel-export kördes aldrig"-bugg som i
+0.0.0.9021/0.0.0.9022, den här gången i diag_kvalifikationskrav_scb.
+
 # rddiagramkatalog 0.0.0.9022
 
 Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (36 av 53
