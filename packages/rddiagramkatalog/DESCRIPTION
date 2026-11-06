@@ -1,0 +1,42 @@
+Package: rddiagramkatalog
+Title: Katalog av färdiga diagramfunktioner för Region Dalarnas rapporter
+Version: 0.0.0.9001
+Authors@R: c(
+    person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
+    person("Region Dalarna", role = "cph")
+  )
+Description: Färdiga, namngivna diagramfunktioner för specifika
+    statistikområden - en funktion per diagram, byggda ovanpå rddiagram
+    (mallar, färger) och rdverktyg (databearbetning). Utbrutet ur
+    Region-Dalarna/diagram, som fasas ut i motsvarande takt som funktionerna
+    flyttas hit. Pilotomgång: ett urval av de enklaste, mest självständiga
+    diagrammen i källrepot.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.5.0)
+Imports:
+    countrycode,
+    dplyr,
+    ggplot2,
+    glue,
+    httr,
+    openxlsx,
+    purrr,
+    pxweb2r,
+    rddiagram,
+    rdverktyg,
+    readxl,
+    stringr,
+    tidyr
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+URL: https://github.com/Region-Dalarna/rdpaket
+BugReports: https://github.com/Region-Dalarna/rdpaket/issues
+Config/roxygen2/version: 8.1.0
+Remotes:
+    FaluPeppe/pxweb2r,
+    Region-Dalarna/rdpaket/packages/rddiagram,
+    Region-Dalarna/rdpaket/packages/rdverktyg
