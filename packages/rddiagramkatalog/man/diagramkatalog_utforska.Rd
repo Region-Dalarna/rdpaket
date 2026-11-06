@@ -26,8 +26,10 @@ Varje fält visar parameterns standardvärde som R-kod (t.ex. \code{"20"} eller
 in rakt av i det genererade funktionsanropet. Booleska parametrar (\code{TRUE}/
 \code{FALSE}) får en kryssruta i stället.
 
-"Visa hjälp" öppnar funktionens vanliga hjälpsida (samma som \code{?funktionsnamn})
-i RStudios Hjälp-ruta.
+"Visa hjälp" visar funktionens hjälptext (samma innehåll som
+\code{?funktionsnamn}) i en egen ruta ovanpå gadgeten, i stället för i RStudios
+Hjälp-ruta - annars hamnar den bakom gadgetens eget dialogfönster och syns
+inte.
 
 Kräver \code{shiny} och \code{miniUI} (\code{install.packages(c("shiny", "miniUI"))}),
 som bara är valfria beroenden till paketet eftersom de bara behövs för

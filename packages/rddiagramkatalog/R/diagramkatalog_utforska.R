@@ -15,8 +15,10 @@
 #' in rakt av i det genererade funktionsanropet. Booleska parametrar (`TRUE`/
 #' `FALSE`) får en kryssruta i stället.
 #'
-#' "Visa hjälp" öppnar funktionens vanliga hjälpsida (samma som `?funktionsnamn`)
-#' i RStudios Hjälp-ruta.
+#' "Visa hjälp" visar funktionens hjälptext (samma innehåll som
+#' `?funktionsnamn`) i en egen ruta ovanpå gadgeten, i stället för i RStudios
+#' Hjälp-ruta - annars hamnar den bakom gadgetens eget dialogfönster och syns
+#' inte.
 #'
 #' Kräver `shiny` och `miniUI` (`install.packages(c("shiny", "miniUI"))`),
 #' som bara är valfria beroenden till paketet eftersom de bara behövs för
@@ -164,7 +166,18 @@ diagramkatalog_utforska <- function() {
     })
 
     shiny::observeEvent(input$hjalp, {
-      print(utils::help(vald_fn(), package = "rddiagramkatalog"))
+      # Visas i en egen modal i stället för RStudios Hjälp-ruta - den ligger
+      # i RStudios huvudfönster, som hamnar bakom gadgetens eget
+      # dialogfönster (dialogViewer()) och syns då inte.
+      shiny::showModal(shiny::modalDialog(
+        title = vald_fn(),
+        shiny::tags$pre(
+          style = "white-space: pre-wrap; font-family: monospace; font-size: 12px;",
+          intern_funktion_hjalptext(vald_fn())
+        ),
+        size = "l",
+        easyClose = TRUE
+      ))
     })
 
     shiny::observeEvent(input$infoga, {

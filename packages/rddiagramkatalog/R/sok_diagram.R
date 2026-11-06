@@ -11,10 +11,6 @@ intern_rd_text <- function(rd, tag) {
   trimws(paste(unlist(rd[idx]), collapse = " "))
 }
 
-# Bygger sökindexet: en rad per exporterad diag_*()-funktion, med titel,
-# beskrivning och parameterdokumentation (allt från .Rd-filen, dvs. samma
-# text som visas av ?funktionsnamn) hopslaget till en sökbar textsträng.
-#
 # tools::Rd_db() läser paketets ihoppackade lazy-load-hjälpdatabas
 # (help/rddiagramkatalog.rdb) - en resurs som kan bli tillfälligt låst eller
 # skadad oberoende av koden här (t.ex. av OneDrive-synk eller ett
@@ -22,8 +18,8 @@ intern_rd_text <- function(rd, tag) {
 # Ger ett begripligt, handlingsbart felmeddelande i stället för R:s kryptiska
 # "lazy-load database is corrupt"/"internal error in R_decompress1".
 #' @noRd
-intern_diagram_index <- function() {
-  rd_db <- tryCatch(
+intern_rd_db <- function() {
+  tryCatch(
     tools::Rd_db("rddiagramkatalog"),
     error = function(e) {
       stop(
@@ -36,6 +32,33 @@ intern_diagram_index <- function() {
       )
     }
   )
+}
+
+# Renderar en funktions fullständiga, formaterade hjälptext (samma innehåll
+# som ?funktionsnamn) till en vanlig textsträng - används av
+# diagramkatalog_utforska()s "Visa hjälp"-knapp, som visar texten i en egen
+# modalruta i stället för att öppna RStudios Hjälp-ruta (vilken annars kan
+# hamna bakom gadgetens dialogfönster). underline_titles = FALSE undviker
+# Rd2txt()s annars inkluderade "_T_e_c_k_e_n backspace"-understrykning, som
+# bara är tänkt för en riktig terminal, inte för textvisning i en HTML-ruta.
+#' @noRd
+intern_funktion_hjalptext <- function(fn) {
+  rd_db <- intern_rd_db()
+  rd <- rd_db[[paste0(fn, ".Rd")]]
+  if (is.null(rd)) return(paste("Ingen hjälptext hittades för", fn, "."))
+
+  con <- textConnection("buffer", "w", local = TRUE)
+  tools::Rd2txt(rd, out = con, options = list(underline_titles = FALSE))
+  close(con)
+  paste(buffer, collapse = "\n")
+}
+
+# Bygger sökindexet: en rad per exporterad diag_*()-funktion, med titel,
+# beskrivning och parameterdokumentation (allt från .Rd-filen, dvs. samma
+# text som visas av ?funktionsnamn) hopslaget till en sökbar textsträng.
+#' @noRd
+intern_diagram_index <- function() {
+  rd_db <- intern_rd_db()
   # Enbart diag_*()-funktionerna - inte paketets egna katalogverktyg
   # (sok_diagram(), diagramkatalog_utforska()), som också är exporterade men
   # inte är diagram att söka fram.

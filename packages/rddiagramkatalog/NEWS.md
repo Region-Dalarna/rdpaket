@@ -1,3 +1,10 @@
+# rddiagramkatalog 0.0.0.9011
+
+- "Visa hjälp" i `diagramkatalog_utforska()` visar nu hjälptexten i en egen
+  ruta ovanpå gadgeten, i stället för att öppna RStudios Hjälp-ruta - den
+  senare ligger i RStudios huvudfönster och hamnar bakom gadgetens eget
+  dialogfönster (`dialogViewer()`), så den syntes inte.
+
 # rddiagramkatalog 0.0.0.9010
 
 - "Visa diagram" i `diagramkatalog_utforska()` visar nu en "Skapar
