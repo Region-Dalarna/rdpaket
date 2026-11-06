@@ -1,0 +1,201 @@
+#' Diagram: sysselsättningsgrad, tidsserie från 1993 (RAMS/BAS)
+#'
+#' Sysselsättningsgrad över tid från 1993, hopslaget från RAMS (1993-2021)
+#' och BAS (2020-). Går att dela upp på kön och/eller inrikes/utrikes
+#' födda.
+#'
+#' @param region_vekt Region.
+#' @param inrikesutrikes_klartext `NA` = tas inte med i uttaget. Finns: `"inrikes födda"`, `"utrikes födda"`, `"inrikes och utrikes födda"`.
+#' @param kon_klartext `NA` = tas inte med i uttaget. Finns: `"kvinnor"`, `"män"`, `"kvinnor och män"`.
+#' @param tid_koder `"*"` = alla år, `"9999"` = senaste.
+#' @param visa_dataetiketter Visa dataetiketter i diagrammet.
+#' @param diagram_capt Diagrammets källtext.
+#' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
+#' @param skriv_diagramfil TRUE skrivs till fil (`utmapp` måste finnas), annars returneras enbart ett `ggplot`-objekt.
+#' @param output_mapp_data Mapp där data sparas som Excel-fil, om `filnamn_data` också är angivet.
+#' @param filnamn_data Filnamn på sparad data.
+#'
+#' @return En namngiven lista med `ggplot`-objekt.
+#' @export
+diag_syss_rams_bas_tidsserie_fran_ar1993_scb <- function(
+  region_vekt = "20",
+  inrikesutrikes_klartext = "*",
+  kon_klartext = "*",
+  tid_koder = "*",
+  visa_dataetiketter = FALSE,
+  diagram_capt = "Källa: RAMS och BAS i SCB:s öppna statistikdatabas. Bearbetning: Samhällsanalys, Region Dalarna\nBeskrivning: Det är ett tidsseriebrott år 2020 så jämförelser med år innan detta bör göras med viss försiktighet.",
+  utmapp = rdverktyg::utskriftsmapp(),
+  skriv_diagramfil = TRUE,
+  output_mapp_data = NA,
+  filnamn_data = NA
+  ) {
+
+  # ===========================================================================================================
+  #
+  # Migrerad till pxweb2r/rddiagram/rdverktyg. hamta_data-repots hamta_rams_bas_region_inrikesutrikes_kon_tid_scb()
+  # slog ihop fyra v1-tabeller. Alla fyra finns kvar i SCB:s v1-API men motsvaras nu av fyra v2-tabeller:
+  #   AM0207/AM0207B/RAMSForvInt03  (RAMS 1993-2003)               -> TAB4334
+  #   AM0207/AM0207J/RAMSForvInt04  (RAMS 2004-2018)                -> TAB4356
+  #   AM0207/AM0207Z/RamsForvInt04N (RAMS, ny tidsserie 2019-2021) -> TAB5117
+  #   AM0210/AM0210D/ArRegArbStatus (BAS 2020-)                     -> TAB3200
+  # Används bara av det här skriptet - logiken läggs därför in direkt här i stället för i rdverktyg.
+  #
+  # OBS: pxweb2r skiljer på att UTELÄMNA en variabel ur frågan helt (ger då alla enskilda värden,
+  # ingen automatisk summering) och att skicka med NA som värde för en elimination = TRUE-variabel
+  # (ger då SCB:s summerade "totalt" - bekräftat genom test). Där originalet tog bort en nyckel ur
+  # varlista helt för att få en total (v1:s elimination-beteende vid utelämnad variabel) skickas här
+  # i stället NA explicit som variabelns värde.
+  # ===========================================================================================================
+
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
+
+  gg_list <- list()
+
+  # =============================================== API-uttag ===============================================
+
+  hamta_en_syss_tabell <- function(tabell_id, ar_bas_tabell) {
+
+    giltiga_ar <- pxweb2r::pxweb2_get_values(tabell_id, "Tid", quiet = TRUE)$code
+    tid_vekt <- if (identical(tid_koder, "*")) giltiga_ar else as.character(tid_koder)[as.character(tid_koder) %in% giltiga_ar]
+
+    # RAMS ny tidsserie (2019-2021) och BAS (2020-) delar åren 2020-2021 - dessa tas alltid bort ur
+    # RAMS-tabellen för att inte räknas dubbelt (samma hantering som i originalskriptet).
+    if (tabell_id == "TAB5117") tid_vekt <- tid_vekt[!tid_vekt %in% c("2020", "2021")]
+    if (length(tid_vekt) == 0) return(NULL)
+
+    if (ar_bas_tabell) {
+      # BAS-tabellen (TAB3200) har egna klartextvärden för födelseregion/kön ("inrikes född" i st.f.
+      # "inrikes födda", "totalt" i st.f. "kvinnor och män"/"inrikes och utrikes födda").
+      fodelseregion_vekt <- if (all(is.na(inrikesutrikes_klartext))) NA else dplyr::case_when(
+        inrikesutrikes_klartext == "inrikes födda" ~ "inrikes född",
+        inrikesutrikes_klartext == "utrikes födda" ~ "utrikes född",
+        inrikesutrikes_klartext == "inrikes och utrikes födda" ~ "totalt",
+        TRUE ~ inrikesutrikes_klartext
+      )
+      kon_vekt <- if (all(is.na(kon_klartext))) NA else ifelse(kon_klartext == "kvinnor och män", "totalt", kon_klartext)
+
+      px <- pxweb2r::pxweb2_get_data(
+        table = tabell_id,
+        query = list(
+          Region = region_vekt,
+          Kon = kon_vekt,
+          Alder = "20-64",
+          Fodelseregion = fodelseregion_vekt,
+          ContentsCode = "sysselsättningsgrad",
+          Tid = tid_vekt
+        ),
+        on_all_values_invalid = "null", quiet = TRUE)
+      if (is.null(px)) return(NULL)
+
+      px <- dplyr::rename(px, regionkod = region_kod, sysselsättningsgrad = value)
+      if ("kön" %in% names(px)) px <- dplyr::mutate(px, kön = ifelse(kön == "totalt", "kvinnor och män", kön))
+      if ("födelseregion" %in% names(px)) {
+        px <- dplyr::mutate(px, födelseregion = dplyr::case_when(
+          födelseregion == "inrikes född" ~ "inrikes födda",
+          födelseregion == "utrikes född" ~ "utrikes födda",
+          födelseregion == "totalt" ~ "inrikes och utrikes födda",
+          TRUE ~ födelseregion
+        ))
+      }
+      dplyr::mutate(px, ålder = "20-64 år") |>
+        dplyr::select(dplyr::any_of(c("år", "regionkod", "region", "födelseregion", "kön", "ålder", "sysselsättningsgrad")))
+
+    } else {
+      # RAMS-tabellerna: klartexterna för InrikesUtrikes/Kon matchar redan skriptets egna
+      # ("inrikes/utrikes födda", "kvinnor"/"män"/"kvinnor och män") - ingen översättning behövs.
+      px <- pxweb2r::pxweb2_get_data(
+        table = tabell_id,
+        query = list(
+          Region = region_vekt,
+          InrikesUtrikes = if (all(is.na(inrikesutrikes_klartext))) NA else inrikesutrikes_klartext,
+          Kon = if (all(is.na(kon_klartext))) NA else kon_klartext,
+          ContentsCode = "*",
+          Tid = tid_vekt
+        ),
+        on_all_values_invalid = "null", quiet = TRUE)
+      if (is.null(px)) return(NULL)
+
+      px <- dplyr::rename(px, regionkod = region_kod, sysselsättningsgrad = value)
+      if ("inrikes/utrikes född" %in% names(px)) px <- dplyr::rename(px, födelseregion = `inrikes/utrikes född`)
+      dplyr::mutate(px, ålder = "20-64 år") |>
+        dplyr::select(dplyr::any_of(c("år", "regionkod", "region", "födelseregion", "kön", "ålder", "sysselsättningsgrad")))
+    }
+  }
+
+  rams_df <- purrr::map2(
+    c("TAB4334", "TAB4356", "TAB5117", "TAB3200"),
+    c(FALSE, FALSE, FALSE, TRUE),
+    hamta_en_syss_tabell
+  ) |>
+    purrr::list_rbind()
+
+  if (!is.na(output_mapp_data) & !is.na(filnamn_data)) {
+    openxlsx::write.xlsx(rams_df, paste0(output_mapp_data, filnamn_data))
+  }
+
+  chart_df <- rams_df |>
+    dplyr::mutate(region = rdverktyg::skapa_kortnamn_lan(region))
+
+  if ("kön" %in% names(chart_df)) chart_df <- dplyr::filter(chart_df, kön != "kvinnor och män")
+  if ("födelseregion" %in% names(chart_df)) chart_df <- dplyr::filter(chart_df, födelseregion != "inrikes och utrikes födda")
+
+  alder_txt <- unique(chart_df$ålder)
+  # anpassa diagramtitel och diagramfilnamn utifrån om kön är med eller inte och om båda könen är med
+  # OBS: originalet satte bara kon_titel/bakgr_titel i if-grenen men refererade dem sedan ovillkorligt
+  # i glue()-strängen längre ner - kraschade ("object not found") så fort kon_klartext eller
+  # inrikesutrikes_klartext var NA. Båda ges nu alltid ett värde (tom sträng i else-fallet).
+  if (!all(is.na(kon_klartext))) {
+    kon_filnamn <- "_kon_"
+    kon_titel <- if (length(unique(chart_df$kön)) == 1) unique(chart_df$kön) else "invånare"
+  } else {
+    kon_filnamn <- ""
+    kon_titel <- ""
+  }
+
+  if (!all(is.na(inrikesutrikes_klartext))) {
+    bakgr_filnamn <- "_inr_utr_"
+    bakgr_titel <- if (length(unique(chart_df$födelseregion)) == 1) paste0(unique(chart_df$födelseregion), " ") else ""
+  } else {
+    bakgr_filnamn <- ""
+    bakgr_titel <- ""
+  }
+
+  # om regioner är alla kommuner i ett län eller alla län i Sverige görs revidering, annars inte
+  region_start <- rdverktyg::list_komma_och(rdverktyg::skapa_kortnamn_lan(unique(chart_df$region)))
+  region_txt <- rdverktyg::ar_alla_kommuner_i_ett_lan(unique(chart_df$regionkod), returnera_text = TRUE, returtext = region_start)
+  region_txt <- rdverktyg::ar_alla_lan_i_sverige(unique(chart_df$regionkod), returnera_text = TRUE, returtext = region_txt)
+  regionkod_txt <- if (region_start == region_txt) paste0(unique(chart_df$regionkod), collapse = "_") else region_txt
+
+  diagramtitel <- glue::glue("Sysselsättningsgrad {bakgr_titel}{kon_titel} {alder_txt} i {region_txt} år {min(chart_df$år)}-{max(chart_df$år)}")
+  diagramfil <- stringr::str_replace_all(
+    glue::glue("syss{bakgr_filnamn}{kon_filnamn}{regionkod_txt}_ar{min(chart_df$år)}_{max(chart_df$år)}.png"),
+    "__", "_")
+
+  gg_obj <- rddiagram::SkapaStapelDiagram(skickad_df = chart_df,
+  			 skickad_x_var = "år",
+  			 skickad_y_var = "sysselsättningsgrad",
+  			 skickad_x_grupp = dplyr::case_when(!all(is.na(kon_klartext)) ~ "kön",
+  			                             !all(is.na(inrikesutrikes_klartext)) ~ "födelseregion",
+  			                             TRUE ~ NA),
+  			 x_axis_sort_value = FALSE,
+  			 diagram_titel = diagramtitel,
+  			 diagram_capt = diagram_capt,
+  			 stodlinjer_avrunda_fem = TRUE,
+  			 filnamn_diagram = diagramfil,
+  			 dataetiketter = visa_dataetiketter,
+  			 manual_y_axis_title = "procent",
+  			 manual_x_axis_text_vjust = 1,
+  			 manual_x_axis_text_hjust = 1,
+  			 manual_color = if (!all(is.na(kon_klartext))) rddiagram::diagramfarger("kon") else rddiagram::diagramfarger("rus_sex"),
+  			 output_mapp = utmapp,
+  			 facet_grp = if (!all(is.na(kon_klartext)) & !all(is.na(inrikesutrikes_klartext))) "födelseregion" else NULL,
+  			 facet_scale = "fixed",
+  			 skriv_till_diagramfil = skriv_diagramfil
+  )
+
+  gg_list <- c(gg_list, list(gg_obj))
+  names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfil, ".png")
+
+  return(gg_list)
+
+} # slut funktion

@@ -1,0 +1,178 @@
+#' Diagram: självskattad hälsa per kön och län
+#'
+#' Diagram för att skriva ut självskattad hälsa från Hälsa på lika
+#' villkor-enkäten hos Folkhälsomyndigheten. Standard är att skriva ut
+#' andel med bra eller mycket bra hälsa. Skickas bara ett år med så
+#' skrivs bara ett diagram för det året, och finns fler regioner så
+#' läggs de på x-axeln. Skickas flera år och flera regioner med så
+#' skrivs ett facetdiagram med ett facetdiagram för varje region.
+#'
+#' @param region_vekt Region(er).
+#' @param svarsalterantiv_klartext Svarsalternativ, t.ex. `"Bra eller mycket bra hälsa"`.
+#' @param andel_konfinterv_klartext `"Andel"` eller konfidensintervall-varianter.
+#' @param kon_klartext `c("Kvinnor", "Män")`, eller `NA` för ingen könsuppdelning.
+#' @param tid_koder `"9999"` = senaste år.
+#' @param region_sort TRUE så sorteras regionerna enligt ordningen i `region_vekt`.
+#' @param diag_fargvekt Valfri färgvektor.
+#' @param utmapp Mapp där diagrammet sparas. Måste finnas om `skriv_diagramfil = TRUE`.
+#' @param skriv_diagramfil Skriv diagrammet till fil i `utmapp`.
+#' @param returnera_data Skall data returneras till global environment.
+#' @param diagram_capt Diagrammets källtext.
+#' @param visa_dataetiketter Visa dataetiketter i diagrammet.
+#' @param ta_bort_diagramtitel TRUE så skrivs ingen diagramtitel ut.
+#' @param kortnamn_lan TRUE så tas " län" bort ur länsnamnet.
+#' @param diagram_0_till_100_procent TRUE så går skalan alltid från 0 till 100 procent, annars anpassas skalan efter data.
+#' @param logga_sokvag Sökväg till logga, `NULL` för att köra utan logga.
+#'
+#' @return En namngiven lista med `ggplot`-objekt.
+#' @export
+diag_sjalvskattad_halsa_kon_lan_fohm <- function(
+    region_vekt = "20",
+    svarsalterantiv_klartext = "Bra eller mycket bra hälsa",
+    andel_konfinterv_klartext = "Andel",
+    kon_klartext = c("Kvinnor", "Män"),
+    tid_koder = "9999",
+    region_sort = FALSE,
+    diag_fargvekt = NA,
+    utmapp = rdverktyg::utskriftsmapp(),
+    skriv_diagramfil = TRUE,
+    returnera_data = FALSE,
+    diagram_capt = "Källa: Folkhälsomyndighetens öppna statistikdatabas\nBearbetning: Samhällsanalys, Region Dalarna",
+    visa_dataetiketter = FALSE,
+    ta_bort_diagramtitel = FALSE,
+    kortnamn_lan = TRUE,
+    diagram_0_till_100_procent = TRUE,
+    logga_sokvag = NA
+) {
+
+  # ===============================================================================================
+  #
+  # Diagram för att skriva ut självskattad hälsa från Hälsa på lika villkor-enkäten hos
+  # Folkhälsomyndigheten. Standard är att skriva ut andel med bra eller mycket bra hälsa. Skickas
+  # bara ett år med så skrivs bara ett diagram för det året, och finns fler regioner så läggs de
+  # på x-axeln. Skickas flera år och flera regioner med så skrivs ett facetdiagram med ett facet-
+  # diagram för varje region.
+  #
+  # Migrerad bort från source()/hamta_data-repot. Folkhälsomyndigheten har bara ett v1-PXWeb-API
+  # (inget v2/pxweb2r-stöd som SCB) - hamta_sjalvskattad_halsa_region_..._fohm() används bara av det
+  # här skriptet, så uttaget är skrivet om direkt här med pxweb-paketet, i modern stil (fullt
+  # namespace, ingen source()/p_load()).
+  # ===============================================================================================
+
+  if (!requireNamespace("pxweb", quietly = TRUE)) install.packages("pxweb")
+
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
+
+  # om ingen färgvektor är medskickad, använd rddiagram::diagramfarger("kon")
+  if (all(is.na(diag_fargvekt))) diag_fargvekt <- rddiagram::diagramfarger("kon")
+
+  gg_list <- list()
+
+  # =============================================== API-uttag ===============================================
+
+  hamta_sjalvskattad_halsa_fohm <- function(region_vekt, halsotillstand_klartext,
+                                            andel_och_konfidensintervall_klartext, kon_klartext, tid_koder) {
+
+    url <- "https://fohm-app.folkhalsomyndigheten.se/Folkhalsodata/api/v1/sv/A_Folkhalsodata/B_HLV/bFyshals/bbaFyshalsallman/hlv1allmxreg.px"
+    px_meta <- pxweb::pxweb_get(url)
+
+    hamta_variabel <- function(text) px_meta$variables[[which(vapply(px_meta$variables, `[[`, "", "text") == text)]]
+
+    kod_for_klartext <- function(variabel_text, klartext_vekt) {
+      var <- hamta_variabel(variabel_text)
+      if (identical(klartext_vekt, "*")) return(var$values)
+      # case-okänslig matchning, som i den frusna func_API.R::sla_upp_varde_klartext_kod()
+      var$values[match(tolower(klartext_vekt), tolower(var$valueTexts))]
+    }
+
+    giltiga_ar <- hamta_variabel("År")$values
+    tid_koder <- ifelse(tid_koder == "9999", max(giltiga_ar), tid_koder)
+    tid_vekt <- if (identical(tid_koder, "*")) giltiga_ar else tid_koder[tid_koder %in% giltiga_ar]
+
+    varlista <- purrr::compact(list(
+      Region = region_vekt,
+      "Hälsotillstånd" = kod_for_klartext("Hälsotillstånd", halsotillstand_klartext),
+      "Andel och konfidensintervall" = kod_for_klartext("Andel och konfidensintervall", andel_och_konfidensintervall_klartext),
+      "Kön" = if (!all(is.na(kon_klartext))) kod_for_klartext("Kön", kon_klartext) else NULL,
+      "År" = tid_vekt
+    ))
+
+    px_df <- as.data.frame(pxweb::pxweb_get(url = url, query = varlista))
+
+    # FoHM:s region-kolumn kommer som "<kod> <namn>" ihopklistrat i klartext - dela upp den i
+    # regionkod/region (samma lösning som i original-hamta_data-funktionen).
+    rdverktyg::region_kolumn_splitta_kod_klartext(px_df, "Region")
+  }
+
+  sjalvskattad_halsa_df <- hamta_sjalvskattad_halsa_fohm(
+    region_vekt = region_vekt,
+    halsotillstand_klartext = svarsalterantiv_klartext,
+    andel_och_konfidensintervall_klartext = andel_konfinterv_klartext,
+    kon_klartext = kon_klartext,
+    tid_koder = tid_koder
+  )
+
+  if (kortnamn_lan) sjalvskattad_halsa_df <- dplyr::mutate(sjalvskattad_halsa_df, region = rdverktyg::skapa_kortnamn_lan(region))
+
+  # om regioner är alla kommuner i ett län eller alla län i Sverige görs revidering, annars inte
+  region_start <- rdverktyg::list_komma_och(rdverktyg::skapa_kortnamn_lan(unique(sjalvskattad_halsa_df$region)))
+  region_txt <- rdverktyg::ar_alla_kommuner_i_ett_lan(unique(sjalvskattad_halsa_df$regionkod), returnera_text = TRUE, returtext = region_start)
+  region_txt <- rdverktyg::ar_alla_lan_i_sverige(unique(sjalvskattad_halsa_df$regionkod), returnera_text = TRUE, returtext = region_txt)
+  regionfil_txt <- stringr::str_replace_all(region_txt, ", ", "_") |> stringr::str_replace_all(" och ", "_")
+  regionkod_txt <- if (region_start == region_txt) paste0(unique(sjalvskattad_halsa_df$regionkod), collapse = "_") else region_txt
+  if (region_start == region_txt) regionfil_txt <- region_txt
+
+  # om region_sort är TRUE sorteras regionerna enligt ordningen i region_vekt
+  if (region_sort) {
+    sjalvskattad_halsa_df <- dplyr::mutate(
+      sjalvskattad_halsa_df,
+      region = factor(region, levels = unique(region[order(match(regionkod, region_vekt))]))
+    )
+  }
+
+  if(returnera_data == TRUE){
+    assign("sjalvskattad_halsa_df", sjalvskattad_halsa_df, envir = .GlobalEnv)
+  }
+
+  tid_txt <- if (min(sjalvskattad_halsa_df$År) == max(sjalvskattad_halsa_df$År)){
+    max(sjalvskattad_halsa_df$År)
+  } else {
+    glue::glue("{min(sjalvskattad_halsa_df$År)} till {max(sjalvskattad_halsa_df$År)}")
+  }
+
+  diagramtitel <- glue::glue("Andel med {stringr::str_replace(tolower(svarsalterantiv_klartext), 'hälsa', 'självrapporterad hälsa')} i {region_txt} år {tid_txt}")
+  diagramfil <- stringr::str_replace_all(glue::glue("sjalvskattad_halsa_fohm_{regionfil_txt}_ar{tid_txt}.png"), "__", "_")
+
+  flera_ar <- length(unique(sjalvskattad_halsa_df$År)) > 1
+  konsuppdelat <- length(unique(sjalvskattad_halsa_df$Kön)) > 1
+  flera_regioner <- length(unique(sjalvskattad_halsa_df$region)) > 1
+
+  gg_obj <- rddiagram::SkapaStapelDiagram(skickad_df = sjalvskattad_halsa_df,
+                               skickad_x_var = if (flera_ar) "År" else "region",
+                               skickad_y_var = "Fysisk hälsa, allmänt hälsotillstånd efter region kön och år",
+                               skickad_x_grupp = if (konsuppdelat) "Kön" else NA,
+                               diagram_titel = if (ta_bort_diagramtitel) NULL else diagramtitel,
+                               diagram_capt = diagram_capt,
+                               stodlinjer_avrunda_fem = TRUE,
+                               filnamn_diagram = diagramfil,
+                               dataetiketter = visa_dataetiketter,
+                               manual_y_axis_title = "procent",
+                               procent_0_100_10intervaller = diagram_0_till_100_procent,
+                               x_axis_lutning = if (flera_ar) 45 else 0,
+                               manual_x_axis_text_vjust = if (flera_ar) 1 else 0,
+                               manual_x_axis_text_hjust = if (flera_ar) 1 else 0.5,
+                               manual_color = diag_fargvekt,
+                               lagg_pa_logga = if (is.null(logga_sokvag)) FALSE else TRUE,
+                               logga_path = logga_sokvag,
+                               output_mapp = utmapp,
+                               facet_grp = if (flera_ar & flera_regioner) "region" else NULL,
+                               facet_scale = "free",
+                               facet_legend_bottom = if (konsuppdelat) TRUE else FALSE,
+                               skriv_till_diagramfil = skriv_diagramfil
+  )
+
+  gg_list <- c(gg_list, list(gg_obj))
+  names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfil, ".png")
+
+  return(gg_list)
+}

@@ -1,3 +1,24 @@
+# rddiagramkatalog 0.0.0.9025
+
+Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (48 av 53
+nu klara):
+
+- `diag_sjalvskattad_halsa_kon_lan_fohm` (ex. diag_sjalvskattad_halsa_kon_lan_fohm.R,
+  funktionen hette internt diag_sjalvskattad_halsa_kon_lan; saknade
+  helt en skriv_diagramfil-parameter i originalet - diagrammet skrevs
+  alltid till fil. Lade till parametern, standard TRUE, för att följa
+  paketets konvention och göra funktionen testbar utan sidoeffekter)
+- `diag_sjalvskattad_halsa_kon_lan_kommun_fohm` (samma fix som ovan)
+- `diag_sociala_rel_sjalvskattad_halsa_fohm` (ex.
+  diag_sociala_rel_sjalvskattad_halsa_inrikes_utrikes_int_rap.R,
+  funktionen hette internt diag_fohm)
+- `diag_syss_rams_bas_tidsserie_fran_ar1993_scb` (ex.
+  diag_syss_rams_bas_tidsserie_fran_ar1993.R, funktionen hette internt
+  diag_syss_rams_bas_tidssserie_fran_ar1993 - stavfel rättat)
+
+Nytt beroende: pxweb (Folkhälsomyndighetens v1-PXWeb-API, inget
+v2/pxweb2r-stöd finns där).
+
 # rddiagramkatalog 0.0.0.9024
 
 Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (44 av 53
