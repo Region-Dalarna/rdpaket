@@ -50,7 +50,7 @@ eller \code{"2015:9999"} för "från 2015 till och med senaste tillgängliga år
 \item{relativt_flyttnetto}{Beräkna andel i stället för antal.}
 }
 \value{
-Ett \code{ggplot}-objekt.
+En namngiven lista med ett \code{ggplot}-objekt.
 }
 \description{
 Hämtar data och skriver ut ett diagram. Defaultinställning är att visa

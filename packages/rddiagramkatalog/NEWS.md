@@ -1,3 +1,22 @@
+# rddiagramkatalog 0.0.0.9027
+
+Gjorde returvärdet konsekvent för de tre diagramfunktioner som
+avvek från paketets mönster (och från originalskripten) genom att
+returnera ett naket `ggplot`-objekt direkt i stället för en namngiven
+lista:
+
+- `diag_forandr_branscher_bubblor_scb`
+- `diag_inr_flytt_in_ut_netto_per_alder_scb`
+- `diag_inr_flytt_in_ut_netto_tidsserie_per_alder_scb`
+
+Samtliga returnerar nu en namngiven lista med ett `ggplot`-objekt, som
+alla andra `diag_*()`-funktioner i paketet. Detta är en beteendeändring
+för befintlig anropskod som förväntar sig ett rent ggplot-objekt
+(måste nu plocka ut det med `[[1]]`).
+
+Förenklade samtidigt tillbaka skapa_exempeldiagram.R:s `diagram_lista[[1]]`-
+hantering (specialfallet för naket ggplot-objekt behövs inte längre).
+
 # rddiagramkatalog 0.0.0.9026
 
 Sista 5 diagrammen migrerade från Region-Dalarna/diagram - samtliga 53

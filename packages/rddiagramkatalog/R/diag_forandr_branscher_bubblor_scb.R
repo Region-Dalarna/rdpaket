@@ -18,7 +18,7 @@
 #' @param returnera_data TRUE om användaren vill returnera data till global environment.
 #' @param logga_sokvag Sökväg till logga. `NULL` för att köra utan logga, `NA` använder paketets standardlogga.
 #'
-#' @return Ett `ggplot`-objekt.
+#' @return En namngiven lista med ett `ggplot`-objekt.
 #' @export
 diag_forandr_branscher_bubblor_scb <- function(region_vekt ="20",
                                            egetnamn_geografi = NA,
@@ -257,11 +257,15 @@ diag_forandr_branscher_bubblor_scb <- function(region_vekt ="20",
                        breaks = seq(y_min-10,y_max,10),
                        limits = c(y_min-10,y_max))
 
+    # Filnamnet behövs även när skriv_diagramfil = FALSE, för att namnge
+    # listelementet i returvärdet (konsekvent med övriga diag_*()-funktioner,
+    # som alla returnerar en namngiven lista i stället för ett naket
+    # ggplot-objekt).
+    filnamn_bubble <- paste0("forandr_syss_branscher_", geo_namn, "_", start_ar, "-", slut_ar, ifelse(till_word, "_w_", ""),".png")
+
     if (skriv_diagramfil){               # om man skickar med att man vill skriva en fil så skrivs den här
       bredd <- 13
       hojd <- 6
-
-      filnamn_bubble <- paste0("forandr_syss_branscher_", geo_namn, "_", start_ar, "-", slut_ar, ifelse(till_word, "_w_", ""),".png")
 
       fullpath <- paste0(utmapp, filnamn_bubble)
       ggplot2::ggsave(fullpath, plot = gg_obj, width = bredd, height = hojd)
@@ -281,5 +285,8 @@ diag_forandr_branscher_bubblor_scb <- function(region_vekt ="20",
           replace = TRUE)
       }
     }
-  return(gg_obj)                   # vi returnerar ett ggplotobjekt
+
+  gg_list <- list(gg_obj)
+  names(gg_list)[[1]] <- stringr::str_remove(filnamn_bubble, "\\.png")
+  return(gg_list)
 }

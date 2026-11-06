@@ -52,7 +52,7 @@ diag_forandr_branscher_bubblor_scb(
 \item{logga_sokvag}{Sökväg till logga. \code{NULL} för att köra utan logga, \code{NA} använder paketets standardlogga.}
 }
 \value{
-Ett \code{ggplot}-objekt.
+En namngiven lista med ett \code{ggplot}-objekt.
 }
 \description{
 Bubbeldiagram över förändring i antal sysselsatta per bransch mellan

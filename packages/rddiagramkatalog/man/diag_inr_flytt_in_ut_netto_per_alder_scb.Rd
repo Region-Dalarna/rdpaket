@@ -53,7 +53,7 @@ skillnad från flera andra funktioner i paketet anger denna EN period att
 visa, inte ett intervall - \code{"start:9999"}-mönstret stöds inte här.}
 }
 \value{
-Ett \code{ggplot}-objekt.
+En namngiven lista med ett \code{ggplot}-objekt.
 }
 \description{
 Hämtar data och skriver ut ett diagram. Defaultinställning är att visa

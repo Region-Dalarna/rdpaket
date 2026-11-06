@@ -29,16 +29,9 @@ resultat <- lapply(funktioner, function(fn) {
 
     diagram_lista <- do.call(fn, anropsargument)
 
-    # Enstaka diag_*()-funktioner (t.ex. de som alltid producerar exakt ett
-    # diagram) returnerar ett naket ggplot-objekt direkt i stället för en
-    # namngiven lista - diagram_lista[[1]] på ett sådant objekt ger
-    # "subscript out of bounds" (ggplot2 indexerar [[ ]] mot sin egen interna
-    # S7-struktur, inte en vanlig list()).
-    plot_obj <- if (inherits(diagram_lista, "ggplot")) diagram_lista else diagram_lista[[1]]
-
     ggplot2::ggsave(
       filename = file.path(utmapp, paste0(fn, ".png")),
-      plot = plot_obj,
+      plot = diagram_lista[[1]],
       width = 7, height = 4.5, dpi = 110
     )
     "OK"

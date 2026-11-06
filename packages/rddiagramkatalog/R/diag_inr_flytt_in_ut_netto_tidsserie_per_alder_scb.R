@@ -20,7 +20,7 @@
 #'   eller `"2015:9999"` för "från 2015 till och med senaste tillgängliga år".
 #' @param relativt_flyttnetto Beräkna andel i stället för antal.
 #'
-#' @return Ett `ggplot`-objekt.
+#' @return En namngiven lista med ett `ggplot`-objekt.
 #' @export
 diag_inr_flytt_in_ut_netto_tidsserie_per_alder_scb <- function(region_vekt = "20",
                                      gruppera_namn = NA,
@@ -283,6 +283,8 @@ diag_inr_flytt_in_ut_netto_tidsserie_per_alder_scb <- function(region_vekt = "20
     output_mapp = utmapp
   )
 
-  return(gg_obj)
+  gg_list <- list(gg_obj)
+  names(gg_list)[[1]] <- stringr::str_remove(diagram_filnamn, "\\.png")
+  return(gg_list)
 
 }  # slut funktion

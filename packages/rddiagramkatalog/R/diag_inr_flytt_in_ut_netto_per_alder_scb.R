@@ -20,7 +20,7 @@
 #'   skillnad från flera andra funktioner i paketet anger denna EN period att
 #'   visa, inte ett intervall - `"start:9999"`-mönstret stöds inte här.
 #'
-#' @return Ett `ggplot`-objekt.
+#' @return En namngiven lista med ett `ggplot`-objekt.
 #' @export
 diag_inr_flytt_in_ut_netto_per_alder_scb <- function(region_vekt = "20",
                                      gruppera_namn = NA,
@@ -234,6 +234,8 @@ diag_inr_flytt_in_ut_netto_per_alder_scb <- function(region_vekt = "20",
   # skriver ut diagramfilen om det är valt
   if (skriv_diagramfil) rddiagram::skriv_till_diagramfil(gg_obj, output_mapp = utmapp, filnamn_diagram = diagram_filnamn)
 
-  return(gg_obj)
+  gg_list <- list(gg_obj)
+  names(gg_list)[[1]] <- stringr::str_remove(diagram_filnamn, "\\.png")
+  return(gg_list)
 
 }  # slut funktion
