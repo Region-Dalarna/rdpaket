@@ -1,3 +1,15 @@
+# rddiagramkatalog 0.0.0.9018
+
+Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (20 av 53
+nu klara):
+
+- `diag_gymn_genomstromning_4ar_prg_skolverket` (hämtar från Skolverket, inte SCB)
+- `diag_helarsekvivalenter_scb` (ex. diag_helarsekvivalenter_kon_scb.R)
+- `diag_huvink_alla_kat_ar_scb`
+- `diag_huvink_alla_kat_prel_manad_scb`
+
+Nya paketberoenden: `stringi`, `tibble`.
+
 # rddiagramkatalog 0.0.0.9017
 
 Ytterligare 8 diagram migrerade från Region-Dalarna/diagram (16 av 53
