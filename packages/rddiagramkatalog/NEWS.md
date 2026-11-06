@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9006
+
+- `diagramkatalog_bladdra()` har fått en knapp "Visa hjälp" som öppnar den
+  valda funktionens vanliga hjälpsida (samma som `?funktionsnamn`) i
+  RStudios Hjälp-ruta.
+
 # rddiagramkatalog 0.0.0.9005
 
 - Fix: `sok_diagram()` och `diagramkatalog_bladdra()` listade tidigare sig

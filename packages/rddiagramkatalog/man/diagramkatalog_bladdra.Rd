@@ -11,10 +11,11 @@ Ingenting (anropas interaktivt). Avslutas med \code{stopApp()}.
 }
 \description{
 Öppnar ett eget, större fönster ovanpå RStudio där man kan söka bland
-paketets diagramfunktioner (samma sökning som \code{\link[=sok_diagram]{sok_diagram()}}), fylla i
-parametrar för en vald funktion, och antingen köra diagrammet direkt för
-en förhandsvisning eller infoga motsvarande R-kod i det aktiva skriptet.
-Nås enklast via RStudios Addins-meny ("Bläddra diagramkatalog").
+paketets diagramfunktioner (samma sökning som \code{\link[=sok_diagram]{sok_diagram()}}), läsa
+hjälptexten för en vald funktion, fylla i parametrar, och antingen köra
+diagrammet direkt för en förhandsvisning eller infoga motsvarande R-kod i
+det aktiva skriptet. Nås enklast via RStudios Addins-meny ("Bläddra
+diagramkatalog").
 }
 \details{
 Parameterformuläret byggs generiskt utifrån \code{formals()} för den valda
@@ -24,6 +25,9 @@ Varje fält visar parameterns standardvärde som R-kod (t.ex. \code{"20"} eller
 \code{c("män", "kvinnor")}) och man redigerar fältet som R-kod - fältet klistras
 in rakt av i det genererade funktionsanropet. Booleska parametrar (\code{TRUE}/
 \code{FALSE}) får en kryssruta i stället.
+
+"Visa hjälp" öppnar funktionens vanliga hjälpsida (samma som \code{?funktionsnamn})
+i RStudios Hjälp-ruta.
 
 Kräver \code{shiny} och \code{miniUI} (\code{install.packages(c("shiny", "miniUI"))}),
 som bara är valfria beroenden till paketet eftersom de bara behövs för

@@ -1,10 +1,11 @@
 #' Bläddra och sök bland diagramfunktionerna (RStudio-addin)
 #'
 #' Öppnar ett eget, större fönster ovanpå RStudio där man kan söka bland
-#' paketets diagramfunktioner (samma sökning som [sok_diagram()]), fylla i
-#' parametrar för en vald funktion, och antingen köra diagrammet direkt för
-#' en förhandsvisning eller infoga motsvarande R-kod i det aktiva skriptet.
-#' Nås enklast via RStudios Addins-meny ("Bläddra diagramkatalog").
+#' paketets diagramfunktioner (samma sökning som [sok_diagram()]), läsa
+#' hjälptexten för en vald funktion, fylla i parametrar, och antingen köra
+#' diagrammet direkt för en förhandsvisning eller infoga motsvarande R-kod i
+#' det aktiva skriptet. Nås enklast via RStudios Addins-meny ("Bläddra
+#' diagramkatalog").
 #'
 #' Parameterformuläret byggs generiskt utifrån `formals()` för den valda
 #' funktionen - det är alltså inte skräddarsytt per diagram, utan fungerar
@@ -13,6 +14,9 @@
 #' `c("män", "kvinnor")`) och man redigerar fältet som R-kod - fältet klistras
 #' in rakt av i det genererade funktionsanropet. Booleska parametrar (`TRUE`/
 #' `FALSE`) får en kryssruta i stället.
+#'
+#' "Visa hjälp" öppnar funktionens vanliga hjälpsida (samma som `?funktionsnamn`)
+#' i RStudios Hjälp-ruta.
 #'
 #' Kräver `shiny` och `miniUI` (`install.packages(c("shiny", "miniUI"))`),
 #' som bara är valfria beroenden till paketet eftersom de bara behövs för
@@ -47,8 +51,9 @@ diagramkatalog_bladdra <- function() {
           style = "padding: 10px; overflow-y: auto; height: 100%;",
           shiny::uiOutput("parameterformular"),
           shiny::fluidRow(
-            shiny::column(6, shiny::actionButton("visa", "Visa diagram", class = "btn-primary", width = "100%")),
-            shiny::column(6, shiny::actionButton("infoga", "Infoga kod", width = "100%"))
+            shiny::column(4, shiny::actionButton("visa", "Visa diagram", class = "btn-primary", width = "100%")),
+            shiny::column(4, shiny::actionButton("hjalp", "Visa hjälp", width = "100%")),
+            shiny::column(4, shiny::actionButton("infoga", "Infoga kod", width = "100%"))
           ),
           shiny::hr(),
           shiny::plotOutput("forhandsvisning", height = "380px")
@@ -130,6 +135,10 @@ diagramkatalog_bladdra <- function() {
         if (is.null(resultat)) return(NULL)
         resultat[[1]]
       })
+    })
+
+    shiny::observeEvent(input$hjalp, {
+      print(utils::help(vald_fn(), package = "rddiagramkatalog"))
     })
 
     shiny::observeEvent(input$infoga, {
