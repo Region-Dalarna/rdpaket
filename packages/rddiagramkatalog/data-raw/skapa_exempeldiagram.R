@@ -9,6 +9,14 @@
 # live-förhandsvisning av aktuell data.
 #
 # Körs från repo-roten: source("packages/rddiagramkatalog/data-raw/skapa_exempeldiagram.R")
+#
+# skriv_over_befintliga_bilder styr om diagram som redan har en sparad bild
+# ska köras om (TRUE, skriver över) eller hoppas över (FALSE, bara nya/
+# saknade diagram skapas). Sätt variabeln innan source() för att ändra
+# standardvärdet (TRUE):
+#   skriv_over_befintliga_bilder <- FALSE
+#   source("packages/rddiagramkatalog/data-raw/skapa_exempeldiagram.R")
+if (!exists("skriv_over_befintliga_bilder")) skriv_over_befintliga_bilder <- TRUE
 
 library(rddiagramkatalog)
 
@@ -19,6 +27,13 @@ funktioner <- sort(grep("^diag_", getNamespaceExports("rddiagramkatalog"), value
 
 resultat <- lapply(funktioner, function(fn) {
   cat("Genererar exempel för", fn, "... ")
+
+  bildfil <- file.path(utmapp, paste0(fn, ".png"))
+  if (!skriv_over_befintliga_bilder && file.exists(bildfil)) {
+    cat("Hoppar över, bild finns redan\n")
+    return("Hoppade över")
+  }
+
   res <- tryCatch({
     args <- formals(get(fn, envir = asNamespace("rddiagramkatalog")))
     # Kör med rena standardvärden för allt utom skriv_diagramfil, som alltid
@@ -30,7 +45,7 @@ resultat <- lapply(funktioner, function(fn) {
     diagram_lista <- do.call(fn, anropsargument)
 
     ggplot2::ggsave(
-      filename = file.path(utmapp, paste0(fn, ".png")),
+      filename = bildfil,
       plot = diagram_lista[[1]],
       width = 7, height = 4.5, dpi = 110
     )
