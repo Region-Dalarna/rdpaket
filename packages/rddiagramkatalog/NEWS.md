@@ -1,3 +1,11 @@
+# rddiagramkatalog 0.0.0.9010
+
+- "Visa diagram" i `diagramkatalog_utforska()` visar nu en "Skapar
+  diagram..."-notis medan funktionen körs (vilket kan ta några sekunder mot
+  SCB:s API), så man ser att något händer i stället för att gränssnittet
+  bara verkar stå still. Notisen försvinner automatiskt när diagrammet är
+  klart (eller om det blev fel).
+
 # rddiagramkatalog 0.0.0.9009
 
 - Fix: ordet "pull-right" syntes som text i den övre listen i

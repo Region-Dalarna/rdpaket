@@ -146,6 +146,14 @@ diagramkatalog_utforska <- function() {
     shiny::observeEvent(input$visa, {
       kod <- bygg_anrop()
       output$forhandsvisning <- shiny::renderPlot({
+        # Notisen visas direkt (skickas till webbläsaren oberoende av den
+        # pågående beräkningen) och måste därför läggas HÄR, inne i
+        # renderPlot()s uttryck - där det faktiska (ofta långsamma)
+        # eval()-anropet mot API:et sker - inte i observeEvent() ovanför,
+        # vars kod körs klart innan renderPlot() faktiskt utvärderas.
+        notis_id <- shiny::showNotification("Skapar diagram...", duration = NULL, type = "message")
+        on.exit(shiny::removeNotification(notis_id), add = TRUE)
+
         resultat <- tryCatch(eval(parse(text = kod)), error = function(e) {
           shiny::showNotification(paste("Fel:", conditionMessage(e)), type = "error", duration = NULL)
           NULL
