@@ -1,3 +1,17 @@
+# rddiagramkatalog 0.0.0.9022
+
+Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (36 av 53
+nu klara):
+
+- `diag_fodelsenetto_region_scb` (ex. diagram_fodelsenetto_region_SCB.R)
+- `diag_foraldrapenning_vab_forsakringskassan` (ex. diagram_foraldrapenning_vab_kv_man.R,
+  datan kommer från Försäkringskassans öppna Excel-filer, inte SCB)
+- `diag_forvarvsarbetande_90_scb` (ex. diagram_forvarvsarbetande_90_senastear_SCB.R)
+- `diag_fruktsamhet_scb` (ex. diagram_fruktsamhet_SCB.R)
+
+Fixade även samma typ av "Excel-export kördes aldrig"-bugg som i
+0.0.0.9021, den här gången i diag_forvarvsarbetande_90_scb.
+
 # rddiagramkatalog 0.0.0.9021
 
 Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (32 av 53
