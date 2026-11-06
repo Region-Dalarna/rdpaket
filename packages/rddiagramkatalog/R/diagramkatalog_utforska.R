@@ -80,7 +80,7 @@ diagramkatalog_utforska <- function() {
       # upp inuti en gemensam div.
       right = shiny::div(
         litenknapp("hjalp", "Visa hjälp", "info"),
-        litenknapp("visa", "Visa diagram", TRUE),
+        litenknapp("visa", "Skapa diagram", TRUE),
         litenknapp("infoga", "Infoga kod", TRUE)
       )
     ),

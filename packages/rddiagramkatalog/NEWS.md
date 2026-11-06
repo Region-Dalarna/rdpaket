@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9015
+
+- Knappen "Visa diagram" i `diagramkatalog_utforska()` heter nu "Skapa
+  diagram" - matchar bättre vad som faktiskt händer (och den "Skapar
+  diagram..."-notis som redan visades under tiden).
+
 # rddiagramkatalog 0.0.0.9014
 
 - Knappen i hjälprutan ("Visa hjälp") heter nu "Cancel" i stället för
