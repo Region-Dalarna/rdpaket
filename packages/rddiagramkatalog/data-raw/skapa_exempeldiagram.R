@@ -11,12 +11,19 @@
 # Körs från repo-roten: source("packages/rddiagramkatalog/data-raw/skapa_exempeldiagram.R")
 #
 # skriv_over_befintliga_bilder styr om diagram som redan har en sparad bild
-# ska köras om (TRUE, skriver över) eller hoppas över (FALSE, bara nya/
-# saknade diagram skapas). Sätt variabeln innan source() för att ändra
-# standardvärdet (TRUE):
-#   skriv_over_befintliga_bilder <- FALSE
+# ska hoppas över (FALSE, standard - bara nya/saknade diagram skapas) eller
+# köras om (TRUE, skriver över samtliga). Sätt variabeln innan source() för
+# att ändra standardvärdet:
+#   skriv_over_befintliga_bilder <- TRUE
 #   source("packages/rddiagramkatalog/data-raw/skapa_exempeldiagram.R")
-if (!exists("skriv_over_befintliga_bilder")) skriv_over_befintliga_bilder <- TRUE
+if (!exists("skriv_over_befintliga_bilder")) skriv_over_befintliga_bilder <- FALSE
+
+if (skriv_over_befintliga_bilder) {
+  cat("skriv_over_befintliga_bilder = TRUE - skriver över ALLA exempelbilder, även de som redan finns.\n\n")
+} else {
+  cat("skriv_over_befintliga_bilder = FALSE (standard) - hoppar över diagram som redan har en sparad bild.\n")
+  cat("Kör med skriv_over_befintliga_bilder <- TRUE före source() för att skriva över alla bilder.\n\n")
+}
 
 library(rddiagramkatalog)
 
