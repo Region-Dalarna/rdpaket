@@ -1,0 +1,276 @@
+#' Diagram: etablering på arbetsmarknaden efter utbildning och kön
+#'
+#' Tre diagram kopplade till invandringsetablering som används i "Kvinnor
+#' och män" samt integrationsrapporten. Finns även ett liknande
+#' diagramskript, med tre andra diagram som används i RUS-uppföljningen:
+#' [diag_etablering_diverse_scb()].
+#'
+#' @param region_vekt Enbart ett i taget.
+#' @param diag_kon Jämför kvinnor/män för senaste år.
+#' @param diag_utbildning Jämför olika utbildningsnivåer för senaste år.
+#' @param utbildningsniva_jmf Finns även `"samtliga utbildningsnivåer"`, `"utbildningsnivå: förgymnasial utbildning"`. Skriv i den ordning de ska visas i diagram.
+#' @param facet_kolumner Välj antalet kolumner som ska visas i facet-diagrammet (`diag_utbildning`).
+#' @param diag_tidsserie Undersöker etableringstiden över tid (baserat på vistelsetid).
+#' @param visa_logga_i_diagram TRUE om logga ska visas i diagrammet.
+#' @param logga_sokvag Sökväg till logga.
+#' @param tid_koder Vilka år som ska hämtas, `"*"` = alla.
+#' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
+#' @param skriv_diagramfil TRUE om diagram ska skrivas till fil.
+#' @param excel_mapp Mapp där excelfil ska sparas.
+#' @param returnera_data Skall data returneras till global environment.
+#' @param demo Sätts till TRUE om man bara vill se ett exempel på diagrammet i webbläsaren.
+#'
+#' @return En namngiven lista med `ggplot`-objekt.
+#' @export
+diag_etablering_utb_kon_scb <- function(region_vekt = "20",
+                                        diag_kon = TRUE,
+                                        diag_utbildning = TRUE,
+                                        utbildningsniva_jmf = c("utbildningsnivå: eftergymnasial utbildning","utbildningsnivå: gymnasial utbildning" ),
+                                        facet_kolumner = NULL,
+                                        diag_tidsserie = TRUE,
+                                        visa_logga_i_diagram = TRUE,
+                                        logga_sokvag = NA,
+                                        tid_koder = "*",
+                                        utmapp = rdverktyg::utskriftsmapp(),
+                                        skriv_diagramfil = FALSE,
+                                        excel_mapp = NA,
+                                        returnera_data = FALSE,
+                                        demo = FALSE
+) {
+
+
+  # =======================================================================================================================
+  #
+  # Uppdaterat med ny version av PXweb 2026-07-03, Jon
+  # Rättat felaktigheter kopplat till bindestreck 2026-09-09, Jon
+  # =======================================================================================================================
+
+  # om parametern demo är satt till TRUE så öppnas en flik i webbläsaren med ett exempel på hur diagrammet ser ut och därefter avslutas funktionen
+  # demofilen måste läggas upp på webben för att kunna öppnas, vi lägger den på Region Dalarnas github-repo som heter utskrivna_diagram
+  if (demo){
+    demo_url <-
+      c("https://region-dalarna.github.io/utskrivna_diagram/medellivslangd_aterstaende_vid_30 år_alder_Dalarna_ar2012-2016_2019-2023.png")
+    purrr::walk(demo_url, ~browseURL(.x))
+    if (length(demo_url) > 1) cat(paste0(length(demo_url), " diagram har öppnats i webbläsaren."))
+    rdverktyg::stop_tyst()
+  }
+
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
+
+  # Nya PXweb
+  # Split codes by digit length
+  lan_koder    <- region_vekt[nchar(region_vekt) == 2]
+  kommun_koder <- region_vekt[nchar(region_vekt) == 4]
+
+  bakgrundsvariabler <- c("vistelsetid 0–1 år", "vistelsetid 2–3 år", "vistelsetid 4–9 år",
+                          "vistelsetid 10– år", "födelseregion: Sverige")
+
+  # Container for results
+  resultat <- list()
+
+  # Före 2022
+
+  # Call region API once, only if there are region codes
+  if (length(lan_koder) > 0) {
+    resultat$lan <- pxweb2r::pxweb2_get_data(
+      table = "TAB389",
+      query = list(
+        Region = lan_koder,
+        Kon = "*",
+        UtbNiv = "*",
+        BakgrVar = bakgrundsvariabler,
+        ContentsCode = "Andel förvärvsarbetande (ny definition från och med 2019)",
+        Tid = intern_tolka_tidskoder("TAB389", tid_koder)
+      ),
+    quiet = TRUE)
+  }
+
+  # Call municipality API once, only if there are municipality codes
+  if (length(kommun_koder) > 0) {
+    resultat$kommun <- pxweb2r::pxweb2_get_data(
+      table = "TAB4881",
+      query = list(
+        Region = kommun_koder,
+        Kon = "*",
+        UtbNiv = "*",
+        BakgrVar = bakgrundsvariabler,
+        ContentsCode = "Andel förvärvsarbetande (ny definition från och med 2019)",
+        Tid = intern_tolka_tidskoder("TAB4881", tid_koder)
+      ),
+    quiet = TRUE)
+  }
+
+  # 2022 och senare
+  # Call region API once, only if there are region codes
+  if (length(lan_koder) > 0) {
+    resultat$lan_22 <- pxweb2r::pxweb2_get_data(
+      table = "TAB6384",
+      query = list(
+        Region = lan_koder,
+        Kon = "*",
+        UtbNiv = "*",
+        BakgrVar = bakgrundsvariabler,
+        ContentsCode = "Andel sysselsatta",
+        Tid = intern_tolka_tidskoder("TAB6384", tid_koder)
+      ),
+    quiet = TRUE)
+  }
+
+  # Call municipality API once, only if there are municipality codes
+  if (length(kommun_koder) > 0) {
+    resultat$kommun_22 <- pxweb2r::pxweb2_get_data(
+      table = "TAB6383",
+      query = list(
+        Region = kommun_koder,
+        Kon = "*",
+        UtbNiv = "*",
+        BakgrVar = bakgrundsvariabler,
+        ContentsCode = "Andel sysselsatta",
+        Tid = intern_tolka_tidskoder("TAB6383", tid_koder)
+      ),
+    quiet = TRUE)
+  }
+
+  # If you want a single combined data frame afterwards (assuming same column structure):
+  etablering_df <- dplyr::bind_rows(resultat) |>
+    dplyr::rename(andel = value,
+           regionkod = region_kod) |>
+      dplyr::mutate(bakgrundsvariabel = ifelse(bakgrundsvariabel == "födelseregion: Sverige","Inrikes född",bakgrundsvariabel)) |>
+        dplyr::mutate(bakgrundsvariabel =  sub("^vistelsetid ", "", bakgrundsvariabel)) |>
+          dplyr::select(-tabellinnehåll) |>
+            dplyr::mutate(region = rdverktyg::skapa_kortnamn_lan(region))
+
+
+  # etablering_df <- rbind(etablering_2021,etablering_2022_) %>%
+  #   mutate(region = skapa_kortnamn_lan(region))
+
+  if(returnera_data == TRUE){
+    assign("etablering_df", etablering_df, envir = .GlobalEnv)
+  }
+
+  gg_list <- list()
+
+  if(diag_kon == TRUE){
+    diagram_capt <- "Källa: SCB:s öppna statistikdatabas, BAS.\nBearbetning: Samhällsanalys, Region Dalarna."
+
+    # Skapar en faktorvariabel för att få tid sedan etablering i "rätt" ordning i figuren
+    etablering_df$bakgrundsvariabel <- factor(etablering_df$bakgrundsvariabel, levels = c("0–1 år","2–3 år",
+                                                                                          "4–9 år","10– år",
+                                                                                          "Inrikes född"))
+
+    diagramtitel <- paste0("Andel förvärvsarbetande 20-65 år bland utrikes födda i Dalarna"," ",max(etablering_df$år)," efter vistelsetid")
+    #diagramtitel <- str_wrap(diagramtitel,60)
+    diagramfilnamn <- paste0("etablering_lan_kon.png")
+
+    # Skapar diagram där etableringstiden jämförs mellan män och kvinnor, oavsett utbildning
+    gg_obj <- rddiagram::SkapaStapelDiagram(
+      skickad_df = dplyr::filter(etablering_df,
+                                          år==max(år),
+                                          utbildningsnivå=="samtliga utbildningsnivåer",
+                                          kön != "män och kvinnor"),
+      skickad_x_var = "bakgrundsvariabel",
+      skickad_y_var = "andel",
+      skickad_x_grupp = "kön",
+      # manual_x_axis_text_vjust=0.9,
+      manual_color = rddiagram::diagramfarger("kon"),
+      diagram_titel = diagramtitel,
+      diagram_capt =  diagram_capt,
+      manual_x_axis_title = "Vistelsetid i Sverige",
+      y_axis_100proc = TRUE,
+      x_axis_sort_value = FALSE,
+      x_axis_lutning = 0,
+      manual_y_axis_title = "procent",
+      output_mapp = utmapp,
+      filnamn_diagram = diagramfilnamn,
+      lagg_pa_logga = visa_logga_i_diagram,
+      logga_path = logga_sokvag,
+      skriv_till_diagramfil = skriv_diagramfil)
+
+
+    gg_list <- c(gg_list, list(gg_obj))
+    names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfilnamn, "\\.png")
+  }
+
+  if(diag_utbildning == TRUE){
+
+    diagram_capt <- "Källa: SCB:s öppna statistikdatabas, BAS.\nBearbetning: Samhällsanalys, Region Dalarna."
+    diagramtitel <- paste0("Andel förvärvsarbetande 20-65 år bland utrikes födda i Dalarna"," ",max(etablering_df$år))
+    #diagramtitel <- str_wrap(diagramtitel,60)
+    diagramfilnamn <- paste0("etablering_lan_utb.png")
+
+    gg_obj <- rddiagram::SkapaStapelDiagram(
+      skickad_df = dplyr::filter(etablering_df,
+                                          år == max(år),
+                                          kön != "män och kvinnor",
+                                          utbildningsnivå %in% utbildningsniva_jmf) |>
+                                   dplyr::mutate(utbildningsnivå = factor(utbildningsnivå, levels = utbildningsniva_jmf)),
+      skickad_x_var = "bakgrundsvariabel",
+      skickad_y_var = "andel",
+      skickad_x_grupp = "kön",
+      manual_x_axis_title = "Vistelsetid i Sverige",
+      manual_color = rddiagram::diagramfarger("kon"),
+      diagram_titel = diagramtitel,
+      diagram_capt =  diagram_capt,
+      facet_grp = "utbildningsnivå",
+      facet_legend_bottom = TRUE,
+      facet_scale = "fixed",
+      facet_kolumner = facet_kolumner,
+      x_axis_sort_value = FALSE,
+      y_axis_100proc = TRUE,
+      x_axis_lutning = 0,
+      manual_y_axis_title="procent",
+      output_mapp = utmapp,
+      filnamn_diagram = diagramfilnamn,
+      lagg_pa_logga = visa_logga_i_diagram,
+      logga_path = logga_sokvag,
+      skriv_till_diagramfil = skriv_diagramfil)
+
+    gg_list <- c(gg_list, list(gg_obj))
+    names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfilnamn, "\\.png")
+  }
+
+  if(diag_tidsserie == TRUE){
+
+    diagram_capt <- "Källa: SCB:s öppna statistikdatabas.\nBearbetning: Samhällsanalys, Region Dalarna.\nDiagramförklaring: Fram till och med 2021, 20-64 år och data från RAMS. Från 2022, 20-65 år och data från BAS."
+
+    etablering_df_tid <- etablering_df |>
+      dplyr::filter(bakgrundsvariabel != "10– år",
+             bakgrundsvariabel != "Inrikes född",
+             utbildningsnivå == "samtliga utbildningsnivåer",
+             kön == "män och kvinnor")
+
+    # Skapar en faktorvariabel för att få tid sedan etablering i "rätt" ordning i figuren
+    etablering_df_tid$bakgrundsvariabel <- factor(etablering_df_tid$bakgrundsvariabel, levels = c("0–1 år","2–3 år",
+                                                                                                  "4–9 år"))
+
+    diagramtitel <- paste0("Andel förvärvsarbetande bland utrikes födda i Dalarna efter vistelsetid i Sverige")
+    #diagramtitel <- str_wrap(diagramtitel,60)
+    diagramfilnamn <- paste0("etablering_tid.png")
+
+    gg_obj <- rddiagram::SkapaStapelDiagram(
+      skickad_df = etablering_df_tid,
+      skickad_x_var = "år",
+      skickad_y_var = "andel",
+      skickad_x_grupp = "bakgrundsvariabel",
+      manual_color = rddiagram::diagramfarger("rus_sex"),
+      diagram_titel = diagramtitel,
+      diagram_capt =  diagram_capt,
+      manual_x_axis_text_vjust = 1,
+      manual_x_axis_text_hjust = 1,
+      x_axis_sort_value = FALSE,
+      x_axis_lutning = 45,
+      y_axis_100proc = TRUE,
+      manual_y_axis_title="procent",
+      output_mapp = utmapp,
+      filnamn_diagram = diagramfilnamn,
+      lagg_pa_logga = visa_logga_i_diagram,
+      logga_path = logga_sokvag,
+      skriv_till_diagramfil = skriv_diagramfil)
+
+    gg_list <- c(gg_list, list(gg_obj))
+    names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfilnamn, "\\.png")
+  }
+
+  return(gg_list)
+
+}

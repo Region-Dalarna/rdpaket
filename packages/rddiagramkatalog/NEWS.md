@@ -1,3 +1,19 @@
+# rddiagramkatalog 0.0.0.9017
+
+Ytterligare 8 diagram migrerade från Region-Dalarna/diagram (16 av 53
+nu klara):
+
+- `diag_brp_per_inv_scb`
+- `diag_ekonomiska_prognoser_olika_progn_institut_ki` (ex. diag_ek_prognoser_olika_prognosinstitut_ki.R - hämtar från Konjunkturinstitutet, inte SCB)
+- `diag_diverse_vistelsetid_scb` (ex. diag_ek_standard_boende_valdeltagande_vistelsetid_IntRap.R)
+- `diag_ek_stod_bakgrund_scb`
+- `diag_etablering_utb_kon_scb` (ex. diag_etableringstid_kon_lan_tidsserie_KvMa_IntRap.R)
+- `diag_etablering_diverse_scb` (ex. diag_etableringstid_kon_lan_tidsserie_RUS.R)
+- `diag_gymnasiebehorighet_mm_scb` (ex. diag_gym_hogskola_behorighet_vistelsetid_IntRap.R)
+- `diag_gymn_elever_kon_prg_skolverket` (hämtar från Skolverket, inte SCB)
+
+Nya paketberoenden: `forcats`, `readr`, `rvest`, `xml2`.
+
 # rddiagramkatalog 0.0.0.9016
 
 Nästa migreringsomgång från Region-Dalarna/diagram (första 8 av 53
