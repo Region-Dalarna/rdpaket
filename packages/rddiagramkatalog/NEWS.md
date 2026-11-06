@@ -1,3 +1,20 @@
+# rddiagramkatalog 0.0.0.9024
+
+Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (44 av 53
+nu klara):
+
+- `diag_demografi_kolada` (ex. diagram_medelald_demfors.R, funktionen
+  hette redan diag_demografi internt; data kommer via RKA/Kolada)
+- `diag_ohalsotal_sjukpenningtal_forsakringskassan` (ex.
+  diagram_ohalsotal_sjukpenningtal_kv_man.R; nytt beroende: rdpostgres,
+  med fallback till Försäkringskassans öppna Excel-filer)
+- `diag_forandr_branscher_bubblor_scb` (ex.
+  diag_rams_bas_syss_forandr_sni_branscher_bubblor_scb.R, funktionen
+  hette redan diag_forandr_branscher_bubblor internt; nytt beroende:
+  ggrepel)
+- `diag_sfi_bakgrund_scb` (ex. diag_SFI_godkänd_vistelsetid_kon_tid_IntRap.R,
+  funktionen hette internt diag_SFI_bakgrund)
+
 # rddiagramkatalog 0.0.0.9023
 
 Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (40 av 53
