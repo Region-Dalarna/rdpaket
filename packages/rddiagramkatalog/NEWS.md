@@ -1,3 +1,20 @@
+# rddiagramkatalog 0.0.0.9016
+
+Nästa migreringsomgång från Region-Dalarna/diagram (första 8 av 53
+problemfria kandidater), samma namn-/parameterkonventioner som
+pilotomgången:
+
+- `diag_antal_utbniva_alder_kon_scb`
+- `diag_arbetspendling_over_tid_scb`
+- `diag_bas_arbstatus_region_kon_alder_fodelseregion_prel_manad_scb`
+- `diag_bas_status_alla_kat_prel_manad_scb`
+- `diag_fodda_manad_scb`
+- `diag_utrikes_fodda_tidsserie_scb`
+- `diag_bef_inr_utr_en_aldersgrupp_scb`
+- `diag_befutv_per_komponent_ar_scb`
+
+Nya paketberoenden: `RColorBrewer`, `writexl`.
+
 # rddiagramkatalog 0.0.0.9015
 
 - Knappen "Visa diagram" i `diagramkatalog_utforska()` heter nu "Skapa

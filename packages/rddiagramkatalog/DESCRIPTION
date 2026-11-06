@@ -1,6 +1,6 @@
 Package: rddiagramkatalog
 Title: Katalog av färdiga diagramfunktioner för Region Dalarnas rapporter
-Version: 0.0.0.9015
+Version: 0.0.0.9016
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
@@ -25,12 +25,14 @@ Imports:
     openxlsx,
     purrr,
     pxweb2r,
+    RColorBrewer,
     rddiagram,
     rdverktyg,
     readxl,
     stringr,
     tidyr,
-    tools
+    tools,
+    writexl
 Suggests:
     clipr,
     miniUI,
