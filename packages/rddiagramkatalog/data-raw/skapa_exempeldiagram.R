@@ -1,6 +1,8 @@
 # Genererar ett exempeldiagram per diag_*()-funktion, med rena
 # standardinställningar (ingen anpassning av enskilda parametrar), till
-# man/figures/<funktionsnamn>.png.
+# man/figures/<funktionsnamn>.png. Kopierar därefter bilderna till det
+# installerade paketet också (om det är installerat), så
+# diagramkatalog_utforska() visar aktuella bilder utan omstart/ominstallation.
 #
 # Körs manuellt vid behov (t.ex. efter att nya diagram lagts till, eller om
 # de befintliga exemplen känns för inaktuella) - INTE i CI, eftersom det
@@ -65,3 +67,22 @@ resultat <- lapply(funktioner, function(fn) {
 names(resultat) <- funktioner
 cat("\n--- Sammanfattning ---\n")
 print(unlist(resultat))
+
+# ========================================== Synka till installerat paket ============================================
+# diagramkatalog_utforska() (Shiny-gadgeten) läser exempelbilderna från det
+# INSTALLERADE paketet (system.file("help", "figures", ...)), inte från
+# källträdet man/figures/ som den här sidan skriver till - R kopierar bara
+# dit vid R CMD INSTALL/devtools::install(). Kopierar därför över alla
+# bilder direkt här också, så gadgeten visar aktuella bilder utan att man
+# behöver installera om paketet.
+installerad_figurmapp <- system.file("help", "figures", package = "rddiagramkatalog")
+if (nzchar(installerad_figurmapp)) {
+  kopierade <- file.copy(
+    list.files(utmapp, full.names = TRUE),
+    installerad_figurmapp,
+    overwrite = TRUE
+  )
+  cat("\nKopierade", sum(kopierade), "bild(er) till installerat paket (", installerad_figurmapp, ") - diagramkatalog_utforska() visar nu aktuella bilder.\n")
+} else {
+  cat("\nPaketet rddiagramkatalog verkar inte vara installerat - hoppar över synk till installerat paket.\n")
+}
