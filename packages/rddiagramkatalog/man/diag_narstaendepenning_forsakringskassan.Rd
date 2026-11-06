@@ -38,3 +38,6 @@ linjediagram för förändring över tid). Används i första hand i rapporten
 "Kvinnor och män i Dalarna". Data hämtas från Försäkringskassans egen
 publika Excel-export, inte från SCB.
 }
+\details{
+\if{html}{\figure{diag_narstaendepenning_forsakringskassan.png}{options: width="100\%" alt="Exempel: diag_narstaendepenning_forsakringskassan() med standardinställningar"}}
+}

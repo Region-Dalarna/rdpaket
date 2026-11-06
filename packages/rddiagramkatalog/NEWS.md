@@ -1,3 +1,19 @@
+# rddiagramkatalog 0.0.0.9013
+
+- Exempeldiagram tillagda: `man/figures/<funktion>.png`, ett diagram per
+  funktion (14 av 15 - det Kolada-baserade diagrammet kunde inte genereras
+  i den här miljön pga samma nätverksbegränsning som tidigare), genererade
+  med rena standardinställningar via det nya underhållsskriptet
+  `data-raw/skapa_exempeldiagram.R` (körs manuellt vid behov, inte i CI,
+  eftersom det kräver riktiga API-anrop).
+  - Visas nu i `?funktionsnamn` (den riktiga HTML-hjälpen) via en
+    `\figure{}`-referens i varje funktions dokumentation.
+  - Visas även i `diagramkatalog_utforska()` när man väljer en funktion i
+    listan, tydligt märkt "Exempel (standardinställningar - kan vara
+    inaktuellt)" så det inte förväxlas med en live-förhandsvisning av
+    aktuella parametrar. Funktioner utan sparat exempel visar ett
+    neutralt meddelande i stället.
+
 # rddiagramkatalog 0.0.0.9012
 
 - `diagramkatalog_utforska()` scrollar nu automatiskt ner till diagrammet

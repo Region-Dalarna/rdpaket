@@ -35,3 +35,6 @@ samt förändring i andel chefer över tid. Data slås ihop från RAMS (fram
 till 2021) och BAS (från 2022). Används primärt i rapporten "Kvinnor och
 män i Dalarna".
 }
+\details{
+\if{html}{\figure{diag_chefer_scb.png}{options: width="100\%" alt="Exempel: diag_chefer_scb() med standardinställningar"}}
+}

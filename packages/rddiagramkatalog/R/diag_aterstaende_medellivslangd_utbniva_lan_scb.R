@@ -3,6 +3,8 @@
 #' Linjediagram över återstående medellivslängd vid en given ålder, uppdelat
 #' på utbildningsnivå och kön.
 #'
+#' \if{html}{\figure{diag_aterstaende_medellivslangd_utbniva_lan_scb.png}{options: width="100%" alt="Exempel: diag_aterstaende_medellivslangd_utbniva_lan_scb() med standardinställningar"}}
+#'
 #' @param region_vekt Region(er).
 #' @param tid_koder Vilka år som ska hämtas. `"*"` = alla, `"9999"` = senaste,
 #'   eller `"2015:9999"` för "från 2015 till och med senaste tillgängliga år".

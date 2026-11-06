@@ -5,6 +5,8 @@
 #' Världsbankens publika API (inte från SCB). Landskoder, svenska landsnamn
 #' och världsdelsindelning kommer från paketet `countrycode`.
 #'
+#' \if{html}{\figure{diag_fodelsetal_globalt_varldsbanken.png}{options: width="100%" alt="Exempel: diag_fodelsetal_globalt_varldsbanken() med standardinställningar"}}
+#'
 #' @param diagram_capt Diagrammets källtext.
 #' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param diag_fargvekt Valfri färgvektor, standard: `rddiagram::diagramfarger("rd_primar_atta")`.

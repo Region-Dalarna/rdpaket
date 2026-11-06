@@ -4,6 +4,8 @@
 #' dels i ett enskilt län uppdelat på bakgrund (födelselandsgrupp). Enbart
 #' för senaste år.
 #'
+#' \if{html}{\figure{diag_matchning_lan_scb.png}{options: width="100%" alt="Exempel: diag_matchning_lan_scb() med standardinställningar"}}
+#'
 #' @param region_vekt Region vi är intresserade av. Gäller diagrammet med bakgrundsuppdelning.
 #' @param utmapp Mapp där figur sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param output_mapp_data Mapp där data sparas.

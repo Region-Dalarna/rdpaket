@@ -3,6 +3,8 @@
 #' Två diagram: en tidsserie över Gini-koefficienten för valda regioner, och
 #' en jämförelse mellan regioner för senaste året.
 #'
+#' \if{html}{\figure{diag_gini_scb.png}{options: width="100%" alt="Exempel: diag_gini_scb() med standardinställningar"}}
+#'
 #' @param region_vekt De regioner som ska jämföras i stapeldiagrammet.
 #' @param diagram_fokus Vilken region som ska ligga i fokus i stapeldiagrammet. Måste vara en av de i `region_vekt`.
 #' @param region_vekt_linje Vilka regioner som ska jämföras i linjediagrammet. Måste vara två av de i `region_vekt`.

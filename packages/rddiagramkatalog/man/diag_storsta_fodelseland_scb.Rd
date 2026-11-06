@@ -54,3 +54,6 @@ Stapeldiagram över de största födelseländerna bland utrikes födda,
 med möjlighet att jämföra tre år (första, sista och ett jämförelseår)
 eller bara visa senaste året.
 }
+\details{
+\if{html}{\figure{diag_storsta_fodelseland_scb.png}{options: width="100\%" alt="Exempel: diag_storsta_fodelseland_scb() med standardinställningar"}}
+}

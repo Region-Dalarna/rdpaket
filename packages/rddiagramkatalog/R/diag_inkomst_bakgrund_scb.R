@@ -3,6 +3,8 @@
 #' Stapeldiagram över förvärvsinkomst uppdelat på vistelsetid i Sverige,
 #' för utrikes födda jämfört med inrikes födda. Från integrationsrapporten.
 #'
+#' \if{html}{\figure{diag_inkomst_bakgrund_scb.png}{options: width="100%" alt="Exempel: diag_inkomst_bakgrund_scb() med standardinställningar"}}
+#'
 #' @param region_vekt Region (max 1 åt gången).
 #' @param visa_logga_i_diagram TRUE om logga ska visas i diagrammet.
 #' @param logga_sokvag Sökväg till logga.

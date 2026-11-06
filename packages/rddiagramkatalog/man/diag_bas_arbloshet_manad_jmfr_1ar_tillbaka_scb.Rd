@@ -48,3 +48,6 @@ Stapeldiagram över skillnaden i arbetslöshet (procentenheter) mellan en
 given månad och samma månad ett antal månader tillbaka, uppdelat på
 region och, valfritt, inrikes/utrikes födda.
 }
+\details{
+\if{html}{\figure{diag_bas_arbloshet_manad_jmfr_1ar_tillbaka_scb.png}{options: width="100\%" alt="Exempel: diag_bas_arbloshet_manad_jmfr_1ar_tillbaka_scb() med standardinställningar"}}
+}

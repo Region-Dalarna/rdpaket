@@ -42,3 +42,6 @@ En namngiven lista med ett \code{ggplot}-objekt.
 Stapeldiagram över förvärvsinkomst uppdelat på vistelsetid i Sverige,
 för utrikes födda jämfört med inrikes födda. Från integrationsrapporten.
 }
+\details{
+\if{html}{\figure{diag_inkomst_bakgrund_scb.png}{options: width="100\%" alt="Exempel: diag_inkomst_bakgrund_scb() med standardinställningar"}}
+}

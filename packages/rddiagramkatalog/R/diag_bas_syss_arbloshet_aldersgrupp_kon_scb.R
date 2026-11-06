@@ -4,6 +4,8 @@
 #' (arbetslöshet/sysselsättningsgrad), uppdelat på åldersgrupp, kön och
 #' födelseregion.
 #'
+#' \if{html}{\figure{diag_bas_syss_arbloshet_aldersgrupp_kon_scb.png}{options: width="100%" alt="Exempel: diag_bas_syss_arbloshet_aldersgrupp_kon_scb() med standardinställningar"}}
+#'
 #' @param region_vekt Region.
 #' @param vald_alder Åldersgrupper att inkludera.
 #' @param vald_cont Innehållsvariabel: `"arbetslöshet"` och/eller `"sysselsättningsgrad"`.

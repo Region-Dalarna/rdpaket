@@ -5,6 +5,8 @@
 #' "Kvinnor och män i Dalarna". Data hämtas från Försäkringskassans egen
 #' publika Excel-export, inte från SCB.
 #'
+#' \if{html}{\figure{diag_narstaendepenning_forsakringskassan.png}{options: width="100%" alt="Exempel: diag_narstaendepenning_forsakringskassan() med standardinställningar"}}
+#'
 #' @param region_vekt Ett län åt gången, inte Sverige.
 #' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param diag_stapel Skapa stapeldiagram.

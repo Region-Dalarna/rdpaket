@@ -4,6 +4,8 @@
 #' (t.ex. folkmängd, folkökning) och region, uppdelat per månad och,
 #' valfritt, kön.
 #'
+#' \if{html}{\figure{diag_befolkningsforandring_manad_scb.png}{options: width="100%" alt="Exempel: diag_befolkningsforandring_manad_scb() med standardinställningar"}}
+#'
 #' @param region_vekt Region(er).
 #' @param region_fokus Om man vill lyfta fram någon eller några regioner (anges med regionkoder).
 #' @param facet_region Facet:a diagrammen på region.

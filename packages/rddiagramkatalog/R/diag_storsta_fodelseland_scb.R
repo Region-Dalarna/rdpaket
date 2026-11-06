@@ -4,6 +4,8 @@
 #' med möjlighet att jämföra tre år (första, sista och ett jämförelseår)
 #' eller bara visa senaste året.
 #'
+#' \if{html}{\figure{diag_storsta_fodelseland_scb.png}{options: width="100%" alt="Exempel: diag_storsta_fodelseland_scb() med standardinställningar"}}
+#'
 #' @param region_vekt Region (max 1 län).
 #' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param skriv_diagramfil Sparar figuren till `utmapp`.

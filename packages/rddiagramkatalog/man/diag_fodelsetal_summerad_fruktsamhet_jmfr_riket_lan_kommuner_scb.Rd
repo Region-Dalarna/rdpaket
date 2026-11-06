@@ -38,3 +38,6 @@ Stapeldiagram över summerad fruktsamhet (antal födda barn per kvinna) för
 riket, länet och länets kommuner, med reproduktionsnivån (2,1) markerad
 som en referenslinje.
 }
+\details{
+\if{html}{\figure{diag_fodelsetal_summerad_fruktsamhet_jmfr_riket_lan_kommuner_scb.png}{options: width="100\%" alt="Exempel: diag_fodelsetal_summerad_fruktsamhet_jmfr_riket_lan_kommuner_scb() med standardinställningar"}}
+}

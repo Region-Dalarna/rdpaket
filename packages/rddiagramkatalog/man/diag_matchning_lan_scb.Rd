@@ -52,3 +52,6 @@ Skapar diagram för matchningsgraden på arbetsmarknaden, dels på länsnivå,
 dels i ett enskilt län uppdelat på bakgrund (födelselandsgrupp). Enbart
 för senaste år.
 }
+\details{
+\if{html}{\figure{diag_matchning_lan_scb.png}{options: width="100\%" alt="Exempel: diag_matchning_lan_scb() med standardinställningar"}}
+}

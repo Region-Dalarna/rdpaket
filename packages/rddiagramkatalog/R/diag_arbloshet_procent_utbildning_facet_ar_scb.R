@@ -25,6 +25,8 @@
 #' slås ihop till en sammanhängande tidsserie 2006-2024
 #' (`ta_med_tidigare_data = FALSE` hämtar bara TAB6367, dvs. 2019-2024).
 #'
+#' \if{html}{\figure{diag_arbloshet_procent_utbildning_facet_ar_scb.png}{options: width="100%" alt="Exempel: diag_arbloshet_procent_utbildning_facet_ar_scb() med standardinställningar"}}
+#'
 #' @param region_vekt En eller flera regioner, t.ex. `c("20", "17", "21")`. Flera regioner jämförs då som linjer inom varje facet.
 #' @param utb_typ Vilken utbildningsindelning som ska facet:as på: `"niva"` eller `"inriktning"`.
 #' @param utb_vekt NA = default-koder för `utb_typ`, annars egna Utbildngrupp-koder.

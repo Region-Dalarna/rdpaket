@@ -87,4 +87,6 @@ dimensioner, samma ContentsCode-texter) men med äldre, numera frysta data
 (2006-2018, "uppdateras ej" enligt SCB). Som standard hämtas båda och
 slås ihop till en sammanhängande tidsserie 2006-2024
 (\code{ta_med_tidigare_data = FALSE} hämtar bara TAB6367, dvs. 2019-2024).
+
+\if{html}{\figure{diag_arbloshet_procent_utbildning_facet_ar_scb.png}{options: width="100\%" alt="Exempel: diag_arbloshet_procent_utbildning_facet_ar_scb() med standardinställningar"}}
 }

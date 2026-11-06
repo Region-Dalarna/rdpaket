@@ -35,3 +35,6 @@ senaste tillgängliga år, uppdelat på världsdel. Data hämtas direkt från
 Världsbankens publika API (inte från SCB). Landskoder, svenska landsnamn
 och världsdelsindelning kommer från paketet \code{countrycode}.
 }
+\details{
+\if{html}{\figure{diag_fodelsetal_globalt_varldsbanken.png}{options: width="100\%" alt="Exempel: diag_fodelsetal_globalt_varldsbanken() med standardinställningar"}}
+}

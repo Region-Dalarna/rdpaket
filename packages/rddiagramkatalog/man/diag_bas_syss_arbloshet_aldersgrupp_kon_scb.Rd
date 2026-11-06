@@ -55,3 +55,6 @@ Ett diagram per kombination av region och innehållsvariabel
 (arbetslöshet/sysselsättningsgrad), uppdelat på åldersgrupp, kön och
 födelseregion.
 }
+\details{
+\if{html}{\figure{diag_bas_syss_arbloshet_aldersgrupp_kon_scb.png}{options: width="100\%" alt="Exempel: diag_bas_syss_arbloshet_aldersgrupp_kon_scb() med standardinställningar"}}
+}

@@ -4,6 +4,8 @@
 #' given månad och samma månad ett antal månader tillbaka, uppdelat på
 #' region och, valfritt, inrikes/utrikes födda.
 #'
+#' \if{html}{\figure{diag_bas_arbloshet_manad_jmfr_1ar_tillbaka_scb.png}{options: width="100%" alt="Exempel: diag_bas_arbloshet_manad_jmfr_1ar_tillbaka_scb() med standardinställningar"}}
+#'
 #' @param region_vekt NA = jämförelse mellan länen, annars jämförs kommuner i de regioner vars länskoder man skickar med.
 #' @param diagram_capt Diagrammets källtext.
 #' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.

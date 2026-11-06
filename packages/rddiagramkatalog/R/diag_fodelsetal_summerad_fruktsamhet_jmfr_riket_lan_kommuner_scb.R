@@ -4,6 +4,8 @@
 #' riket, länet och länets kommuner, med reproduktionsnivån (2,1) markerad
 #' som en referenslinje.
 #'
+#' \if{html}{\figure{diag_fodelsetal_summerad_fruktsamhet_jmfr_riket_lan_kommuner_scb.png}{options: width="100%" alt="Exempel: diag_fodelsetal_summerad_fruktsamhet_jmfr_riket_lan_kommuner_scb() med standardinställningar"}}
+#'
 #' @param region_vekt Regioner att visa. `"00"` eller NA ger alla län.
 #' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param diag_fargvekt Valfri färgvektor, standard: `rddiagram::diagramfarger("rus_sex")`.

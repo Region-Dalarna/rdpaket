@@ -42,3 +42,6 @@ En namngiven lista med \code{ggplot}-objekt.
 Två diagram för trångboddhet uppdelat på inrikes och utrikes födda, som
 antal respektive andel. Används primärt i integrationsrapporten.
 }
+\details{
+\if{html}{\figure{diag_trangboddhet_inrikes_utrikes_scb.png}{options: width="100\%" alt="Exempel: diag_trangboddhet_inrikes_utrikes_scb() med standardinställningar"}}
+}

@@ -66,3 +66,6 @@ En namngiven lista med ett \code{ggplot}-objekt.
 Linjediagram över återstående medellivslängd vid en given ålder, uppdelat
 på utbildningsnivå och kön.
 }
+\details{
+\if{html}{\figure{diag_aterstaende_medellivslangd_utbniva_lan_scb.png}{options: width="100\%" alt="Exempel: diag_aterstaende_medellivslangd_utbniva_lan_scb() med standardinställningar"}}
+}

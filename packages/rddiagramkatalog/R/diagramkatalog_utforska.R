@@ -39,6 +39,15 @@ diagramkatalog_utforska <- function() {
 
   index <- intern_diagram_index_cached()
 
+  # Exempelbilder (man/figures/<funktion>.png i källan) installeras av R
+  # under help/figures/ i det installerade paketet - inte figures/ direkt,
+  # trots att man/figures/ är källmappen. Registreras som en egen
+  # resursväg så img-taggar nedan kan referera till dem direkt.
+  figurmapp <- system.file("help", "figures", package = "rddiagramkatalog")
+  if (nzchar(figurmapp)) {
+    shiny::addResourcePath("rddiagramkatalog_exempel", figurmapp)
+  }
+
   # Knappstorlek - miniTitleBarButton() ger bara "btn-sm" (Bootstrap har
   # ingen mindre standardstorlek), så en liten extra stil krymper dem
   # ytterligare utan att texten blir oläsbar.
@@ -85,6 +94,7 @@ diagramkatalog_utforska <- function() {
         ),
         shiny::div(
           style = "padding: 10px; overflow-y: auto; height: 100%;",
+          shiny::uiOutput("exempelbild"),
           shiny::uiOutput("parameterformular"),
           shiny::plotOutput("forhandsvisning", height = "380px")
         )
@@ -115,6 +125,30 @@ diagramkatalog_utforska <- function() {
     vald_args <- shiny::reactive({
       args <- formals(vald_fn())
       args[!names(args) %in% "..."]
+    })
+
+    output$exempelbild <- shiny::renderUI({
+      fn <- vald_fn()
+      bildfil <- if (nzchar(figurmapp)) file.path(figurmapp, paste0(fn, ".png")) else ""
+
+      if (nzchar(bildfil) && file.exists(bildfil)) {
+        shiny::tagList(
+          shiny::tags$p(
+            shiny::tags$em("Exempel (standardinställningar - kan vara inaktuellt):"),
+            style = "margin-bottom: 4px; color: #666; font-size: 12px;"
+          ),
+          shiny::tags$img(
+            src = file.path("rddiagramkatalog_exempel", paste0(fn, ".png")),
+            alt = paste("Exempeldiagram för", fn),
+            style = "max-width: 100%; border: 1px solid #ddd; margin-bottom: 10px;"
+          )
+        )
+      } else {
+        shiny::tags$p(
+          shiny::tags$em("Inget exempel sparat för den här funktionen än."),
+          style = "color: #999; font-size: 12px;"
+        )
+      }
     })
 
     output$parameterformular <- shiny::renderUI({

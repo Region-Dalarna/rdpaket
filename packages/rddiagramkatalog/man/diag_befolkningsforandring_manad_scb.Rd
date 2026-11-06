@@ -48,3 +48,6 @@ Ett diagram per kombination av befolkningsförändringsvariabel
 (t.ex. folkmängd, folkökning) och region, uppdelat per månad och,
 valfritt, kön.
 }
+\details{
+\if{html}{\figure{diag_befolkningsforandring_manad_scb.png}{options: width="100\%" alt="Exempel: diag_befolkningsforandring_manad_scb() med standardinställningar"}}
+}

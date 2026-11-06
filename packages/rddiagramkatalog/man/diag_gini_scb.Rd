@@ -59,3 +59,6 @@ En namngiven lista med \code{ggplot}-objekt.
 Två diagram: en tidsserie över Gini-koefficienten för valda regioner, och
 en jämförelse mellan regioner för senaste året.
 }
+\details{
+\if{html}{\figure{diag_gini_scb.png}{options: width="100\%" alt="Exempel: diag_gini_scb() med standardinställningar"}}
+}
