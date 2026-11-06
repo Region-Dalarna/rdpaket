@@ -1,3 +1,23 @@
+# rddiagramkatalog 0.0.0.9026
+
+Sista 5 diagrammen migrerade från Region-Dalarna/diagram - samtliga 53
+"oproblematiska" diagram är nu migrerade till paketet:
+
+- `diag_syss_vistelsetid_inr_utr_fodda_ett_per_ar_scb` (ex.
+  diag_syss_vistelsetid_inr_utr_fodda_scb.R; saknade helt en
+  skriv_diagramfil-parameter i originalet, lade till en, standard TRUE)
+- `diag_utbniva_tidserie_och_lansjmfr_scb` (ex. diag_utbniva_flera_diagram_scb.R)
+- `diag_utbniva_inr_utr_fodda_kon_lan_scb` (ex. diag_utbniva_inr_utr_fodda_lan_scb.R)
+- `diag_uvas_bakgrund_vistelsetid_scb` (ex. diag_uvas_vistelsetid_kon_tid_IntRap.R,
+  funktionen hette internt diag_UVAS_bakgrund_vistelsetid)
+- `diag_storsta_yrke_per_geografi_scb` (ex. diag_yrke_ssyk3_storsta_per_geografi.R,
+  funktionen hette internt diag_storsta_yrke_per_geografi)
+
+Kvarstående arbete efter denna migrering (inte del av de 53): de 3
+par av dubblerade funktionsnamn, de 8 filer med source()-anrop mot
+externa/avvecklade repon, samt karta_*-filer, behöver fortfarande en
+egen genomgång innan Region-Dalarna/diagram kan fasas ut helt.
+
 # rddiagramkatalog 0.0.0.9025
 
 Ytterligare 4 diagram migrerade från Region-Dalarna/diagram (48 av 53
