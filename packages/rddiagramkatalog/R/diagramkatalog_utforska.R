@@ -37,13 +37,30 @@ diagramkatalog_utforska <- function() {
 
   index <- intern_diagram_index_cached()
 
+  # Knappstorlek - miniTitleBarButton() ger bara "btn-sm" (Bootstrap har
+  # ingen mindre standardstorlek), så en liten extra stil krymper dem
+  # ytterligare utan att texten blir oläsbar.
+  knappstil <- "padding: 3px 10px; font-size: 12px;"
+  litenknapp <- function(input_id, etikett, farg) {
+    shiny::tagAppendAttributes(
+      miniUI::miniTitleBarButton(input_id, etikett, primary = farg),
+      style = knappstil
+    )
+  }
+
   ui <- miniUI::miniPage(
     miniUI::gadgetTitleBar(
       "Diagramkatalog",
-      right = shiny::tagList(
-        miniUI::miniTitleBarButton("visa", "Visa diagram", primary = TRUE),
-        miniUI::miniTitleBarButton("hjalp", "Visa hjälp", primary = TRUE),
-        miniUI::miniTitleBarButton("infoga", "Infoga kod", primary = TRUE)
+      # OBS: right måste vara EN tagg, inte en tagList() med flera knappar -
+      # miniTitleBar() lägger på klassen "pull-right" via
+      # tagAppendAttributes(right, class = "pull-right"), vilket bara
+      # fungerar på en enskild tagg. Med en tagList() hamnar "pull-right"
+      # i stället som synlig text i gränssnittet. Knapparna radas därför
+      # upp inuti en gemensam div.
+      right = shiny::div(
+        litenknapp("hjalp", "Visa hjälp", "info"),
+        litenknapp("visa", "Visa diagram", TRUE),
+        litenknapp("infoga", "Infoga kod", TRUE)
       )
     ),
     miniUI::miniContentPanel(

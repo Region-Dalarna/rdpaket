@@ -1,3 +1,15 @@
+# rddiagramkatalog 0.0.0.9009
+
+- Fix: ordet "pull-right" syntes som text i den övre listen i
+  `diagramkatalog_utforska()`. Orsak: `miniUI::gadgetTitleBar()`s `right`
+  måste vara EN tagg, inte en `tagList()` med flera knappar - annars
+  misslyckas den interna `tagAppendAttributes(right, class = "pull-right")`.
+  Knapparna ligger nu i en gemensam `div`.
+- "Visa hjälp" har fått en egen färg (`btn-info`, varken grå som "Cancel"
+  eller blå som de andra två), och ligger separat från "Visa diagram" och
+  "Infoga kod", som nu ligger intill varandra.
+- Alla tre knapparna är något mindre (mindre padding/typsnittsstorlek).
+
 # rddiagramkatalog 0.0.0.9008
 
 - Knapparna "Visa diagram", "Visa hjälp" och "Infoga kod" i
