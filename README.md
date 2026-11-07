@@ -12,6 +12,7 @@ Planen för uppdelningen finns i `funktioner/PLAN-paketuppdelning.md`.
 | Paket | Innehåll | Status |
 |---|---|---|
 | `rdverktyg` | text, filer, SCB-/regionhämtning, allmänna verktyg, datakällor | **klart** |
+| `rdhamtadata` | datahämtning (befolkningsprognoser m.m.), ur `Region-Dalarna/hamta_data` | **pågående** |
 | `rddiagram` | diagram (ggplot), färg/skala, bubbeldiagram | **klart** |
 | `rdgis` | geometri, kartdata, rutor, GIS-filinläsning | **klart** |
 | `rdpostgres` | databasanslutningar, roller/rättigheter, metadata, grants | **klart** |

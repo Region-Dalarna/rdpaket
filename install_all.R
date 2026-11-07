@@ -5,6 +5,7 @@ if (!requireNamespace("pak", quietly = TRUE)) install.packages("pak")
 
 paket <- c(
   "rdverktyg",
+  "rdhamtadata",
   "rddiagram",
   "rddiagramkatalog",
   "rdpostgres",

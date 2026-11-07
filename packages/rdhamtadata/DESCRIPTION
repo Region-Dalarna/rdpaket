@@ -1,0 +1,37 @@
+Package: rdhamtadata
+Title: Datahämtningsfunktioner för Region Dalarnas Analysarbete
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
+    person("Region Dalarna", role = "cph")
+  )
+Description: Funktioner för att hämta rådata (befolkningsprognoser, pendling
+    m.m.) från SCB och andra källor, i ett enhetligt format oavsett om
+    datan kommer från ett API eller lokala filer. Utbrutet ur
+    funktionsskripten i Region-Dalarna/hamta_data, som fasas ut i
+    motsvarande takt som funktionerna flyttas hit.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.5.0)
+Imports:
+    data.table,
+    dplyr,
+    purrr,
+    pxweb2r,
+    rdverktyg,
+    readr,
+    readxl,
+    stringr,
+    tidyr
+Suggests:
+    testthat (>= 3.0.0),
+    writexl
+Remotes:
+    FaluPeppe/pxweb2r,
+    Region-Dalarna/rdpaket/packages/rdverktyg
+Config/testthat/edition: 3
+URL: https://github.com/Region-Dalarna/rdpaket
+BugReports: https://github.com/Region-Dalarna/rdpaket/issues
+Config/roxygen2/version: 8.1.0
