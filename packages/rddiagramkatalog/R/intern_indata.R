@@ -36,11 +36,11 @@ intern_sakerstall_indatafil <- function(sokvag) {
 # kryptiska "no non-missing arguments to max; returning -Inf"/"argument of
 # length 0" som which.max() på en tom vektor annars ger.
 #' @noRd
-intern_hamta_senaste_fil <- function(mapp, monster) {
+intern_hamta_senaste_fil <- function(mapp, monster, recursive = FALSE) {
   if (!dir.exists(mapp)) {
     stop("Hittar inte mappen med indata:\n  ", mapp, call. = FALSE)
   }
-  kandidater <- list.files(mapp, pattern = monster, full.names = TRUE)
+  kandidater <- list.files(mapp, pattern = monster, full.names = TRUE, recursive = recursive)
   if (length(kandidater) == 0) {
     stop(
       "Hittade ingen fil som matchar mönstret '", monster, "' i mappen:\n  ", mapp,

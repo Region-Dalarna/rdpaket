@@ -1,4 +1,79 @@
-# rddiagramkatalog 0.0.0.9029
+# rddiagramkatalog 0.0.0.9030
+
+Migrerade 10 ytterligare diagram från Region-Dalarna/diagram:
+
+**Raka PxWeb-diagram, med G:-härdning där det behövdes:**
+
+- `diag_asylsokande_tidsserie_scb` (ex. diag_antal_asylsokande_1984_IntRap.R)
+  - kombinerar en manuellt underhållen G:-Excel-fil (äldre år) med
+    live SCB-data - härdad med `intern_hamta_senaste_fil()`.
+- `diag_fek_foradlingsvarde_bransch_lan_scb` (ex.
+  diag_fek_foradlingsvarde_bransch_lan_scb.R) - läser en delad
+  branschnyckel från G:, härdad med `intern_sakerstall_indatafil()`.
+- `diag_fek_lve_tidsserie` (ex. diag_fek_lve_tidsserie.R) - samma
+  branschnyckel, läst en gång i stället för två (originalet läste
+  samma fil två gånger).
+- `diag_inr_flyttnetto_bakgrund_scb` (ex.
+  diagram_flytt_inrikes_bakgrund_SCB.R, funktionen
+  `diag_inr_flyttnetto_inr_utr_fodda`) - döpt om vid migrering: källrepot
+  har ett ANNAT skript (diag_inr_flyttnetto_inr_utr_fodda_scb.R, inte
+  migrerat än) med exakt samma funktionsnamn men mer funktionalitet
+  (åldersgrupper, relativt flyttnetto) - ett av de dubbla
+  funktionsnamn-par som flaggats tidigare i projektet. Bugfix (confirmed):
+  en `write.xlsx()`-rad refererade en odefinierad variabel
+  (`arblosa_bakgr`, kvarglömd från ett annat skript) - oanvänd rad borttagen.
+
+**NMS/G:-baserat, samma härdningsmönster som tidigare:**
+
+- `diag_bransch_utb_alder_nms` (ex. diagram_bransch_utb_alder_NMS.R).
+  Bugfix (confirmed): Excel-export skedde efter `return()` och kördes
+  därmed aldrig vid `returnera_figur = TRUE` (standardvärdet) - samma
+  mönster som hittats upprepade gånger tidigare i projektet, flyttad
+  före returneringen.
+
+**Andel offentligt anställda - bara den aktiva varianten migrerad:**
+
+- `diag_andel_offentligt_bas_scb` (ex. diagram_andel_offentligt_BAS.R).
+  Den RAMS-baserade varianten (diagram_andel_offentligt.R) migrerades
+  INTE - dess egen källkod flaggar uttryckligen att den är ersatt av
+  BAS-varianten och bygger på frusen data (2019-2021). Detta korrigerar
+  en tidigare bedömning i migreringsstatus.md som felaktigt klassade de
+  två som "inte dubbletter, båda aktiva".
+
+**Aktiv ersättare till avvecklat skript:**
+
+- `diag_arb_stallen_mm_foretagarna` (ex.
+  diagram_arb_stallen_mm_foretagarna.R, ersätter det redan tidigare
+  avvecklade diagram_arb_stallen_mm_ejAPI.R). Bugfix (confirmed): en
+  villkorssats för att spara Excel-data kontrollerade fel variabel
+  (`output_mapp_figur` i stället för `output_mapp_data`) - rättad till
+  att matcha samma mönster som resten av funktionen.
+
+**G:-källad hämtkod (inte bara data) - själva hämtlogiken ligger på G:
+och behandlas som en svart låda, härdad med `intern_sakerstall_indatafil()`
+på skriptfilen innan den sourcas:**
+
+- `diag_gymnasieantagna_antal` (ex. diagram_gymnasiantagning_antal_kon.R).
+  Bugfix (confirmed): samma export-efter-return-mönster som ovan, samt
+  en oanvänd/aldrig implementerad parameter (`diag_lan_antal`) borttagen.
+- `diag_utslapp_konsumtion_sei` (ex. diag_utslapp_konsumtion_SEI.R).
+  Bugfix (confirmed): kommundiagrammets titel/filnamn använde fel
+  dataframe (länsdatasetets år i stället för kommundatasetets) - gav fel
+  årtal om de skiljde sig åt, och kraschade helt om `diag_lan = FALSE`.
+
+**G:-lokal "senaste fil"-mönster, nu med stöd för rekursiv sökning:**
+
+- `diag_kompetensbrist_lan_tvv` (ex. diagram_kompetensbrist_lan_TVV.R).
+  `intern_hamta_senaste_fil()` i `intern_indata.R` fick en ny valfri
+  `recursive`-parameter (standard `FALSE`, bakåtkompatibel) för att
+  stödja detta skriptets rekursiva filsökning.
+
+Alla tio verifierade: de 3 utan G:-beroende (flyttnetto, andel
+offentligt, företagarna) smoke-testade live; de 7 G:-beroende
+bekräftade ge tydliga, handlingsbara felmeddelanden i den här
+sandlådan (där G: inte finns).
+
+
 
 Migrerade 5 befolkningsprognosdiagram ("Profet"-gruppen) från
 Region-Dalarna/diagram. Dessa bygger nu på det nya paketet

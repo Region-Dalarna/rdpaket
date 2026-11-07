@@ -1,0 +1,215 @@
+#' Diagram: hushållens konsumtionsbaserade utsläpp
+#'
+#' Tre diagram: jämförelse mellan län för senaste år, en tidsserie där
+#' utvalda län jämförs (indexerat), och jämförelse mellan ett läns
+#' kommuner för senaste år. Data hämtas från en lokal, manuellt underhållen
+#' källa (webbskrapning av konsumtionskompassen.se).
+#'
+#' @param region_vekt Regioner att visa i länsjämförelsen. Finns län,
+#'   riket och kommuner. `"*"` ger alla.
+#' @param jmf Vilka län som ska jämföras i tidsserien. Måste vara en
+#'   delmängd av `region_vekt`.
+#' @param lan_kommun För vilket län som kommuner ska jämföras.
+#' @param fokus_region Vilken region som ska fokuseras på i det jämförande
+#'   läns-diagrammet (förutom Sverige).
+#' @param diag_lan Skapa diagram: länsjämförelse (senaste år och tidsserie).
+#' @param diag_kommun Skapa diagram: kommunjämförelse för valt län.
+#' @param utmapp Mapp där figurerna sparas. Måste finnas om
+#'   `skriv_diagramfil = TRUE`.
+#' @param returnera_data Skall data returneras till global environment.
+#' @param ggobjektfilnamn_utan_tid Objektnamnet sparas utan tid i namnet.
+#'   Fördelaktigt att använda i rapporter.
+#' @param skriv_diagramfil Skall figurerna sparas till `utmapp`.
+#'
+#' @return En namngiven lista med `ggplot`-objekt.
+#' @export
+diag_utslapp_konsumtion_sei <- function(region_vekt = rdverktyg::hamtaAllaLan(),
+                                       jmf = c("00", "20"),
+                                       lan_kommun = "20",
+                                       fokus_region = "20",
+                                       diag_lan = TRUE,
+                                       diag_kommun = TRUE,
+                                       utmapp = rdverktyg::utskriftsmapp(),
+                                       returnera_data = FALSE,
+                                       ggobjektfilnamn_utan_tid = TRUE,
+                                       skriv_diagramfil = TRUE) {
+
+  # ========================================== Allmän info ============================================
+  # Data från https://konsumtionskompassen.se/ (SEI). Tre diagram: senaste år för län, tidsserie där
+  # län jämförs med Sverige, och senaste år för kommun.
+  # Datakällan (G:/skript/jon/Webbskrapning/hamta_data_konsumtionskompassen.R) är ett lokalt
+  # webbskrapningsskript, inte en del av funktioner-/hamta_data-reporna på GitHub - behandlas som en
+  # svart låda, precis som motsvarande lokala källa i diag_gymnasieantagna_antal().
+  # ========================================== Inställningar ============================================
+
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
+
+  gg_list <- list()
+
+  # ========================================== Läser in data ============================================
+  # intern_sakerstall_indatafil() validerar att skriptfilen finns innan den körs, i stället för ett
+  # kryptiskt source()-fel, och intern_meddela_manuell_datakalla() skriver ut en konsolvarning om att
+  # datan är en manuell ögonblicksbild.
+  konsumtionskompassen_skript <- "G:/skript/jon/Webbskrapning/hamta_data_konsumtionskompassen.R"
+  intern_sakerstall_indatafil(konsumtionskompassen_skript)
+  intern_meddela_manuell_datakalla("Konsumtionskompassen, SEI (G:/skript/jon/Webbskrapning/hamta_data_konsumtionskompassen.R)")
+  source(konsumtionskompassen_skript)
+
+  if (diag_lan == TRUE) {
+
+    konsumtionskompassen_df <- get_kompassen_data(region = region_vekt) |>
+      dplyr::mutate(region_namn = rdverktyg::skapa_kortnamn_lan(region_namn)) |>
+      dplyr::rename(varde = kg_co2e_per_capita)
+
+    if (returnera_data == TRUE) {
+      assign("konsumtionskompassen_lan_df", konsumtionskompassen_df, envir = .GlobalEnv)
+    }
+
+    ValdGeografi <- rdverktyg::skapa_kortnamn_lan(rdverktyg::hamtaregion_kod_namn(fokus_region)$region, byt_ut_riket_mot_sverige = TRUE)
+
+    # Jämför län för senaste år
+    diagram_titel <- paste0("Hushållens totala utsläpp år ", max(konsumtionskompassen_df$year))
+    diagramfilnamn <- glue::glue("kons_utslapp_lan_ar_{max(konsumtionskompassen_df$year)}.png")
+    diagram_capt <- "Källa: https://www.konsumtionskompassen.se (Stockholm Environment Institute (SEI),2025)\nBearbetning: Samhällsanalys, Region Dalarna\nDiagramförklaring: kg koldioxidekvivalenter per person. För en mer ingående förklaring av hur data har beräknats,\nse https://www.konsumtionskompassen.se"
+
+    gg_obj <- rddiagram::SkapaStapelDiagram(skickad_df = dplyr::mutate(
+                                   dplyr::filter(konsumtionskompassen_df, year == max(year)),
+                                   fokus = ifelse(region_namn == ValdGeografi, 1, ifelse(region_namn == "Sverige", 2, 0))),
+                                 skickad_x_var = "region_namn",
+                                 skickad_y_var = "varde",
+                                 diagram_titel = diagram_titel,
+                                 x_var_fokus = "fokus",
+                                 manual_x_axis_text_vjust = 1,
+                                 manual_x_axis_text_hjust = 1,
+                                 output_mapp = utmapp,
+                                 filnamn_diagram = diagramfilnamn,
+                                 x_axis_sort_value = TRUE,
+                                 diagram_capt = diagram_capt,
+                                 x_axis_lutning = 45,
+                                 manual_y_axis_title = "kg koldioxidekvivalenter per person",
+                                 manual_color = rddiagram::diagramfarger("rus_tre_fokus"),
+                                 skriv_till_diagramfil = skriv_diagramfil)
+
+    gg_list <- c(gg_list, list(gg_obj))
+    names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfilnamn, ".png")
+
+    # ta bort tidsbestämning (tex. år) ur objektsnamnet, för användning i tex r-markdownrapporter
+    if (ggobjektfilnamn_utan_tid) {
+      names(gg_list)[[length(gg_list)]] <- sub("_ar.*", "", diagramfilnamn)
+    }
+
+    # Tidsserie där två eller flera regioner jämförs
+    diagram_titel <- paste0("Förändring i hushållens totala utsläpp  ", min(konsumtionskompassen_df$year), "-", max(konsumtionskompassen_df$year))
+
+    diagramfilnamn <- glue::glue("kons_utslapp_tid_ar_{min(konsumtionskompassen_df$year)}_{max(konsumtionskompassen_df$year)}.png")
+
+    tidsserie_df <- konsumtionskompassen_df |>
+      dplyr::filter(regionkod %in% jmf) |>
+      dplyr::group_by(region_namn) |>
+      dplyr::mutate(index = varde / varde[year == min(year)] * 100) |>
+      dplyr::ungroup()
+
+    gg_obj <- ggplot2::ggplot(tidsserie_df, ggplot2::aes(x = year, y = index, color = region_namn, group = region_namn)) +
+      ggplot2::geom_line(linewidth = 1.2) +
+      ggplot2::geom_point(size = 2.5) +
+      ggplot2::scale_color_manual(values = rddiagram::diagramfarger("rus_sex")) +
+      ggplot2::scale_x_continuous(
+        breaks = unique(konsumtionskompassen_df$year),
+        expand = ggplot2::expansion(mult = 0.01)
+      ) +
+      ggplot2::scale_y_continuous(
+        limits = c(0, 120),
+        breaks = seq(0, 120, 20),
+        minor_breaks = seq(0, 120, 5),
+        expand = c(0, 0)
+      ) +
+      ggplot2::labs(
+        title = diagram_titel,
+        x = NULL,
+        y = "Index (startvärde 100)",
+        color = NULL,
+        caption = diagram_capt
+
+      ) +
+      ggplot2::theme_minimal(base_size = 13) +
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(hjust = 0.5, size = 18),
+        legend.position = "bottom",
+        plot.caption = ggplot2::element_text(hjust = 0, face = "italic", size = 11),
+        plot.caption.position = "plot",
+        panel.grid.major = ggplot2::element_line(color = "grey60", linewidth = 0.4),
+        panel.grid.minor.y = ggplot2::element_line(color = "grey85", linewidth = 0.3),
+        panel.grid.minor.x = ggplot2::element_blank(),
+        panel.grid.major.x = ggplot2::element_blank(),
+        axis.text.x = ggplot2::element_text(angle = 0, hjust = 0.5, vjust = 1),
+        plot.margin = ggplot2::margin(t = 10, r = 15, b = 10, l = 10)
+      )
+
+    if (skriv_diagramfil) {
+      ggplot2::ggsave(filename = paste0(utmapp, diagramfilnamn),
+             plot = gg_obj,
+             width = 12,
+             height = 7,
+             dpi = 300)
+    }
+
+    gg_list <- c(gg_list, list(gg_obj))
+    names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfilnamn, ".png")
+
+    if (ggobjektfilnamn_utan_tid) {
+      names(gg_list)[[length(gg_list)]] <- sub("_ar.*", "", diagramfilnamn)
+    }
+
+  }
+
+  if (diag_kommun == TRUE) {
+
+    konsumtionskompassen_kommun_df <- get_kompassen_data(region = rdverktyg::hamtakommuner(lan_kommun)) |>
+      dplyr::mutate(region_namn = rdverktyg::skapa_kortnamn_lan(region_namn)) |>
+      dplyr::rename(varde = kg_co2e_per_capita)
+
+    if (returnera_data == TRUE) {
+      assign("konsumtionskompassen_kommun_df", konsumtionskompassen_kommun_df, envir = .GlobalEnv)
+    }
+
+    ValdGeografi <- rdverktyg::skapa_kortnamn_lan(rdverktyg::hamtaregion_kod_namn(lan_kommun)$region, byt_ut_riket_mot_sverige = TRUE)
+
+    # Jämför kommuner för senaste år
+    # Bugfix (confirmed via kodgranskning): originalet använde konsumtionskompassen_df$year (läns-
+    # datasetet, från diag_lan-blocket ovan) i stället för konsumtionskompassen_kommun_df$year - gav
+    # fel år i titeln/filnamnet om de två datasetens senaste år skiljer sig åt, och kraschade helt om
+    # diag_lan = FALSE (konsumtionskompassen_df existerar då inte alls).
+    diagram_titel <- paste0("Hushållens totala utsläpp år ", max(konsumtionskompassen_kommun_df$year))
+    diagramfilnamn <- glue::glue("kons_utslapp_{ValdGeografi}_ar_{max(konsumtionskompassen_kommun_df$year)}.png")
+    diagram_capt <- "Källa: https://www.konsumtionskompassen.se (Stockholm Environment Institute (SEI),2025)\nBearbetning: Samhällsanalys, Region Dalarna\nDiagramförklaring: kg koldioxidekvivalenter per person. För en mer ingående förklaring av hur data har beräknats,\nse https://www.konsumtionskompassen.se"
+
+    gg_obj <- rddiagram::SkapaStapelDiagram(skickad_df = dplyr::mutate(
+                                   dplyr::filter(konsumtionskompassen_kommun_df, year == max(year)),
+                                   fokus = ifelse(region_namn == ValdGeografi, 1, ifelse(region_namn == "Sverige", 2, 0))),
+                                 skickad_x_var = "region_namn",
+                                 skickad_y_var = "varde",
+                                 diagram_titel = diagram_titel,
+                                 manual_x_axis_text_vjust = 1,
+                                 manual_x_axis_text_hjust = 1,
+                                 x_var_fokus = "fokus",
+                                 output_mapp = utmapp,
+                                 filnamn_diagram = diagramfilnamn,
+                                 x_axis_sort_value = TRUE,
+                                 diagram_capt = diagram_capt,
+                                 x_axis_lutning = 45,
+                                 manual_y_axis_title = "kg koldioxidekvivalenter per person",
+                                 manual_color = rddiagram::diagramfarger("rus_tre_fokus"),
+                                 skriv_till_diagramfil = skriv_diagramfil)
+
+    gg_list <- c(gg_list, list(gg_obj))
+    names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfilnamn, ".png")
+
+    # ta bort tidsbestämning (tex. år) ur objektsnamnet, för användning i tex r-markdownrapporter
+    if (ggobjektfilnamn_utan_tid) {
+      names(gg_list)[[length(gg_list)]] <- sub("_ar.*", "", diagramfilnamn)
+    }
+
+  }
+
+  return(gg_list)
+}
