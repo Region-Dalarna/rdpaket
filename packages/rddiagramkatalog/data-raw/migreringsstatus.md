@@ -6,13 +6,13 @@ matchning (datakälla, PxWeb-tabellkoder/URL:er, `diagram_capt`-text, kommentare
 källfilerna och paketets `diag_*()`-funktioner - inte bara namnlikhet, eftersom namnen
 ofta ändrades rejält vid migrering.
 
-Skapad: 2026-11-07. Uppdatera vid behov när fler diagram migreras - filen är ingen
+Skapad: 2026-11-07. Senast uppdaterad: 2026-11-07 (efter migrering av Profet-gruppen +
+10 enklare diagram). Uppdatera vid behov när fler diagram migreras - filen är ingen
 automatiskt genererad rapport.
 
-**Status vid skapandet:** av 94 källskript i `~/gh/diagram` är ~73 migrerade (58 med hög/
-identifierad konfidens + ett antal med medel/låg konfidens, se markeringar nedan), 2 är
-kartor (annan kategori, se grupp 3 nedan), 1 är avvecklad, och **~18-21 filer återstår**
-att migrera eller utreda.
+**Status:** av 94 källskript i `~/gh/diagram` är ~88 migrerade (eller avsiktligt inte
+migrerade - se "Avsiktligt inte migrerade" nedan), 2 är kartor (annan kategori), och
+**ca 2-4 filer återstår** att migrera eller utreda - se avsnitt B.
 
 Rader märkta **medel konfidens** eller **låg konfidens** är inte 100 % verifierade - dubbelkolla
 innan du litar blint på dem.
@@ -55,7 +55,6 @@ innan du litar blint på dem.
 | diagram_inkomst_region_aldersgrupper_kv_man.R | diag_inkomst_scb.R | Bekräftat via TAB5278 |
 | diag_inr_flytt_in_ut_netto_per_alder.R | diag_inr_flytt_in_ut_netto_per_alder_scb.R | |
 | diag_inr_flytt_in_ut_netto_tidsserie_per_alder.R | diag_inr_flytt_in_ut_netto_tidsserie_per_alder_scb.R | |
-| diag_inr_flyttnetto_inr_utr_fodda_scb.R | diag_inr_flyttnetto_inr_utr_fodda_scb.R | Identiskt namn |
 | diagram_kvalifikationskrav_SCB.R | diag_kvalifikationskrav_scb.R | Bekräftat via TAB4436 |
 | diagram_lediga_jobb_E1.R | diag_lediga_jobb_tid_sektor_scb.R | **Medel konfidens** |
 | diag_nettoinkomst_konsuppdelad_per_aldersgrupp_scb.R | diag_nettoinkomst_kon_aldersgrupp_scb.R | Identisk exempelbilds-URL |
@@ -81,7 +80,27 @@ innan du litar blint på dem.
 | diag_etableringstid_kon_lan_tidsserie_RUS.R | diag_etablering_utb_kon_scb.R | **Låg-medel konfidens**, se ovan |
 | diag_ek_standard_boende_valdeltagande_vistelsetid_IntRap.R | diag_diverse_vistelsetid_scb.R | **Låg konfidens** |
 | ej säkert identifierad | diag_fodda_manad_scb.R | Källa ej verifierad - trolig kandidat: diag_bef_forandring_per_manad.R |
-| ej säkert identifierad | diag_utrikes_fodda_tidsserie_scb.R | Källa ej verifierad |
+
+### Tillagda 2026-11-07 (Profet-gruppen + 10 enklare diagram)
+
+| Källfil (~/gh/diagram) | Funktion (rddiagramkatalog) | Kommentar |
+|---|---|---|
+| diag_befolkningsprognos_scb_api_profet.R (`SkapaBefPrognosDiagram()`) | diag_befolkningsprognos_profet_scb.R | Filen innehöll tre funktioner - se nedan och pilotomgångstabellen |
+| diag_befolkningsprognos_scb_api_profet.R (`SkapaBefPrognosDiagram_befforandr()`) | diag_befolkningsforandring_komponenter_prognos_scb.R | |
+| diag_befolkningsprognos_scb_api_profet.R (`SkapaBefPrognosDiagram_InrUtrFodda()`) | *(ingen - se pilotomgångstabellen)* | Tredje funktionen i samma fil - INTE migrerad separat, källkoden bekräftar att den redan är ersatt av `diag_utrikes_fodda_tidsserie_scb` |
+| diag_befprognos_diff_tot_per_kommun.R | diag_befprognos_diff_tot_per_region_scb.R | Funktionsnamnet i källan matchade redan (filnamnet gjorde inte det) |
+| diag_bef_utfall_prognos_per_aldersgrupp_scb.R | diag_bef_utfall_prognos_per_aldersgrupp_scb.R | Identiskt namn |
+| diag_bef_utfall_prognos_per_region_totalt_scb.R | diag_bef_utfall_prognos_per_region_totalt_scb.R | Identiskt namn |
+| diag_antal_asylsokande_1984_IntRap.R | diag_asylsokande_tidsserie_scb.R | |
+| diag_fek_foradlingsvarde_bransch_lan_scb.R | diag_fek_foradlingsvarde_bransch_lan_scb.R | Identiskt namn |
+| diag_fek_lve_tidsserie.R | diag_fek_lve_tidsserie.R | Identiskt namn |
+| diagram_flytt_inrikes_bakgrund_SCB.R | diag_inr_flyttnetto_bakgrund_scb.R | Döpt om vid migrering - undvek namnkrock med `diag_inr_flyttnetto_inr_utr_fodda_scb.R` (se avsnitt B, samma funktionsnamn i källan) |
+| diagram_bransch_utb_alder_NMS.R | diag_bransch_utb_alder_nms.R | |
+| diagram_andel_offentligt_BAS.R | diag_andel_offentligt_bas_scb.R | RAMS-varianten (diagram_andel_offentligt.R) migrerades INTE - se "Avsiktligt inte migrerade" |
+| diagram_arb_stallen_mm_foretagarna.R | diag_arb_stallen_mm_foretagarna.R | Identiskt namn |
+| diagram_gymnasiantagning_antal_kon.R | diag_gymnasieantagna_antal.R | |
+| diag_utslapp_konsumtion_SEI.R | diag_utslapp_konsumtion_sei.R | |
+| diagram_kompetensbrist_lan_TVV.R | diag_kompetensbrist_lan_tvv.R | |
 
 ## Pilotomgång - migrerades innan detta projekt (15 filer)
 
@@ -103,71 +122,46 @@ Fanns redan i paketet innan migreringsprojektet startade. Tas med för fullstän
 | diagram_narstaendepenning_forsakringskassan_kv_man.R | diag_narstaendepenning_forsakringskassan.R |
 | diag_storsta_fodelseland_IntRap.R | diag_storsta_fodelseland_scb.R |
 | diag_befolkningsforandring_region_kon_manad_scb.R | diag_befolkningsforandring_manad_scb.R (**medel konfidens**) |
+| diag_bef_inrikes_utrikes_antal_forandring_prognos_IntRap.R (`diagram_utrikes_fodda_tidsserie()`) | diag_utrikes_fodda_tidsserie_scb.R | Bekräftat 2026-11-07: dess `diag_forandring_prognos`-gren (TAB6008) ersätter explicit `SkapaBefPrognosDiagram_InrUtrFodda()` i diag_befolkningsprognos_scb_api_profet.R - källkodens egen kommentar där bekräftar det. Rättar en tidigare "oklar status"-notering. |
 
-## B) Ej migrerade källskript - grupperade efter utmaning (~18-21 filer)
+## B) Ej migrerade källskript (ca 2-4 filer, exklusive avsiktligt skippade)
 
-### 1. Befolkningsprognos (Profet) - läser lokala filer från G:
-Samma mönster som de 7 redan hårdade NMS-diagrammen (se `R/intern_indata.R`-hjälpfunktionerna).
-Pekar mot `G:/Samhällsanalys/Statistik/Befolkningsprognoser/Profet/datafiler/` eller liknande.
-Behöver samma typ av filvalidering, plus att en "auto-caption"-logik (källtext väljs beroende
-på vilken tabell som faktiskt användes) behöver portas.
-
-- `diag_befolkningsprognos_scb_api_profet.R`
-- `diag_befprognos_diff_tot_per_kommun.R`
-- `diag_bef_utfall_prognos_per_aldersgrupp_scb.R`
-- `diag_bef_utfall_prognos_per_region_totalt_scb.R`
-- `diag_bef_inrikes_utrikes_antal_forandring_prognos_IntRap.R`
-
-### 2. `source()` mot externa GitHub-skript
-Hämtar inte bara data från fil, utan kör `source("https://raw.githubusercontent.com/...")`
-mot skript i ett annat repo (Region-Dalarna/hamta_data). Hämtlogiken måste skrivas om till
-paketfunktioner, inte bara wrappas.
-
-- `diag_befprognos_diff_tot_per_kommun.R` (även grupp 1)
-- `karta_pendling_leaflet.R`
-
-### 3. Kartor (Leaflet/GeoPackage) - annan diagramtyp
+### 1. Kartor (Leaflet/GeoPackage) - annan diagramtyp, avsiktligt skippat för nu
 Producerar interaktiva kartor, inte `ggplot`. Passar inte `diag_*()`-mönstret (som alltid
 returnerar en namngiven lista av ggplot-objekt) - kräver eget grepp, kanske en separat
-funktionsfamilj (`karta_*()`?) snarare än att tvingas in i samma mall.
+funktionsfamilj (`karta_*()`?) snarare än att tvingas in i samma mall. Nedprioriterat av
+användaren 2026-11-06, tas upp som egen fråga senare.
 
 - `karta_befolkningsprognos.R`
-- `karta_pendling_leaflet.R`
+- `karta_pendling_leaflet.R` - källar även mot `hamta_data` via `source()`, så den
+  skulle dessutom kräva samma typ av utredning som löstes för Profet-gruppen
+  (se `rdhamtadata`-paketet) innan den kan migreras rent.
 
-### 4. Namnlika men INTE dubbletter - två olika datakällor
-Undersöktes specifikt eftersom de flaggats tidigare som möjlig dubblett. Svar: **inte en
-dubblett** - samma mått (andel offentligt anställda) men från två olika statistikprodukter
-(RAMS vs. BAS), alltså avsiktligt separata diagram. Föreslår tydligare suffix vid migrering
-(`_rams_scb` / `_bas_scb`) för att undvika framtida förväxling.
+### 2. Namnkrock - mer avancerad syskonfunktion, inte migrerad än
+Upptäckt 2026-11-07 vid migrering av `diagram_flytt_inrikes_bakgrund_SCB.R`: källrepot har
+TVÅ skilda skript med identiskt funktionsnamn (`diag_inr_flyttnetto_inr_utr_fodda`) - ett av
+de "3 dubbla funktionsnamn-par" som flaggats tidigare i projektet utan att då kunna
+återskapas. Den enklare varianten (utan åldersuppdelning) migrerades som
+`diag_inr_flyttnetto_bakgrund_scb` - döpt om för att inte krocka med denna.
 
-- `diagram_andel_offentligt.R` (RAMS, tabell AM0207Z / v2 TAB5838)
-- `diagram_andel_offentligt_BAS.R` (BAS, tabell AM0210B/SektorSyssM)
+- `diag_inr_flyttnetto_inr_utr_fodda_scb.R` - mer funktionsrik variant: stöder
+  åldersgrupper (`alder_grp`) och relativt flyttnetto (`relativt_flyttnetto`), som den
+  migrerade varianten saknar. Inte migrerad.
 
-Inga andra tydliga dubblettpar hittades i denna genomgång - de "3 paren" som nämndes någon
-gång tidigare i projektet gick inte att återskapa utan mer kontext om vilka de syftade på.
-
-### 5. Avvecklat källskript
-- `diagram_arb_stallen_mm_ejAPI.R` - avvecklad enligt egen källkod (print-varning), ignorera.
-- `diagram_arb_stallen_mm_foretagarna.R` - den aktiva ersättaren. Väntar fortfarande på migrering.
-
-### 6. NMS/G:-baserat, samma mönster som redan hårdade diagram
-- `diagram_bransch_utb_alder_NMS.R`
-
-### 7. Unika externa datakällor (inte SCB PxWeb) - kräver egen hämtlogik per källa
-- `diagram_gymnasiantagning_antal_kon.R` (Dalarnas kommunförbund)
-- `diagram_kompetensbrist_lan_TVV.R` (Tillväxtverket, tillvaxtdata.tillvaxtverket.se)
-- `diag_utslapp_konsumtion_SEI.R` (konsumtionskompassen.se + Kolada)
-
-### 8. Raka PxWeb-diagram utan särskild utmaning
-Redo att migreras med det etablerade mönstret, inga kända komplikationer.
-
-- `diag_antal_asylsokande_1984_IntRap.R`
-- `diag_fek_foradlingsvarde_bransch_lan_scb.R`
-- `diag_fek_lve_tidsserie.R`
-- `diagram_flytt_inrikes_bakgrund_SCB.R`
-
-### 9. Oklar status - gick inte att verifiera med säkerhet
-Kan redan vara täckta av en migrerad funktion (se tabell A, låg/medel konfidens), men
-skulle behöva en manuell dubbelkoll innan de migreras på nytt (för att undvika dubbelarbete).
+### 3. Oklar status - gick inte att verifiera med säkerhet
+Kan redan vara täckt av en migrerad funktion (se tabell A, låg/medel konfidens), men skulle
+behöva en manuell dubbelkoll innan den migreras på nytt (för att undvika dubbelarbete).
 
 - `diag_bef_forandring_per_manad.R`
+
+## Avsiktligt inte migrerade (avvecklade eller ersatta källskript)
+
+- `diagram_arb_stallen_mm_ejAPI.R` - avvecklad enligt egen källkod (print-varning).
+  Ersättaren `diagram_arb_stallen_mm_foretagarna.R` är migrerad
+  (`diag_arb_stallen_mm_foretagarna`).
+- `diagram_andel_offentligt.R` (RAMS, tabell AM0207Z/v2 TAB5838) - källkoden flaggar
+  UTTRYCKLIGEN ("OBS!! ... Använd istället diagram_andel_offentligt_BAS.R OBS!!") att den är
+  ersatt av BAS-varianten och bygger på frusen data (2019-2021). Ersättaren
+  `diagram_andel_offentligt_BAS.R` är migrerad (`diag_andel_offentligt_bas_scb`). **Rättar en
+  tidigare slutsats** (2026-11-06) som felaktigt klassade de två som "inte dubbletter, båda
+  avsiktligt separata" - den bedömningen missade RAMS-filens egen avvecklingsvarning.
