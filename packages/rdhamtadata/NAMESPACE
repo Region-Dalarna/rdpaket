@@ -2,3 +2,4 @@
 
 export(hamta_befprognos_data)
 export(hamta_befprognos_diff_data)
+export(hamta_befprognos_riket_inr_utr_scb)

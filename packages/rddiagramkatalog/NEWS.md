@@ -1,3 +1,44 @@
+# rddiagramkatalog 0.0.0.9029
+
+Migrerade 5 befolkningsprognosdiagram ("Profet"-gruppen) från
+Region-Dalarna/diagram. Dessa bygger nu på det nya paketet
+`rdhamtadata` (`hamta_befprognos_data()`,
+`hamta_befprognos_diff_data()`, `hamta_befprognos_riket_inr_utr_scb()`)
+i stället för `source()` mot externa GitHub-skript:
+
+- `diag_befolkningsprognos_profet_scb` (ex. `SkapaBefPrognosDiagram()`
+  i diag_befolkningsprognos_scb_api_profet.R)
+- `diag_befolkningsforandring_komponenter_prognos_scb` (ex.
+  `SkapaBefPrognosDiagram_befforandr()` i samma källfil)
+- `diag_bef_utfall_prognos_per_aldersgrupp_scb`
+- `diag_bef_utfall_prognos_per_region_totalt_scb`
+- `diag_befprognos_diff_tot_per_region_scb` (ex.
+  diag_befprognos_diff_tot_per_kommun.R)
+
+En tredje funktion i diag_befolkningsprognos_scb_api_profet.R,
+`SkapaBefPrognosDiagram_InrUtrFodda()`, migrerades INTE - källkoden
+bekräftar uttryckligen att den redan är ersatt av pxweb2r-anrop i
+`diag_utrikes_fodda_tidsserie_scb()` (dess `diag_forandring_prognos`-gren,
+TAB6008), som redan fanns i paketet sedan tidigare.
+
+Alla fem diagram jämför tidigare kunnat regionens prognos mot riket
+("00"), vilket krävde en v1-pxweb-tabell (BE0401A/BefolkprognRevNb) som
+källkoden själv flaggade som "inte migrerad till pxweb2r ännu". Hittade
+och verifierade v2-motsvarigheten (TAB5974, "Folkmängd efter
+inrikes/utrikes född, ålder och kön") via `pxweb2r::pxweb2_search_tables()`
+och en live-jämförelse av variabelstruktur/etiketter - nu en vanlig
+pxweb2r-baserad funktion (`rdhamtadata::hamta_befprognos_riket_inr_utr_scb()`)
+i stället för legacy v1-pxweb-kod.
+
+Bugfix (confirmed via källkoden, egen TODO-kommentar i originalet):
+`diag_befprognos_diff_tot_per_region_scb` använde en odefinierad
+variabel `skickad_jmfrtid` i en gren som bygger diagramtiteln vid flera
+prognosår - bytt till `jmfrtid`. Grenen körs inte i praktiken idag
+(hamta_befprognos_diff_data() ger alltid ett enda prognosår) men är
+fixad för att inte krascha om fler prognosår stöds i framtiden.
+
+Alla fem smoke-testade live (inklusive riket-grenen) mot SCB:s API.
+
 # rddiagramkatalog 0.0.0.9028
 
 Migrerade 7 diagram som läser indata från lokala/manuellt underhållna

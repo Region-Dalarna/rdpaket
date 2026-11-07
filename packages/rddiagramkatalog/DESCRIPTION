@@ -1,6 +1,6 @@
 Package: rddiagramkatalog
 Title: Katalog av färdiga diagramfunktioner för Region Dalarnas rapporter
-Version: 0.0.0.9028
+Version: 0.0.0.9029
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
@@ -30,6 +30,7 @@ Imports:
     pxweb2r,
     RColorBrewer,
     rddiagram,
+    rdhamtadata,
     rdpostgres,
     readr,
     rdverktyg,
@@ -55,5 +56,6 @@ Config/roxygen2/version: 8.1.0
 Remotes:
     FaluPeppe/pxweb2r,
     Region-Dalarna/rdpaket/packages/rddiagram,
+    Region-Dalarna/rdpaket/packages/rdhamtadata,
     Region-Dalarna/rdpaket/packages/rdpostgres,
     Region-Dalarna/rdpaket/packages/rdverktyg

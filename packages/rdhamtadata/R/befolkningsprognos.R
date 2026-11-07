@@ -509,3 +509,58 @@ hamta_befprognos_diff_data <- function(region_vekt = "20",
 
   return(prognos_diff_df)
 }
+
+#' Riket-nivå befolkningsprognos uppdelat på inrikes/utrikes födda
+#'
+#' Hämtar SCB:s befolkningsprognos för riket, uppdelat på ålder, kön och
+#' födelseregion (inrikes/utrikes född). Till skillnad från
+#' [hamta_befprognos_data()] finns ingen regionuppdelning i källtabellen -
+#' den täcker bara riket. Motsvarar v1-tabellen BE0401A/BefolkprognRevNb,
+#' vars v2-id verifierades (2026) via identisk variabelstruktur
+#' (InrikesUtrikes/Alder/Kon/ContentsCode/Tid) och identiska etiketter
+#' (`"inrikes födda"`/`"utrikes födda"`/`"inrikes och utrikes födda"`,
+#' ContentsCode `"Antal"`): TAB5974, "Folkmängd efter inrikes/utrikes född,
+#' ålder och kön. År 2026-2120".
+#'
+#' Tabellen saknar en egen totalkod för ålder - samtliga individuella åldrar
+#' (0-104 år samt "105+ år") hämtas därför explicit, på samma sätt som på
+#' flera andra ställen i paketet (se t.ex. `diag_utrikes_fodda_tidsserie_scb`
+#' i rddiagramkatalog).
+#'
+#' Ett smalt, specialiserat hjälpanrop - används av rddiagramkatalogs
+#' befolkningsprognosdiagram när prognosen jämförs mot riket.
+#'
+#' @param tid_koder Vilka år som ska hämtas. `"*"` (standard) ger alla
+#'   tillgängliga år.
+#' @param kon_klartext `c("män", "kvinnor")` (standard).
+#'
+#' @return En `tibble` med kolumnerna `regionkod` (alltid `"00"`), `region`
+#'   (alltid `"Sverige"`), `kön`, `ålder`, `fodelseregion`, `år`, `Antal`.
+#' @export
+hamta_befprognos_riket_inr_utr_scb <- function(tid_koder = "*", kon_klartext = c("män", "kvinnor")) {
+
+  alder_varden <- pxweb2r::pxweb2_get_values("TAB5974", "Alder", quiet = TRUE)
+  alder_koder <- alder_varden$code[alder_varden$type == "Variable"]
+
+  tid_vekt <- if (identical(tid_koder, "*")) {
+    pxweb2r::pxweb2_get_values("TAB5974", "Tid", quiet = TRUE)$code
+  } else {
+    as.character(tid_koder)
+  }
+
+  pxweb2r::pxweb2_get_data(
+    table = "TAB5974",
+    query = list(
+      InrikesUtrikes = c("inrikes födda", "utrikes födda"),
+      Alder = alder_koder,
+      Kon = kon_klartext,
+      ContentsCode = "Antal",
+      Tid = tid_vekt
+    ),
+    on_all_values_invalid = "null", quiet = TRUE
+  ) |>
+    dplyr::rename(Antal = value, fodelseregion = `inrikes/utrikes född`) |>
+    dplyr::select(-tabellinnehåll) |>
+    dplyr::mutate(regionkod = "00", region = "Sverige") |>
+    dplyr::relocate(regionkod, region)
+}
