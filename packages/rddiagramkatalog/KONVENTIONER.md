@@ -66,12 +66,16 @@ migrerade.
   gadgetens förhandsvisning) plockar automatiskt ut `$ggplot`-elementet
   när det finns, så nya `karta_*()`-funktioner fungerar utan vidare
   ändringar där - bara följ samma returstruktur.
-- Om en funktion av naturliga skäl inte passar in i det här mönstret
-  (källskriptet skriver flera filer per anrop, t.ex. en karta per
-  kommun i en loop) - stanna upp och bestäm en lösning innan
-  implementation i stället för att tvinga in det. Se avsnittet om
-  `karta_pendling_leaflet.R` i `migreringsstatus.md` för ett exempel där
-  det här uppstod.
+- En `karta_*()`-funktion som kan producera FLERA kartor i ett och samma
+  anrop (t.ex. en per kommun/typ, likt originalskriptens
+  batch-/loop-mönster) returnerar i stället en namngiven lista där varje
+  element SJÄLVT är `list(ggplot = ..., leaflet = ...)` - namnen ska
+  motsvara filnamnet (utan ändelse) respektive karta skulle sparas som,
+  precis som för `diag_*()`. Katalogens delade infrastruktur känner av
+  det här automatiskt (kollar om `$ggplot` finns direkt på toppnivån
+  först, annars på det första elementet) - ingen ytterligare ändring
+  behövs där så länge strukturen följs. Första exemplet:
+  `karta_pendling_scb()` (flera kommuner/pendlingstyper i ett anrop).
 
 ## Paketberoenden - inga lösa skript
 

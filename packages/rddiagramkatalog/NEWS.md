@@ -1,4 +1,18 @@
-# rddiagramkatalog 0.0.0.9034
+# rddiagramkatalog 0.0.0.9035
+
+Stöd för `karta_*()`-funktioner som kan producera FLERA kartor i ett
+anrop (t.ex. en per kommun/pendlingstyp, som källrepots batch-/
+loop-baserade kartskript gör) - returnerar en namngiven lista där varje
+element själv är `list(ggplot=, leaflet=)`, i stället för att listan är
+en enda karta. Sökindexet, `data-raw/skapa_exempeldiagram.R` och
+`diagramkatalog_utforska()`s förhandsvisning känner nu av tre fall:
+en enkel-karta-funktion (`$ggplot` finns direkt), en flera-kartor-
+funktion (`$ggplot` finns på första elementet), eller ett vanligt
+`diag_*()`-diagram (första elementet är redan ett `ggplot`-objekt).
+Se KONVENTIONER.md. Första användningen: den kommande
+`karta_pendling_scb()`.
+
+
 
 `diag_inr_flyttnetto_bakgrund_scb()`: två buggar hittade (av användaren,
 som granskade en testbild) och fixade i `facet_aldersgrupp`-läget från

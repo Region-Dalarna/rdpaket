@@ -54,9 +54,18 @@ resultat <- lapply(funktioner, function(fn) {
 
     diagram_lista <- do.call(fn, anropsargument)
 
-    # karta_*()-funktioner returnerar list(ggplot = ..., leaflet = ...) - plockar ggplot-versionen
-    # om den finns som ett namngivet element, annars (diag_*()-funktionerna) det första elementet.
-    plot_obj <- if ("ggplot" %in% names(diagram_lista)) diagram_lista$ggplot else diagram_lista[[1]]
+    # karta_*()-funktioner som producerar EN karta returnerar list(ggplot = ..., leaflet = ...) -
+    # plockar ggplot-versionen direkt. karta_*()-funktioner som kan producera FLERA kartor i ett
+    # anrop (t.ex. en per kommun/pendlingstyp) returnerar i stället en namngiven lista där varje
+    # element SJÄLVT är list(ggplot = ..., leaflet = ...) - plockar ggplot ur det första elementet
+    # då. Annars (diag_*()-funktionerna) är det första elementet redan ett ggplot-objekt.
+    plot_obj <- if ("ggplot" %in% names(diagram_lista)) {
+      diagram_lista$ggplot
+    } else if ("ggplot" %in% names(diagram_lista[[1]])) {
+      diagram_lista[[1]]$ggplot
+    } else {
+      diagram_lista[[1]]
+    }
 
     ggplot2::ggsave(
       filename = bildfil,

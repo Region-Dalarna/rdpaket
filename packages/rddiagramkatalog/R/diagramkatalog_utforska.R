@@ -208,10 +208,19 @@ diagramkatalog_utforska <- function() {
           NULL
         })
         if (is.null(resultat)) return(NULL)
-        # karta_*()-funktioner returnerar list(ggplot = ..., leaflet = ...) - förhandsvisningen här
-        # (shiny::renderPlot()) kan bara visa ggplot-versionen, så den plockas ut explicit om den
-        # finns som ett namngivet element, annars (diag_*()-funktionerna) det första elementet.
-        if ("ggplot" %in% names(resultat)) resultat$ggplot else resultat[[1]]
+        # karta_*()-funktioner som producerar EN karta returnerar list(ggplot = ..., leaflet = ...)
+        # - förhandsvisningen här (shiny::renderPlot()) kan bara visa ggplot-versionen, som plockas
+        # ut direkt. karta_*()-funktioner som kan producera FLERA kartor i ett anrop returnerar i
+        # stället en lista där varje element självt är list(ggplot = ..., leaflet = ...) - visar då
+        # bara den FÖRSTA kartan (ingen navigering mellan flera förhandsvisningar ännu). Annars
+        # (diag_*()-funktionerna) är det första elementet redan ett ggplot-objekt.
+        if ("ggplot" %in% names(resultat)) {
+          resultat$ggplot
+        } else if ("ggplot" %in% names(resultat[[1]])) {
+          resultat[[1]]$ggplot
+        } else {
+          resultat[[1]]
+        }
       })
     })
 
