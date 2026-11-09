@@ -1,3 +1,16 @@
+# rddiagram 0.0.0.9022
+
+## Ny funktion: `skriv_leaflet_till_fil()`
+
+Motsvarigheten till `skriv_till_diagramfil()` för leaflet-/htmlwidget-objekt.
+`karta_filformat = "html"` (standard) sparar en interaktiv fil - en portabel
+enfilsversion om pandoc är installerat, annars en html-fil med en
+medföljande `_files`-mapp (faller tillbaka automatiskt i stället för att
+krascha). `karta_filformat = "png"` sparar en statisk ögonblicksbild via
+paketet webshot2 (kräver det paketet samt en lokalt installerad
+Chrome/Chromium). Används av de nya `karta_*()`-funktionerna i
+rddiagramkatalog.
+
 # rddiagram 0.0.0.9020
 
 ## Ny parameter: `jamforelse_label` - siffra inne i jämförelsecirkeln
