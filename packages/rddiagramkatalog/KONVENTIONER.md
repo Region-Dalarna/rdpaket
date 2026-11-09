@@ -223,7 +223,16 @@ diagram spänner över brytpunkten:
    stället att felet som uppstår är tydligt och handlingsbart, inte ett
    kryptiskt R-fel.
 8. Om funktionen genererar ett diagram: kör (eller be om att få köra)
-   `data-raw/skapa_exempeldiagram.R` så att katalogen får en exempelbild.
+   `data-raw/skapa_exempeldiagram.R` så att katalogen får en exempelbild -
+   eller låt det ske automatiskt, se nästa stycke.
+
+Exempelbilder behöver inte genereras för hand varje gång. `data-raw/
+schemalagd_bildgenerering.R` är tänkt att köras regelbundet (t.ex.
+veckovis) via en schemaläggare på en maskin med åtkomst till G:-enheten
+och databasen - den hämtar senaste koden, installerar paketen, kör
+`skapa_exempeldiagram.R`, och committar/pushar nya bilder automatiskt
+om något saknades. Körs INTE som vanlig GitHub Actions-körning (molnet
+når varken G: eller databasen).
 9. Commit med ett beskrivande meddelande (se nästa avsnitt) och push.
 10. Uppdatera `data-raw/migreringsstatus.md` om det gäller en migrering
     från källrepot.
