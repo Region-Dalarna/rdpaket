@@ -1,3 +1,11 @@
+# rdppt 0.0.0.9001
+
+* De interna hjälpfunktionerna `intern_sakerstall_indatafil()` och
+  `intern_meddela_manuell_datakalla()` (i `R/intern_indata.R`) är borttagna
+  - samma två funktioner fanns duplicerade i `rddiagramkatalog`, och finns
+  nu i stället delade som `rdverktyg::sakerstall_indatafil()`/
+  `rdverktyg::meddela_manuell_datakalla()`. Ingen ändrad funktionalitet.
+
 # rdppt 0.0.0.9000
 
 * Nytt paket. Utbrutet ur `G:/skript/ppt/skapa_ppt_grund.R` och
