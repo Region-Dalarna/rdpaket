@@ -1,4 +1,49 @@
-# rddiagramkatalog 0.0.0.9035
+# rddiagramkatalog 0.0.0.9036
+
+## Ny funktion: `karta_pendling_scb()` - andra kartan, första med flera-kartor-stöd
+
+Migrerad ur `karta_pendling_leaflet.R` (`karta_arbetspendling()`). Tar emot
+en eller flera kommuner och en eller flera pendlingstyper
+(`vald_pendlingstyp = "alla"` ger samtliga fyra) i ETT anrop, precis som
+källskriptets batch-/loop-mönster - returnerar en lista med en
+`list(ggplot=, leaflet=)` per kombination (eller bara `list(ggplot=,
+leaflet=)` rakt av om det blir exakt en kombination), enligt den nya
+konventionen i 0.0.0.9035.
+
+**Medvetet designval (beslutat med användaren):** ggplot-versionen är INTE
+samma flödeslinjer som leaflet-versionen (ingen vettig statisk motsvarighet
+till flera överlappande flödeslinjer) - i stället en enklare, regional
+choroplettkarta över NETTOPENDLING per kommun (inpendlare minus
+utpendlare, oavsett vald `vald_pendlingstyp`) i det län den valda kommunen
+ligger i, med samma mönster (`rddiagram::skapa_koropletkarta_ggplot()`,
+diskreta nollcentrerade klasser) som `karta_befolkningsprognos_scb()`.
+Beräknas en gång per län och återanvänds för alla kombinationer i samma
+län, i stället för att räknas om i onödan. Datahämtningen breddades
+därför till hela länet/länen (inte bara de uttryckligen valda
+kommunerna) - choropletten behöver nettopendling för samtliga kommuner i
+länet.
+
+leaflet-versionen behåller källskriptets detaljerade flödeslinjer
+oförändrade i sak. gpkg-export (GeoPackage + valfria `.qml`/`.lyrx`-
+stilfiler för QGIS/ArcGIS) behålls som en egen parameter
+(`skriv_gpkg_fil`/`skriv_stilfiler`), oberoende av `skriv_leaflet_fil`.
+
+**Borttaget:** `mapview`/`webshot` (gamla, inte `webshot2`) som
+beroenden - leaflet-filen skrivs nu med `rddiagram::skriv_leaflet_till_fil()`
+i stället för `mapview::mapshot()`, vilket även löser en bugg som redan
+var dokumenterad i källskriptets egen kommentar (mapview laddades aldrig
+någonstans, fungerade bara i sessioner där det råkade vara laddat av
+andra skäl). Ett icke-fungerande försök att bifoga ett eget CSS-stilblad
+från en lokal G:-sökväg (källskriptets egen kommentar: "har inte fått
+detta att fungera") togs också bort - gjorde ingenting, och sökvägen
+fanns bara på en specifik dators G:-enhet.
+
+**Inte testat mot en riktig databas** - samma begränsning som
+`karta_befolkningsprognos_scb()` (`rdgis::hamta_karta()` kräver en live
+PostGIS-koppling). Datahämtningen (`rdhamtadata::hamta_pendling_rams_bas_scb()`)
+och list-/namnuppbyggnadslogiken för flera kombinationer är testade.
+
+
 
 Stöd för `karta_*()`-funktioner som kan producera FLERA kartor i ett
 anrop (t.ex. en per kommun/pendlingstyp, som källrepots batch-/

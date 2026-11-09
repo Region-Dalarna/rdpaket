@@ -7,13 +7,13 @@ källfilerna och paketets `diag_*()`-funktioner - inte bara namnlikhet, eftersom
 ofta ändrades rejält vid migrering.
 
 Skapad: 2026-11-07. Senast uppdaterad: 2026-11-09 (efter migrering av
-karta_befolkningsprognos.R - första `karta_*()`-funktionen). Uppdatera vid behov när fler
+karta_pendling_leaflet.R - båda kartorna är nu migrerade). Uppdatera vid behov när fler
 diagram/kartor migreras - filen är ingen automatiskt genererad rapport.
 
-**Status:** av 94 källskript i `~/gh/diagram` är ~90 migrerade (eller avsiktligt inte
+**Status:** av 94 källskript i `~/gh/diagram` är ~91 migrerade (eller avsiktligt inte
 migrerade - se "Avsiktligt inte migrerade" nedan; två av dessa källskript blev en enda
-sammanslagen funktion, se mappningstabellen), och **ca 1-2 filer återstår** att migrera eller
-utreda - se avsnitt B.
+sammanslagen funktion, se mappningstabellen), och **ca 1 fil återstår** att utreda - se
+avsnitt B.
 
 Rader märkta **medel konfidens** eller **låg konfidens** är inte 100 % verifierade - dubbelkolla
 innan du litar blint på dem.
@@ -125,20 +125,18 @@ Fanns redan i paketet innan migreringsprojektet startade. Tas med för fullstän
 | diag_befolkningsforandring_region_kon_manad_scb.R | diag_befolkningsforandring_manad_scb.R (**medel konfidens**) |
 | diag_bef_inrikes_utrikes_antal_forandring_prognos_IntRap.R (`diagram_utrikes_fodda_tidsserie()`) | diag_utrikes_fodda_tidsserie_scb.R | Bekräftat 2026-11-07: dess `diag_forandring_prognos`-gren (TAB6008) ersätter explicit `SkapaBefPrognosDiagram_InrUtrFodda()` i diag_befolkningsprognos_scb_api_profet.R - källkodens egen kommentar där bekräftar det. Rättar en tidigare "oklar status"-notering. |
 | karta_befolkningsprognos.R | karta_befolkningsprognos_scb.R | **Nytt 2026-11-09:** första `karta_*()`-funktionen - se NEWS.md 0.0.0.9033. Returnerar `list(ggplot=, leaflet=)` i stället för bara ett ggplot-objekt. Inte testad mot en riktig databas (`rdgis::hamta_karta()` kräver live PostGIS). |
+| karta_pendling_leaflet.R (`karta_arbetspendling()`) | karta_pendling_scb.R | **Nytt 2026-11-09:** andra `karta_*()`-funktionen, första med stöd för flera kartor i ett anrop - se NEWS.md 0.0.0.9036. ggplot-delen är ett MEDVETET annorlunda, kompletterande innehåll (regional nettopendling-choroplett) jämfört med leafletens detaljerade flödeslinjer - beslutat med användaren. Inte testad mot en riktig databas. |
 
-## B) Ej migrerade källskript (1-3 filer, exklusive avsiktligt skippade)
+## B) Ej migrerade källskript (ca 1 fil, exklusive avsiktligt skippade)
 
-### 1. Kartor (Leaflet) - `karta_*()`-mönstret är nu etablerat, en fil kvar
-`karta_befolkningsprognos.R` är migrerad (se mappningstabellen ovan) och satte mönstret:
-`karta_*()`-funktioner returnerar alltid `list(ggplot=, leaflet=)`, ggplot-versionen byggs med
-`rddiagram::skapa_koropletkarta_ggplot()`, leaflet-versionen skrivs till fil med den nya
-`rddiagram::skriv_leaflet_till_fil()` (html eller png via webshot2).
+### Kartorna är klara
+Både `karta_befolkningsprognos.R` och `karta_pendling_leaflet.R` är migrerade (se mappningstabellen
+ovan). `karta_*()`-mönstret: en karta returnerar `list(ggplot=, leaflet=)`, flera kartor i ett anrop
+returnerar en namngiven lista där varje element självt är `list(ggplot=, leaflet=)` - se
+KONVENTIONER.md. ggplot-delen byggs med `rddiagram::skapa_koropletkarta_ggplot()`, leaflet-delen
+skrivs till fil med `rddiagram::skriv_leaflet_till_fil()` (html eller png via webshot2).
 
-- `karta_pendling_leaflet.R` - **ingen ggplot-motsvarighet i källan** (bara leaflet) - kräver att en
-  ny ggplot-visualisering designas, inte bara porteras. Källar även mot `hamta_data` via `source()`,
-  samma typ av utredning som löstes för Profet-gruppen (se `rdhamtadata`-paketet). Nästa i tur.
-
-### 2. Oklar status - gick inte att verifiera med säkerhet
+### Oklar status - gick inte att verifiera med säkerhet
 Kan redan vara täckt av en migrerad funktion (se tabell A, låg/medel konfidens), men skulle
 behöva en manuell dubbelkoll innan den migreras på nytt (för att undvika dubbelarbete).
 
