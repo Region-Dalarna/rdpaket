@@ -6,14 +6,13 @@ matchning (datakälla, PxWeb-tabellkoder/URL:er, `diagram_capt`-text, kommentare
 källfilerna och paketets `diag_*()`-funktioner - inte bara namnlikhet, eftersom namnen
 ofta ändrades rejält vid migrering.
 
-Skapad: 2026-11-07. Senast uppdaterad: 2026-11-09 (efter sammanslagning av de två
-inrikes-flyttnetto-skripten till en funktion). Uppdatera vid behov när fler diagram
-migreras - filen är ingen automatiskt genererad rapport.
+Skapad: 2026-11-07. Senast uppdaterad: 2026-11-09 (efter migrering av
+karta_befolkningsprognos.R - första `karta_*()`-funktionen). Uppdatera vid behov när fler
+diagram/kartor migreras - filen är ingen automatiskt genererad rapport.
 
-**Status:** av 94 källskript i `~/gh/diagram` är ~89 migrerade (eller avsiktligt inte
+**Status:** av 94 källskript i `~/gh/diagram` är ~90 migrerade (eller avsiktligt inte
 migrerade - se "Avsiktligt inte migrerade" nedan; två av dessa källskript blev en enda
-sammanslagen funktion, se mappningstabellen), 2 är kartor (annan kategori, under
-utredning för eventuell migrering), och **ca 1-3 filer återstår** att migrera eller
+sammanslagen funktion, se mappningstabellen), och **ca 1-2 filer återstår** att migrera eller
 utreda - se avsnitt B.
 
 Rader märkta **medel konfidens** eller **låg konfidens** är inte 100 % verifierade - dubbelkolla
@@ -125,19 +124,19 @@ Fanns redan i paketet innan migreringsprojektet startade. Tas med för fullstän
 | diag_storsta_fodelseland_IntRap.R | diag_storsta_fodelseland_scb.R |
 | diag_befolkningsforandring_region_kon_manad_scb.R | diag_befolkningsforandring_manad_scb.R (**medel konfidens**) |
 | diag_bef_inrikes_utrikes_antal_forandring_prognos_IntRap.R (`diagram_utrikes_fodda_tidsserie()`) | diag_utrikes_fodda_tidsserie_scb.R | Bekräftat 2026-11-07: dess `diag_forandring_prognos`-gren (TAB6008) ersätter explicit `SkapaBefPrognosDiagram_InrUtrFodda()` i diag_befolkningsprognos_scb_api_profet.R - källkodens egen kommentar där bekräftar det. Rättar en tidigare "oklar status"-notering. |
+| karta_befolkningsprognos.R | karta_befolkningsprognos_scb.R | **Nytt 2026-11-09:** första `karta_*()`-funktionen - se NEWS.md 0.0.0.9033. Returnerar `list(ggplot=, leaflet=)` i stället för bara ett ggplot-objekt. Inte testad mot en riktig databas (`rdgis::hamta_karta()` kräver live PostGIS). |
 
-## B) Ej migrerade källskript (ca 2-4 filer, exklusive avsiktligt skippade)
+## B) Ej migrerade källskript (1-3 filer, exklusive avsiktligt skippade)
 
-### 1. Kartor (Leaflet/GeoPackage) - annan diagramtyp, avsiktligt skippat för nu
-Producerar interaktiva kartor, inte `ggplot`. Passar inte `diag_*()`-mönstret (som alltid
-returnerar en namngiven lista av ggplot-objekt) - kräver eget grepp, kanske en separat
-funktionsfamilj (`karta_*()`?) snarare än att tvingas in i samma mall. Nedprioriterat av
-användaren 2026-11-06, tas upp som egen fråga senare.
+### 1. Kartor (Leaflet) - `karta_*()`-mönstret är nu etablerat, en fil kvar
+`karta_befolkningsprognos.R` är migrerad (se mappningstabellen ovan) och satte mönstret:
+`karta_*()`-funktioner returnerar alltid `list(ggplot=, leaflet=)`, ggplot-versionen byggs med
+`rddiagram::skapa_koropletkarta_ggplot()`, leaflet-versionen skrivs till fil med den nya
+`rddiagram::skriv_leaflet_till_fil()` (html eller png via webshot2).
 
-- `karta_befolkningsprognos.R`
-- `karta_pendling_leaflet.R` - källar även mot `hamta_data` via `source()`, så den
-  skulle dessutom kräva samma typ av utredning som löstes för Profet-gruppen
-  (se `rdhamtadata`-paketet) innan den kan migreras rent.
+- `karta_pendling_leaflet.R` - **ingen ggplot-motsvarighet i källan** (bara leaflet) - kräver att en
+  ny ggplot-visualisering designas, inte bara porteras. Källar även mot `hamta_data` via `source()`,
+  samma typ av utredning som löstes för Profet-gruppen (se `rdhamtadata`-paketet). Nästa i tur.
 
 ### 2. Oklar status - gick inte att verifiera med säkerhet
 Kan redan vara täckt av en migrerad funktion (se tabell A, låg/medel konfidens), men skulle
