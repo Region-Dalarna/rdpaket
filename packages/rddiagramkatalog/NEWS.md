@@ -1,3 +1,13 @@
+# rddiagramkatalog 0.0.0.9032
+
+`diag_inr_flyttnetto_bakgrund_scb()`: ny parameter `facet_aldersgrupp` -
+visar åldersgrupperna (`alder_grp`) som facet i diagrammet i stället för
+att bara summera ihop dem (vilket tidigare var enda alternativet - datan
+var rätt men syntes aldrig uppdelad i själva diagrammet, en känd
+begränsning från 0.0.0.9031). Kan inte kombineras med `facet_diagram`
+(bara en facet-variabel i taget). Stänger av `visa_totalvarden`, som
+annars skulle räkna fel per åldersgrupp.
+
 # rddiagramkatalog 0.0.0.9031
 
 Slog ihop `diag_inr_flyttnetto_bakgrund_scb()` med sitt tidigare omigrerade

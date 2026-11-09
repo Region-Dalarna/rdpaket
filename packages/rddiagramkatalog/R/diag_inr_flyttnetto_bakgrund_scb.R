@@ -23,6 +23,12 @@
 #'   som absoluta tal. Stänger av `visa_totalvarden`.
 #' @param facet_diagram Om `TRUE` skapas ett gemensamt facet-diagram för
 #'   alla regioner, annars (standard) ett diagram per region.
+#' @param facet_aldersgrupp Om `TRUE` facetteras varje diagram på
+#'   åldersgrupperna (kräver att `alder_grp` är satt - inte `"*"`), i
+#'   stället för att summera ihop dem. Kan inte kombineras med
+#'   `facet_diagram = TRUE` (facet stöder bara en variabel åt gången).
+#'   Stänger av `visa_totalvarden` (totalstrecket räknas annars fel per
+#'   åldersgrupp).
 #' @param diag_fargvekt Färgvektor för diagrammet.
 #' @param diagram_capt Diagrammets källtext.
 #' @param utmapp Mapp där diagram (och ev. excelfil) sparas.
@@ -56,6 +62,7 @@ diag_inr_flyttnetto_bakgrund_scb <- function(
     gruppera_namn = NA,
     relativt_flyttnetto = FALSE,
     facet_diagram = FALSE,
+    facet_aldersgrupp = FALSE,
     diag_fargvekt = rddiagram::diagramfarger("rd_gron")[c(1, 4)],
     diagram_capt = "Källa: SCB:s öppna statistikdatabas\nBearbetning: Samhällsanalys, Region Dalarna\nInrikes flyttnetto är skillnaden mellan de som flyttat in till och de som flyttat ut från en kommun/region, från och till andra kommuner/regioner",
     utmapp = rdverktyg::utskriftsmapp(),
@@ -87,6 +94,14 @@ diag_inr_flyttnetto_bakgrund_scb <- function(
   if ("00" %in% region_vekt) {
     stop("Region 00 (Riket) saknar inrikes flyttnetto och kan inte användas.\nÄndra region_vekt")
   }
+
+  if (facet_aldersgrupp && identical(alder_grp, "*")) {
+    stop("facet_aldersgrupp = TRUE kräver att alder_grp är satt till faktiska åldersgrupper (inte \"*\").")
+  }
+  if (facet_aldersgrupp && facet_diagram) {
+    stop("facet_aldersgrupp och facet_diagram kan inte kombineras - facet stöder bara en variabel åt gången (antingen region eller åldersgrupp).")
+  }
+  if (facet_aldersgrupp) visa_totalvarden <- FALSE   # totalstrecket räknas annars fel per åldersgrupp
 
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil || skriv_till_excelfil)
 
@@ -364,7 +379,8 @@ diag_inr_flyttnetto_bakgrund_scb <- function(
     # tvärtom) när bägge genereras till samma utmapp - annars identiskt filnamn i båda fallen.
     diagramfil <- stringr::str_replace_all(
       paste0("Flyttnetto_", stringr::str_remove(relativt_txt, " "), if (nzchar(relativt_txt)) "_" else "",
-             reg_txt, if (!identical(alder_grp, "*")) "_aldersgrupper" else "", ".", filformat),
+             reg_txt, if (!identical(alder_grp, "*")) "_aldersgrupper" else "",
+             if (facet_aldersgrupp) "_facet" else "", ".", filformat),
       "__", "_"
     )
 
@@ -381,7 +397,7 @@ diag_inr_flyttnetto_bakgrund_scb <- function(
       manual_y_axis_title = if (relativt_flyttnetto) "procent" else "",
       geom_position_stack = if (relativt_flyttnetto) FALSE else TRUE,
       fokusera_varden = total_list,
-      facet_grp = if (facet_diagram) "region" else NULL,
+      facet_grp = if (facet_aldersgrupp) "aldersgrupp" else if (facet_diagram) "region" else NULL,
       skriv_till_diagramfil = skriv_diagramfil && !visa_totalvarden,
       manual_color = diag_fargvekt,
       diagram_bildformat = filformat,

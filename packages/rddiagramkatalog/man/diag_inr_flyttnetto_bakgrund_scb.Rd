@@ -10,6 +10,7 @@ diag_inr_flyttnetto_bakgrund_scb(
   gruppera_namn = NA,
   relativt_flyttnetto = FALSE,
   facet_diagram = FALSE,
+  facet_aldersgrupp = FALSE,
   diag_fargvekt = rddiagram::diagramfarger("rd_gron")[c(1, 4)],
   diagram_capt =
     "Källa: SCB:s öppna statistikdatabas\\nBearbetning: Samhällsanalys, Region Dalarna\\nInrikes flyttnetto är skillnaden mellan de som flyttat in till och de som flyttat ut från en kommun/region, från och till andra kommuner/regioner",
@@ -46,6 +47,13 @@ som absoluta tal. Stänger av \code{visa_totalvarden}.}
 
 \item{facet_diagram}{Om \code{TRUE} skapas ett gemensamt facet-diagram för
 alla regioner, annars (standard) ett diagram per region.}
+
+\item{facet_aldersgrupp}{Om \code{TRUE} facetteras varje diagram på
+åldersgrupperna (kräver att \code{alder_grp} är satt - inte \code{"*"}), i
+stället för att summera ihop dem. Kan inte kombineras med
+\code{facet_diagram = TRUE} (facet stöder bara en variabel åt gången).
+Stänger av \code{visa_totalvarden} (totalstrecket räknas annars fel per
+åldersgrupp).}
 
 \item{diag_fargvekt}{Färgvektor för diagrammet.}
 
