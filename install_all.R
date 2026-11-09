@@ -14,6 +14,7 @@ paket <- c(
   "rdgeorouting",
   "rdshinyappar",
   "rddeploy",
+  "rdppt",
   "rdadminportal",
   "rd"
 )

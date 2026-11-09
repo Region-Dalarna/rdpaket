@@ -19,6 +19,7 @@ Planen för uppdelningen finns i `funktioner/PLAN-paketuppdelning.md`.
 | `rdgeorouting` | postgis, pgRouting, pendlingsnätverk (ur `func_GIS.R`) | **klart** (SQL-pipelines behöver verifieras mot riktig pgRouting-databas) |
 | `rdgtfs` | GTFS-hämtning, normalisering, geospatial filtrering och PostGIS-lagring | **klart** |
 | `rddeploy` | github/git, webbrapport/portal, shiny-app-scaffolding & -publicering | **klart** |
+| `rdppt` | bygg PowerPoint-presentationer från diagram, ur `G:/skript/ppt/` | **pågående** |
 | `rdshinyappar` | runtime-hjälpare för Shiny-appar (DB, lösenord, telemetri) | **klart** |
 | `rdadminportal` | adminportal + serverdrift: landningssidor, ikoner, nedladdningar, cron | **klart** |
 | `rd` | paraplypaket – `library(rd)` drar in analyspaketen | **klart** |
