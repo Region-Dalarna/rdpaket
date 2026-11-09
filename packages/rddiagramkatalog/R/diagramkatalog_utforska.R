@@ -208,7 +208,10 @@ diagramkatalog_utforska <- function() {
           NULL
         })
         if (is.null(resultat)) return(NULL)
-        resultat[[1]]
+        # karta_*()-funktioner returnerar list(ggplot = ..., leaflet = ...) - förhandsvisningen här
+        # (shiny::renderPlot()) kan bara visa ggplot-versionen, så den plockas ut explicit om den
+        # finns som ett namngivet element, annars (diag_*()-funktionerna) det första elementet.
+        if ("ggplot" %in% names(resultat)) resultat$ggplot else resultat[[1]]
       })
     })
 

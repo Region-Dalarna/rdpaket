@@ -1,3 +1,36 @@
+# rddiagramkatalog 0.0.0.9033
+
+## Ny funktionsfamilj: `karta_*()`
+
+Första kartan migrerad: `karta_befolkningsprognos_scb()` (ur
+`karta_befolkningsprognos.R`), choroplettkarta över prognosticerad
+befolkningsförändring per kommun. Till skillnad från `diag_*()`-funktionerna
+returnerar `karta_*()`-funktioner alltid BÅDE en ggplot- och en
+leaflet-version: `list(ggplot = <ggplot-objekt>, leaflet = <leaflet-objekt>)`.
+ggplot-versionen byggs med den redan befintliga delade byggfunktionen
+`rddiagram::skapa_koropletkarta_ggplot()` (samma mall/profil som används av
+andra kartor i paketet, i stället för att återskapa ggplot-koden för hand
+som källskriptet gjorde) - skillnad mot originalet: använder diskreta,
+nollcentrerade klasser i stället för en kontinuerlig färgskala, eftersom
+den delade byggfunktionens kontinuerliga läge centrerar mittfärgen på
+MITTEN AV DATAINTERVALLET snarare än på 0, vilket hade varit missvisande
+för ett ökning/minskning-mått om intervallet inte råkar vara symmetriskt.
+
+Leaflet-versionen skrivs till fil med den nya `rddiagram::skriv_leaflet_till_fil()`
+(se rddiagram NEWS.md) - html (standard, interaktiv) eller png (statisk,
+via webshot2) via den nya parametern `leaflet_filformat`.
+
+Sökindexet (`sok_diagram()`/`diagramkatalog_utforska()`) och
+`skapa_exempeldiagram.R` känner nu av `karta_*()`-funktioner på samma sätt
+som `diag_*()` - förhandsvisningen i gadgeten och de automatiskt
+genererade exempelbilderna använder ggplot-versionen av returlistan.
+
+**Inte testat mot en riktig databas** - `rdgis::hamta_karta()` kräver en
+live PostGIS-koppling (`rdpostgres::uppkoppling_db()`), inte tillgänglig i
+den här miljön. Datahämtningen (pxweb2r) och hela fil-skriv-pipelinen
+(inkl. webshot2) är däremot testade fullt ut mot SCB:s live-API respektive
+en egen testkarta.
+
 # rddiagramkatalog 0.0.0.9032
 
 `diag_inr_flyttnetto_bakgrund_scb()`: ny parameter `facet_aldersgrupp` -

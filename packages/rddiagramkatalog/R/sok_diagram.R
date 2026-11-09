@@ -71,16 +71,16 @@ intern_funktion_hjalptext_html <- function(fn) {
   paste(rader, collapse = "\n")
 }
 
-# Bygger sökindexet: en rad per exporterad diag_*()-funktion, med titel,
+# Bygger sökindexet: en rad per exporterad diag_*()- eller karta_*()-funktion, med titel,
 # beskrivning och parameterdokumentation (allt från .Rd-filen, dvs. samma
 # text som visas av ?funktionsnamn) hopslaget till en sökbar textsträng.
 #' @noRd
 intern_diagram_index <- function() {
   rd_db <- intern_rd_db()
-  # Enbart diag_*()-funktionerna - inte paketets egna katalogverktyg
-  # (sok_diagram(), diagramkatalog_utforska()), som också är exporterade men
-  # inte är diagram att söka fram.
-  funktioner <- sort(grep("^diag_", getNamespaceExports("rddiagramkatalog"), value = TRUE))
+  # Enbart diag_*()- och karta_*()-funktionerna - inte paketets egna
+  # katalogverktyg (sok_diagram(), diagramkatalog_utforska()), som också är
+  # exporterade men inte är diagram/kartor att söka fram.
+  funktioner <- sort(grep("^(diag_|karta_)", getNamespaceExports("rddiagramkatalog"), value = TRUE))
 
   rader <- lapply(funktioner, function(fn) {
     rd <- rd_db[[paste0(fn, ".Rd")]]

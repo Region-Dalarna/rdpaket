@@ -1,4 +1,4 @@
-# Genererar ett exempeldiagram per diag_*()-funktion, med rena
+# Genererar ett exempeldiagram per diag_*()- och karta_*()-funktion, med rena
 # standardinställningar (ingen anpassning av enskilda parametrar), till
 # man/figures/<funktionsnamn>.png. Kopierar därefter bilderna till det
 # installerade paketet också (om det är installerat), så
@@ -32,7 +32,7 @@ library(rddiagramkatalog)
 utmapp <- file.path("packages", "rddiagramkatalog", "man", "figures")
 if (!dir.exists(utmapp)) dir.create(utmapp, recursive = TRUE)
 
-funktioner <- sort(grep("^diag_", getNamespaceExports("rddiagramkatalog"), value = TRUE))
+funktioner <- sort(grep("^(diag_|karta_)", getNamespaceExports("rddiagramkatalog"), value = TRUE))
 
 resultat <- lapply(funktioner, function(fn) {
   cat("Genererar exempel för", fn, "... ")
@@ -45,17 +45,22 @@ resultat <- lapply(funktioner, function(fn) {
 
   res <- tryCatch({
     args <- formals(get(fn, envir = asNamespace("rddiagramkatalog")))
-    # Kör med rena standardvärden för allt utom skriv_diagramfil, som alltid
-    # tvingas till FALSE - vi vill ha full kontroll över filnamn/storlek här
-    # i stället för funktionens egen (ofta annorlunda namngivna) sparlogik.
+    # Kör med rena standardvärden för allt utom skriv_diagramfil/skriv_leaflet_fil, som alltid
+    # tvingas till FALSE - vi vill ha full kontroll över filnamn/storlek här i stället för
+    # funktionens egen (ofta annorlunda namngivna) sparlogik.
     anropsargument <- list()
     if ("skriv_diagramfil" %in% names(args)) anropsargument$skriv_diagramfil <- FALSE
+    if ("skriv_leaflet_fil" %in% names(args)) anropsargument$skriv_leaflet_fil <- FALSE
 
     diagram_lista <- do.call(fn, anropsargument)
 
+    # karta_*()-funktioner returnerar list(ggplot = ..., leaflet = ...) - plockar ggplot-versionen
+    # om den finns som ett namngivet element, annars (diag_*()-funktionerna) det första elementet.
+    plot_obj <- if ("ggplot" %in% names(diagram_lista)) diagram_lista$ggplot else diagram_lista[[1]]
+
     ggplot2::ggsave(
       filename = bildfil,
-      plot = diagram_lista[[1]],
+      plot = plot_obj,
       width = 7, height = 4.5, dpi = 110
     )
     "OK"

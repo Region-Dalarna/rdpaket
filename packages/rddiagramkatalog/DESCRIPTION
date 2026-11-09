@@ -1,6 +1,6 @@
 Package: rddiagramkatalog
 Title: Katalog av färdiga diagramfunktioner för Region Dalarnas rapporter
-Version: 0.0.0.9032
+Version: 0.0.0.9033
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
@@ -24,19 +24,23 @@ Imports:
     ggplot2,
     ggrepel,
     glue,
+    htmltools,
     httr,
+    leaflet,
     openxlsx,
     purrr,
     pxweb,
     pxweb2r,
     RColorBrewer,
     rddiagram,
+    rdgis,
     rdhamtadata,
     rdpostgres,
     readr,
     rdverktyg,
     readxl,
     rvest,
+    sf,
     stringi,
     stringr,
     tibble,
@@ -50,7 +54,8 @@ Suggests:
     miniUI,
     rstudioapi,
     shiny,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    webshot2
 Config/testthat/edition: 3
 URL: https://github.com/Region-Dalarna/rdpaket
 BugReports: https://github.com/Region-Dalarna/rdpaket/issues
@@ -58,6 +63,7 @@ Config/roxygen2/version: 8.1.0
 Remotes:
     FaluPeppe/pxweb2r,
     Region-Dalarna/rdpaket/packages/rddiagram,
+    Region-Dalarna/rdpaket/packages/rdgis,
     Region-Dalarna/rdpaket/packages/rdhamtadata,
     Region-Dalarna/rdpaket/packages/rdpostgres,
     Region-Dalarna/rdpaket/packages/rdverktyg
