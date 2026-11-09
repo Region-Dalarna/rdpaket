@@ -1,3 +1,13 @@
+# rddiagramkatalog 0.0.0.9037
+
+## Städning
+
+* De interna hjälpfunktionerna `intern_sakerstall_indatafil()` och
+  `intern_meddela_manuell_datakalla()` är flyttade till
+  `rdverktyg::sakerstall_indatafil()`/`rdverktyg::meddela_manuell_datakalla()`
+  - samma två funktioner fanns duplicerade i `rdppt`. Ingen ändrad
+  funktionalitet, bara en delad implementation.
+
 # rddiagramkatalog 0.0.0.9036
 
 ## Ny funktion: `karta_pendling_scb()` - andra kartan, första med flera-kartor-stöd

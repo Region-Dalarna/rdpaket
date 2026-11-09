@@ -83,7 +83,7 @@ diag_fek_lve_tidsserie <- function(
   # Samma fasta, delade mallfil som i diag_fek_foradlingsvarde_bransch_lan_scb() - validerad en gång
   # här och läst en gång (originalet läste filen två gånger, en per nyckeltyp).
   branschnyckel_sokvag <- "g:/skript/nycklar/Bransch_FEK.xlsx"
-  intern_sakerstall_indatafil(branschnyckel_sokvag)
+  rdverktyg::sakerstall_indatafil(branschnyckel_sokvag)
   branschnyckel_fil <- readxl::read_xlsx(branschnyckel_sokvag)
 
   # !is.na(Kod)/!is.na(Avdelning) filtreras bort explicit innan join: dplyr::left_join() matchar annars

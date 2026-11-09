@@ -46,10 +46,10 @@ diag_utb_niva_bakgr_alder_nms <- function(diagram_capt =  "Källa: NMS-databasen
 
   # ========================================== Läser in data ============================================
   # Läser in data från Excel (ursprung NMS-databasen) - en fast, specifik datafil (ingen tidsserie av
-  # nya årgångar att leta "senaste" bland), så intern_sakerstall_indatafil() valideras direkt mot den
+  # nya årgångar att leta "senaste" bland), så rdverktyg::sakerstall_indatafil() valideras direkt mot den
   # exakta sökvägen och skriver ut en konsolvarning om att datan är en manuell ögonblicksbild.
   indatafil <- "G:/skript/projekt/data/kompetensforsorjning/9_feb_24_utdata_utbildningsniva_befolkning_bakgrund.xlsx"
-  intern_sakerstall_indatafil(indatafil)
+  rdverktyg::sakerstall_indatafil(indatafil)
   df <- openxlsx::read.xlsx(indatafil,sheet=1)
 
   if(diag_utb_bakgrund == TRUE){

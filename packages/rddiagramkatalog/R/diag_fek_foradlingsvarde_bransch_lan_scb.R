@@ -96,10 +96,10 @@ diag_fek_foradlingsvarde_bransch_lan_scb <- function(
 
   # ========================================== Läser in branschnyckel ============================================
   # Mall för att gruppera SNI-branscher (Avdelning) till färre branschgrupper - en fast, delad mallfil
-  # (inte en tidsserie med nya årgångar), så intern_sakerstall_indatafil() valideras direkt mot den
+  # (inte en tidsserie med nya årgångar), så rdverktyg::sakerstall_indatafil() valideras direkt mot den
   # exakta sökvägen och skriver ut en konsolvarning om att datan är en manuell ögonblicksbild.
   branschnyckel_sokvag <- "g:/skript/nycklar/Bransch_FEK.xlsx"
-  intern_sakerstall_indatafil(branschnyckel_sokvag)
+  rdverktyg::sakerstall_indatafil(branschnyckel_sokvag)
   branschnyckel <- readxl::read_xlsx(branschnyckel_sokvag) |>
     dplyr::select(Avdelning, Grupp_kod, Branschgrupp) |>
     dplyr::distinct()

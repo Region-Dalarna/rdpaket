@@ -57,7 +57,7 @@ skapa_ppt_fran_lista <- function(pptlista,
   anv_epost <- anv_uppgifter_txt$epost
 
   # Inställningar ==================================================
-  intern_sakerstall_indatafil(mall_fil)
+  rdverktyg::sakerstall_indatafil(mall_fil)
   pres <- officer::read_pptx(mall_fil) # Läs in pptx-mallen
 
   # =================================================== Titelslide =============================================================

@@ -53,13 +53,13 @@ diag_gymnasieantagna_antal <- function(utmapp = rdverktyg::utskriftsmapp(),
 
   # =============================================== Läser in data ===============================================
   # Själva hämtlogiken (gymnasieantagningen_las_in_data()) ligger på G: och är inte tillgänglig för
-  # portning hit - behandlas som en svart låda. intern_sakerstall_indatafil() validerar att
+  # portning hit - behandlas som en svart låda. rdverktyg::sakerstall_indatafil() validerar att
   # skriptfilen finns innan den körs, i stället för ett kryptiskt source()-fel, och
-  # intern_meddela_manuell_datakalla() skriver ut en konsolvarning om att datan är en manuell
+  # rdverktyg::meddela_manuell_datakalla() skriver ut en konsolvarning om att datan är en manuell
   # ögonblicksbild.
   gymnasieantagning_skript <- "G:/skript/hamta_data/func_gymnasieantagningen.R"
-  intern_sakerstall_indatafil(gymnasieantagning_skript)
-  intern_meddela_manuell_datakalla("Dalarnas kommunförbunds gymnasieantagningsstatistik (G:/skript/hamta_data/func_gymnasieantagningen.R)")
+  rdverktyg::sakerstall_indatafil(gymnasieantagning_skript)
+  rdverktyg::meddela_manuell_datakalla("Dalarnas kommunförbunds gymnasieantagningsstatistik (G:/skript/hamta_data/func_gymnasieantagningen.R)")
   source(gymnasieantagning_skript, encoding = "utf-8", echo = FALSE)
 
   df <- gymnasieantagningen_las_in_data() |>

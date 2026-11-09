@@ -47,12 +47,12 @@ diag_utslapp_konsumtion_sei <- function(region_vekt = rdverktyg::hamtaAllaLan(),
   gg_list <- list()
 
   # ========================================== Läser in data ============================================
-  # intern_sakerstall_indatafil() validerar att skriptfilen finns innan den körs, i stället för ett
-  # kryptiskt source()-fel, och intern_meddela_manuell_datakalla() skriver ut en konsolvarning om att
+  # rdverktyg::sakerstall_indatafil() validerar att skriptfilen finns innan den körs, i stället för ett
+  # kryptiskt source()-fel, och rdverktyg::meddela_manuell_datakalla() skriver ut en konsolvarning om att
   # datan är en manuell ögonblicksbild.
   konsumtionskompassen_skript <- "G:/skript/jon/Webbskrapning/hamta_data_konsumtionskompassen.R"
-  intern_sakerstall_indatafil(konsumtionskompassen_skript)
-  intern_meddela_manuell_datakalla("Konsumtionskompassen, SEI (G:/skript/jon/Webbskrapning/hamta_data_konsumtionskompassen.R)")
+  rdverktyg::sakerstall_indatafil(konsumtionskompassen_skript)
+  rdverktyg::meddela_manuell_datakalla("Konsumtionskompassen, SEI (G:/skript/jon/Webbskrapning/hamta_data_konsumtionskompassen.R)")
   source(konsumtionskompassen_skript)
 
   if (diag_lan == TRUE) {

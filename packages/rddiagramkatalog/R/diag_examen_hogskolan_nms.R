@@ -47,10 +47,10 @@ diag_examen_hogskolan_nms <- function(utmapp = rdverktyg::utskriftsmapp(),
   df <- openxlsx::read.xlsx(latest_file)
 
   # Mall för att få klartext (utbildningsnamn) - en fast, delad mallfil (inte en tidsserie med nya
-  # årgångar som högskoleexamen-datan ovan), så intern_sakerstall_indatafil() används här i stället
+  # årgångar som högskoleexamen-datan ovan), så rdverktyg::sakerstall_indatafil() används här i stället
   # för intern_hamta_senaste_fil().
   mall_sun_sokvag <- "G:/skript/projekt/data/kompetensforsorjning/mall_sun2020inr.xlsx"
-  intern_sakerstall_indatafil(mall_sun_sokvag)
+  rdverktyg::sakerstall_indatafil(mall_sun_sokvag)
   mall_sun <- openxlsx::read.xlsx(mall_sun_sokvag, sheet = 1)
   mall_sun_2siffer <- openxlsx::read.xlsx(mall_sun_sokvag, sheet = 2) |>
     dplyr::mutate("SUN2020Inr_2siffer" = as.character(SUN2020Inr_2siffer))

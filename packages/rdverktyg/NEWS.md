@@ -1,3 +1,15 @@
+# rdverktyg 0.0.0.9007
+
+## Nya funktioner
+
+* `sakerstall_indatafil()` och `meddela_manuell_datakalla()`: flyttade hit
+  från `rddiagramkatalog` och `rdppt`, där samma två funktioner fanns
+  duplicerade (oexporterade, interna) i båda paketen. Används för att
+  validera att en manuellt underhållen fil (t.ex. på G:) finns, med ett
+  tydligt felmeddelande om den saknas, och för att skriva en konsekvent
+  konsolvarning om att innehållet är en ögonblicksbild som inte hämtas
+  live eller genereras automatiskt.
+
 # rdverktyg 0.0.0.9004
 
 ## Nya parametrar
