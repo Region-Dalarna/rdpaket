@@ -1,3 +1,12 @@
+# rdhamtadata 0.0.0.9003
+
+* Ny funktion `hamta_pendling_rams_bas_scb()` - pendlingsdata (RAMS/BAS)
+  mellan bostads- och arbetsställekommun, från fyra v2-tabeller
+  (TAB5850/TAB333/TAB334/TAB1830). Utbrutet ur `Region-Dalarna/hamta_data`,
+  som redan var ren pxweb2r (ingen `funktioner`-repot/legacy pxweb-koppling)
+  - ingen omskrivning behövdes utöver namespace-porteringen. Används av
+  den kommande `karta_pendling_scb()` i rddiagramkatalog.
+
 # rdhamtadata 0.0.0.9002
 
 * `hamta_befprognos_data()` skriver nu ut samma typ av konsolvarning som
