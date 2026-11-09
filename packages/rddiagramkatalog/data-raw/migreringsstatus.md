@@ -6,13 +6,15 @@ matchning (datakälla, PxWeb-tabellkoder/URL:er, `diagram_capt`-text, kommentare
 källfilerna och paketets `diag_*()`-funktioner - inte bara namnlikhet, eftersom namnen
 ofta ändrades rejält vid migrering.
 
-Skapad: 2026-11-07. Senast uppdaterad: 2026-11-07 (efter migrering av Profet-gruppen +
-10 enklare diagram). Uppdatera vid behov när fler diagram migreras - filen är ingen
-automatiskt genererad rapport.
+Skapad: 2026-11-07. Senast uppdaterad: 2026-11-09 (efter sammanslagning av de två
+inrikes-flyttnetto-skripten till en funktion). Uppdatera vid behov när fler diagram
+migreras - filen är ingen automatiskt genererad rapport.
 
-**Status:** av 94 källskript i `~/gh/diagram` är ~88 migrerade (eller avsiktligt inte
-migrerade - se "Avsiktligt inte migrerade" nedan), 2 är kartor (annan kategori), och
-**ca 2-4 filer återstår** att migrera eller utreda - se avsnitt B.
+**Status:** av 94 källskript i `~/gh/diagram` är ~89 migrerade (eller avsiktligt inte
+migrerade - se "Avsiktligt inte migrerade" nedan; två av dessa källskript blev en enda
+sammanslagen funktion, se mappningstabellen), 2 är kartor (annan kategori, under
+utredning för eventuell migrering), och **ca 1-3 filer återstår** att migrera eller
+utreda - se avsnitt B.
 
 Rader märkta **medel konfidens** eller **låg konfidens** är inte 100 % verifierade - dubbelkolla
 innan du litar blint på dem.
@@ -94,7 +96,7 @@ innan du litar blint på dem.
 | diag_antal_asylsokande_1984_IntRap.R | diag_asylsokande_tidsserie_scb.R | |
 | diag_fek_foradlingsvarde_bransch_lan_scb.R | diag_fek_foradlingsvarde_bransch_lan_scb.R | Identiskt namn |
 | diag_fek_lve_tidsserie.R | diag_fek_lve_tidsserie.R | Identiskt namn |
-| diagram_flytt_inrikes_bakgrund_SCB.R | diag_inr_flyttnetto_bakgrund_scb.R | Döpt om vid migrering - undvek namnkrock med `diag_inr_flyttnetto_inr_utr_fodda_scb.R` (se avsnitt B, samma funktionsnamn i källan) |
+| diagram_flytt_inrikes_bakgrund_SCB.R + diag_inr_flyttnetto_inr_utr_fodda_scb.R | diag_inr_flyttnetto_bakgrund_scb.R | **Uppdaterat 2026-11-09:** de två källskripten (som råkade dela funktionsnamn i källan) är nu slagna ihop till en funktion med `alder_grp`/`relativt_flyttnetto` från den rikare varianten. Se NEWS.md 0.0.0.9031 för detaljer och tre buggar som hittades/fixades på vägen. |
 | diagram_bransch_utb_alder_NMS.R | diag_bransch_utb_alder_nms.R | |
 | diagram_andel_offentligt_BAS.R | diag_andel_offentligt_bas_scb.R | RAMS-varianten (diagram_andel_offentligt.R) migrerades INTE - se "Avsiktligt inte migrerade" |
 | diagram_arb_stallen_mm_foretagarna.R | diag_arb_stallen_mm_foretagarna.R | Identiskt namn |
@@ -137,18 +139,7 @@ användaren 2026-11-06, tas upp som egen fråga senare.
   skulle dessutom kräva samma typ av utredning som löstes för Profet-gruppen
   (se `rdhamtadata`-paketet) innan den kan migreras rent.
 
-### 2. Namnkrock - mer avancerad syskonfunktion, inte migrerad än
-Upptäckt 2026-11-07 vid migrering av `diagram_flytt_inrikes_bakgrund_SCB.R`: källrepot har
-TVÅ skilda skript med identiskt funktionsnamn (`diag_inr_flyttnetto_inr_utr_fodda`) - ett av
-de "3 dubbla funktionsnamn-par" som flaggats tidigare i projektet utan att då kunna
-återskapas. Den enklare varianten (utan åldersuppdelning) migrerades som
-`diag_inr_flyttnetto_bakgrund_scb` - döpt om för att inte krocka med denna.
-
-- `diag_inr_flyttnetto_inr_utr_fodda_scb.R` - mer funktionsrik variant: stöder
-  åldersgrupper (`alder_grp`) och relativt flyttnetto (`relativt_flyttnetto`), som den
-  migrerade varianten saknar. Inte migrerad.
-
-### 3. Oklar status - gick inte att verifiera med säkerhet
+### 2. Oklar status - gick inte att verifiera med säkerhet
 Kan redan vara täckt av en migrerad funktion (se tabell A, låg/medel konfidens), men skulle
 behöva en manuell dubbelkoll innan den migreras på nytt (för att undvika dubbelarbete).
 

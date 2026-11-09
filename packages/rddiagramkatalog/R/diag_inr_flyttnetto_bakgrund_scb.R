@@ -2,19 +2,25 @@
 #'
 #' Inrikes flyttnetto (flyttningsnetto till/från andra kommuner/regioner),
 #' uppdelat på född i Sverige/utrikes född. Ett diagram per region, eller
-#' ett gemensamt facet-diagram.
+#' ett gemensamt facet-diagram. Går även att dela upp på åldersgrupper och/
+#' eller visa flyttnettot relativt befolkningen i samma grupper.
 #'
-#' Ingen åldersuppdelning eller relativt flyttnetto - källrepot
-#' (diagram_flytt_inrikes_bakgrund_SCB.R) har ett syskonskript
-#' (diag_inr_flyttnetto_inr_utr_fodda_scb.R) med samma funktionsnamn i
-#' källan men mer funktionalitet (åldersgrupper, relativt flyttnetto) -
-#' inte migrerat än. Döpt om här för att undvika namnkrock den dagen det
-#' migreras.
+#' Slår ihop vad som tidigare var två separata, delvis överlappande
+#' källskript (`diagram_flytt_inrikes_bakgrund_SCB.R` och
+#' `diag_inr_flyttnetto_inr_utr_fodda_scb.R`, som i källrepot råkade dela
+#' funktionsnamn) till en enda funktion.
 #'
 #' @param region_vekt Region(er). `"00"` (Riket) stöds inte - riket saknar
 #'   inrikes flyttnetto.
+#' @param alder_grp Åldersgrupper. `"*"` (standard) = ingen åldersuppdelning.
+#'   För en specifik grupp: `list(c(20, 66))` ger 20-65 år. För flera:
+#'   `list(c(0, 19), c(20, 65), c(66, 79), c(80, 999))` (`999` = högsta
+#'   ålder, dvs. öppen övre gräns).
 #' @param gruppera_namn Namn att gruppera ihop de medskickade regionerna
 #'   till en gemensam rad under, eller `NA` (standard) för ingen gruppering.
+#' @param relativt_flyttnetto Om `TRUE` visas flyttnettot relativt
+#'   befolkningen i samma grupper (föregående års folkmängd) i stället för
+#'   som absoluta tal. Stänger av `visa_totalvarden`.
 #' @param facet_diagram Om `TRUE` skapas ett gemensamt facet-diagram för
 #'   alla regioner, annars (standard) ett diagram per region.
 #' @param diag_fargvekt Färgvektor för diagrammet.
@@ -24,9 +30,10 @@
 #' @param skriv_till_excelfil TRUE om data ska skrivas till en excelfil i
 #'   `utmapp`.
 #' @param returnera_data Skall data returneras till global environment.
-#' @param filformat Bildformat på diagrammet, t.ex. `"png"` (standard).
+#' @param filformat Bildformat på diagrammet, t.ex. `"png"` (standard)
+#'   eller `"svg"`.
 #' @param visa_totalvarden Visa ett streck för totalt netto (inrikes +
-#'   utrikes födda tillsammans).
+#'   utrikes födda tillsammans). Gäller inte när `relativt_flyttnetto = TRUE`.
 #' @param fixa_y_axel_varden_jamna_tal TRUE för jämnare värden på y-axeln.
 #'   Fungerar inte alltid - stäng av vid behov.
 #' @param demo TRUE om man bara vill se ett exempel på diagrammet i
@@ -45,7 +52,9 @@
 #' @export
 diag_inr_flyttnetto_bakgrund_scb <- function(
     region_vekt = "20",
+    alder_grp = "*",
     gruppera_namn = NA,
+    relativt_flyttnetto = FALSE,
     facet_diagram = FALSE,
     diag_fargvekt = rddiagram::diagramfarger("rd_gron")[c(1, 4)],
     diagram_capt = "Källa: SCB:s öppna statistikdatabas\nBearbetning: Samhällsanalys, Region Dalarna\nInrikes flyttnetto är skillnaden mellan de som flyttat in till och de som flyttat ut från en kommun/region, från och till andra kommuner/regioner",
@@ -65,12 +74,10 @@ diag_inr_flyttnetto_bakgrund_scb <- function(
 ) {
 
   # ========================================== Allmän info ============================================
-  # Diagram för inrikes flyttnetto uppdelat på bakgrund (inrikes och utrikes födda). Går att skapa
-  # diagram för flera regioner samtidigt eller som ett facet-diagram.
-  # Förbättringsmöjligheter: Går för tillfället inte att summera flera regioner.
+  # Diagram för inrikes flyttnetto uppdelat på bakgrund (inrikes och utrikes födda), med valfri
+  # uppdelning på åldersgrupper och/eller relativt flyttnetto (mot befolkningen i samma grupper).
   # ========================================== Inställningar ============================================
 
-  # om parametern demo är satt till TRUE så öppnas en flik i webbläsaren med ett exempel på hur diagrammet ser ut och därefter avslutas funktionen
   if (demo) {
     demo_url <- "https://region-dalarna.github.io/utskrivna_diagram/Flyttnetto_bakgrund_Dalarna.png"
     browseURL(demo_url)
@@ -83,66 +90,230 @@ diag_inr_flyttnetto_bakgrund_scb <- function(
 
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil || skriv_till_excelfil)
 
-  gg_list <- list()
-
   if (is.na(diag_fargvekt[1])) diag_fargvekt <- rddiagram::diagramfarger("rd_gron")
+
+  # Hjälpfunktioner: välj individuella ettårsåldrar respektive 100+-koden för en given tabell.
+  # CKM-tabellerna dubblerar annars etiketter över flera aggregeringshierarkier (5-/10-årsklasser) -
+  # samma problem/lösning som i tidigare migrerade skript (t.ex. diag_utrikes_fodda_tidsserie_scb.R).
+  hamta_individuella_aldrar <- function(table_id) {
+    v <- pxweb2r::pxweb2_get_values(table_id, "Alder", quiet = TRUE)
+    v <- v[grepl("^[0-9]+\\+? år$", v$label), ]
+    v <- v[!duplicated(v$label), ]
+    v$code
+  }
+  hamta_100plus_kod <- function(table_id) {
+    v <- pxweb2r::pxweb2_get_values(table_id, "Alder", quiet = TRUE)
+    v$code[v$label == "100+ år" & v$type == "Variable"][1]
+  }
+
+  # ========================================== Åldershantering ============================================
+
+  if (!identical(alder_grp, "*")) {
+    alder_grp <- purrr::map(alder_grp, as.character)
+    alder_vekt <- alder_grp
+
+    # 999 (= högsta ålder) byts ut till 99 för att kunna skapa en sekvensvektor
+    if (any(purrr::map_lgl(alder_grp, ~ "999" %in% .x))) {
+      alder_vekt <- purrr::map(alder_vekt, ~ replace(.x, .x == "999", "99"))
+    }
+    alder_vekt <- as.character(unlist(purrr::map(alder_vekt, ~ seq(.x[1], .x[2]))))
+    if (any(purrr::map_lgl(alder_grp, ~ "999" %in% .x))) alder_vekt <- c(alder_vekt, "100+")
+
+    alder_grp_vekt <- purrr::map_int(alder_grp, ~ readr::parse_number(.[1]))
+    if (alder_grp[[length(alder_grp)]][2] != "100+") {
+      alder_grp_vekt <- append(alder_grp_vekt, readr::parse_number(alder_grp[[length(alder_grp)]][2]) + 1)
+    }
+
+    alder_hamta_historik <- alder_vekt[alder_vekt != "100+"]
+    alder_hamta_ckm <- alder_hamta_historik
+    if ("100+" %in% alder_vekt) {
+      alder_hamta_historik <- c(alder_hamta_historik, "100+")
+      alder_hamta_ckm <- c(alder_hamta_ckm, hamta_100plus_kod("TAB6657"))
+    }
+  } else {
+    alder_vekt <- alder_grp
+    alder_hamta_historik <- NA   # elimineras - TAB4693 har en egen totalkod för Alder
+    alder_hamta_ckm <- "TotSA"
+  }
 
   # =====================================================================================================
   # Hämtas via SCB:s PxWeb-API v2 med pxweb2r, från två tabeller (SCB bytte metod - CKM,
   # röjandekontroll - för nya årgångar, med en ny tabell från och med 2025):
-  # - TAB4693 = gamla "FlyttFodReg", 2002-2024. Ålder kan utelämnas (elimineringsbar), ger då totalen
-  #   automatiskt.
-  # - TAB6657 = nya CKM-tabellen, från 2025. Ålder är INTE elimineringsbar där längre - måste anges
-  #   explicit som totalkoden "TotSA", vilket också gör den till en egen kolumn i svaret; select()
-  #   plockar bort den igen så tabellernas kolumner stämmer överens innan de binds ihop.
-  # Födelseregion (född i Sverige/utrikes född) och kön (utelämnas - CKM gör att en egen summering av
-  # delarna kan avvika från den riktiga totalen) hanteras likadant i båda tabellerna.
-  hamta_flytt_bakgrund <- function(table_id, alder) {
-    pxweb2r::pxweb2_get_data(
-      table_id,
-      query = list(Region = region_vekt, Kon = NA, Alder = alder,
-                   Fodelseregion = c("född i Sverige", "utrikes född"),
-                   ContentsCode = c("Flyttningsnetto, eget län", "Flyttningsnetto, övriga län"),
-                   Tid = "*"),
-      on_all_values_invalid = "null",
-    quiet = TRUE)
+  # - TAB4693 = gamla "FlyttFodReg", 2002-2024. Alder/Kon kan elimineras (utelämnas ur query_list),
+  #   ger då totalen automatiskt från SCB:s API i stället för att behöva summeras ihop manuellt här.
+  # - TAB6657 = nya CKM-tabellen, från 2025. Alder är INTE elimineringsbar där längre - måste anges
+  #   explicit som totalkoden "TotSA" (eller individuella åldrar vid åldersuppdelning).
+  # Kön elimineras i båda tabellerna (Kon = NA) - en egen summering av köns-delarna kan annars avvika
+  # från den riktiga totalen för CKM-tabellen (röjandekontrollen avrundar varje delvärde för sig).
+  cont_hamta <- c("Flyttningsnetto, eget län", "Flyttningsnetto, övriga län")
+
+  flytt_df_historik <- pxweb2r::pxweb2_get_data(
+    table = "TAB4693",
+    query = list(
+      Region = region_vekt,
+      Fodelseregion = c("född i Sverige", "utrikes född"),
+      Alder = alder_hamta_historik,
+      Kon = NA,
+      ContentsCode = cont_hamta,
+      Tid = "*"
+    ),
+    on_all_values_invalid = "null", quiet = TRUE)
+
+  flytt_df_ckm <- pxweb2r::pxweb2_get_data(
+    table = "TAB6657",
+    query = list(
+      Region = region_vekt,
+      Fodelseregion = c("född i Sverige", "utrikes född"),
+      Alder = alder_hamta_ckm,
+      Kon = NA,
+      ContentsCode = cont_hamta,
+      Tid = "*"
+    ),
+    on_all_values_invalid = "null", quiet = TRUE)
+
+  # När ingen åldersuppdelning efterfrågas har historik-grenen ingen ålderskolumn alls (eliminerad),
+  # medan CKM-grenen har en ålderskolumn med enda värdet "totalt ålder" (TotSA) - tas bort här så att
+  # bind_rows() nedan inte skapar en extra, inkonsekvent kolumn.
+  if (identical(alder_grp, "*") && !is.null(flytt_df_ckm)) {
+    flytt_df_ckm <- dplyr::select(flytt_df_ckm, -dplyr::any_of("ålder"))
   }
 
-  flytt_hist <- hamta_flytt_bakgrund("TAB4693", NA)
-  flytt_ckm  <- hamta_flytt_bakgrund("TAB6657", "TotSA")
-  if (!is.null(flytt_ckm)) flytt_ckm <- dplyr::select(flytt_ckm, -dplyr::any_of("ålder"))
-
-  har_ckm_data <- !is.null(flytt_ckm) && nrow(flytt_ckm) > 0
-  ckm_fran_ar <- if (har_ckm_data) min(as.integer(flytt_ckm$år)) else NULL
+  har_ckm_data <- !is.null(flytt_df_ckm) && nrow(flytt_df_ckm) > 0
+  ckm_fran_ar <- if (har_ckm_data) min(as.integer(flytt_df_ckm$år)) else NULL
   diagram_capt <- rddiagram::lagg_till_ckm_notering(diagram_capt, har_ckm_data, fran_ar = ckm_fran_ar)
 
-  # Lägg ihop till px_df: döp om till regionkod/varde, gör om län till kortnamn (riket -> Sverige).
-  # Flyttningsnetto totalt (eget län + övriga län) fås genom att summera "varde" utan att gruppera på
-  # tabellinnehåll - samma resultat som att summera två breda kolumner, men enklare i long-format.
-  px_df <- dplyr::bind_rows(flytt_hist, flytt_ckm) |>
+  px_df <- dplyr::bind_rows(flytt_df_historik, flytt_df_ckm) |>
     dplyr::rename(regionkod = region_kod, varde = value) |>
     dplyr::mutate(region = rdverktyg::skapa_kortnamn_lan(region, byt_ut_riket_mot_sverige = TRUE))
 
-  if (!is.na(gruppera_namn)) {
-    px_df <- px_df |>
-      dplyr::group_by(år, födelseregion) |>
-      dplyr::summarise(Inrikes_flyttnetto = sum(varde, na.rm = TRUE), .groups = "drop") |>
-      dplyr::mutate(region = gruppera_namn)
+  # Slår ihop de två delkomponenterna (eget län + övriga län) till inrikes flyttningsnetto - grupperar
+  # på allt utom tabellinnehåll/varde, så en ev. ålderskolumn bevaras om åldersuppdelning är aktiv.
+  grp_utan_contvar <- setdiff(names(px_df), c("tabellinnehåll", "varde"))
+  px_df <- px_df |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(grp_utan_contvar))) |>
+    dplyr::summarise(Inrikes_flyttnetto = sum(varde, na.rm = TRUE), .groups = "drop")
 
+  # Vid åldersuppdelning: gör om enskilda åldrar till åldersgrupper och summera ihop.
+  if (!identical(alder_grp, "*")) {
+    px_df <- px_df |>
+      dplyr::mutate(alder_num = readr::parse_number(ålder),
+             aldersgrupp = rdverktyg::skapa_aldersgrupper(alder_num, alder_grp_vekt)) |>
+      dplyr::select(-c(alder_num, ålder)) |>
+      dplyr::group_by(dplyr::across(dplyr::where(~ is.character(.x) || is.factor(.x)))) |>
+      dplyr::summarise(Inrikes_flyttnetto = sum(Inrikes_flyttnetto, na.rm = TRUE), .groups = "drop")
+  }
+
+  if (!is.na(gruppera_namn)) {
+    # Bugfix (bekräftad genom test): regionkod sattes aldrig till något efter gruppering (saknades
+    # helt i originalet, redan innan sammanslagningen med syskonskriptet) - skapa_diagram() nedan
+    # filtrerar på regionkod, vilket kraschade ("object 'regionkod' not found") så fort
+    # gruppera_namn faktiskt användes. Sätts nu till "grp", samma konvention som används i
+    # rdhamtadata::hamta_befprognos_diff_data() för motsvarande gruppering.
+    px_df <- px_df |>
+      dplyr::select(-c(regionkod, region)) |>
+      dplyr::group_by(dplyr::across(dplyr::where(~ is.character(.x) || is.factor(.x)))) |>
+      dplyr::summarise(Inrikes_flyttnetto = sum(Inrikes_flyttnetto, na.rm = TRUE), .groups = "drop") |>
+      dplyr::mutate(regionkod = "grp", region = gruppera_namn)
   } else {
     px_df <- px_df |>
-      dplyr::group_by(år, regionkod, region, födelseregion) |>
-      dplyr::summarise(Inrikes_flyttnetto = sum(varde, na.rm = TRUE), .groups = "drop")
+      dplyr::group_by(dplyr::across(dplyr::where(~ is.character(.x) || is.factor(.x)))) |>
+      dplyr::summarise(Inrikes_flyttnetto = sum(Inrikes_flyttnetto, na.rm = TRUE), .groups = "drop")
+  }
+
+  # ========================================== Relativt flyttnetto ============================================
+
+  if (relativt_flyttnetto) {
+
+    bef_ar_vekt <- as.character(as.numeric(unique(px_df$år)) - 1)
+
+    # TAB4823 (historik) saknar en egen totalkod för Alder (till skillnad från TAB4693 ovan) - alla
+    # individuella åldrar hämtas därför alltid och summeras ihop här, oavsett alder_grp. TAB6645 (CKM)
+    # saknar den helt på samma sätt och hanteras likadant. Ingen av tabellerna har heller en totalkod
+    # för Kon - båda könen hämtas explicit och summeras bort, i stället för att elimineras (samma
+    # mönster som i diag_utrikes_fodda_tidsserie_scb.R, som använder samma tabellpar).
+    if (!identical(alder_grp, "*")) {
+      alder_bef_hamta_historik <- alder_vekt[alder_vekt != "100+"]
+      alder_bef_hamta_ckm <- alder_bef_hamta_historik
+      if ("100+" %in% alder_vekt) {
+        alder_bef_hamta_historik <- c(alder_bef_hamta_historik, "100+")
+        alder_bef_hamta_ckm <- c(alder_bef_hamta_ckm, hamta_100plus_kod("TAB6645"))
+      }
+    } else {
+      alder_bef_hamta_historik <- "*"
+      alder_bef_hamta_ckm <- hamta_individuella_aldrar("TAB6645")
+    }
+
+    kon_hamta <- c("män", "kvinnor")
+
+    bef_df_historik <- pxweb2r::pxweb2_get_data(
+      table = "TAB4823",
+      query = list(
+        Region = region_vekt,
+        Alder = alder_bef_hamta_historik,
+        Kon = kon_hamta,
+        Fodelseregion = c("född i Sverige", "utrikes född"),
+        ContentsCode = "Antal",
+        Tid = bef_ar_vekt
+      ),
+      on_all_values_invalid = "null", quiet = TRUE)
+
+    bef_df_ckm <- pxweb2r::pxweb2_get_data(
+      table = "TAB6645",
+      query = list(
+        Region = region_vekt,
+        Alder = alder_bef_hamta_ckm,
+        Kon = kon_hamta,
+        Fodelseregion = c("född i Sverige", "utrikes född"),
+        ContentsCode = "Antal",
+        Tid = bef_ar_vekt
+      ),
+      on_all_values_invalid = "null", quiet = TRUE)
+
+    bef_df <- dplyr::bind_rows(bef_df_historik, bef_df_ckm) |>
+      dplyr::rename(regionkod = region_kod, Antal = value) |>
+      dplyr::select(-tabellinnehåll) |>
+      dplyr::mutate(region = rdverktyg::skapa_kortnamn_lan(region)) |>
+      # summera bort kön (ingen av tabellerna har en egen totalkod för det)
+      dplyr::group_by(dplyr::across(-c(kön, Antal))) |>
+      dplyr::summarise(Antal = sum(Antal, na.rm = TRUE), .groups = "drop")
+
+    if (!identical(alder_grp, "*")) {
+      bef_df <- bef_df |>
+        dplyr::mutate(alder_num = readr::parse_number(ålder),
+               aldersgrupp = rdverktyg::skapa_aldersgrupper(alder_num, alder_grp_vekt)) |>
+        dplyr::select(-c(alder_num, ålder))
+    } else {
+      bef_df <- dplyr::select(bef_df, -ålder)
+    }
+
+    bef_df <- bef_df |>
+      dplyr::group_by(dplyr::across(dplyr::where(~ is.character(.x) || is.factor(.x)))) |>
+      dplyr::summarise(dplyr::across(dplyr::where(is.numeric), \(x) sum(x, na.rm = TRUE)), .groups = "drop") |>
+      dplyr::rename(bef = Antal) |>
+      dplyr::mutate(år = as.character(as.numeric(år) + 1))           # för att koppla till rätt år
+
+    kol_nycklar <- intersect(
+      names(dplyr::select(bef_df, dplyr::where(~ is.character(.x) || is.factor(.x)))),
+      names(dplyr::select(px_df, dplyr::where(~ is.character(.x) || is.factor(.x))))
+    )
+
+    px_df <- dplyr::left_join(px_df, bef_df, by = kol_nycklar) |>
+      dplyr::mutate(rel_flyttnetto = Inrikes_flyttnetto / bef * 100) |>
+      dplyr::rename(abs_flyttnetto = Inrikes_flyttnetto,
+             Inrikes_flyttnetto = rel_flyttnetto)
+
+    visa_totalvarden <- FALSE          # vid relativt flyttnetto tas totalvärdena bort
+    relativt_txt <- "relativt "
+  } else relativt_txt <- ""
+
+  # Returnerar data till R globala miljö
+  if (returnera_data == TRUE) {
+    assign("flytt_bakgrund_df", px_df, envir = .GlobalEnv)
   }
 
   if (skriv_till_excelfil) {
     reg_namn <- ifelse(!is.na(gruppera_namn), gruppera_namn, paste0(region_vekt, collapse = "_"))
     openxlsx::write.xlsx(px_df, paste0(utmapp, "Flyttnetto_", reg_namn, "_ar", min(px_df$år), "_", max(px_df$år), ".xlsx"), overwrite = TRUE)
-  }
-
-  # Returnerar data till R globala miljö
-  if (returnera_data == TRUE) {
-    assign("flytt_bakgrund_df", px_df, envir = .GlobalEnv)
   }
 
   # ============================================= Skapa diagram ==============================================
@@ -152,21 +323,23 @@ diag_inr_flyttnetto_bakgrund_scb <- function(
     df <- dplyr::filter(df, regionkod %in% vald_regionkod)
 
     reg_txt <- (rdverktyg::skapa_kortnamn_lan(unique(df$region), byt_ut_riket_mot_sverige = TRUE))[1]
+    unika_ar <- unique(df$år)
+    unika_reg <- unique(vald_regionkod)
 
     if (length(unique(df$region)) > 1) {
       reg_txt <- paste0(reg_txt, "_facet")
-      diagram_titel <- paste0("Inrikes flyttnetto")
+      diagtitel_txt <- ""
     } else {
-      diagram_titel <- paste0("Inrikes flyttnetto i ", reg_txt)
+      diagtitel_txt <- paste0(" i ", reg_txt)
     }
+    diagram_titel <- paste0("Inrikes ", relativt_txt, "flyttnetto", diagtitel_txt)
+
     # =================================== visa totalvärden ========================================
     if (visa_totalvarden == TRUE && facet_diagram == FALSE) {
 
       diff <- max(df$Inrikes_flyttnetto) - min(df$Inrikes_flyttnetto) # ta reda på skillnaden mellan det högsta och lägsta värdet i datasetet
       totalvarden_linjebredd <- diff * (totalvarden_linjetjocklek / 1000)      # gör en linjetjocklek på totallinjerna som är 0,2 % av diff (på raden ovan)
       total_list <- list()
-      unika_ar <- unique(df$år)
-      unika_reg <- unique(vald_regionkod)
 
       for (reg in 1:length(unika_reg)) {
         for (ar in 1:length(unika_ar)) {
@@ -187,7 +360,13 @@ diag_inr_flyttnetto_bakgrund_scb <- function(
 
     # ======================= skapa ggplot-objekt =================
 
-    diagramfil <- paste0("Flyttnetto_bakgrund_", paste0(reg_txt, collapse = "_"), ".png")
+    # aldersgrupper-suffix förhindrar att en åldersuppdelad bild skriver över standardbilden (eller
+    # tvärtom) när bägge genereras till samma utmapp - annars identiskt filnamn i båda fallen.
+    diagramfil <- stringr::str_replace_all(
+      paste0("Flyttnetto_", stringr::str_remove(relativt_txt, " "), if (nzchar(relativt_txt)) "_" else "",
+             reg_txt, if (!identical(alder_grp, "*")) "_aldersgrupper" else "", ".", filformat),
+      "__", "_"
+    )
 
     gg_obj <- rddiagram::SkapaStapelDiagram(
       skickad_df = df,
@@ -199,8 +378,8 @@ diag_inr_flyttnetto_bakgrund_scb <- function(
       stodlinjer_avrunda_fem = fixa_y_axel_varden_jamna_tal,
       manual_x_axis_text_vjust = 1,
       manual_x_axis_text_hjust = 1,
-      manual_y_axis_title = "",
-      geom_position_stack = TRUE,
+      manual_y_axis_title = if (relativt_flyttnetto) "procent" else "",
+      geom_position_stack = if (relativt_flyttnetto) FALSE else TRUE,
       fokusera_varden = total_list,
       facet_grp = if (facet_diagram) "region" else NULL,
       skriv_till_diagramfil = skriv_diagramfil && !visa_totalvarden,
@@ -211,14 +390,22 @@ diag_inr_flyttnetto_bakgrund_scb <- function(
     )
 
     if (visa_totalvarden) {
+      # Den faktiska totalindikatorn ritas redan av fokusera_varden/total_list ovan (de korta svarta
+      # strecken i varje stapel) - det här geom_line-lagret finns bara för att få en förklaringsruta
+      # ("inrikes flyttnetto totalt") i teckenförklaringen. alpha = 0 gör linjen osynlig i själva
+      # diagrammet (annars ritas den synligt genom de råa dataraderna, en per år och födelseregion -
+      # upptäckt genom visuell kontroll: utan alpha = 0 blev det en missvisande sicksack-linje mellan
+      # de två kategorierna i stället för en ren förklaringssymbol), och group = 1 tar bort varningen
+      # "Each group consists of only one observation" (samma lösning som redan fanns i syskonskriptet
+      # - diag_inr_flyttnetto_inr_utr_fodda_scb.R - innan sammanslagningen, av samma anledning).
       gg_obj <- gg_obj +
-        ggplot2::geom_line(ggplot2::aes(color = "line")) +
+        ggplot2::geom_line(ggplot2::aes(group = 1, color = "line"), alpha = 0) +
         ggplot2::scale_color_manual(name = "", values = c("line" = "black"), labels = "inrikes flyttnetto totalt") +
         ggplot2::theme(legend.key = ggplot2::element_rect(fill = "white"),
               legend.box.just = "bottom")
     } # slut if-sats visa_totalvarden
 
-    gg_list <- c(gg_list, list(gg_obj))
+    gg_list <- list(gg_obj)
 
     # Diagrammet ovan skriver aldrig till fil på egen hand när visa_totalvarden = TRUE (eftersom
     # totalstrecket läggs på EFTER SkapaStapelDiagram(), så det måste sparas separat här för att
@@ -228,16 +415,20 @@ diag_inr_flyttnetto_bakgrund_scb <- function(
                             output_mapp = utmapp,
                             filnamn_diagram = diagramfil)
     } # slut if-sats
-    names(gg_list) <- stringr::str_remove(diagramfil, ".png")
+    names(gg_list) <- stringr::str_remove(diagramfil, "\\.[^.]+$")
     return(gg_list)
   } # slut skapa diagram-funktion för varje region
 
+  # Efter gruppera_namn finns bara en "region" kvar (regionkod "grp") - de ursprungliga koderna i
+  # region_vekt finns inte längre i px_df och kan inte användas för att välja ut rader.
+  diagram_regionkoder <- if (!is.na(gruppera_namn)) "grp" else region_vekt
+
+  if (length(diagram_regionkoder) == 1) facet_diagram <- FALSE
+
   if (facet_diagram) {
-    diag <- skapa_diagram(px_df, region_vekt)
-
+    diag <- skapa_diagram(px_df, diagram_regionkoder)
   } else {
-    diag <- purrr::flatten(purrr::map(unique(region_vekt), ~ skapa_diagram(px_df, .x)))
-
+    diag <- purrr::flatten(purrr::map(unique(diagram_regionkoder), ~ skapa_diagram(px_df, .x)))
   }
 
   return(diag)

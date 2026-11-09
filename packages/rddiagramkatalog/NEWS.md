@@ -1,3 +1,37 @@
+# rddiagramkatalog 0.0.0.9031
+
+Slog ihop `diag_inr_flyttnetto_bakgrund_scb()` med sitt tidigare omigrerade
+syskonskript (`diag_inr_flyttnetto_inr_utr_fodda_scb.R` i källrepot - de
+två källskripten råkade dela funktionsnamn, se migreringsstatus.md).
+Funktionen har nu samma funktionalitet som båda ursprungsskripten
+tillsammans: åldersgruppsuppdelning (`alder_grp`) och relativt flyttnetto
+(`relativt_flyttnetto`), utöver det som redan fanns.
+
+Tre buggar hittades och fixades under sammanslagningen (fanns redan i ett
+eller båda ursprungsskripten, inga nya):
+
+- **`gruppera_namn` kraschade** ("object 'regionkod' not found") - kolumnen
+  sattes aldrig efter gruppering. Fanns redan i det tidigare migrerade
+  skriptet, bekräftat genom test. Satt till `"grp"` nu, samma konvention
+  som `rdhamtadata::hamta_befprognos_diff_data()` använder för
+  motsvarande gruppering.
+- **Totalstrecket i teckenförklaringen ritades som en missvisande
+  sicksack-linje** genom de råa dataraderna i stället för att vara en ren
+  förklaringssymbol (upptäckt genom visuell kontroll av testbilder).
+  Fixat med `alpha = 0` på det laget - samma lösning som redan fanns i
+  det tidigare omigrerade syskonskriptet, nu återanvänd.
+- **Filnamnskrock**: en åldersuppdelad bild fick exakt samma filnamn som
+  standardbilden (ingen av ursprungsskripten skilde på dem i filnamnet),
+  så den ena skulle tyst skriva över den andra om båda genererades till
+  samma mapp. Lade till ett `_aldersgrupper`-suffix.
+
+**Känd begränsning, inte fixad:** `alder_grp` ger rätt data (och fungerar
+för `returnera_data`/Excel-export), men själva diagrammet skiljer INTE
+visuellt på åldersgrupperna - samma begränsning fanns redan i det
+omigrerade syskonskriptet (ingen facet/färg kopplad till `aldersgrupp` i
+`SkapaStapelDiagram()`-anropet). Inte löst här, eftersom det är en
+designfråga (hur ska åldersgrupperna visas?) snarare än en bugg.
+
 # rddiagramkatalog 0.0.0.9030
 
 Migrerade 10 ytterligare diagram från Region-Dalarna/diagram:

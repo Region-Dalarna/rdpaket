@@ -6,7 +6,9 @@
 \usage{
 diag_inr_flyttnetto_bakgrund_scb(
   region_vekt = "20",
+  alder_grp = "*",
   gruppera_namn = NA,
+  relativt_flyttnetto = FALSE,
   facet_diagram = FALSE,
   diag_fargvekt = rddiagram::diagramfarger("rd_gron")[c(1, 4)],
   diagram_capt =
@@ -30,8 +32,17 @@ diag_inr_flyttnetto_bakgrund_scb(
 \item{region_vekt}{Region(er). \code{"00"} (Riket) stöds inte - riket saknar
 inrikes flyttnetto.}
 
+\item{alder_grp}{Åldersgrupper. \code{"*"} (standard) = ingen åldersuppdelning.
+För en specifik grupp: \code{list(c(20, 66))} ger 20-65 år. För flera:
+\code{list(c(0, 19), c(20, 65), c(66, 79), c(80, 999))} (\code{999} = högsta
+ålder, dvs. öppen övre gräns).}
+
 \item{gruppera_namn}{Namn att gruppera ihop de medskickade regionerna
 till en gemensam rad under, eller \code{NA} (standard) för ingen gruppering.}
+
+\item{relativt_flyttnetto}{Om \code{TRUE} visas flyttnettot relativt
+befolkningen i samma grupper (föregående års folkmängd) i stället för
+som absoluta tal. Stänger av \code{visa_totalvarden}.}
 
 \item{facet_diagram}{Om \code{TRUE} skapas ett gemensamt facet-diagram för
 alla regioner, annars (standard) ett diagram per region.}
@@ -49,10 +60,11 @@ alla regioner, annars (standard) ett diagram per region.}
 
 \item{returnera_data}{Skall data returneras till global environment.}
 
-\item{filformat}{Bildformat på diagrammet, t.ex. \code{"png"} (standard).}
+\item{filformat}{Bildformat på diagrammet, t.ex. \code{"png"} (standard)
+eller \code{"svg"}.}
 
 \item{visa_totalvarden}{Visa ett streck för totalt netto (inrikes +
-utrikes födda tillsammans).}
+utrikes födda tillsammans). Gäller inte när \code{relativt_flyttnetto = TRUE}.}
 
 \item{fixa_y_axel_varden_jamna_tal}{TRUE för jämnare värden på y-axeln.
 Fungerar inte alltid - stäng av vid behov.}
@@ -80,13 +92,12 @@ En namngiven lista med \code{ggplot}-objekt.
 \description{
 Inrikes flyttnetto (flyttningsnetto till/från andra kommuner/regioner),
 uppdelat på född i Sverige/utrikes född. Ett diagram per region, eller
-ett gemensamt facet-diagram.
+ett gemensamt facet-diagram. Går även att dela upp på åldersgrupper och/
+eller visa flyttnettot relativt befolkningen i samma grupper.
 }
 \details{
-Ingen åldersuppdelning eller relativt flyttnetto - källrepot
-(diagram_flytt_inrikes_bakgrund_SCB.R) har ett syskonskript
-(diag_inr_flyttnetto_inr_utr_fodda_scb.R) med samma funktionsnamn i
-källan men mer funktionalitet (åldersgrupper, relativt flyttnetto) -
-inte migrerat än. Döpt om här för att undvika namnkrock den dagen det
-migreras.
+Slår ihop vad som tidigare var två separata, delvis överlappande
+källskript (\code{diagram_flytt_inrikes_bakgrund_SCB.R} och
+\code{diag_inr_flyttnetto_inr_utr_fodda_scb.R}, som i källrepot råkade dela
+funktionsnamn) till en enda funktion.
 }
