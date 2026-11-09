@@ -1,3 +1,22 @@
+# rddiagramkatalog 0.0.0.9038
+
+## `diagramkatalog_utforska()`: ny knapp "Skriv till fil"
+
+* Ny knapp i gadgetens titelrad, mellan "Skapa diagram" och "Infoga kod".
+  Kör samma funktionsanrop som formuläret bygger upp, men tvingar
+  `skriv_diagramfil = TRUE` oavsett kryssrutans läge, så att bilden
+  faktiskt skrivs till den `utmapp` som står i formuläret.
+* Kräver att funktionen har både `utmapp`- och `skriv_diagramfil`-
+  parametrar (alla 92 funktioner i katalogen har det i dag) och att
+  `utmapp`-fältet är ifyllt - annars visas ett tydligt felmeddelande i
+  stället för att försöka köra anropet.
+* En tillfällig notis (7 sekunder) bekräftar efteråt att diagrammet har
+  skapats, med full sökväg + filnamn för de fil(er) som faktiskt skrevs/
+  uppdaterades i `utmapp` under anropet (funktionerna själva returnerar
+  bara ggplot-/leaflet-objekt, inte vilket filnamn de skrev till, så
+  filen identifieras genom att jämföra mappens innehåll före/efter
+  anropet).
+
 # rddiagramkatalog 0.0.0.9037
 
 ## Städning

@@ -31,6 +31,13 @@ in rakt av i det genererade funktionsanropet. Booleska parametrar (\code{TRUE}/
 Hjälp-ruta - annars hamnar den bakom gadgetens eget dialogfönster och syns
 inte.
 
+"Skriv till fil" körs bara om funktionen har både \code{utmapp}- och
+\code{skriv_diagramfil}-parametrar (annars visas ett felmeddelande) och
+\code{utmapp}-fältet i formuläret är ifyllt. Anropet körs med
+\code{skriv_diagramfil = TRUE} oavsett kryssrutans läge, och en tillfällig
+notis visar sedan sökväg(ar) + filnamn för de fil(er) som skrevs/
+uppdaterades i \code{utmapp}.
+
 Kräver \code{shiny} och \code{miniUI} (\code{install.packages(c("shiny", "miniUI"))}),
 som bara är valfria beroenden till paketet eftersom de bara behövs för
 den här interaktiva funktionen. "Infoga kod" kräver dessutom \code{rstudioapi}

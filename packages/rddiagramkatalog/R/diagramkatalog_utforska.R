@@ -20,6 +20,13 @@
 #' Hjälp-ruta - annars hamnar den bakom gadgetens eget dialogfönster och syns
 #' inte.
 #'
+#' "Skriv till fil" körs bara om funktionen har både `utmapp`- och
+#' `skriv_diagramfil`-parametrar (annars visas ett felmeddelande) och
+#' `utmapp`-fältet i formuläret är ifyllt. Anropet körs med
+#' `skriv_diagramfil = TRUE` oavsett kryssrutans läge, och en tillfällig
+#' notis visar sedan sökväg(ar) + filnamn för de fil(er) som skrevs/
+#' uppdaterades i `utmapp`.
+#'
 #' Kräver `shiny` och `miniUI` (`install.packages(c("shiny", "miniUI"))`),
 #' som bara är valfria beroenden till paketet eftersom de bara behövs för
 #' den här interaktiva funktionen. "Infoga kod" kräver dessutom `rstudioapi`
@@ -81,6 +88,7 @@ diagramkatalog_utforska <- function() {
       right = shiny::div(
         litenknapp("hjalp", "Visa hjälp", "info"),
         litenknapp("visa", "Skapa diagram", TRUE),
+        litenknapp("skriv_fil", "Skriv till fil", "success"),
         litenknapp("infoga", "Infoga kod", TRUE)
       )
     ),
@@ -170,10 +178,14 @@ diagramkatalog_utforska <- function() {
       )
     })
 
-    bygg_anrop <- shiny::reactive({
+    # Plain funktion (inte shiny::reactive()) - "Skriv till fil"-knappen nedan behöver kunna skicka
+    # med overrides (t.ex. tvinga skriv_diagramfil = TRUE oavsett kryssrutans läge), vilket en
+    # parameterlös reactive() inte stöder.
+    bygg_anrop <- function(overrides = list()) {
       args <- vald_args()
 
       argument_text <- vapply(names(args), function(namn) {
+        if (namn %in% names(overrides)) return(paste0(namn, " = ", overrides[[namn]]))
         input_id <- paste0("param_", namn)
         standard <- args[[namn]]
         ar_boolesk <- identical(standard, TRUE) || identical(standard, FALSE)
@@ -187,7 +199,7 @@ diagramkatalog_utforska <- function() {
       }, character(1))
 
       paste0(vald_fn(), "(\n  ", paste(argument_text, collapse = ",\n  "), "\n)")
-    })
+    }
 
     shiny::observeEvent(input$visa, {
       kod <- bygg_anrop()
@@ -222,6 +234,61 @@ diagramkatalog_utforska <- function() {
           resultat[[1]]
         }
       })
+    })
+
+    shiny::observeEvent(input$skriv_fil, {
+      args <- vald_args()
+
+      if (!all(c("utmapp", "skriv_diagramfil") %in% names(args))) {
+        shiny::showNotification(
+          "Den här funktionen har ingen utmapp/skriv_diagramfil-parameter - kan inte skriva till fil.",
+          type = "error", duration = NULL
+        )
+        return()
+      }
+
+      utmapp_varde <- tryCatch(eval(parse(text = input$param_utmapp)), error = function(e) NA)
+      if (length(utmapp_varde) != 1 || is.na(utmapp_varde) || !nzchar(utmapp_varde)) {
+        shiny::showNotification(
+          "Ange en utmapp i formuläret innan du skriver till fil.",
+          type = "error", duration = NULL
+        )
+        return()
+      }
+
+      # skriv_diagramfil tvingas till TRUE oavsett kryssrutans läge - det är hela poängen med
+      # knappen. innan_tid används för att efteråt avgöra vilka fil(er) i utmapp som faktiskt
+      # skrevs/uppdaterades av just detta anrop (funktionerna returnerar bara ggplot-/leaflet-
+      # objekt, inte vilket filnamn de skrev till).
+      kod <- bygg_anrop(overrides = list(skriv_diagramfil = "TRUE"))
+      innan_tid <- Sys.time()
+      notis_id <- shiny::showNotification("Skriver diagram till fil...", duration = NULL, type = "message")
+
+      resultat <- tryCatch(eval(parse(text = kod)), error = function(e) {
+        shiny::showNotification(paste("Fel:", conditionMessage(e)), type = "error", duration = NULL)
+        NULL
+      })
+      shiny::removeNotification(notis_id)
+      if (is.null(resultat)) return()
+
+      nya_filer <- if (dir.exists(utmapp_varde)) {
+        alla <- list.files(utmapp_varde, full.names = TRUE)
+        alla[file.info(alla)$mtime >= innan_tid - 1]
+      } else {
+        character(0)
+      }
+
+      if (length(nya_filer) == 0) {
+        shiny::showNotification(
+          paste0("Diagrammet kördes, men hittade ingen ny/uppdaterad fil i:\n", utmapp_varde),
+          type = "warning", duration = 7
+        )
+      } else {
+        shiny::showNotification(
+          paste0("Diagrammet har skapats:\n", paste(nya_filer, collapse = "\n")),
+          type = "message", duration = 7
+        )
+      }
     })
 
     shiny::observeEvent(input$hjalp, {
