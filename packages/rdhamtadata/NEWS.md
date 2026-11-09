@@ -1,3 +1,14 @@
+# rdhamtadata 0.0.0.9002
+
+* `hamta_befprognos_data()` skriver nu ut samma typ av konsolvarning som
+  alla `diag_*()`-funktioner i rddiagramkatalog när den faktiskt läser
+  Profet-/Halland-filer från en lokal mapp (t.ex. G:) - tidigare visades
+  bara ett meddelande när mappen SAKNADES (då byttes den ut mot SCB:s
+  API), inte när den fanns och faktiskt användes. Utan meddelandet fanns
+  risken att man tror datan är en live SCB-hämtning fast den i
+  verkligheten är en manuell ögonblicksbild som inte uppdateras
+  automatiskt.
+
 # rdhamtadata 0.0.0.9001
 
 * Ny funktion `hamta_befprognos_riket_inr_utr_scb()` - befolkningsprognos

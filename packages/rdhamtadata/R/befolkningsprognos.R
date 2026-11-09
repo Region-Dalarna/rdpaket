@@ -58,6 +58,19 @@ hamta_befprognos_data <- function(
   if (any(to_replace)) cat("Ersatte", sum(to_replace), "värde(n) med SCB-url.\n")
   if (length(url_prognos_vektor) < before_n) cat("Tog bort", before_n - length(url_prognos_vektor), "dubblett(er).\n")
 
+  # Lokala Profet-/Halland-mappar är manuellt underhållna filer, till skillnad från SCB-grenen
+  # (live-API) - samma typ av konsolvarning som alla andra diag_*()-funktioner i rddiagramkatalog ger
+  # när de läser en manuell fil, så att ingen missar att datan är en ögonblicksbild.
+  lokala_mappar <- url_prognos_vektor[!stringr::str_detect(url_prognos_vektor, "^https://")]
+  for (mapp in lokala_mappar) {
+    message(
+      "Data hämtas från en manuellt underhållen mapp:\n  ", mapp,
+      "\nDetta är INTE en live-hämtning mot ett API - innehållet är en ",
+      "ögonblicksbild som kan vara inaktuell och måste uppdateras manuellt ",
+      "vid behov."
+    )
+  }
+
   hamta_url_rad_i_vektor <- function(hamta_url) {
 
     # ================================== beräkna rätt tid_vekt ==============================================
