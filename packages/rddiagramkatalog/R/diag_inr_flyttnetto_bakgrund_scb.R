@@ -134,8 +134,16 @@ diag_inr_flyttnetto_bakgrund_scb <- function(
     alder_vekt <- as.character(unlist(purrr::map(alder_vekt, ~ seq(.x[1], .x[2]))))
     if (any(purrr::map_lgl(alder_grp, ~ "999" %in% .x))) alder_vekt <- c(alder_vekt, "100+")
 
+    # Bugfix (bekräftad genom test - gav felaktigt "66-100 år" i stället för "66+ år" i facet-
+    # etiketterna): jämförelsen avsåg uppenbarligen att fånga upp sentinelvärdet för "öppen övre
+    # gräns", men jämförde mot strängen "100+" trots att det faktiska sentinelvärdet (dokumenterat
+    # här och i originalskriptets egen parameterkommentar) är "999". Med "100+" i jämförelsen
+    # utlöstes den här grenen ALLTID när 999 användes, vilket satte en konkret (inte oändlig)
+    # övre gräns - skapa_aldersgrupper() i rdverktyg ger då bara en "+"-etikett om den riktiga
+    # maxåldern i datan överstiger gränsen, vilket den aldrig gjorde mot en artificiellt hög
+    # gräns på 1000. Fanns redan i originalet (samma jämförelse där), inte något nytt här.
     alder_grp_vekt <- purrr::map_int(alder_grp, ~ readr::parse_number(.[1]))
-    if (alder_grp[[length(alder_grp)]][2] != "100+") {
+    if (alder_grp[[length(alder_grp)]][2] != "999") {
       alder_grp_vekt <- append(alder_grp_vekt, readr::parse_number(alder_grp[[length(alder_grp)]][2]) + 1)
     }
 
@@ -398,6 +406,10 @@ diag_inr_flyttnetto_bakgrund_scb <- function(
       geom_position_stack = if (relativt_flyttnetto) FALSE else TRUE,
       fokusera_varden = total_list,
       facet_grp = if (facet_aldersgrupp) "aldersgrupp" else if (facet_diagram) "region" else NULL,
+      # SkapaStapelDiagram() döljer legenden som standard när ett diagram facetteras (legend_pos
+      # defaultar till "none" om inte facet_legend_bottom = TRUE anges explicit) - utan den syns
+      # inte vilken färg som är "född i Sverige" respektive "utrikes född" i ett facet-diagram.
+      facet_legend_bottom = TRUE,
       skriv_till_diagramfil = skriv_diagramfil && !visa_totalvarden,
       manual_color = diag_fargvekt,
       diagram_bildformat = filformat,

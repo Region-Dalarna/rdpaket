@@ -1,4 +1,22 @@
-# rddiagramkatalog 0.0.0.9033
+# rddiagramkatalog 0.0.0.9034
+
+`diag_inr_flyttnetto_bakgrund_scb()`: två buggar hittade (av användaren,
+som granskade en testbild) och fixade i `facet_aldersgrupp`-läget från
+0.0.0.9032:
+
+- Sista åldersgruppen visade "66-100 år" i stället för "66+ år". Orsak:
+  koden som bygger åldersgränsvektorn för `rdverktyg::skapa_aldersgrupper()`
+  jämförde mot strängen `"100+"` för att avgöra om den sista gruppen hade
+  en öppen övre gräns, trots att det faktiska sentinelvärdet (dokumenterat
+  i `alder_grp`, och i originalskriptets egen kommentar) är `"999"`.
+  Jämförelsen utlöstes därför aldrig, vilket satte en konkret gräns i
+  stället för en öppen - fanns redan i originalet.
+- Teckenförklaringen (född i Sverige/utrikes född) saknades i
+  facet-diagram. `SkapaStapelDiagram()` döljer legenden som standard vid
+  facettering om inte `facet_legend_bottom = TRUE` anges explicit - satt
+  nu för båda facet-lägena (`facet_diagram` och `facet_aldersgrupp`).
+
+
 
 ## Ny funktionsfamilj: `karta_*()`
 
