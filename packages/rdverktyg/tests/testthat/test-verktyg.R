@@ -70,10 +70,12 @@ test_that("funktion_upprepa_forsok_om_fel returnerar vid framgång", {
   )
 })
 
-test_that("funktion_upprepa_forsok_om_fel returnerar sentinel vid fel", {
-  expect_null(
-    funktion_upprepa_forsok_om_fel(function() stop("nej"), max_forsok = 2, vanta_sekunder = 0)
+test_that("funktion_upprepa_forsok_om_fel returnerar sentinel vid fel och visar det sista felet", {
+  expect_output(
+    resultat <- funktion_upprepa_forsok_om_fel(function() stop("nej"), max_forsok = 2, vanta_sekunder = 0),
+    "Senaste felmeddelande:\nError in funktion\\(\\) : nej"
   )
+  expect_null(resultat)
 })
 
 test_that("skriptrader_upprepa_om_fel kör om vid matchande fel", {

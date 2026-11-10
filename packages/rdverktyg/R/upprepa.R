@@ -69,14 +69,15 @@ funktion_upprepa_forsok_om_fel <- function(funktion,
     }
 
     if (forsok == max_forsok) {
-      cat("Max antal försök nått. ", funktionsnamn, " stoppas.\n\n")
+      cat("Max antal försök nått. ", funktionsnamn, " stoppas.\n")
+      # det riktiga felet visas alltid - annars är det omöjligt att se varför alla försök misslyckades
+      cat("Senaste felmeddelande:\n", felmeddelande, "\n", sep = "")
       if (!is.null(loggfil)) {
         loggtext <- paste0(
           Sys.time(), " | Funktion: ", funktionsnamn, "\nFelmeddelanden:\n",
           paste(unika_fel, collapse = "\n"), "\n\n"
         )
         write(loggtext, file = loggfil, append = TRUE)
-        cat(paste0(unika_fel, "\n"))
       }
       return(returnera_vid_fel)
     }

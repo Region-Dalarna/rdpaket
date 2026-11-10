@@ -1,3 +1,12 @@
+# rdverktyg 0.0.0.9008
+
+* `funktion_upprepa_forsok_om_fel()` skriver nu alltid ut det sista
+  felmeddelandet när försöken är slut. Tidigare visades det bara om
+  `loggfil` angavs, så anropen i `rddiagramkatalog` (som inte anger någon)
+  gav bara "Max antal försök nått" och fortsatte med `NULL` - och felet
+  dök upp först senare som något helt annat (t.ex. "object 'ålder' not
+  found"). Med `loggfil` skrivs felen till filen som förut.
+
 # rdverktyg 0.0.0.9007
 
 ## Nya funktioner
