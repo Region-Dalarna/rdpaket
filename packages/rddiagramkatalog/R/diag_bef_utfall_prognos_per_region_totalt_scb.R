@@ -166,6 +166,13 @@ diag_bef_utfall_prognos_per_region_totalt_scb <- function(
     )
   } else bef_prognos <- NULL
 
+  # hämtningen ger NULL om alla försök misslyckats (felet står i konsolen ovan) - stanna här i stället för att
+  # fortsätta och krascha på en kolumn som saknas
+  if (length(hamta_region) > 0 && is.null(bef_prognos)) {
+    stop("Kunde inte hämta befolkningsprognosen för ", paste(hamta_region, collapse = ", "),
+         " - se felmeddelandet ovan.", call. = FALSE)
+  }
+
   if (!any(is.na(aldersgrupper))) {
     bef_prognos <- bef_prognos |>
       dplyr::filter(ålder %in% paste0(aldrar_hamta, " år")) |>

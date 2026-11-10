@@ -1,3 +1,15 @@
+# rddiagramkatalog 0.0.0.9039
+
+* `diag_bef_utfall_prognos_per_aldersgrupp_scb()` och
+  `diag_bef_utfall_prognos_per_region_totalt_scb()` stannar nu med ett
+  tydligt fel ("Kunde inte hämta befolkningsprognosen ...") om
+  prognoshämtningen misslyckats. Tidigare fortsatte de med `NULL` och
+  kraschade tre steg senare med `object 'ålder' not found`, vilket dolde
+  den verkliga orsaken. Orsaken till det fel som upptäcktes så (`object
+  '.SD' not found` i `rdhamtadata::hamta_befprognos_data()`) är fixad i
+  rdhamtadata 0.0.0.9004, och rdverktyg 0.0.0.9008 visar nu alltid det
+  sista felet när `funktion_upprepa_forsok_om_fel()` ger upp.
+
 # rddiagramkatalog 0.0.0.9038
 
 ## `diagramkatalog_utforska()`: ny knapp "Skriv till fil"
