@@ -1,3 +1,20 @@
+# rdhamtadata 0.0.0.9004
+
+* Fixar `hamta_befprognos_data()` mot mappar med Excel-filer från Hallands
+  skript (`befprognos_*_ettarsklasser_kon_*.xlsx`): hämtningen kraschade
+  med `object '.SD' not found`. Summeringen använde data.table-syntax, men
+  paketet importerar inte data.table och då tolkas `[` som en vanlig
+  data.frame. Summeringen görs nu med dplyr, och `data.table` är borttaget
+  som beroende.
+* Prognosår och filtyp (län/kommun) läses nu ur filnamnet i stället för ur
+  hela sökvägen. Siffror eller ordet "lan" i mappens namn kunde annars
+  ge fel prognosår eller felaktigt bortfiltrerade filer.
+* `hamta_befprognos_data()` kraschade med `non-numeric argument to binary
+  operator` om `prognos_ar` angavs som text, t.ex. `prognos_ar = "2024"`.
+  Nu fungerar det.
+* Tester för `hamta_befprognos_data()` mot lokala Profet-csv och Hallands
+  xlsx-filer.
+
 # rdhamtadata 0.0.0.9003
 
 * Ny funktion `hamta_pendling_rams_bas_scb()` - pendlingsdata (RAMS/BAS)

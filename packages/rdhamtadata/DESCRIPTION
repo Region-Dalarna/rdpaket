@@ -1,6 +1,6 @@
 Package: rdhamtadata
 Title: Datahämtningsfunktioner för Region Dalarnas Analysarbete
-Version: 0.0.0.9003
+Version: 0.0.0.9004
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
@@ -16,7 +16,6 @@ Roxygen: list(markdown = TRUE)
 Depends:
     R (>= 4.5.0)
 Imports:
-    data.table,
     dplyr,
     purrr,
     pxweb2r,
@@ -27,6 +26,8 @@ Imports:
     tidyr
 Suggests:
     testthat (>= 3.0.0),
+    withr,
+    withr,
     writexl
 Remotes:
     FaluPeppe/pxweb2r,

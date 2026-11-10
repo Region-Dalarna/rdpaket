@@ -91,17 +91,19 @@ hamta_befprognos_data <- function(
         filsokvagar_xlsx <- filsokvagar[stringr::str_detect(filsokvagar, ".xlsx")]
 
         # behåll de som finns i region_vekt i filskokvagar_csv (dvs. från Profet)
-        if (!"20" %in% region_vekt) filsokvagar_csv <- filsokvagar_csv[!stringr::str_detect(filsokvagar_csv, "lan")]                        # ta bort länsfiler ur sokvagsvektorn om inte "lan" är med i sökvägen
-        if (!any(rdverktyg::hamtakommuner(lan = "20", FALSE, FALSE, FALSE) %in% region_vekt)) filsokvagar_csv <- filsokvagar_csv[!stringr::str_detect(filsokvagar_csv, "kommun")]      # ta bort kommunfiler ur sokvagsvektorn om ingen av Dalarnas kommuners kommunkoder är med
+        if (!"20" %in% region_vekt) filsokvagar_csv <- filsokvagar_csv[!stringr::str_detect(basename(filsokvagar_csv), "lan")]                        # ta bort länsfiler ur sokvagsvektorn om inte "lan" är med i sökvägen
+        if (!any(rdverktyg::hamtakommuner(lan = "20", FALSE, FALSE, FALSE) %in% region_vekt)) filsokvagar_csv <- filsokvagar_csv[!stringr::str_detect(basename(filsokvagar_csv), "kommun")]      # ta bort kommunfiler ur sokvagsvektorn om ingen av Dalarnas kommuners kommunkoder är med
 
         # och så sätter vi ihop csv- och xlsx-sökvägar igen
         filsokvagar <- c(filsokvagar_csv, filsokvagar_xlsx)
 
         # kontrollera vilka prognosår som finns bland profet-filerna i mappen
-        existerande_ar <- unique(purrr::map_int(filsokvagar, ~ readr::parse_number(.)))
+        existerande_ar <- unique(purrr::map_dbl(filsokvagar, ~ readr::parse_number(basename(.))))
         if ("9999" %in% prognos_ar) prognos_ar <- as.numeric(stringr::str_replace(prognos_ar, "9999", as.character(max(existerande_ar))))
-        prognos_ar <- prognos_ar[prognos_ar %in% existerande_ar]
+        prognos_ar <- prognos_ar[as.numeric(prognos_ar) %in% existerande_ar]
       }
+      # ett uttryckligt prognosår kommer som text ("2024") - gör om så att det går att räkna med
+      prognos_ar <- as.numeric(prognos_ar)
 
       start_ar <- prognos_ar
       jmfr_ar <- start_ar + jmfr_vekt
@@ -146,11 +148,11 @@ hamta_befprognos_data <- function(
 
         filsokvagar <- list.files(hamta_url, pattern = ".csv|.xlsx", full.names = TRUE)
 
-        alla_prognos_ar <- unique(purrr::map_chr(filsokvagar, ~ as.character(readr::parse_number(.))))
+        alla_prognos_ar <- unique(purrr::map_chr(filsokvagar, ~ as.character(readr::parse_number(basename(.)))))
         sok_prognos_ar <- paste0(prognos_ar, collapse = "|")               # för att kunna använda nedan i str_detect
         # ta ut rätt år utifrån användarens val
-        if (all(prognos_ar == "9999")) filsokvagar <- filsokvagar[stringr::str_detect(filsokvagar, max(alla_prognos_ar))]
-        if (all(!is.na(prognos_ar) & prognos_ar != "9999")) filsokvagar <- filsokvagar[stringr::str_detect(filsokvagar, sok_prognos_ar)]
+        if (all(prognos_ar == "9999")) filsokvagar <- filsokvagar[stringr::str_detect(basename(filsokvagar), max(alla_prognos_ar))]
+        if (all(!is.na(prognos_ar) & prognos_ar != "9999")) filsokvagar <- filsokvagar[stringr::str_detect(basename(filsokvagar), sok_prognos_ar)]
         if (any(stringr::str_detect(prognos_ar, "9999"))) prognos_ar <- stringr::str_replace(alla_prognos_ar, "9999", max(alla_prognos_ar))
 
         retur_profet <- NULL
@@ -161,7 +163,7 @@ hamta_befprognos_data <- function(
         if (length(filsokvagar_xlsx) > 0) {
 
           # kontrollera vilka prognosår som finns bland profet-filerna i mappen som ska användas
-          progn_ar <- purrr::map_chr(filsokvagar_xlsx, ~ as.character(readr::parse_number(.)))
+          progn_ar <- purrr::map_chr(filsokvagar_xlsx, ~ as.character(readr::parse_number(basename(.))))
 
           # vektor för att döpa om kolumner i profetfilen så att de blir samma som i pxwebs befolkningsprognostabeller
           rename_befskript <- c("regionkod" = "lan_kod", "regionkod" = "kommun_kod", "ålder" = "alder", "kön" = "kon", "år" = "ar",
@@ -222,8 +224,10 @@ hamta_befprognos_data <- function(
             befskript_df <- dplyr::left_join(befskript_df, rdverktyg::hamtaregtab(), by = "regionkod")
           }
           befskript_df <- dplyr::relocate(befskript_df, region, .after = regionkod)
-          data.table::setDT(befskript_df)
-          befskript_df <- befskript_df[, lapply(.SD, sum, na.rm = TRUE), by = setdiff(names(befskript_df), names(befskript_df)[sapply(befskript_df, is.numeric)])]
+          # summera de numeriska kolumnerna per kombination av alla övriga (summerar t.ex. dubbletter i filen)
+          befskript_df <- befskript_df |>
+            dplyr::summarise(dplyr::across(dplyr::where(is.numeric), ~ sum(.x, na.rm = TRUE)),
+                             .by = !dplyr::where(is.numeric))
 
           # ta bort variabler som användaren inte valt
           befskript_df <- dplyr::select(befskript_df, -dplyr::all_of(tabort_contvar))
@@ -241,11 +245,11 @@ hamta_befprognos_data <- function(
           regionnyckel <- rdverktyg::hamtaregtab()
 
           # behåll de som finns i region_vekt
-          if (!"20" %in% region_vekt) filsokvagar_csv <- filsokvagar_csv[!stringr::str_detect(filsokvagar_csv, "lan")]                        # ta bort länsfiler ur sokvagsvektorn om inte "20" är med som regionkod
-          if (!any(rdverktyg::hamtakommuner(lan = "20", FALSE, FALSE, FALSE) %in% region_vekt)) filsokvagar_csv <- filsokvagar_csv[!stringr::str_detect(filsokvagar_csv, "kommun")]      # ta bort kommunfiler ur sokvagsvektorn om ingen av Dalarnas kommuners kommunkoder är med
+          if (!"20" %in% region_vekt) filsokvagar_csv <- filsokvagar_csv[!stringr::str_detect(basename(filsokvagar_csv), "lan")]                        # ta bort länsfiler ur sokvagsvektorn om inte "20" är med som regionkod
+          if (!any(rdverktyg::hamtakommuner(lan = "20", FALSE, FALSE, FALSE) %in% region_vekt)) filsokvagar_csv <- filsokvagar_csv[!stringr::str_detect(basename(filsokvagar_csv), "kommun")]      # ta bort kommunfiler ur sokvagsvektorn om ingen av Dalarnas kommuners kommunkoder är med
 
           # kontrollera vilka prognosår som finns bland profet-filerna i mappen som ska användas
-          progn_ar <- purrr::map_chr(filsokvagar_csv, ~ as.character(readr::parse_number(.)))
+          progn_ar <- purrr::map_chr(filsokvagar_csv, ~ as.character(readr::parse_number(basename(.))))
 
           # begränsa till det/de prognosår som prognos_ar-parametern faktiskt efterfrågar
           prognos_ar_vekt <- if ("9999" %in% prognos_ar) {
