@@ -1,3 +1,21 @@
+# rddiagramkatalog 0.0.0.9041
+
+* `karta_pendling_scb()` och `karta_befolkningsprognos_scb()` använder inte
+  längre CartoDB Positron som bakgrundskarta. CartoDB kräver sedan
+  25 september 2026 en API-nyckel, och utan nyckel visar leaflet-kartorna
+  bara en "API KEY REQUIRED"-bild i stället för bakgrunden. De använder nu
+  `rddiagram::lagg_till_bakgrundskarta()` (OpenFreeMap Positron: samma
+  ljusgrå stil, gratis utan nyckel). Pendlingskartan, som lägger egna
+  kommunnamn ovanpå, använder varianten utan text. Kräver rddiagram
+  0.0.0.9023.
+
+# rddiagramkatalog 0.0.0.9040
+
+* `karta_pendling_scb()` har nu `vald_kommun_kod = "2080"` (Falun) som
+  standard och går därmed att köra utan argument. Det var den enda av
+  katalogens 92 `diag_*()`/`karta_*()`-funktioner som hade en parameter
+  utan standardvärde. Regeln står nu i `KONVENTIONER.md`.
+
 # rddiagramkatalog 0.0.0.9039
 
 * `diag_bef_utfall_prognos_per_aldersgrupp_scb()` och

@@ -216,7 +216,7 @@ karta_befolkningsprognos_scb <- function(
     sf::st_transform(crs = 4326)
 
   befprognos_leaflet <- leaflet::leaflet(bef_leaflet) |>
-    leaflet::addProviderTiles("CartoDB.Positron") |>
+    rddiagram::lagg_till_bakgrundskarta() |>
     leaflet::addPolygons(
       fillColor = ~fargskala(diff_proc),
       weight = 1,

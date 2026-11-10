@@ -5,7 +5,7 @@
 \title{Karta: arbetspendling mellan kommuner}
 \usage{
 karta_pendling_scb(
-  vald_kommun_kod,
+  vald_kommun_kod = "2080",
   valt_ar = "9999",
   vald_pendlingstyp = "alla",
   grans_for_antal_pendlare = 10,
@@ -26,7 +26,7 @@ karta_pendling_scb(
 )
 }
 \arguments{
-\item{vald_kommun_kod}{En eller flera kommunkoder.}
+\item{vald_kommun_kod}{En eller flera kommunkoder. Standard \code{"2080"} (Falun).}
 
 \item{valt_ar}{År. \code{"9999"} (standard) = senaste tillgängliga.}
 

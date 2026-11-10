@@ -19,7 +19,7 @@
 #' (linjebredd = antal pendlare, färg = pendlingstyp/nettotecken) till och
 #' från den specifika kommunen.
 #'
-#' @param vald_kommun_kod En eller flera kommunkoder.
+#' @param vald_kommun_kod En eller flera kommunkoder. Standard `"2080"` (Falun).
 #' @param valt_ar År. `"9999"` (standard) = senaste tillgängliga.
 #' @param vald_pendlingstyp En eller flera av `"Bruttopendling"`,
 #'   `"Nettopendling"`, `"Inpendling"`, `"Utpendling"`, eller `"alla"`
@@ -63,7 +63,7 @@
 #'   `list(ggplot =, leaflet =)`.
 #' @export
 karta_pendling_scb <- function(
-    vald_kommun_kod,
+    vald_kommun_kod = "2080",
     valt_ar = "9999",
     vald_pendlingstyp = "alla",
     grans_for_antal_pendlare = 10,
@@ -514,7 +514,7 @@ karta_pendling_scb <- function(
     kom_point_utanfor <- dplyr::filter(kom_point, lanskod_tx != lanskod_vald)
 
     leaflet_map <- leaflet::leaflet() |>
-      leaflet::addProviderTiles("CartoDB.PositronNoLabels") |>
+      rddiagram::lagg_till_bakgrundskarta(etiketter = FALSE) |>
       leaflet::addPolygons(data = lanets_kommuner_gis,
                            color = "white", weight = 0.5,
                            opacity = 0.5,

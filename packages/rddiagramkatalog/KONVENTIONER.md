@@ -28,6 +28,12 @@ migrerade.
 
 ## Parameterkonventioner
 
+**Alla parametrar ska ha ett standardvärde, så att funktionen går att köra utan
+några argument alls** (`diag_x()` / `karta_x()` ger ett fungerande exempel).
+Regionparametrar har `"20"` (Dalarnas län) som standard; funktioner som
+kräver en kommun använder `"2080"` (Falun). Det är också vad
+`diagramkatalog_utforska()` och exempelbildsgenereringen utgår från.
+
 Återanvänd dessa namn när de passar, i stället för att hitta på nya:
 
 | Parameter | Betydelse |
