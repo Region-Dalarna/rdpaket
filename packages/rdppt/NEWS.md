@@ -1,3 +1,11 @@
+# rdppt 0.0.0.9003
+
+* Nytt: `ppt_befintlig_visa()` listar sliderna i en pptx-fil med färdiga
+  slides - nummer, rubrik, första texten, vad sliden innehåller (bilder,
+  tabeller, diagram) och layout - så att man ser vilket nummer man ska
+  ange i `ppt_befintlig(slide = )`. Nytt beroende: `xml2` (som `officer`
+  redan kräver).
+
 # rdppt 0.0.0.9002
 
 Paketet är omgjort för att det ska vara enkelt att skapa en presentation,

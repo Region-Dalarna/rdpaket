@@ -107,3 +107,37 @@ test_that("ppt_befintlig() säger ifrån om slides som inte finns eller används
   expect_error(ny_testppt() |> ppt_befintlig(fardiga, slide = 1) |> ppt_befintlig(slide = 1), "bara läggas in på ett ställe")
   expect_error(ny_testppt() |> ppt_befintlig(fardiga, slide = 1) |> ppt_befintlig(file.path(mapp, "annan.pptx")), "en fil per presentation")
 })
+
+test_that("ppt_befintlig_visa() listar sliderna i visningsordning med rubrik, innehåll och layout", {
+  mapp <- testmapp()
+  pres <- officer::read_pptx()
+  pres <- officer::add_slide(pres, layout = "Title and Content", master = "Office Theme") |>
+    officer::ph_with("Punkter", officer::ph_location_type(type = "title")) |>
+    officer::ph_with(c("Ett", "Två"), officer::ph_location_type(type = "body"))
+  pres <- officer::add_slide(pres, layout = "Title Only", master = "Office Theme") |>
+    officer::ph_with("Bild och textruta", officer::ph_location_type(type = "title")) |>
+    officer::ph_with(officer::external_img(testbild(mapp)), officer::ph_location(left = 1, top = 2, width = 4, height = 2)) |>
+    officer::ph_with("En fri textruta", officer::ph_location(left = 6, top = 2, width = 3, height = 1))
+  pres <- officer::add_slide(pres, layout = "Blank", master = "Office Theme") |>
+    officer::ph_with(head(iris, 2), officer::ph_location(left = 1, top = 1, width = 6, height = 2))
+  # sista sliden flyttas först, så att visningsordningen skiljer sig från filordningen
+  pres <- officer::move_slide(pres, index = 3, to = 1)
+  fil <- file.path(mapp, "fardiga.pptx")
+  print(pres, target = fil)
+
+  expect_output(slides <- ppt_befintlig_visa(fil), "ppt_befintlig\\(fil, slide = <nummer>\\)")
+  expect_equal(slides$slide, 1:3)
+  expect_equal(slides$rubrik, c("", "Punkter", "Bild och textruta"))
+  expect_equal(slides$text, c("", "Ett", "En fri textruta"))
+  expect_equal(slides$innehall, c("1 tabell", "", "1 bild"))
+  expect_equal(slides$layout, c("Blank", "Title and Content", "Title Only"))
+
+  # numren är desamma som ppt_befintlig() använder
+  ny <- ny_testppt() |> ppt_befintlig(fil, slide = 3)
+  expect_equal(pptx_ordning(suppressMessages(ppt_spara(ny, file.path(mapp, "ny.pptx")))),
+               c("Testpresentation", "Bild och textruta"))
+
+  expect_output(tom <- ppt_befintlig_visa(rdppt:::intern_rd_medfoljande_mall()), "inga slides")
+  expect_equal(nrow(tom), 0)
+  expect_error(ppt_befintlig_visa(file.path(mapp, "finns_inte.pptx")), "Hittar inte pptx-filen")
+})

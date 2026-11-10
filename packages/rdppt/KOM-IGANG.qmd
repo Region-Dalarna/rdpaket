@@ -51,7 +51,7 @@ lägger du till slides:
 | `ppt_avsnitt(rubrik)` | En avsnittsrubrik. |
 | `ppt_slutsatser(punkter)` | Rubriken "Slutsatser" och en punktlista. |
 | `ppt_rapporter()` | Aktuella rapporter från regiondalarna.se, hämtade automatiskt. |
-| `ppt_befintlig(fil)` | Färdiga slides som du gjort för hand i PowerPoint. |
+| `ppt_befintlig(fil)` | Färdiga slides som du gjort för hand i PowerPoint (`ppt_befintlig_visa(fil)` listar dem). |
 | `ppt_avslut()` | "Tack för mig!" med ditt namn och din e-post. |
 
 Du kan också bygga upp presentationen i flera steg och titta på den under
@@ -134,7 +134,21 @@ ppt_ny("Demografi i Dalarna") |>
   ppt_spara("demografi.pptx")
 ```
 
-Utan `slide` läggs alla slides i filen in. Tre saker att känna till:
+Utan `slide` läggs alla slides i filen in. Vilka slides filen innehåller,
+och vilket nummer de har, ser du med `ppt_befintlig_visa()`:
+
+```r
+ppt_befintlig_visa(fardiga)
+```
+
+```
+ slide rubrik             text                     innehall  layout
+ 1     Befolkningspyramid Dalarna 2025             1 bild    Endast rubrik
+ 2     Flyttmönster       Inrikes och utrikes ...  1 diagram Rubrik och innehåll
+ 3                                                 1 tabell  Tom
+```
+
+Tre saker att känna till:
 
 - Filen ska vara gjord utifrån samma mall som resten av presentationen.
 - Färdiga slides kan bara hämtas från **en** fil per presentation - samla

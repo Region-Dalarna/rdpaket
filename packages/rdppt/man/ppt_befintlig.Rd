@@ -13,7 +13,9 @@ ppt_befintlig(ppt, fil = NULL, slide = NULL)
 = samma fil som senast, eller - första gången - mallfilen själv.}
 
 \item{slide}{Vilka slides i filen som ska läggas in här, som nummer
-(t.ex. \code{2} eller \code{c(1, 3)}). \code{NULL} (standard) = alla.}
+(t.ex. \code{2} eller \code{c(1, 3)}). \code{NULL} (standard) = alla.
+\code{\link[=ppt_befintlig_visa]{ppt_befintlig_visa()}} visar vilka slides filen innehåller och vilket
+nummer de har.}
 }
 \value{
 Presentationen, med de färdiga slidesen tillagda.
@@ -45,4 +47,7 @@ ppt_ny("Demografi i Dalarna") |>
   ppt_avslut() |>
   ppt_spara("demografi.pptx")
 }
+}
+\seealso{
+\code{\link[=ppt_befintlig_visa]{ppt_befintlig_visa()}}
 }

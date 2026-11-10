@@ -371,8 +371,11 @@ ppt_avslut <- function(ppt, rubrik = NULL, text = NULL, anteckningar = NULL) {
 #'   = samma fil som senast, eller - första gången - mallfilen själv.
 #' @param slide Vilka slides i filen som ska läggas in här, som nummer
 #'   (t.ex. `2` eller `c(1, 3)`). `NULL` (standard) = alla.
+#'   [ppt_befintlig_visa()] visar vilka slides filen innehåller och vilket
+#'   nummer de har.
 #'
 #' @return Presentationen, med de färdiga slidesen tillagda.
+#' @seealso [ppt_befintlig_visa()]
 #' @examples
 #' \dontrun{
 #' fardiga <- "G:/skript/ppt/mall_rus_utan_bakgrund_demografi.pptx"
@@ -414,6 +417,49 @@ ppt_befintlig <- function(ppt, fil = NULL, slide = NULL) {
 
   for (nr in slide) ppt <- intern_ppt_lagg_till(ppt, mall = paste0("befintlig:", nr))
   ppt
+}
+
+#' Visa vilka färdiga slides en pptx-fil innehåller
+#'
+#' Listar sliderna i en pptx-fil i den ordning de visas i PowerPoint, med
+#' rubrik, den första texten utöver rubriken, vad sliden i övrigt
+#' innehåller (bilder, tabeller, diagram, grupperade figurer) och vilken
+#' layout den har.
+#' Numret i kolumnen `slide` är det du anger i `ppt_befintlig(slide = )`.
+#'
+#' @param fil Sökväg till pptx-filen med färdiga slides.
+#' @param oppna TRUE för att också öppna filen i PowerPoint.
+#'
+#' @return Osynligt: en `data.frame` med en rad per slide och kolumnerna
+#'   `slide`, `rubrik`, `text`, `innehall` och `layout` (texterna i sin
+#'   helhet - i utskriften är de avkortade).
+#' @seealso [ppt_befintlig()]
+#' @examples
+#' \dontrun{
+#' ppt_befintlig_visa("G:/skript/ppt/mall_rus_utan_bakgrund_demografi.pptx")
+#' }
+#' @export
+ppt_befintlig_visa <- function(fil, oppna = FALSE) {
+  slides <- intern_slides_i_fil(intern_las_pptx(fil))
+
+  cat("Fil: ", fil, "\n", sep = "")
+  if (nrow(slides) == 0) {
+    cat("Filen innehåller inga slides.\n")
+    return(invisible(slides))
+  }
+  korta <- function(x, bredd) {
+    x <- gsub("\\s+", " ", x)
+    ifelse(nchar(x) > bredd, paste0(substr(x, 1, bredd - 3), "..."), x)
+  }
+  utskrift <- slides
+  utskrift$rubrik <- korta(utskrift$rubrik, 40)
+  utskrift$text <- korta(utskrift$text, 40)
+  cat("\n")
+  print(utskrift, right = FALSE, row.names = FALSE)
+  cat("\nLägg in dem med ppt_befintlig(fil, slide = <nummer>).\n")
+
+  if (isTRUE(oppna)) intern_oppna_fil(fil)
+  invisible(slides)
 }
 
 #' Spara presentationen som en pptx-fil
@@ -498,6 +544,57 @@ intern_ppt_lagg_till <- function(ppt, bild = NULL, titel = NULL, beskr = NULL, m
   rad$anteckningar <- list(anteckningar)
   ppt$slides <- dplyr::bind_rows(ppt$slides, rad)
   ppt
+}
+
+# Sliderna i en inläst pptx-fil, en rad per slide i den ordning de visas. Läses ur slidernas xml,
+# så att även sådant officer inte kan redovisa (SmartArt, grupperade figurer m.m.) räknas med.
+intern_slides_i_fil <- function(pres) {
+  tom <- data.frame(slide = integer(0), rubrik = character(0), text = character(0),
+                    innehall = character(0), layout = character(0))
+  if (length(pres) == 0) return(tom)
+
+  # officer håller sliderna i filordning (slide1.xml, slide2.xml ...) - visningsordningen står i
+  # presentationens egen förteckning
+  filnamn <- pres$slide$get_metadata()$name
+  visningsordning <- match(basename(pres$presentation$slide_data()$target), filnamn)
+  layouter <- pres$slideLayouts$get_metadata()
+
+  rader <- lapply(seq_along(visningsordning), function(nr) {
+    slide <- pres$slide$get_slide(visningsordning[nr])
+    xml <- slide$get()
+    antal <- function(xpath) length(xml2::xml_find_all(xml, xpath))
+    stycken <- function(noder) {
+      texter <- vapply(noder, function(nod) {
+        paste(xml2::xml_text(xml2::xml_find_all(nod, ".//*[local-name()='t']")), collapse = "")
+      }, character(1))
+      trimws(texter[nzchar(trimws(texter))])
+    }
+
+    ar_rubrik <- "*[local-name()='nvSpPr']/*[local-name()='nvPr']/*[local-name()='ph'][@type='title' or @type='ctrTitle']"
+    rubrik <- stycken(xml2::xml_find_all(xml, paste0("//*[local-name()='sp'][", ar_rubrik, "]//*[local-name()='p']")))
+    # text i grupperade figurer räknas inte - i ett diagram är det axeletiketter och liknande
+    ovrig_text <- stycken(xml2::xml_find_all(
+      xml, paste0("//*[local-name()='sp'][not(", ar_rubrik, ")][not(ancestor::*[local-name()='grpSp'])]//*[local-name()='p']")))
+
+    delar <- c(bild = antal("//*[local-name()='pic']"),
+               tabell = antal("//*[local-name()='tbl']"),
+               diagram = antal("//*[local-name()='graphicFrame']//*[local-name()='chart']"),
+               SmartArt = antal("//*[local-name()='graphicFrame']//*[local-name()='relIds']"),
+               figurgrupp = antal("/*/*[local-name()='cSld']/*[local-name()='spTree']/*[local-name()='grpSp']"))
+    flertal <- c(bild = "bilder", tabell = "tabeller", diagram = "diagram", SmartArt = "SmartArt",
+                 figurgrupp = "figurgrupper")
+    delar <- delar[delar > 0]
+    innehall <- paste0(delar, " ", ifelse(delar == 1, names(delar), flertal[names(delar)]), collapse = ", ")
+
+    data.frame(
+      slide = nr,
+      rubrik = paste(rubrik, collapse = " "),
+      text = if (length(ovrig_text) == 0) "" else ovrig_text[1],
+      innehall = if (length(delar) == 0) "" else innehall,
+      layout = layouter$name[match(slide$layout_name(), basename(layouter$filename))]
+    )
+  })
+  do.call(rbind, rader)
 }
 
 # Png-filerna i en mapp med tidpunkten de senast ändrades - för att se vilka en diagramfunktion skapat.
