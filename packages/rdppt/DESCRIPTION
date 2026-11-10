@@ -1,13 +1,15 @@
 Package: rdppt
 Title: Bygg PowerPoint-presentationer för Region Dalarnas Analysarbete
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
   )
 Description: Funktioner för att bygga PowerPoint-presentationer (pptx) från
-    färdiga diagram/bilder, med stöd för Region Dalarnas presentationsmallar
-    och layouter. Utbrutet ur G:/skript/ppt/ (skapa_ppt_grund.R, func_ppt.R).
+    färdiga diagram/bilder. Fungerar med valfri pptx-mall - Region Dalarnas
+    presentationsmallar eller den som är inbyggd i paketet officer - och
+    alla layouter i mallen går att använda. Utbrutet ur G:/skript/ppt/
+    (skapa_ppt_grund.R, func_ppt.R).
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -19,7 +21,6 @@ Imports:
     glue,
     lubridate,
     officer,
-    png,
     purrr,
     rddeploy,
     rdverktyg,
@@ -28,7 +29,8 @@ Imports:
     stringr
 Suggests:
     rddiagramkatalog,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    withr
 Config/testthat/edition: 3
 URL: https://github.com/Region-Dalarna/rdpaket
 BugReports: https://github.com/Region-Dalarna/rdpaket/issues

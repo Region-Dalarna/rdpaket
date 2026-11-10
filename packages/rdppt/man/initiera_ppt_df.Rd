@@ -7,15 +7,18 @@
 initiera_ppt_df()
 }
 \value{
-En tom \code{data.frame} med kolumnerna \code{dia_path}, \code{titel},
-\code{master}, \code{mall}, \code{txt_size}, samt list-kolumnerna \code{beskr}, \code{gg_obj}
+En tom \code{data.frame} med kolumnerna \code{dia_path} (sökväg till en
+png-bild), \code{titel}, \code{master}, \code{mall}, \code{txt_size}, samt list-kolumnerna
+\code{beskr} (text), \code{gg_obj} (ett ggplot-objekt, i stället för \code{dia_path})
 och \code{anteckningar}.
 }
 \description{
-En ppt-lista är en \code{data.frame} med en rad per bild/diagram som ska bli
-en slide i presentationen, som sedan byggs med \code{\link[=skapa_ppt_fran_lista]{skapa_ppt_fran_lista()}}.
-Fyll på den med \code{\link[=ppt_lista_fyll_pa]{ppt_lista_fyll_pa()}}, eller lägg till rader för hand
-(t.ex. med \code{dplyr::add_row()}) för enstaka specialslides (se
-\code{mall}-kolumnen - \code{"Rapporter_Samhallsanalys"}, \code{"Slutsatser_Samhallsanalys"},
-\code{"Avslutsbild_Samhallsanalys"} m.fl. i \code{\link[=skapa_ppt_fran_lista]{skapa_ppt_fran_lista()}}).
+En ppt-lista är en \code{data.frame} med en rad per slide i presentationen,
+som sedan byggs med \code{\link[=skapa_ppt_fran_lista]{skapa_ppt_fran_lista()}}. Fyll på den med
+\code{\link[=ppt_lista_fyll_pa]{ppt_lista_fyll_pa()}}, eller lägg till rader för hand (t.ex. med
+\code{dplyr::add_row()}). Vilken layout en rad får styrs av kolumnen \code{mall},
+se \code{\link[=skapa_ppt_fran_lista]{skapa_ppt_fran_lista()}}.
+}
+\details{
+Vill du slippa hantera listan själv, se \code{\link[=ppt_ny]{ppt_ny()}}.
 }

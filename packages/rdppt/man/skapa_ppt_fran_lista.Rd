@@ -2,24 +2,22 @@
 % Please edit documentation in R/skapa_ppt_fran_lista.R
 \name{skapa_ppt_fran_lista}
 \alias{skapa_ppt_fran_lista}
-\title{Bygg en PowerPoint-presentation från en diagramlista}
+\title{Bygg en PowerPoint-presentation från en ppt-lista}
 \usage{
 skapa_ppt_fran_lista(
   pptlista,
   huvudrubrik,
-  farg_huvudrubrik = "#2286AC",
-  underrubrik = paste0("Skapad ", gsub("^0", "", format(Sys.Date(), "\%d")), " ",
-    format(Sys.Date(), "\%b \%Y"),
-    " av Samhällsanalys\\nRegionala utvecklingsförvaltningen, Region Dalarna"),
+  farg_huvudrubrik = NULL,
+  underrubrik = intern_standard_underrubrik(),
   output_mapp = rdverktyg::utskriftsmapp(),
   spara_backup_om_fil_redan_finns = FALSE,
   filnamn = "presentation.pptx",
-  mall_fil,
-  titelmaster = "VCdag",
-  titel_text_stlk = 40,
-  undertitel_text_stlk = 20,
+  mall_fil = NULL,
+  titelmaster = NULL,
+  titel_text_stlk = NULL,
+  undertitel_text_stlk = NULL,
   rubrik_namn = TRUE,
-  rubrik_namn_stlk = 18,
+  rubrik_namn_stlk = NULL,
   utan_rubriker = FALSE,
   utan_text = FALSE,
   slides_flytta = NULL,
@@ -29,13 +27,15 @@ skapa_ppt_fran_lista(
 \arguments{
 \item{pptlista}{En ppt-lista, se \code{\link[=initiera_ppt_df]{initiera_ppt_df()}}.}
 
-\item{huvudrubrik}{Presentationens huvudrubrik (på titelsidan).}
+\item{huvudrubrik}{Presentationens huvudrubrik (på titelsidan). \code{NULL}
+= ingen titelsida.}
 
-\item{farg_huvudrubrik}{Hexfärg på huvudrubriken.}
+\item{farg_huvudrubrik}{Hexfärg på huvudrubriken och avsnittsrubriker.
+\code{NULL} (standard) = mallprofilens, se \code{\link[=ppt_mallprofil]{ppt_mallprofil()}}.}
 
-\item{underrubrik}{Underrubrik på titelsidan. Standard: "Skapad
-\if{html}{\out{<dagens datum>}} av Samhällsanalys\\nRegionala utvecklingsförvaltningen,
-Region Dalarna".}
+\item{underrubrik}{Underrubrik på titelsidan, eller \code{NA} för ingen.
+Standard: "Skapad \if{html}{\out{<dagens datum>}} av Samhällsanalys\\nRegionala
+utvecklingsförvaltningen, Region Dalarna".}
 
 \item{output_mapp}{Mapp där presentationen sparas.}
 
@@ -44,35 +44,66 @@ samma namn ska säkerhetskopieras i stället för att skrivas över.}
 
 \item{filnamn}{Filnamn på den sparade presentationen.}
 
-\item{mall_fil}{Sökväg till pptx-mallfilen presentationen byggs utifrån.}
+\item{mall_fil}{Mallen presentationen byggs utifrån: en sökväg till en
+pptx-fil, \code{"regiondalarna"}, \code{"inbyggd"} eller en mallprofil från
+\code{\link[=ppt_mallprofil]{ppt_mallprofil()}}. \code{NULL} (standard) = den mall som är vald med
+\code{\link[=ppt_mall_ange]{ppt_mall_ange()}}, annars Region Dalarnas standardmall (från G: om
+den går att nå, annars den kopia som följer med paketet).}
 
-\item{titelmaster}{Namnet på den master-layout titelsidan ska använda.}
+\item{titelmaster}{Namnet på den master titelsidan ska använda. \code{NULL}
+(standard) = mallprofilens.}
 
 \item{titel_text_stlk, undertitel_text_stlk}{Textstorlek på huvud-
-respektive underrubrik.}
+respektive underrubrik. \code{NULL} (standard) = mallprofilens.}
 
 \item{rubrik_namn}{TRUE om presentatörens namn ska skrivas ut på
-titelsidan.}
+titelsidan (om titelsidans layout har en platshållare för det).}
 
-\item{rubrik_namn_stlk}{Textstorlek på presentatörens namn.}
+\item{rubrik_namn_stlk}{Textstorlek på presentatörens namn. \code{NULL}
+(standard) = mallprofilens.}
 
 \item{utan_rubriker, utan_text}{TRUE om rubriker respektive brödtext ska
-utelämnas när mall-layout väljs automatiskt (se \code{pptlista$mall}).}
+utelämnas på de slides där layouten väljs automatiskt.}
 
 \item{slides_flytta}{En lista med \code{list(fran =, till =)}-par för att
-flytta enskilda slides (t.ex. sådana som redan finns i \code{mall_fil})
-till rätt position i den färdiga presentationen, eller \code{NULL}.}
+flytta enskilda slides i den färdiga presentationen, eller \code{NULL}.
+För färdiga slides som ligger i mallfilen är \code{"befintlig:<nr>"} i
+kolumnen \code{mall} (eller \code{\link[=ppt_befintlig]{ppt_befintlig()}}) enklare.}
 
-\item{anv_uppgifter}{Vems namn/e-post ska användas på titel-/
-avslutssidan - \code{NULL} (standard) = inloggad användare, se
-\code{\link[rddeploy:anv_hamta_namn_epost_fran_lista]{rddeploy::anv_hamta_namn_epost_fran_lista()}}.}
+\item{anv_uppgifter}{Vems namn/e-post som ska användas på titel- och
+avslutssidan: \code{NULL} (standard) = inloggad användare, ett namn som
+slås upp med \code{\link[rddeploy:anv_hamta_namn_epost_fran_lista]{rddeploy::anv_hamta_namn_epost_fran_lista()}}, eller en
+lista \code{list(namn = "...", epost = "...")}.}
 }
 \value{
-Inget - skriver presentationen till \code{output_mapp}.
+Sökvägen till den sparade presentationen, osynligt.
 }
 \description{
 Tar en "ppt-lista" (se \code{\link[=initiera_ppt_df]{initiera_ppt_df()}} och \code{\link[=ppt_lista_fyll_pa]{ppt_lista_fyll_pa()}}) -
-en rad per bild/diagram, med vilken mall-layout som ska användas för
-varje rad - och bygger en komplett \code{.pptx}-presentation utifrån Region
-Dalarnas presentationsmallar.
+en rad per slide - och bygger en komplett \code{.pptx}-presentation utifrån
+en pptx-mall. Vill du bygga en presentation steg för steg i stället för
+att fylla en lista, se \code{\link[=ppt_ny]{ppt_ny()}}.
 }
+\section{Vilken layout en rad får (kolumnen \code{mall})}{
+
+\itemize{
+\item \code{NA} - layouten väljs automatiskt efter vad raden innehåller: bild,
+bild med rubrik, bild med text, eller rubrik och punktlista.
+\item Namnet på en layout i mallen, t.ex. \code{"Två innehållsdelar"}. Alla
+layouter i mallen går att använda - rubrik, text och bild läggs i de
+platshållare layouten har. Se vilka som finns med \code{\link[=ppt_mall_visa]{ppt_mall_visa()}}.
+\item \code{"roll:<roll>"}, t.ex. \code{"roll:bild_rubrik"} - den layout som mallen
+använder för den rollen, se \code{\link[=ppt_mallprofil]{ppt_mallprofil()}}.
+\item \code{"Rapporter_Samhallsanalys"} - en sida med aktuella rapporter från
+regiondalarna.se, \code{"Slutsatser_Samhallsanalys"} - rubrik (\code{titel}) och
+punktlista (\code{beskr}), \code{"Avslutsbild_Samhallsanalys"} - "Tack för mig!"
+med ditt namn och din e-post.
+\item \code{"befintlig:<nr>"}, t.ex. \code{"befintlig:2"} - en färdig slide som redan
+ligger i mallfilen hamnar här i presentationen, se \code{\link[=ppt_befintlig]{ppt_befintlig()}}.
+}
+
+Äldre layoutnamn som inte finns i mallen (\code{"Bild och text till höger"},
+\code{"Bild utan text och rubrik"} m.fl.) översätts till den layout i mallen
+som har motsvarande roll.
+}
+

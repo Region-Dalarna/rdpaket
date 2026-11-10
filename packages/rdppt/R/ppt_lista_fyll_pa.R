@@ -129,7 +129,7 @@ ppt_lista_fyll_pa <- function(
       if (is.null(funktion_retur)) return(NULL)
       # vissa diagramfunktioner returnerar inte en lista utan ett bart ggplot-objekt - gör om till
       # en lista av det i så fall så att returobjektet alltid har samma struktur.
-      if (ggplot2::is.ggplot(funktion_retur)) funktion_retur <- list(funktion_retur)
+      if (intern_ar_ggplot(funktion_retur)) funktion_retur <- list(funktion_retur)
 
       if (is.null(names(funktion_retur))) names(funktion_retur) <- paste0(funktion_kor_namn, "_", .x)
 
