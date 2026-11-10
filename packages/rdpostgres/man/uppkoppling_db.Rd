@@ -32,3 +32,11 @@ Använd med standardvärden eller egna parametrar. Om \code{service_name} anges
 hämtas användarnamn och lösenord ur keyring, annars används \code{geodata_las}.
 Körs funktionen på databasservern själv byts värdnamnet mot \code{localhost}.
 }
+\details{
+Anges varken \code{service_name} eller \code{db_user}/\code{db_password} görs
+uppkopplingen med det inbyggda läskontot \code{geodata_las} (samma sträng som
+användarnamn och lösenord). Det sker utan något meddelande. Behöver du
+rättigheter utöver läskontots: spara egna uppgifter med
+\code{keyring::key_set()} och ange dem via \code{service_name}.
+\code{\link[=rdpostgres_auth_check]{rdpostgres_auth_check()}} visar vilka uppgifter som finns sparade.
+}

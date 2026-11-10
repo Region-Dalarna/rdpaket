@@ -1,3 +1,15 @@
+# rdpostgres 0.0.0.9003
+
+## Inget meddelande när läskontot används
+
+`uppkoppling_db()` skrev ett meddelande om `geodata_las` vid varje
+uppkoppling utan `service_name`/`db_user`/`db_password` - alltså i
+normalfallet, och inte bara första gången som det var tänkt. Meddelandet är
+borttaget. Samma information står i `?uppkoppling_db`, och
+`rdpostgres_auth_check()` visar som förut vilka uppgifter som finns sparade.
+
+---
+
 # rdpostgres 0.0.0.9002
 
 ## Döljer keyrings ofarliga backend-varning

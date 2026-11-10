@@ -25,6 +25,13 @@ intern_tyst_varning <- function(expr, monster) {
 #' hämtas användarnamn och lösenord ur keyring, annars används `geodata_las`.
 #' Körs funktionen på databasservern själv byts värdnamnet mot `localhost`.
 #'
+#' Anges varken `service_name` eller `db_user`/`db_password` görs
+#' uppkopplingen med det inbyggda läskontot `geodata_las` (samma sträng som
+#' användarnamn och lösenord). Det sker utan något meddelande. Behöver du
+#' rättigheter utöver läskontots: spara egna uppgifter med
+#' `keyring::key_set()` och ange dem via `service_name`.
+#' [rdpostgres_auth_check()] visar vilka uppgifter som finns sparade.
+#'
 #' @param db_name Databasnamn.
 #' @param service_name keyring-service för användarnamn/lösenord, eller `NA`.
 #' @param db_host,db_port,db_options Anslutningsparametrar. Standard via
@@ -49,14 +56,7 @@ uppkoppling_db <- function(db_name      = "geodata",
     if (is.na(db_user))     db_user     <- anv
     if (is.na(db_password)) db_password <- keyring::key_get(service_name, anv)
   } else {
-    if (is.na(db_user) || is.na(db_password)) {
-      message(
-        "uppkoppling_db(): varken service_name eller db_user/db_password angavs - ",
-        "faller tillbaka på geodata_las/geodata_las (samma sträng som användarnamn ",
-        "och lösenord). Spara egna uppgifter med keyring::key_set() och ange dem via ",
-        "service_name för läsrättigheter utöver detta."
-      )
-    }
+    # det inbyggda läskontot - beskrivs i hjälpen, inget meddelande eftersom det är normalfallet
     if (is.na(db_user))     db_user     <- "geodata_las"
     if (is.na(db_password)) db_password <- "geodata_las"
   }
