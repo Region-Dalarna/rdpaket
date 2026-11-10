@@ -1,3 +1,23 @@
+# rddiagram 0.0.0.9023
+
+## Ny funktion: `lagg_till_bakgrundskarta()`
+
+En ljus, neutral bakgrundskarta för leaflet-kartor, i stil med CartoDB
+Positron, från [OpenFreeMap](https://openfreemap.org) (OpenStreetMap-data).
+Gratis utan API-nyckel och utan begränsning av antalet anrop. Behövs
+eftersom CartoDB sedan 25 september 2026 kräver en API-nyckel för sina
+rastertiles - utan nyckel visas bara en "API KEY REQUIRED"-bild i stället
+för kartan.
+
+OpenFreeMap levererar vektorkartor, så MapLibre GL JS (4.7.1) och
+leaflet-pluginet för det (0.0.22) följer med i paketet (`inst/leaflet-maplibre/`,
+med licenstexter) och bäddas in i kartan - inget hämtas från ett CDN. Stilarna
+`"positron"` (standard), `"bright"` och `"liberty"` finns, och
+`etiketter = FALSE` ger en karta helt utan text.
+
+`skriv_leaflet_till_fil()` får `karta_fordrojning` (standard 4 sekunder) för
+png-export, så att bakgrundskartan hinner ritas innan bilden tas.
+
 # rddiagram 0.0.0.9022
 
 ## Ny funktion: `skriv_leaflet_till_fil()`

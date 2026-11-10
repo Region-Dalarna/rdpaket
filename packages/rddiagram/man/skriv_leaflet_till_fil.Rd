@@ -10,7 +10,8 @@ skriv_leaflet_till_fil(
   filnamn_karta,
   karta_filformat = "html",
   karta_bredd = 1000,
-  karta_hojd = 800
+  karta_hojd = 800,
+  karta_fordrojning = 4
 )
 }
 \arguments{
@@ -27,6 +28,9 @@ paketet webshot2 (kräver det paketet samt en lokalt installerad
 Chrome/Chromium).}
 
 \item{karta_bredd, karta_hojd}{Bildmått i pixlar. Gäller bara \code{"png"}.}
+
+\item{karta_fordrojning}{Antal sekunder att vänta innan bilden tas, så att
+bakgrundskartan hinner ritas. Gäller bara \code{"png"}.}
 }
 \value{
 Inget - skriver filen.

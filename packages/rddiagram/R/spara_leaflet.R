@@ -12,12 +12,15 @@
 #'   paketet webshot2 (kräver det paketet samt en lokalt installerad
 #'   Chrome/Chromium).
 #' @param karta_bredd,karta_hojd Bildmått i pixlar. Gäller bara `"png"`.
+#' @param karta_fordrojning Antal sekunder att vänta innan bilden tas, så att
+#'   bakgrundskartan hinner ritas. Gäller bara `"png"`.
 #'
 #' @return Inget - skriver filen.
 #' @export
 skriv_leaflet_till_fil <- function(leaflet_objekt, output_mapp, filnamn_karta,
                                     karta_filformat = "html",
-                                    karta_bredd = 1000, karta_hojd = 800) {
+                                    karta_bredd = 1000, karta_hojd = 800,
+                                    karta_fordrojning = 4) {
 
   if (!requireNamespace("htmlwidgets", quietly = TRUE)) {
     stop("Paketet 'htmlwidgets' krävs. Installera med install.packages(\"htmlwidgets\").", call. = FALSE)
@@ -69,7 +72,9 @@ skriv_leaflet_till_fil <- function(leaflet_objekt, output_mapp, filnamn_karta,
       unlink(sub("\\.html$", "_files", temp_html), recursive = TRUE)
     }, add = TRUE)
 
-    webshot2::webshot(temp_html, file = fullpath, vwidth = karta_bredd, vheight = karta_hojd)
+    # bakgrundskartan (se lagg_till_bakgrundskarta()) hämtas och ritas först när sidan visas
+    webshot2::webshot(temp_html, file = fullpath, vwidth = karta_bredd, vheight = karta_hojd,
+                      delay = karta_fordrojning)
 
   } else {
     stop("Okänt kartfilformat: ", format, " (stöds: \"html\", \"png\")", call. = FALSE)
