@@ -4,10 +4,13 @@
 \alias{ppt_befintlig_visa}
 \title{Visa vilka färdiga slides en pptx-fil innehåller}
 \usage{
-ppt_befintlig_visa(fil, oppna = FALSE)
+ppt_befintlig_visa(fil, bilder = FALSE, oppna = FALSE)
 }
 \arguments{
 \item{fil}{Sökväg till pptx-filen med färdiga slides.}
+
+\item{bilder}{TRUE för att också visa bilderna av sliderna, se
+\code{\link[=ppt_forhandsvisa]{ppt_forhandsvisa()}}.}
 
 \item{oppna}{TRUE för att också öppna filen i PowerPoint.}
 }
@@ -29,5 +32,5 @@ ppt_befintlig_visa("G:/skript/ppt/mall_rus_utan_bakgrund_demografi.pptx")
 }
 }
 \seealso{
-\code{\link[=ppt_befintlig]{ppt_befintlig()}}
+\code{\link[=ppt_befintlig]{ppt_befintlig()}}, \code{\link[=ppt_forhandsvisa]{ppt_forhandsvisa()}}
 }

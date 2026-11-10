@@ -6,6 +6,13 @@
   ange i `ppt_befintlig(slide = )`. Nytt beroende: `xml2` (som `officer`
   redan kräver).
 
+* Nytt: `ppt_forhandsvisa()` gör en bild av varje slide i en pptx-fil och
+  visar dem i en översikt med nummer, rubrik och layout (Viewer-fliken i
+  RStudio eller webbläsaren). Utan `fil` visas hur mallens layouter ser
+  ut. Bilderna görs med PowerPoint på Windows, annars med LibreOffice (och
+  `pdftools` eller `pdftoppm`). `ppt_befintlig_visa(fil, bilder = TRUE)`
+  visar listan och bilderna tillsammans.
+
 # rdppt 0.0.0.9002
 
 Paketet är omgjort för att det ska vara enkelt att skapa en presentation,

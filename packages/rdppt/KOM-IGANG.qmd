@@ -148,6 +148,18 @@ ppt_befintlig_visa(fardiga)
  3                                                 1 tabell  Tom
 ```
 
+Vill du se hur sliderna ser ut, inte bara vad de heter, gör
+`ppt_forhandsvisa()` en bild av varje slide och visar dem i en översikt
+(i RStudios Viewer-flik eller webbläsaren), med samma nummer:
+
+```r
+ppt_forhandsvisa(fardiga)              # alla slides i filen
+ppt_forhandsvisa(fardiga, slide = 2:3) # bara några
+ppt_forhandsvisa()                     # utan fil: hur mallens layouter ser ut
+```
+
+Bilderna görs med PowerPoint (Windows) eller, om det saknas, LibreOffice.
+
 Tre saker att känna till:
 
 - Filen ska vara gjord utifrån samma mall som resten av presentationen.

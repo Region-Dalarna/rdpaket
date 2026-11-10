@@ -141,3 +141,23 @@ test_that("ppt_befintlig_visa() listar sliderna i visningsordning med rubrik, in
   expect_equal(nrow(tom), 0)
   expect_error(ppt_befintlig_visa(file.path(mapp, "finns_inte.pptx")), "Hittar inte pptx-filen")
 })
+
+test_that("ppt_forhandsvisa() gör en bild per slide och en översikt", {
+  skip_if(!nzchar(Sys.which("soffice")) || (!nzchar(Sys.which("pdftoppm")) && !requireNamespace("pdftools", quietly = TRUE)),
+          "LibreOffice och pdftoppm/pdftools behövs för att göra bilder")
+  mapp <- testmapp()
+  fil <- testfil_med_slides(mapp, c("Färdig A", "Färdig B & C", "Färdig D"))
+
+  expect_message(bilder <- ppt_forhandsvisa(fil, oppna = FALSE), "3 slides")
+  expect_length(bilder, 3)
+  expect_true(all(file.exists(bilder)))
+  oversikt <- paste(readLines(attr(bilder, "oversikt"), encoding = "UTF-8"), collapse = "\n")
+  expect_match(oversikt, "Färdig B &amp; C", fixed = TRUE)
+
+  expect_length(suppressMessages(ppt_forhandsvisa(fil, slide = 2:3, oppna = FALSE)), 2)
+  expect_error(ppt_forhandsvisa(fil, slide = 4, oppna = FALSE), "mellan 1 och 3")
+  expect_error(ppt_forhandsvisa(file.path(mapp, "finns_inte.pptx"), oppna = FALSE), "Hittar inte pptx-filen")
+
+  # utan fil visas mallens layouter
+  expect_length(suppressMessages(ppt_forhandsvisa(mall = "inbyggd", oppna = FALSE)), 7)
+})
