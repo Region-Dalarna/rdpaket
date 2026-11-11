@@ -1,3 +1,14 @@
+# rdadminportal 0.0.0.9005
+
+* Funktionerna som ändrar landningssidans poster (`landningssida_exkludera()`,
+  `landningssida_inkludera()`, ta bort ikon- och beskrivningskoppling)
+  godkänner nu även pdf-rapporter, med namn som
+  `pdf-rapporter/Årsrapport 2025.pdf`. Tidigare stoppades de av kravet att
+  namn bara fick innehålla bokstäver, siffror, `_` och `-`, så en pdf-rapport
+  hade inte gått att dölja eller ta bort ikon/beskrivning för. Filnamnet får inte
+  innehålla `/`, `..` eller kontrolltecken. Nedladdningsfunktionerna är
+  oförändrat strikta.
+
 # rdadminportal 0.0.0.9004
 
 * `landningssida_synka_app_lista()` tar nu med pdf-filerna i

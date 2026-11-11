@@ -23,3 +23,18 @@ test_that("landningssida_ikoner_lista_tillgangliga returnerar kurerad lista", {
   expect_true(all(startsWith(df$ikon, "ti-")))
   expect_true("ti-map" %in% df$ikon)
 })
+
+test_that("intern_validera_landningssidenamn godkänner app-namn och pdf-rapporter, men inget annat", {
+  expect_true(intern_validera_landningssidenamn(c("brott", "export_2024")))
+  expect_true(intern_validera_landningssidenamn(c("pdf-rapporter/Befolkning_2025.pdf",
+                                                  "pdf-rapporter/Årsrapport arbetsmarknad (2025).PDF")))
+  expect_error(intern_validera_landningssidenamn(character(0)), "icke-tom")
+  expect_error(intern_validera_landningssidenamn("app namn"), "Ogiltiga")
+  expect_error(intern_validera_landningssidenamn("app/../etc"), "Ogiltiga")
+  expect_error(intern_validera_landningssidenamn("pdf-rapporter/../hemlig.pdf"), "Ogiltiga")
+  expect_error(intern_validera_landningssidenamn("pdf-rapporter/mapp/fil.pdf"), "Ogiltiga")
+  expect_error(intern_validera_landningssidenamn("annan-mapp/fil.pdf"), "Ogiltiga")
+  expect_error(intern_validera_landningssidenamn("pdf-rapporter/fil.txt"), "Ogiltiga")
+  # nedladdningsfunktionerna ska fortsatt vara strikta
+  expect_error(intern_validera_namn("pdf-rapporter/fil.pdf"), "Ogiltiga")
+})
