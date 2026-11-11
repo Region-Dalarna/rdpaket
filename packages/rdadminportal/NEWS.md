@@ -1,3 +1,10 @@
+# rdadminportal 0.0.0.9003
+
+* Listningen av nedladdningsfiler hämtar inte längre filägare
+  (`file.info(extra_cols = FALSE)`). På Windows gav uppslagningen varningar
+  ("cannot resolve owner of file ...") för filer vars ägarkonto inte går att
+  slå upp.
+
 # rdadminportal 0.0.0.9001
 
 Versionsbump utan innehållsändring (för att `remotes`/`pak`

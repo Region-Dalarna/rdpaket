@@ -32,9 +32,10 @@ landningssida_synka_nedladdning <- function(target = c("publik", "intern"),
     mapp <- file.path(shiny_rot, app, "www", "nedladdning")
     if (!dir.exists(mapp)) next
     filer <- list.files(mapp, full.names = FALSE, no.. = TRUE)
-    filer <- filer[!file.info(file.path(mapp, filer))$isdir]
+    # extra_cols = FALSE: slå inte upp filägare (ger varningar på Windows för konton som inte går att slå upp)
+    filer <- filer[!file.info(file.path(mapp, filer), extra_cols = FALSE)$isdir]
     if (length(filer) == 0) next
-    info <- file.info(file.path(mapp, filer))
+    info <- file.info(file.path(mapp, filer), extra_cols = FALSE)
     hittade[[length(hittade) + 1]] <- data.frame(
       app = app, filnamn = filer,
       storlek_bytes = info$size, senast_andrad = info$mtime,

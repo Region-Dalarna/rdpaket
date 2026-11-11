@@ -1,3 +1,10 @@
+# rdpostgres 0.0.0.9004
+
+* `fil_dataset_uppdaterades()` använder `file.mtime()` i stället för
+  `file.info()`. Den senare slår på Windows upp filens ägare och gav varningar
+  ("cannot resolve owner of file ...") för filer på G: vars ägarkonto inte
+  går att slå upp.
+
 # rdpostgres 0.0.0.9003
 
 ## Inget meddelande när läskontot används
