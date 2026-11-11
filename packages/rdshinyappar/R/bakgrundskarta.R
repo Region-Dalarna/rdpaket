@@ -26,14 +26,14 @@
 #'   länder (inga vägar, vatten eller flygplatser), `FALSE` = ingen text, för
 #'   kartor där du lägger dina egna etiketter ovanpå.
 #' @param etikett_opacitet Hur kraftig texten ska vara, mellan 0 (osynlig) och 1
-#'   (standard, som i originalstilen). Ett lägre värde, t.ex. `0.5`, ger en
-#'   diskretare text utan att ta bort den.
+#'   (som i originalstilen). Standard är `0.5`, en diskret text som inte tar
+#'   uppmärksamhet från det som ritas ovanpå kartan.
 #' @param sprak Språk för namnen på kartan, som språkkod: `"sv"` (standard,
 #'   svenska), `"en"`, `"de"` osv. Där det valda språket saknas används engelska
 #'   och därefter ortens eget namn. `NULL` behåller stilens originaltext
 #'   (engelska).
-#' @param landsnamn `TRUE` (standard) för att visa landsnamn (t.ex. "Sweden"),
-#'   `FALSE` för att dölja dem. Övrig text påverkas inte.
+#' @param landsnamn `FALSE` (standard) döljer landsnamn (t.ex. "Sverige"), `TRUE`
+#'   visar dem. Övrig text påverkas inte.
 #'
 #' @return Leaflet-objektet, med bakgrundskartan tillagd.
 #' @examples
@@ -45,15 +45,15 @@
 #' # utan text, för en karta med egna etiketter
 #' leaflet::leaflet() |> lagg_till_bakgrundskarta(etiketter = FALSE)
 #'
-#' # utan landsnamn (t.ex. "Sweden"), men med övrig text
-#' leaflet::leaflet() |> lagg_till_bakgrundskarta(landsnamn = FALSE)
+#' # med landsnamn och full textstyrka (originalstilens text)
+#' leaflet::leaflet() |> lagg_till_bakgrundskarta(landsnamn = TRUE, etikett_opacitet = 1)
 #'
-#' # bara ortnamn, och dessutom tonade
-#' leaflet::leaflet() |> lagg_till_bakgrundskarta(etiketter = "orter", etikett_opacitet = 0.6)
+#' # bara ortnamn
+#' leaflet::leaflet() |> lagg_till_bakgrundskarta(etiketter = "orter")
 #' }
 #' @export
-lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE, etikett_opacitet = 1,
-                                     landsnamn = TRUE, sprak = "sv") {
+lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE, etikett_opacitet = 0.5,
+                                     landsnamn = FALSE, sprak = "sv") {
   if (!inherits(karta, "leaflet")) {
     stop("karta ska vara ett leaflet-objekt, t.ex. skapat med leaflet::leaflet().", call. = FALSE)
   }

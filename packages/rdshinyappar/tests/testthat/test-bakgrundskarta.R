@@ -13,7 +13,7 @@ test_that("lagg_till_bakgrundskarta() bäddar in MapLibre och lägger till bakgr
   js <- karta$jsHooks$render[[1]]
   expect_equal(js$data$stil_url, "https://tiles.openfreemap.org/styles/positron")
   expect_equal(js$data$etiketter, "alla")
-  expect_equal(js$data$etikett_opacitet, 1)
+  expect_equal(js$data$etikett_opacitet, 0.5)
   expect_match(js$data$attribution, "OpenStreetMap")
 })
 
@@ -57,8 +57,8 @@ test_that("etiketter = 'orter' och etikett_opacitet styr textens utseende, felak
 
 test_that("landsnamn = FALSE skickas vidare och felaktiga värden stoppas", {
   skip_if_not_installed("leaflet")
-  expect_true(lagg_till_bakgrundskarta(leaflet::leaflet())$jsHooks$render[[1]]$data$landsnamn)
-  expect_false(lagg_till_bakgrundskarta(leaflet::leaflet(), landsnamn = FALSE)$jsHooks$render[[1]]$data$landsnamn)
+  expect_false(lagg_till_bakgrundskarta(leaflet::leaflet())$jsHooks$render[[1]]$data$landsnamn)
+  expect_true(lagg_till_bakgrundskarta(leaflet::leaflet(), landsnamn = TRUE)$jsHooks$render[[1]]$data$landsnamn)
   expect_error(lagg_till_bakgrundskarta(leaflet::leaflet(), landsnamn = "nej"), "landsnamn ska vara")
 })
 

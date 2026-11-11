@@ -1,5 +1,9 @@
 # rdshinyappar 0.0.0.9007
 
+* Nya standardvärden för `lagg_till_bakgrundskarta()`: `landsnamn = FALSE` (landsnamn
+  som "Sverige" döljs) och `etikett_opacitet = 0.5` (diskret text). Ange
+  `landsnamn = TRUE, etikett_opacitet = 1` för den tidigare texten.
+
 * `lagg_till_bakgrundskarta()`: namnen på kartan visas nu på svenska som standard
   (ny parameter `sprak = "sv"`), t.ex. "Sverige" och "Norge" i stället för
   "Sweden" och "Norway". Där svenskt namn saknas används engelska och därefter

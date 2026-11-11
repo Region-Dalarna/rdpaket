@@ -8,8 +8,8 @@ lagg_till_bakgrundskarta(
   karta,
   stil = "positron",
   etiketter = TRUE,
-  etikett_opacitet = 1,
-  landsnamn = TRUE,
+  etikett_opacitet = 0.5,
+  landsnamn = FALSE,
   sprak = "sv"
 )
 }
@@ -26,11 +26,11 @@ länder (inga vägar, vatten eller flygplatser), \code{FALSE} = ingen text, för
 kartor där du lägger dina egna etiketter ovanpå.}
 
 \item{etikett_opacitet}{Hur kraftig texten ska vara, mellan 0 (osynlig) och 1
-(standard, som i originalstilen). Ett lägre värde, t.ex. \code{0.5}, ger en
-diskretare text utan att ta bort den.}
+(som i originalstilen). Standard är \code{0.5}, en diskret text som inte tar
+uppmärksamhet från det som ritas ovanpå kartan.}
 
-\item{landsnamn}{\code{TRUE} (standard) för att visa landsnamn (t.ex. "Sweden"),
-\code{FALSE} för att dölja dem. Övrig text påverkas inte.}
+\item{landsnamn}{\code{FALSE} (standard) döljer landsnamn (t.ex. "Sverige"), \code{TRUE}
+visar dem. Övrig text påverkas inte.}
 
 \item{sprak}{Språk för namnen på kartan, som språkkod: \code{"sv"} (standard,
 svenska), \code{"en"}, \code{"de"} osv. Där det valda språket saknas används engelska
@@ -68,10 +68,10 @@ leaflet::leaflet() |>
 # utan text, för en karta med egna etiketter
 leaflet::leaflet() |> lagg_till_bakgrundskarta(etiketter = FALSE)
 
-# utan landsnamn (t.ex. "Sweden"), men med övrig text
-leaflet::leaflet() |> lagg_till_bakgrundskarta(landsnamn = FALSE)
+# med landsnamn och full textstyrka (originalstilens text)
+leaflet::leaflet() |> lagg_till_bakgrundskarta(landsnamn = TRUE, etikett_opacitet = 1)
 
-# bara ortnamn, och dessutom tonade
-leaflet::leaflet() |> lagg_till_bakgrundskarta(etiketter = "orter", etikett_opacitet = 0.6)
+# bara ortnamn
+leaflet::leaflet() |> lagg_till_bakgrundskarta(etiketter = "orter")
 }
 }
