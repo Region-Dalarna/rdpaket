@@ -39,14 +39,26 @@ if (any(grepl("^karta_lf_", getNamespaceExports("rddiagramkatalog"))) && !requir
 
 funktioner <- sort(grep("^(diag_|karta_gg_|karta_lf_)", getNamespaceExports("rddiagramkatalog"), value = TRUE))
 
-resultat <- lapply(funktioner, function(fn) {
-  cat("Genererar exempel för", fn, "... ")
+# Vilka funktioner som redan har en exempelbild. Bara de som saknar bild (eller alla, om
+# skriv_over_befintliga_bilder = TRUE) namnges och körs; de som redan har bild räknas bara.
+bildfil_for <- function(fn) file.path(utmapp, paste0(fn, ".png"))
+har_bild <- file.exists(vapply(funktioner, bildfil_for, character(1)))
+att_skapa <- if (skriv_over_befintliga_bilder) funktioner else funktioner[!har_bild]
 
-  bildfil <- file.path(utmapp, paste0(fn, ".png"))
-  if (!skriv_over_befintliga_bilder && file.exists(bildfil)) {
-    cat("Hoppar över, bild finns redan\n")
-    return("Hoppade över")
-  }
+cat(sum(har_bild), "av", length(funktioner), "funktioner har redan en exempelbild",
+    if (skriv_over_befintliga_bilder) "(skrivs över).\n" else "(hoppas över).\n")
+if (length(att_skapa) == 0) {
+  cat("Inga bilder att skapa.\n")
+} else {
+  cat("Skapar bild för", length(att_skapa), if (skriv_over_befintliga_bilder) "funktioner:\n" else "funktioner som saknar bild:\n")
+  if (!skriv_over_befintliga_bilder) cat(paste0("  ", att_skapa, collapse = "\n"), "\n", sep = "")
+  cat("\n")
+}
+
+resultat <- lapply(seq_along(att_skapa), function(i) {
+  fn <- att_skapa[[i]]
+  cat(sprintf("[%d/%d] %s ... ", i, length(att_skapa), fn))
+  bildfil <- bildfil_for(fn)
 
   res <- tryCatch({
     args <- formals(get(fn, envir = asNamespace("rddiagramkatalog")))
@@ -81,9 +93,17 @@ resultat <- lapply(funktioner, function(fn) {
   res
 })
 
-names(resultat) <- funktioner
+names(resultat) <- att_skapa
 cat("\n--- Sammanfattning ---\n")
-print(unlist(resultat))
+if (!skriv_over_befintliga_bilder) cat(sum(har_bild), "funktioner hade redan bild och hoppades över.\n")
+if (length(resultat) > 0) {
+  utfall <- unlist(resultat)
+  cat(sum(utfall == "OK"), "bild(er) skapades.\n")
+  if (any(utfall != "OK")) {
+    cat(sum(utfall != "OK"), "misslyckades:\n")
+    print(utfall[utfall != "OK"])
+  }
+}
 
 # ========================================== Synka till installerat paket ============================================
 # diagramkatalog_utforska() (Shiny-gadgeten) läser exempelbilderna från det
