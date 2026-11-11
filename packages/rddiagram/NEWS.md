@@ -1,3 +1,14 @@
+# rddiagram 0.0.0.9025
+
+* `skapa_koropletkarta_ggplot()`: med klassindelning och flera färger
+  knyts nu varje färg till sin klass. Tidigare tilldelades färgerna i
+  ordning till de klasser som förekom i data, så att färgerna hamnade fel
+  när de lägsta (eller högsta) klasserna saknades, och funktionen
+  kraschade med "Insufficient values in manual scale" om fler klasser
+  förekom än antalet färger. En färgvektor som är kortare än antalet
+  klasser tolkas nu som ankarfärger (t.ex. rött, vitt, grönt) som
+  interpoleras till en färg per klass.
+
 # rddiagram 0.0.0.9024
 
 * `skriv_leaflet_till_fil()` skriver nu ett meddelande med filens sökväg

@@ -205,8 +205,17 @@ skapa_koropletkarta_ggplot <- function(
   p <- p + if (!diskret_skala) {
     ggplot2::scale_fill_gradientn(colours = karta_fargvektor, name = legend_titel, na.value = na_farg)
   } else if (length(karta_fargvektor) > 1) {
-    ggplot2::scale_fill_manual(values = karta_fargvektor, name = legend_titel,
-                               na.value = na_farg, labels = levels(sf_plot$klass))
+    # En färg per klass, knuten till klassens namn så att färgen följer klassen även när de lägsta
+    # eller högsta klasserna saknas i data. Är färgvektorn kortare än antalet klasser tolkas den som
+    # ankarfärger (t.ex. rött - vitt - grönt) och interpoleras till en färg per klass.
+    klassnamn <- levels(sf_plot$klass)
+    klassfarger <- if (length(karta_fargvektor) >= length(klassnamn)) {
+      karta_fargvektor[seq_along(klassnamn)]
+    } else {
+      grDevices::colorRampPalette(karta_fargvektor)(length(klassnamn))
+    }
+    ggplot2::scale_fill_manual(values = stats::setNames(klassfarger, klassnamn), name = legend_titel,
+                               na.value = na_farg)
   } else {
     ggplot2::scale_fill_brewer(palette = karta_fargvektor, name = legend_titel,
                                na.value = na_farg, labels = levels(sf_plot$klass))
