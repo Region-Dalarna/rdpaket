@@ -1,3 +1,8 @@
+# rddiagram 0.0.0.9027
+
+* `skapa_koropletkarta_ggplot()`: ny parameter `karta_titel_avstand`
+  (standard 2, som tidigare) för avståndet mellan titeln och kartan.
+
 # rddiagram 0.0.0.9026
 
 * Ny färgskala `diagramfarger("rd_karta_rod_gron")`: sju ankarfärger från

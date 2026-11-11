@@ -50,6 +50,7 @@ intern_snygga_klassetiketter <- function(klass, acc) {
 #' @param legend_justification Legendens ankarpunkt.
 #' @param karta_titel,karta_caption Titel och källtext, eller `NULL`.
 #' @param karta_titel_storlek,karta_caption_storlek Textstorlekar.
+#' @param karta_titel_avstand Avstånd (punkter) mellan titeln och kartan.
 #' @param karta_fargvektor Egen färgvektor, eller `NULL` för RD-grön.
 #' @param karta_farg_hogst `"mork"` (mörk = höga värden), `"ljus"`, eller `NULL`
 #'   (rör inte skalan).
@@ -77,7 +78,7 @@ skapa_koropletkarta_ggplot <- function(
     legend_titel = NULL, legend_titel_storlek = 12, legend_text_storlek = 9,
     legend_objekt_storlek = 1.2, legend_position = "right",
     legend_justification = "center",
-    karta_titel = NULL, karta_titel_storlek = 20,
+    karta_titel = NULL, karta_titel_storlek = 20, karta_titel_avstand = 2,
     karta_caption = NULL, karta_caption_storlek = 9,
     karta_fargvektor = NULL, karta_farg_hogst = "mork",
     na_farg = "grey90", karta_bakgrund = "white",
@@ -230,7 +231,7 @@ skapa_koropletkarta_ggplot <- function(
       plot.title.position = "plot",
       plot.title = ggtext::element_textbox(
         face = "bold", size = karta_titel_storlek, width = ggplot2::unit(0.95, "npc"),
-        halign = 0.5, margin = ggplot2::margin(2, 0, 2, 0)
+        halign = 0.5, margin = ggplot2::margin(2, 0, karta_titel_avstand, 0)
       ),
       legend.position = legend_position,
       legend.position.inside = legend_position_inside_vals,

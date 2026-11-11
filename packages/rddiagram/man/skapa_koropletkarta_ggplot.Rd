@@ -18,6 +18,7 @@ skapa_koropletkarta_ggplot(
   legend_justification = "center",
   karta_titel = NULL,
   karta_titel_storlek = 20,
+  karta_titel_avstand = 2,
   karta_caption = NULL,
   karta_caption_storlek = 9,
   karta_fargvektor = NULL,
@@ -64,6 +65,8 @@ eller en numerisk vektor med klassgränser.}
 \item{karta_titel, karta_caption}{Titel och källtext, eller \code{NULL}.}
 
 \item{karta_titel_storlek, karta_caption_storlek}{Textstorlekar.}
+
+\item{karta_titel_avstand}{Avstånd (punkter) mellan titeln och kartan.}
 
 \item{karta_fargvektor}{Egen färgvektor, eller \code{NULL} för RD-grön.}
 

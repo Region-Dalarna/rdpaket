@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9044
+
+* `karta_gg_nettopendling_kommun_scb()`: teckenförklaringen ligger uppe till
+  höger i kartan (där det är tomt), titeln har lite mer luft mot kartan och
+  källtexten är något mindre (storlek 7). Kräver rddiagram 0.0.0.9027.
+
 # rddiagramkatalog 0.0.0.9043
 
 * `karta_gg_nettopendling_kommun_scb()`: nya färger och klasser. Färgerna
