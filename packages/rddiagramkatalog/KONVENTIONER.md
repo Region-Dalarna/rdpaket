@@ -69,6 +69,38 @@ m.fl.). `karta_lf_*()` har i stället:
 | `skriv_leaflet_fil` | `TRUE` om leaflet-versionen ska skrivas till fil. |
 | `leaflet_filformat` | `"html"` (standard, interaktiv) eller `"png"` (statisk, via webshot2). |
 
+## Färger
+
+Använd i första hand färgerna i `rddiagram::diagramfarger()` - helst de som
+följer Region Dalarnas grafiska profil (`rd_alla_primar`, `rd_gron`,
+`rd_rod`, `rd_bla`, `rd_gul`, `rd_gra` m.fl.). Det går inte alltid, till
+exempel när ett diagram behöver fler färger än profilen har. Hitta då inte
+på en egen färg i funktionen: lägg i så fall en ny namngiven färgskala i
+`diagramfarger()`, så att den går att återanvända och hittas på ett ställe.
+
+- Standardvärdet för en färgparameter är `NULL` (eller `NA`), som betyder
+  "paketets standardfärger" - funktionen slår då upp skalan med
+  `diagramfarger("<namn>")`. Skriv inte ut hex-koder eller färgnamn som
+  standardvärde i funktionens parameterlista.
+- Kartor som visar både minskning och ökning kring noll använder
+  `diagramfarger("rd_karta_rod_gron")` (profilens röda och gröna med vitt
+  vid noll). Klassgränserna ska då vara symmetriska kring noll med ett vitt
+  mittenintervall, se `intern_nollcentrerade_klassgranser()`. Röd och grön
+  kan vara svåra att skilja åt vid färgblindhet; profilens färger skiljer sig
+  i ljushet, så mörkt och ljust går fortfarande att läsa. Vill man vara
+  helt säker kan man byta till en röd-blå skala.
+- Kartor som skickar en färgvektor med mörk färg först till
+  `skapa_koropletkarta_ggplot()` ska sätta `karta_farg_hogst = NULL`,
+  annars vänds vektorn så att den mörkaste färgen hamnar på de högsta värdena.
+
+## Kartors titel och källtext
+
+- Titeln anger vad kartan visar och året, t.ex. "Nettopendling i Dalarnas
+  län år 2024". Det framgår av kartan att den är uppdelad per kommun, så det
+  behöver inte stå i titeln.
+- Källtexten (`caption`) är högst två rader: källa och bearbetning på första
+  raden, eventuell förklaring av måttet på andra.
+
 ## Returvärde
 
 - `diag_*()` och `karta_gg_*()` returnerar **alltid en namngiven lista av

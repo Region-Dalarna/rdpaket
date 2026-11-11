@@ -1,3 +1,10 @@
+# rddiagram 0.0.0.9026
+
+* Ny färgskala `diagramfarger("rd_karta_rod_gron")`: sju ankarfärger från
+  profilens röda via vitt till profilens gröna, för kartor och diagram som
+  visar minskning och ökning kring noll. Ger en färg per klass när den
+  används med `skapa_koropletkarta_ggplot()`.
+
 # rddiagram 0.0.0.9025
 
 * `skapa_koropletkarta_ggplot()`: med klassindelning och flera färger

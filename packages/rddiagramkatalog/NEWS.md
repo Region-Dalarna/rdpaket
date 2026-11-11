@@ -1,3 +1,17 @@
+# rddiagramkatalog 0.0.0.9043
+
+* `karta_gg_nettopendling_kommun_scb()`: nya färger och klasser. Färgerna
+  kommer från Region Dalarnas profil (`diagramfarger("rd_karta_rod_gron")`):
+  grönt för kommuner med nettoinpendling, rött för nettoutpendling, vitt
+  kring noll. Klassgränserna är symmetriska kring noll med ett smalt vitt
+  mittenintervall (t.ex. -500 till 500) och upp till 11 klasser, anpassade
+  efter hur stor nettopendlingen är. Tidigare var alla värden mellan 0 och
+  2000 vita. Titeln är nu "Nettopendling i <län> år <år>" och källtexten två
+  rader. `karta_fargvektor` har `NULL` som standard. Kräver rddiagram
+  0.0.0.9026.
+* `KONVENTIONER.md`: nya avsnitt om färger (i första hand
+  `diagramfarger()`, helst profilens) och om kartors titel och källtext.
+
 # rddiagramkatalog 0.0.0.9042
 
 ## Kartfunktionerna delade i ggplot och leaflet

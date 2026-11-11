@@ -7,7 +7,7 @@
 karta_gg_nettopendling_kommun_scb(
   vald_lan_kod = "20",
   valt_ar = "9999",
-  karta_fargvektor = c("darkred", "white", "darkblue"),
+  karta_fargvektor = NULL,
   utmapp = rdverktyg::utskriftsmapp(),
   skriv_diagramfil = TRUE,
   returnera_figur = TRUE
@@ -21,8 +21,10 @@ ligger i.}
 \item{valt_ar}{År, 1993 eller senare. \code{"9999"} (standard) = senaste
 tillgängliga.}
 
-\item{karta_fargvektor}{Tre färger: negativ nettopendling, mitten (noll)
-och positiv nettopendling.}
+\item{karta_fargvektor}{Färger från negativ via noll till positiv
+nettopendling. De tolkas som ankarfärger och interpoleras till en färg per
+klass, så mitten bör vara vit. \code{NULL} (standard) =
+\code{rddiagram::diagramfarger("rd_karta_rod_gron")}.}
 
 \item{utmapp}{Mapp där kartfilerna sparas. Måste finnas om
 \code{skriv_diagramfil} är \code{TRUE}.}
@@ -38,8 +40,10 @@ när filer skrivs.
 }
 \description{
 Koropletkarta (ggplot) över nettopendling per kommun i ett eller flera län:
-inpendlare minus utpendlare. Positiva värden (fler som pendlar in än ut)
-och negativa värden får olika färg, med vitt vid noll.
+inpendlare minus utpendlare. Kommuner med fler som pendlar in än ut är gröna
+och kommuner med fler som pendlar ut än in är röda, med vitt kring noll.
+Klassgränserna är symmetriska kring noll, med ett vitt mittenintervall
+(t.ex. -500 till 500), och anpassas efter hur stor nettopendlingen är.
 }
 \details{
 Pendlingsdata finns för åren 1993 och framåt (se

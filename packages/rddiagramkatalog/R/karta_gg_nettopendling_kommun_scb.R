@@ -1,8 +1,10 @@
 #' Karta: nettopendling per kommun
 #'
 #' Koropletkarta (ggplot) över nettopendling per kommun i ett eller flera län:
-#' inpendlare minus utpendlare. Positiva värden (fler som pendlar in än ut)
-#' och negativa värden får olika färg, med vitt vid noll.
+#' inpendlare minus utpendlare. Kommuner med fler som pendlar in än ut är gröna
+#' och kommuner med fler som pendlar ut än in är röda, med vitt kring noll.
+#' Klassgränserna är symmetriska kring noll, med ett vitt mittenintervall
+#' (t.ex. -500 till 500), och anpassas efter hur stor nettopendlingen är.
 #'
 #' Pendlingsdata finns för åren 1993 och framåt (se
 #' [rdhamtadata::hamta_pendling_rams_bas_scb()]), men kartan visar alltid
@@ -17,8 +19,10 @@
 #'   ligger i.
 #' @param valt_ar År, 1993 eller senare. `"9999"` (standard) = senaste
 #'   tillgängliga.
-#' @param karta_fargvektor Tre färger: negativ nettopendling, mitten (noll)
-#'   och positiv nettopendling.
+#' @param karta_fargvektor Färger från negativ via noll till positiv
+#'   nettopendling. De tolkas som ankarfärger och interpoleras till en färg per
+#'   klass, så mitten bör vara vit. `NULL` (standard) =
+#'   `rddiagram::diagramfarger("rd_karta_rod_gron")`.
 #' @param utmapp Mapp där kartfilerna sparas. Måste finnas om
 #'   `skriv_diagramfil` är `TRUE`.
 #' @param skriv_diagramfil TRUE om kartan ska skrivas som bildfil.
@@ -32,7 +36,7 @@
 karta_gg_nettopendling_kommun_scb <- function(
     vald_lan_kod = "20",
     valt_ar = "9999",
-    karta_fargvektor = c("darkred", "white", "darkblue"),
+    karta_fargvektor = NULL,
     utmapp = rdverktyg::utskriftsmapp(),
     skriv_diagramfil = TRUE,
     returnera_figur = TRUE
@@ -44,6 +48,10 @@ karta_gg_nettopendling_kommun_scb <- function(
   # ========================================== Inställningar ============================================
 
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
+
+  if (is.null(karta_fargvektor) || all(is.na(karta_fargvektor))) {
+    karta_fargvektor <- rddiagram::diagramfarger("rd_karta_rod_gron")
+  }
 
   lanskoder <- unique(stringr::str_sub(vald_lan_kod, 1, 2))
   kommuner_gis <- rdgis::hamta_karta("kommuner")
@@ -72,7 +80,7 @@ karta_gg_nettopendling_kommun_scb <- function(
       dplyr::mutate(nettopendling = tidyr::replace_na(nettopendling, 0))
 
     max_abs <- max(abs(netto_karta$nettopendling), na.rm = TRUE)
-    breaks <- pretty(c(-max_abs, max_abs), n = 6)
+    breaks <- intern_nollcentrerade_klassgranser(max_abs)
     lan_namn <- unique(rdverktyg::hamtaregion_kod_namn(lanskod)$region)
     filnamn_bas <- paste0("nettopendling_", lan_namn, "_ar", unikt_ar)
 
@@ -81,9 +89,10 @@ karta_gg_nettopendling_kommun_scb <- function(
       vardekolumn = "nettopendling",
       klassindelning = breaks,
       karta_fargvektor = karta_fargvektor,
+      karta_farg_hogst = NULL,
       legend_titel = "Nettopendling",
-      karta_titel = paste0("Nettopendling per kommun i ", lan_namn),
-      karta_caption = paste0("år ", unikt_ar, "\nKälla: SCB (RAMS/BAS)\nBearbetning: Samhällsanalys, Region Dalarna\nNettopendling = inpendlare minus utpendlare"),
+      karta_titel = paste0("Nettopendling i ", lan_namn, " år ", unikt_ar),
+      karta_caption = "Källa: SCB (RAMS/BAS). Bearbetning: Samhällsanalys, Region Dalarna\nNettopendling = inpendlare minus utpendlare",
       filnamn = if (skriv_diagramfil) paste0(filnamn_bas, ".png") else NULL,
       output_mapp = if (skriv_diagramfil) utmapp else NULL
     )
