@@ -54,3 +54,10 @@ test_that("etiketter = 'orter' och etikett_opacitet styr textens utseende, felak
   expect_error(lagg_till_bakgrundskarta(leaflet::leaflet(), etiketter = "alla"), "etiketter ska vara")
   expect_error(lagg_till_bakgrundskarta(leaflet::leaflet(), etikett_opacitet = 2), "mellan 0 och 1")
 })
+
+test_that("landsnamn = FALSE skickas vidare och felaktiga värden stoppas", {
+  skip_if_not_installed("leaflet")
+  expect_true(lagg_till_bakgrundskarta(leaflet::leaflet())$jsHooks$render[[1]]$data$landsnamn)
+  expect_false(lagg_till_bakgrundskarta(leaflet::leaflet(), landsnamn = FALSE)$jsHooks$render[[1]]$data$landsnamn)
+  expect_error(lagg_till_bakgrundskarta(leaflet::leaflet(), landsnamn = "nej"), "landsnamn ska vara")
+})

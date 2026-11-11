@@ -8,7 +8,8 @@ lagg_till_bakgrundskarta(
   karta,
   stil = "positron",
   etiketter = TRUE,
-  etikett_opacitet = 1
+  etikett_opacitet = 1,
+  landsnamn = TRUE
 )
 }
 \arguments{
@@ -26,6 +27,9 @@ kartor där du lägger dina egna etiketter ovanpå.}
 \item{etikett_opacitet}{Hur kraftig texten ska vara, mellan 0 (osynlig) och 1
 (standard, som i originalstilen). Ett lägre värde, t.ex. \code{0.5}, ger en
 diskretare text utan att ta bort den.}
+
+\item{landsnamn}{\code{TRUE} (standard) för att visa landsnamn (t.ex. "Sweden"),
+\code{FALSE} för att dölja dem. Övrig text påverkas inte.}
 }
 \value{
 Leaflet-objektet, med bakgrundskartan tillagd.
@@ -53,6 +57,9 @@ leaflet::leaflet() |>
 
 # utan text, för en karta med egna etiketter
 leaflet::leaflet() |> lagg_till_bakgrundskarta(etiketter = FALSE)
+
+# utan landsnamn (t.ex. "Sweden"), men med övrig text
+leaflet::leaflet() |> lagg_till_bakgrundskarta(landsnamn = FALSE)
 
 # bara ortnamn, och dessutom tonade
 leaflet::leaflet() |> lagg_till_bakgrundskarta(etiketter = "orter", etikett_opacitet = 0.6)

@@ -28,6 +28,8 @@
 #' @param etikett_opacitet Hur kraftig texten ska vara, mellan 0 (osynlig) och 1
 #'   (standard, som i originalstilen). Ett lägre värde, t.ex. `0.5`, ger en
 #'   diskretare text utan att ta bort den.
+#' @param landsnamn `TRUE` (standard) för att visa landsnamn (t.ex. "Sweden"),
+#'   `FALSE` för att dölja dem. Övrig text påverkas inte.
 #'
 #' @return Leaflet-objektet, med bakgrundskartan tillagd.
 #' @examples
@@ -39,11 +41,15 @@
 #' # utan text, för en karta med egna etiketter
 #' leaflet::leaflet() |> lagg_till_bakgrundskarta(etiketter = FALSE)
 #'
+#' # utan landsnamn (t.ex. "Sweden"), men med övrig text
+#' leaflet::leaflet() |> lagg_till_bakgrundskarta(landsnamn = FALSE)
+#'
 #' # bara ortnamn, och dessutom tonade
 #' leaflet::leaflet() |> lagg_till_bakgrundskarta(etiketter = "orter", etikett_opacitet = 0.6)
 #' }
 #' @export
-lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE, etikett_opacitet = 1) {
+lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE, etikett_opacitet = 1,
+                                     landsnamn = TRUE) {
   if (!inherits(karta, "leaflet")) {
     stop("karta ska vara ett leaflet-objekt, t.ex. skapat med leaflet::leaflet().", call. = FALSE)
   }
@@ -58,6 +64,8 @@ lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE,
       etikett_opacitet < 0 || etikett_opacitet > 1) {
     stop("etikett_opacitet ska vara ett tal mellan 0 och 1.", call. = FALSE)
   }
+
+  if (!(isTRUE(landsnamn) || isFALSE(landsnamn))) stop("landsnamn ska vara TRUE eller FALSE.", call. = FALSE)
 
   stil_url <- if (stil %in% c("positron", "bright", "liberty")) {
     paste0("https://tiles.openfreemap.org/styles/", stil)
@@ -91,6 +99,9 @@ lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE,
             return lager.type !== 'symbol' || lager['source-layer'] === 'place';
           });
         }
+        if (!data.landsnamn) {
+          stil.layers = stil.layers.filter(function(lager) { return !/^label_country/.test(lager.id); });
+        }
         if (data.etikett_opacitet < 1) {
           stil.layers.forEach(function(lager) {
             if (lager.type === 'symbol') {
@@ -109,6 +120,7 @@ lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE,
     stil_url = stil_url,
     etiketter = if (isFALSE(etiketter)) "inga" else if (identical(etiketter, "orter")) "orter" else "alla",
     etikett_opacitet = etikett_opacitet,
+    landsnamn = landsnamn,
     attribution = paste0(
       '<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> ',
       '&copy; <a href="https://www.openmaptiles.org/" target="_blank">OpenMapTiles</a> ',

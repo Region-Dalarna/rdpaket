@@ -1,3 +1,8 @@
+# rddiagram 0.0.0.9032
+
+* `lagg_till_bakgrundskarta()`: ny parameter `landsnamn`. Med `landsnamn = FALSE`
+  döljs landsnamn (t.ex. "Sweden") medan övrig text finns kvar.
+
 # rddiagram 0.0.0.9031
 
 * `lagg_till_bakgrundskarta()`: `etiketter` kan nu också vara `"orter"` (bara

@@ -1,3 +1,10 @@
+# rdshinyappar 0.0.0.9006
+
+* `lagg_till_bakgrundskarta()`: ny parameter `landsnamn`. Med `landsnamn = FALSE`
+  döljs landsnamn (t.ex. "Sweden") medan övrig text finns kvar.
+
+---
+
 # rdshinyappar 0.0.0.9005
 
 * `lagg_till_bakgrundskarta()`: `etiketter = "orter"` ger bara namn på orter,
