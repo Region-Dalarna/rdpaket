@@ -137,34 +137,43 @@ diagramkatalog_utforska <- function() {
 
     output$exempelbild <- shiny::renderUI({
       fn <- vald_fn()
-      bildfil <- if (nzchar(figurmapp)) file.path(figurmapp, paste0(fn, ".png")) else ""
+      finns <- function(filnamn) nzchar(figurmapp) && file.exists(file.path(figurmapp, filnamn))
+      har_bild <- finns(paste0(fn, ".png"))
+      har_html <- finns(paste0(fn, ".html"))
 
-      if (nzchar(bildfil) && file.exists(bildfil)) {
-        shiny::tagList(
-          shiny::tags$p(
-            shiny::tags$em("Exempel (standardinställningar - kan vara inaktuellt):"),
-            style = "margin-bottom: 4px; color: #666; font-size: 12px;"
-          ),
-          shiny::tags$img(
-            src = file.path("rddiagramkatalog_exempel", paste0(fn, ".png")),
-            alt = paste("Exempeldiagram för", fn),
-            style = "max-width: 100%; border: 1px solid #ddd; margin-bottom: 10px;"
-          ),
-          if (file.exists(file.path(figurmapp, paste0(fn, ".html")))) {
-            shiny::tags$p(
-              shiny::tags$a("Öppna den interaktiva exempelkartan",
-                            href = file.path("rddiagramkatalog_exempel", paste0(fn, ".html")),
-                            target = "_blank"),
-              style = "font-size: 12px;"
-            )
-          }
-        )
-      } else {
-        shiny::tags$p(
+      if (!har_bild && !har_html) {
+        return(shiny::tags$p(
           shiny::tags$em("Inget exempel sparat för den här funktionen än."),
           style = "color: #999; font-size: 12px;"
-        )
+        ))
       }
+
+      shiny::tagList(
+        if (har_bild) {
+          shiny::tagList(
+            shiny::tags$p(
+              shiny::tags$em("Exempel (standardinställningar - kan vara inaktuellt):"),
+              style = "margin-bottom: 4px; color: #666; font-size: 12px;"
+            ),
+            shiny::tags$img(
+              src = file.path("rddiagramkatalog_exempel", paste0(fn, ".png")),
+              alt = paste("Exempeldiagram för", fn),
+              style = "max-width: 100%; border: 1px solid #ddd; margin-bottom: 10px;"
+            )
+          )
+        },
+        # interaktiva kartor (karta_lf_*()) har även en html-fil, som öppnas i webbläsaren
+        if (har_html) {
+          shiny::tags$p(
+            shiny::tags$a(
+              if (har_bild) "Öppna den interaktiva exempelkartan" else "Öppna den interaktiva exempelkartan (ingen bild sparad)",
+              href = file.path("rddiagramkatalog_exempel", paste0(fn, ".html")),
+              target = "_blank"
+            ),
+            style = "font-size: 12px;"
+          )
+        }
+      )
     })
 
     output$parameterformular <- shiny::renderUI({

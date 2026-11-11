@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9047
+
+* `diagramkatalog_utforska()`: länken till den interaktiva exempelkartan
+  (html) visas även när ingen exempelbild (png) finns för en `karta_lf_*()`,
+  i stället för att bara visa "Inget exempel sparat".
+
 # rddiagramkatalog 0.0.0.9046
 
 * `karta_gg_befolkningsprognos_kommun_scb()` och
