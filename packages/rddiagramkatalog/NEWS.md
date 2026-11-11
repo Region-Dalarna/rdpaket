@@ -1,3 +1,12 @@
+# rddiagramkatalog 0.0.0.9048
+
+* "Skriv till fil" i `diagramkatalog_utforska()` gav varningar som
+  "cannot resolve owner of file ..." (Windows, filer på G: vars ägarkonto
+  inte går att slå upp). Funktionen kollar nu bara filernas ändringstid
+  (`file.mtime()`) i stället för att hämta all filinformation inklusive ägare
+  (`file.info()`). Samma sak i den interna hjälpfunktionen som hittar senaste
+  indatafil.
+
 # rddiagramkatalog 0.0.0.9047
 
 * `diagramkatalog_utforska()`: länken till den interaktiva exempelkartan

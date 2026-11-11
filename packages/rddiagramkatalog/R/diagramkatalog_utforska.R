@@ -289,7 +289,9 @@ diagramkatalog_utforska <- function() {
 
       nya_filer <- if (dir.exists(utmapp_varde)) {
         alla <- list.files(utmapp_varde, full.names = TRUE)
-        alla[file.info(alla)$mtime >= innan_tid - 1]
+        # file.mtime(), inte file.info(): den senare slår på Windows upp filernas ägare och varnar för
+        # filer vars ägarkonto inte går att slå upp
+        alla[file.mtime(alla) >= innan_tid - 1]
       } else {
         character(0)
       }
