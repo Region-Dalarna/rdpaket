@@ -1,3 +1,12 @@
+# rddiagram 0.0.0.9030
+
+* `skriv_leaflet_till_fil(karta_filformat = "png")` letar nu efter en
+  webbläsare själv: hittar `chromote` ingen Chrome provas Microsoft Edge
+  (Chromium-baserad, finns på de flesta Windows-datorer), och sökvägen sätts
+  för sessionen. Finns ingen alls stoppas funktionen med ett meddelande om
+  vad som behövs, i stället för webshot2:s "Invalid path to Chrome". Egen
+  sökväg anges med `Sys.setenv(CHROMOTE_CHROME = "sökväg/till/chrome-eller-msedge")`.
+
 # rddiagram 0.0.0.9029
 
 * `skapa_koropletkarta_ggplot()`: klassgränserna i teckenförklaringen skrivs

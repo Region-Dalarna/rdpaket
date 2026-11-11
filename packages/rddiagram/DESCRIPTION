@@ -1,6 +1,6 @@
 Package: rddiagram
 Title: Region Dalarnas Diagrammallar
-Version: 0.0.0.9029
+Version: 0.0.0.9030
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
@@ -28,6 +28,7 @@ Imports:
     tidyr,
     utils
 Suggests:
+    chromote,
     classInt,
     cowplot,
     curl,
