@@ -21,7 +21,8 @@
 #' @param prognosskapare Vem som gjort prognosen, för källtexten.
 #' @param diagram_capt Källtext. `<prognos_ar>`/`<prognosskapare>` byts ut
 #'   automatiskt.
-#' @param returnera_figur TRUE (standard) för att returnera kartan.
+#' @param returnera_figur TRUE (standard) för att returnera kartan. Minst en av
+#'   `skriv_diagramfil` och `returnera_figur` måste vara `TRUE`.
 #'
 #' @return Osynligt: en namngiven lista med ett `ggplot`-objekt. Namnet är
 #'   bildfilens namn utan ändelse. Filsökvägen skrivs ut som ett meddelande
@@ -41,6 +42,7 @@ karta_gg_befolkningsprognos_kommun_scb <- function(
     returnera_figur = TRUE
 ) {
 
+  intern_kontrollera_utdata(skriv_diagramfil, returnera_figur, "skriv_diagramfil")
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
   d <- intern_befprognos_kartdata(region_vekt, start_ar, till_ar, filnamns_prefix, kommuner_egetnamn)

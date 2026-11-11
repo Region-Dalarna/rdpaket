@@ -34,6 +34,50 @@ intern_snygga_klassetiketter <- function(klass, acc) {
   })
 }
 
+# Väljer ett hörn för legenden (inuti kartan) där den inte hamnar ovanpå några polygoner. Storleken
+# på legenden uppskattas ur textstorlekar och antal klasser, med viss marginal. Hörnen prövas i
+# ordningen nere till vänster, uppe till höger, nere till höger, uppe till vänster. Finns inget fritt
+# hörn placeras legenden till höger om kartan, utanför.
+#' @noRd
+intern_valj_legendhorn <- function(sf_objekt, klassnamn, legend_titel, legend_titel_storlek,
+                                   legend_text_storlek, legend_objekt_storlek, karta_hojd, karta_bredd) {
+  tryCatch({
+    bbox <- sf::st_bbox(sf_objekt)
+    bb_b <- as.numeric(bbox$xmax - bbox$xmin)
+    bb_h <- as.numeric(bbox$ymax - bbox$ymin)
+
+    # uppskattad kartyta och legendstorlek i tum
+    panel_h <- karta_hojd - 1.3
+    panel_b <- if (is.null(karta_bredd) || identical(karta_bredd, "auto")) karta_hojd * bb_b / bb_h else karta_bredd
+    panel_b <- panel_b - 0.2
+    tecken_b <- function(txt, pt) max(nchar(txt), 0) * pt / 72 * 0.6
+    nyckel <- legend_objekt_storlek * 0.2
+    legend_b <- 1.15 * (max(nyckel + 0.15 + max(tecken_b(klassnamn, legend_text_storlek)),
+                            tecken_b(legend_titel %||% "", legend_titel_storlek)) + 0.2)
+    titel_h <- if (is.null(legend_titel)) 0 else legend_titel_storlek / 72 * 1.5 + 0.1
+    legend_h <- 1.15 * (titel_h + length(klassnamn) * nyckel + 0.2)
+    fb <- legend_b / panel_b
+    fh <- legend_h / panel_h
+    if (fb >= 0.9 || fh >= 0.9) return("right")
+
+    kartyta <- sf::st_union(sf::st_geometry(sf_objekt))
+    horn <- list(
+      "bottom-left"  = c(bbox$xmin, bbox$ymin, bbox$xmin + fb * bb_b, bbox$ymin + fh * bb_h),
+      "top-right"    = c(bbox$xmax - fb * bb_b, bbox$ymax - fh * bb_h, bbox$xmax, bbox$ymax),
+      "bottom-right" = c(bbox$xmax - fb * bb_b, bbox$ymin, bbox$xmax, bbox$ymin + fh * bb_h),
+      "top-left"     = c(bbox$xmin, bbox$ymax - fh * bb_h, bbox$xmin + fb * bb_b, bbox$ymax)
+    )
+    for (namn in names(horn)) {
+      r <- horn[[namn]]
+      ruta <- sf::st_as_sfc(sf::st_bbox(c(xmin = r[[1]], ymin = r[[2]], xmax = r[[3]], ymax = r[[4]]),
+                                          crs = sf::st_crs(sf_objekt)))
+      overlapp <- suppressWarnings(sf::st_area(sf::st_intersection(ruta, kartyta)))
+      if (length(overlapp) == 0 || as.numeric(sum(overlapp)) / as.numeric(sf::st_area(ruta)) < 0.01) return(namn)
+    }
+    "right"
+  }, error = function(e) "right")
+}
+
 #' Koropletkarta med ggplot2 enligt Region Dalarnas profil
 #'
 #' @param sf_objekt Ett `sf`-objekt med polygondata.
@@ -46,7 +90,12 @@ intern_snygga_klassetiketter <- function(klass, acc) {
 #' @param legend_titel_storlek,legend_text_storlek,legend_objekt_storlek
 #'   Legend-styling.
 #' @param legend_position `"right"`, `"left"`, `"top"`, `"bottom"`, `"none"`,
-#'   `"bottom-right"` m.fl., `"dala"`, eller `c(x, y)`.
+#'   `"bottom-right"`, `"bottom-left"`, `"top-right"`, `"top-left"` (inuti
+#'   kartan), `"dala"`, eller `c(x, y)`. `"auto"` väljer ett hörn där legenden
+#'   inte hamnar ovanpå någon polygon (prövar nere till vänster, uppe till
+#'   höger, nere till höger och uppe till vänster) och placerar den annars till
+#'   höger om kartan. Storleken på legenden uppskattas, så välj ett hörn
+#'   själv om det blir trångt.
 #' @param legend_justification Legendens ankarpunkt.
 #' @param karta_titel,karta_caption Titel och källtext, eller `NULL`.
 #' @param karta_titel_storlek,karta_caption_storlek Textstorlekar.
@@ -104,19 +153,9 @@ skapa_koropletkarta_ggplot <- function(
     )
   }
 
-  # legendposition
-  hornkarta <- list("bottom-right" = c(1, 0), "bottom-left" = c(0, 0),
-                    "top-right" = c(1, 1), "top-left" = c(0, 1), "dala" = c(0, 0))
-  legend_position_inside_vals <- NULL
-  if (is.character(legend_position) && tolower(legend_position) %in% names(hornkarta)) {
-    legend_position_inside_vals <- hornkarta[[tolower(legend_position)]]
-    legend_justification <- legend_position_inside_vals
-    legend_position <- "inside"
-  } else if (is.numeric(legend_position)) {
-    legend_position_inside_vals <- legend_position
-    legend_justification <- "center"
-    legend_position <- "inside"
-  }
+  # legendposition "auto" avgörs först när klasserna är kända (se nedan)
+  legend_auto <- identical(legend_position, "auto")
+  if (legend_auto) legend_position <- "right"
 
   if (identical(logga_url, "dala")) logga_url <- hamta_logga_path()
 
@@ -166,6 +205,27 @@ skapa_koropletkarta_ggplot <- function(
     }
     sf_plot$klass <- intern_snygga_klassetiketter(sf_plot$klass, acc)
   }
+
+  # --- legendposition ---
+  if (legend_auto) {
+    legend_position <- intern_valj_legendhorn(
+      sf_objekt, klassnamn = levels(factor(sf_plot$klass)), legend_titel = legend_titel,
+      legend_titel_storlek = legend_titel_storlek, legend_text_storlek = legend_text_storlek,
+      legend_objekt_storlek = legend_objekt_storlek, karta_hojd = karta_hojd, karta_bredd = karta_bredd)
+  }
+  hornkarta <- list("bottom-right" = c(1, 0), "bottom-left" = c(0, 0),
+                    "top-right" = c(1, 1), "top-left" = c(0, 1), "dala" = c(0, 0))
+  legend_position_inside_vals <- NULL
+  if (is.character(legend_position) && tolower(legend_position) %in% names(hornkarta)) {
+    legend_position_inside_vals <- hornkarta[[tolower(legend_position)]]
+    legend_justification <- legend_position_inside_vals
+    legend_position <- "inside"
+  } else if (is.numeric(legend_position)) {
+    legend_position_inside_vals <- legend_position
+    legend_justification <- "center"
+    legend_position <- "inside"
+  }
+
 
   # --- färger ---
   if (is.null(karta_fargvektor)) {

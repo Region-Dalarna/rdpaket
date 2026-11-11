@@ -110,6 +110,14 @@ på en egen färg i funktionen: lägg i så fall en ny namngiven färgskala i
   `sok_diagram()`, `diagramkatalog_utforska()` och
   `data-raw/skapa_exempeldiagram.R` förlitar sig alla på att första
   elementet (`[[1]]`) är det som visas.
+- Alla funktioner som skriver en fil har både en `skriv_*`-parameter och
+  `returnera_figur`. Båda kan vara `TRUE`; är båda `FALSE` stoppar
+  `karta_*()` direkt, innan något hämtas eller ritas, med ett meddelande om
+  vilken som ska sättas på (`intern_kontrollera_utdata()`).
+- `karta_gg_*()` har `legend_position` med standard `"auto"`: teckenförklaringen
+  läggs i ett hörn där den inte hamnar ovanpå polygonerna (nere till vänster
+  om det är fritt), annars utanför kartan. Ange t.ex. `"bottom-left"` eller
+  `"right"` för att välja själv.
 - `karta_*()` returnerar listan **osynligt** (`invisible()`), så att man
   inte får en lång utskrift av alla kartor i konsolen när man kör en
   funktion utan att tilldela den. De filer som skrivs meddelas med

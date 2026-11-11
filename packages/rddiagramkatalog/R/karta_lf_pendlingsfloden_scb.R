@@ -46,7 +46,9 @@
 #'   (standard) skriver en `.qml`- och en `.lyrx`-fil (QGIS respektive
 #'   ArcGIS Pro) med samma basnamn som gpkg-filen, samt en inbäddad
 #'   QGIS-stil i själva gpkg-filen, så linjerna redan är färdigstilade.
-#' @param returnera_figur TRUE (standard) för att returnera kartorna.
+#' @param returnera_figur TRUE (standard) för att returnera kartorna. Minst en
+#'   av `skriv_leaflet_fil`, `skriv_gpkg_fil` och `returnera_figur` måste vara
+#'   `TRUE`.
 #'
 #' @return Osynligt: en namngiven lista av `leaflet`-objekt, en per
 #'   kombination av kommun och pendlingstyp. Namnet är filens namn utan
@@ -80,6 +82,7 @@ karta_lf_pendlingsfloden_scb <- function(
   # karta_gg_nettopendling_kommun_scb().
   # ========================================== Inställningar ============================================
 
+  intern_kontrollera_utdata(c(skriv_leaflet_fil, skriv_gpkg_fil), returnera_figur, c("skriv_leaflet_fil", "skriv_gpkg_fil"))
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_leaflet_fil || skriv_gpkg_fil)
 
   if (skriv_gpkg_fil && skriv_stilfiler) {

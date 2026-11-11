@@ -58,7 +58,12 @@ eller en numerisk vektor med klassgränser.}
 \item{legend_titel_storlek, legend_text_storlek, legend_objekt_storlek}{Legend-styling.}
 
 \item{legend_position}{\code{"right"}, \code{"left"}, \code{"top"}, \code{"bottom"}, \code{"none"},
-\code{"bottom-right"} m.fl., \code{"dala"}, eller \code{c(x, y)}.}
+\code{"bottom-right"}, \code{"bottom-left"}, \code{"top-right"}, \code{"top-left"} (inuti
+kartan), \code{"dala"}, eller \code{c(x, y)}. \code{"auto"} väljer ett hörn där legenden
+inte hamnar ovanpå någon polygon (prövar nere till vänster, uppe till
+höger, nere till höger och uppe till vänster) och placerar den annars till
+höger om kartan. Storleken på legenden uppskattas, så välj ett hörn
+själv om det blir trångt.}
 
 \item{legend_justification}{Legendens ankarpunkt.}
 

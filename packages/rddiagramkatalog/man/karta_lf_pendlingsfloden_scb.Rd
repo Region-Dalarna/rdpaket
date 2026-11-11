@@ -68,7 +68,9 @@ vidare GIS-bearbetning i t.ex. QGIS/ArcGIS. Oberoende av
 ArcGIS Pro) med samma basnamn som gpkg-filen, samt en inbäddad
 QGIS-stil i själva gpkg-filen, så linjerna redan är färdigstilade.}
 
-\item{returnera_figur}{TRUE (standard) för att returnera kartorna.}
+\item{returnera_figur}{TRUE (standard) för att returnera kartorna. Minst en
+av \code{skriv_leaflet_fil}, \code{skriv_gpkg_fil} och \code{returnera_figur} måste vara
+\code{TRUE}.}
 }
 \value{
 Osynligt: en namngiven lista av \code{leaflet}-objekt, en per

@@ -23,3 +23,14 @@ intern_nollcentrerade_klassgranser <- function(max_abs, mitt_andel = 0.01) {
   positiva <- unique(c(mitt, seq(s, k * s, by = s)))
   c(-rev(positiva), positiva)
 }
+
+# Kartfunktionerna ska göra något med kartan: skriva den till fil och/eller returnera den. Är båda
+# avstängda stoppas funktionen innan något hämtas eller ritas, med ett meddelande om vad som ska sättas.
+#' @noRd
+intern_kontrollera_utdata <- function(skriv, returnera_figur, skriv_namn) {
+  if (!any(skriv) && !isTRUE(returnera_figur)) {
+    stop("Kartan skapas inte: ingenting är påslaget. Sätt ", paste0(skriv_namn, " = TRUE", collapse = " eller "),
+         " för att skriva den till fil, och/eller returnera_figur = TRUE för att få tillbaka kartan.",
+         call. = FALSE)
+  }
+}

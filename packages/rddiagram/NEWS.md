@@ -1,3 +1,11 @@
+# rddiagram 0.0.0.9028
+
+* `skapa_koropletkarta_ggplot()`: `legend_position = "auto"` väljer ett hörn
+  inuti kartan där teckenförklaringen inte hamnar ovanpå någon polygon (nere
+  till vänster, uppe till höger, nere till höger, uppe till vänster, i den
+  ordningen) och placerar den annars till höger om kartan. Legendens storlek
+  uppskattas ur textstorlekarna och antalet klasser.
+
 # rddiagram 0.0.0.9027
 
 * `skapa_koropletkarta_ggplot()`: ny parameter `karta_titel_avstand`

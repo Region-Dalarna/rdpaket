@@ -25,7 +25,8 @@
 #' @param prognosskapare Vem som gjort prognosen, för källtexten.
 #' @param diagram_capt_leaflet Källtext. `<prognos_ar>`/`<prognosskapare>`
 #'   byts ut automatiskt.
-#' @param returnera_figur TRUE (standard) för att returnera kartan.
+#' @param returnera_figur TRUE (standard) för att returnera kartan. Minst en av
+#'   `skriv_leaflet_fil` och `returnera_figur` måste vara `TRUE`.
 #'
 #' @return Osynligt: en namngiven lista med ett `leaflet`-objekt. Namnet är
 #'   filens namn utan ändelse. Filsökvägen skrivs ut som ett meddelande
@@ -46,6 +47,7 @@ karta_lf_befolkningsprognos_kommun_scb <- function(
     returnera_figur = TRUE
 ) {
 
+  intern_kontrollera_utdata(skriv_leaflet_fil, returnera_figur, "skriv_leaflet_fil")
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_leaflet_fil)
 
   d <- intern_befprognos_kartdata(region_vekt, start_ar, till_ar, filnamns_prefix, kommuner_egetnamn)

@@ -49,7 +49,8 @@ titeln, eller \code{NA} för automatiskt.}
 \item{diagram_capt_leaflet}{Källtext. \verb{<prognos_ar>}/\verb{<prognosskapare>}
 byts ut automatiskt.}
 
-\item{returnera_figur}{TRUE (standard) för att returnera kartan.}
+\item{returnera_figur}{TRUE (standard) för att returnera kartan. Minst en av
+\code{skriv_leaflet_fil} och \code{returnera_figur} måste vara \code{TRUE}.}
 }
 \value{
 Osynligt: en namngiven lista med ett \code{leaflet}-objekt. Namnet är

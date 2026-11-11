@@ -8,6 +8,7 @@ karta_gg_nettopendling_kommun_scb(
   vald_lan_kod = "20",
   valt_ar = "9999",
   karta_fargvektor = NULL,
+  legend_position = "auto",
   utmapp = rdverktyg::utskriftsmapp(),
   skriv_diagramfil = TRUE,
   returnera_figur = TRUE
@@ -26,12 +27,22 @@ nettopendling. De tolkas som ankarfärger och interpoleras till en färg per
 klass, så mitten bör vara vit. \code{NULL} (standard) =
 \code{rddiagram::diagramfarger("rd_karta_rod_gron")}.}
 
+\item{legend_position}{Var teckenförklaringen ska ligga: \code{"auto"}
+(standard) väljer ett hörn inuti kartan där den inte hamnar ovanpå någon
+kommun (prövar nere till vänster, uppe till höger, nere till höger och uppe
+till vänster) och placerar den annars till höger om kartan. Du kan också
+ange \code{"bottom-left"}, \code{"top-right"}, \code{"bottom-right"}, \code{"top-left"},
+\code{"right"} (utanför kartan) m.fl. Se
+\code{\link[rddiagram:skapa_koropletkarta_ggplot]{rddiagram::skapa_koropletkarta_ggplot()}}.}
+
 \item{utmapp}{Mapp där kartfilerna sparas. Måste finnas om
 \code{skriv_diagramfil} är \code{TRUE}.}
 
 \item{skriv_diagramfil}{TRUE om kartan ska skrivas som bildfil.}
 
-\item{returnera_figur}{TRUE (standard) för att returnera kartorna.}
+\item{returnera_figur}{TRUE (standard) för att returnera kartorna. Minst
+en av \code{skriv_diagramfil} och \code{returnera_figur} måste vara \code{TRUE},
+annars stoppas funktionen utan att något hämtas eller ritas.}
 }
 \value{
 Osynligt: en namngiven lista av \code{ggplot}-objekt, en per län. Namnet

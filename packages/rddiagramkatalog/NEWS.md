@@ -1,3 +1,16 @@
+# rddiagramkatalog 0.0.0.9045
+
+* `karta_gg_nettopendling_kommun_scb()`: ny parameter `legend_position`.
+  Standard `"auto"` lägger teckenförklaringen i ett hörn där den inte hamnar
+  ovanpå någon kommun (nere till vänster om det är fritt) och annars utanför
+  kartan. Egen placering anges med t.ex. `"bottom-left"` eller `"right"`.
+  Teckenförklaringen är också något mindre. Kräver rddiagram 0.0.0.9028.
+* Alla fyra `karta_*()`-funktioner stoppar nu direkt, utan att hämta data eller
+  rita, om kartan varken ska skrivas till fil eller returneras
+  (`skriv_diagramfil`/`skriv_leaflet_fil` och `returnera_figur` är alla
+  `FALSE`), med ett meddelande om vad som ska sättas. Det går att ha bara fil,
+  bara returnerad karta eller båda.
+
 # rddiagramkatalog 0.0.0.9044
 
 * `karta_gg_nettopendling_kommun_scb()`: teckenförklaringen ligger uppe till

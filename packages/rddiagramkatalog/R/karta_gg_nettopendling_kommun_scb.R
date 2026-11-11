@@ -25,10 +25,19 @@
 #'   nettopendling. De tolkas som ankarfärger och interpoleras till en färg per
 #'   klass, så mitten bör vara vit. `NULL` (standard) =
 #'   `rddiagram::diagramfarger("rd_karta_rod_gron")`.
+#' @param legend_position Var teckenförklaringen ska ligga: `"auto"`
+#'   (standard) väljer ett hörn inuti kartan där den inte hamnar ovanpå någon
+#'   kommun (prövar nere till vänster, uppe till höger, nere till höger och uppe
+#'   till vänster) och placerar den annars till höger om kartan. Du kan också
+#'   ange `"bottom-left"`, `"top-right"`, `"bottom-right"`, `"top-left"`,
+#'   `"right"` (utanför kartan) m.fl. Se
+#'   [rddiagram::skapa_koropletkarta_ggplot()].
 #' @param utmapp Mapp där kartfilerna sparas. Måste finnas om
 #'   `skriv_diagramfil` är `TRUE`.
 #' @param skriv_diagramfil TRUE om kartan ska skrivas som bildfil.
-#' @param returnera_figur TRUE (standard) för att returnera kartorna.
+#' @param returnera_figur TRUE (standard) för att returnera kartorna. Minst
+#'   en av `skriv_diagramfil` och `returnera_figur` måste vara `TRUE`,
+#'   annars stoppas funktionen utan att något hämtas eller ritas.
 #'
 #' @return Osynligt: en namngiven lista av `ggplot`-objekt, en per län. Namnet
 #'   är bildfilens namn utan ändelse. Filsökvägarna skrivs ut som meddelanden
@@ -39,6 +48,7 @@ karta_gg_nettopendling_kommun_scb <- function(
     vald_lan_kod = "20",
     valt_ar = "9999",
     karta_fargvektor = NULL,
+    legend_position = "auto",
     utmapp = rdverktyg::utskriftsmapp(),
     skriv_diagramfil = TRUE,
     returnera_figur = TRUE
@@ -49,6 +59,7 @@ karta_gg_nettopendling_kommun_scb <- function(
   # karta_lf_pendlingsfloden_scb() via intern_hamta_pendling().
   # ========================================== Inställningar ============================================
 
+  intern_kontrollera_utdata(skriv_diagramfil, returnera_figur, "skriv_diagramfil")
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
   if (is.null(karta_fargvektor) || all(is.na(karta_fargvektor))) {
@@ -92,7 +103,8 @@ karta_gg_nettopendling_kommun_scb <- function(
       klassindelning = breaks,
       karta_fargvektor = karta_fargvektor,
       karta_farg_hogst = NULL,
-      legend_position = "top-right",
+      legend_position = legend_position,
+      legend_titel_storlek = 10, legend_text_storlek = 8, legend_objekt_storlek = 1,
       karta_titel_avstand = 12,
       karta_caption_storlek = 7,
       legend_titel = "Nettopendling",
