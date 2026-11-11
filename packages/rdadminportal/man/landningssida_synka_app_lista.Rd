@@ -7,13 +7,18 @@
 landningssida_synka_app_lista(
   target = c("publik", "intern"),
   shiny_rot = "/srv/shiny-server",
-  rapport_rot = "/srv/rapporter"
+  rapport_rot = "/srv/rapporter",
+  pdf_mapp = "pdf-rapporter"
 )
 }
 \arguments{
 \item{target}{\code{"publik"} eller \code{"intern"}.}
 
 \item{shiny_rot, rapport_rot}{Kataloger att skanna.}
+
+\item{pdf_mapp}{Undermapp i \code{rapport_rot} vars pdf-filer räknas som egna
+poster (typ \code{"pdf"}, namn \code{"<pdf_mapp>/<filnamn>"}). Samma mapp som
+landningssidans generator läser pdf-rapporter från.}
 }
 \value{
 Osynligt: en lista med \code{funna}, \code{nya}, \code{borttagna}.

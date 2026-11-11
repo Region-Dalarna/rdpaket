@@ -1,3 +1,12 @@
+# rdadminportal 0.0.0.9004
+
+* `landningssida_synka_app_lista()` tar nu med pdf-filerna i
+  `/srv/rapporter/pdf-rapporter/` (ny parameter `pdf_mapp`) som egna poster med
+  typ `"pdf"` och namnet `"pdf-rapporter/<filnamn>"`, så att de syns i
+  adminportalen (synlighet, ikon och beskrivning) och på landningssidan under
+  "Publicerade rapporter". Förutsätter att kolumnen `typ` i
+  `adminshiny.landningssida_app` tillåter värdet `"pdf"`.
+
 # rdadminportal 0.0.0.9003
 
 * Listningen av nedladdningsfiler hämtar inte längre filägare

@@ -8,12 +8,16 @@
 #'
 #' @param target `"publik"` eller `"intern"`.
 #' @param shiny_rot,rapport_rot Kataloger att skanna.
+#' @param pdf_mapp Undermapp i `rapport_rot` vars pdf-filer räknas som egna
+#'   poster (typ `"pdf"`, namn `"<pdf_mapp>/<filnamn>"`). Samma mapp som
+#'   landningssidans generator läser pdf-rapporter från.
 #'
 #' @return Osynligt: en lista med `funna`, `nya`, `borttagna`.
 #' @export
 landningssida_synka_app_lista <- function(target = c("publik", "intern"),
                                           shiny_rot   = "/srv/shiny-server",
-                                          rapport_rot = "/srv/rapporter") {
+                                          rapport_rot = "/srv/rapporter",
+                                          pdf_mapp    = "pdf-rapporter") {
   target <- intern_validera_target(match.arg(target))
   hittade <- list()
 
@@ -29,8 +33,13 @@ landningssida_synka_app_lista <- function(target = c("publik", "intern"),
     m <- list.dirs(rapport_rot, recursive = FALSE, full.names = FALSE)
     m <- m[!startsWith(m, ".")]
     m <- m[file.exists(file.path(rapport_rot, m, "index.html"))]
+    m <- setdiff(m, pdf_mapp)
     if (length(m)) hittade[[length(hittade) + 1]] <-
       data.frame(namn = m, typ = "rapport", stringsAsFactors = FALSE)
+
+    pdf_filer <- intern_hitta_pdf_filer(rapport_rot, pdf_mapp)
+    if (length(pdf_filer)) hittade[[length(hittade) + 1]] <-
+      data.frame(namn = paste0(pdf_mapp, "/", pdf_filer), typ = "pdf", stringsAsFactors = FALSE)
   }
 
   funna <- if (length(hittade)) do.call(rbind, hittade) else
@@ -115,4 +124,13 @@ landningssida_synka_app_lista_nu <- function(target = c("publik", "intern"),
     message("Synk av app-listan (publik) är köad - klar inom några sekunder.")
   }
   invisible(TRUE)
+}
+
+# Pdf-filerna (bara filnamnen) i rapport_rot/pdf_mapp. Tom vektor om mappen saknas.
+#' @noRd
+intern_hitta_pdf_filer <- function(rapport_rot, pdf_mapp) {
+  mapp <- file.path(rapport_rot, pdf_mapp)
+  if (!dir.exists(mapp)) return(character(0))
+  filer <- list.files(mapp, pattern = "\\.pdf$", ignore.case = TRUE, full.names = FALSE)
+  sort(filer[!startsWith(filer, ".")])
 }
