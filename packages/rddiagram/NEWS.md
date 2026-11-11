@@ -1,3 +1,8 @@
+# rddiagram 0.0.0.9029
+
+* `skapa_koropletkarta_ggplot()`: klassgränserna i teckenförklaringen skrivs
+  med decimalkomma (t.ex. "-0,5 – 2,0") i stället för decimalpunkt.
+
 # rddiagram 0.0.0.9028
 
 * `skapa_koropletkarta_ggplot()`: `legend_position = "auto"` väljer ett hörn

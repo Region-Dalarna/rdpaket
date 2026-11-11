@@ -23,12 +23,12 @@ intern_snygga_klassetiketter <- function(klass, acc) {
       if (is.infinite(nedre) && is.infinite(ovre)) {
         "Alla värden"
       } else if (is.infinite(nedre)) {
-        paste0("< ", scales::number(ovre, accuracy = acc))
+        paste0("< ", scales::number(ovre, accuracy = acc, decimal.mark = ","))
       } else if (is.infinite(ovre)) {
-        paste0("> ", scales::number(nedre, accuracy = acc))
+        paste0("> ", scales::number(nedre, accuracy = acc, decimal.mark = ","))
       } else {
-        paste0(scales::number(nedre, accuracy = acc), " – ",
-               scales::number(ovre, accuracy = acc))
+        paste0(scales::number(nedre, accuracy = acc, decimal.mark = ","), " – ",
+               scales::number(ovre, accuracy = acc, decimal.mark = ","))
       }
     }, character(1))
   })

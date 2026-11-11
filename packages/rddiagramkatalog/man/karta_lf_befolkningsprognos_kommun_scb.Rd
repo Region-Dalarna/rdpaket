@@ -8,6 +8,7 @@ karta_lf_befolkningsprognos_kommun_scb(
   region_vekt = "20",
   start_ar = "9999",
   till_ar = "+10",
+  karta_fargvektor = NULL,
   utmapp = rdverktyg::utskriftsmapp(),
   skriv_leaflet_fil = TRUE,
   leaflet_filformat = "html",
@@ -15,7 +16,7 @@ karta_lf_befolkningsprognos_kommun_scb(
   kommuner_egetnamn = NA,
   prognosskapare = "Region Dalarna",
   diagram_capt_leaflet =
-    "Källa: <prognosskapare>s befolkningsprognos från år <prognos_ar>, bearbetning av Samhällsanalys, Region Dalarna",
+    "Källa: <prognosskapare>s befolkningsprognos från år <prognos_ar>. Bearbetning: Samhällsanalys, Region Dalarna",
   returnera_figur = TRUE
 )
 }
@@ -28,6 +29,10 @@ tillgängliga år med befolkningsstatistik.}
 
 \item{till_ar}{Slutår. \code{"+10"} (standard) = 10 år efter startåret, eller
 ett enskilt årtal.}
+
+\item{karta_fargvektor}{Färger från minskning via noll till ökning, tolkade
+som ankarfärger och interpolerade till en färg per klass. \code{NULL}
+(standard) = \code{rddiagram::diagramfarger("rd_karta_rod_gron")}.}
 
 \item{utmapp}{Mapp där kartfilen sparas. Måste finnas om
 \code{skriv_leaflet_fil} är \code{TRUE}.}
@@ -59,7 +64,8 @@ när filen skrivs.
 }
 \description{
 Interaktiv leaflet-karta på kommunnivå över procentuell
-befolkningsförändring enligt befolkningsprognosen, mellan senaste
+befolkningsförändring enligt befolkningsprognosen, med samma klasser och färger som
+\code{\link[=karta_gg_befolkningsprognos_kommun_scb]{karta_gg_befolkningsprognos_kommun_scb()}}, mellan senaste
 tillgängliga befolkningsstatistik och ett valt framtida år. Håll muspekaren
 över en kommun för att se förändringen i procent och antal invånare. Samma
 karta som bild (ggplot) finns i \code{\link[=karta_gg_befolkningsprognos_kommun_scb]{karta_gg_befolkningsprognos_kommun_scb()}}.

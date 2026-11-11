@@ -8,13 +8,15 @@ karta_gg_befolkningsprognos_kommun_scb(
   region_vekt = "20",
   start_ar = "9999",
   till_ar = "+10",
+  karta_fargvektor = NULL,
+  legend_position = "auto",
   utmapp = rdverktyg::utskriftsmapp(),
   skriv_diagramfil = TRUE,
   filnamns_prefix = NA,
   kommuner_egetnamn = NA,
   prognosskapare = "Region Dalarna",
   diagram_capt =
-    "Källa: <prognosskapare>s befolkningsprognos från år <prognos_ar>\\nBearbetning: Samhällsanalys, Region Dalarna",
+    "Källa: <prognosskapare>s befolkningsprognos från år <prognos_ar>. Bearbetning: Samhällsanalys, Region Dalarna",
   returnera_figur = TRUE
 )
 }
@@ -27,6 +29,14 @@ tillgängliga år med befolkningsstatistik.}
 
 \item{till_ar}{Slutår. \code{"+10"} (standard) = 10 år efter startåret, eller
 ett enskilt årtal.}
+
+\item{karta_fargvektor}{Färger från minskning via noll till ökning, tolkade
+som ankarfärger och interpolerade till en färg per klass. \code{NULL}
+(standard) = \code{rddiagram::diagramfarger("rd_karta_rod_gron")}.}
+
+\item{legend_position}{Teckenförklaringens placering. \code{"auto"} (standard)
+väljer ett hörn där den inte hamnar ovanpå någon kommun, annars utanför
+kartan. Se \code{\link[rddiagram:skapa_koropletkarta_ggplot]{rddiagram::skapa_koropletkarta_ggplot()}}.}
 
 \item{utmapp}{Mapp där kartfilen sparas. Måste finnas om
 \code{skriv_diagramfil} är \code{TRUE}.}
@@ -54,7 +64,8 @@ när filen skrivs.
 }
 \description{
 Koropletkarta (ggplot) på kommunnivå över procentuell befolkningsförändring
-enligt befolkningsprognosen, mellan senaste tillgängliga
+enligt befolkningsprognosen, i samma stil som \code{\link[=karta_gg_nettopendling_kommun_scb]{karta_gg_nettopendling_kommun_scb()}}: grönt
+för ökning och rött för minskning, med ett smalt vitt mittenintervall kring noll, mellan senaste tillgängliga
 befolkningsstatistik och ett valt framtida år. Samma karta som interaktiv
 leaflet-karta finns i \code{\link[=karta_lf_befolkningsprognos_kommun_scb]{karta_lf_befolkningsprognos_kommun_scb()}}.
 }

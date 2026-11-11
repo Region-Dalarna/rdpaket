@@ -1,7 +1,8 @@
 #' Karta: prognosticerad befolkningsförändring
 #'
 #' Koropletkarta (ggplot) på kommunnivå över procentuell befolkningsförändring
-#' enligt befolkningsprognosen, mellan senaste tillgängliga
+#' enligt befolkningsprognosen, i samma stil som [karta_gg_nettopendling_kommun_scb()]: grönt
+#' för ökning och rött för minskning, med ett smalt vitt mittenintervall kring noll, mellan senaste tillgängliga
 #' befolkningsstatistik och ett valt framtida år. Samma karta som interaktiv
 #' leaflet-karta finns i [karta_lf_befolkningsprognos_kommun_scb()].
 #'
@@ -11,6 +12,12 @@
 #'   tillgängliga år med befolkningsstatistik.
 #' @param till_ar Slutår. `"+10"` (standard) = 10 år efter startåret, eller
 #'   ett enskilt årtal.
+#' @param karta_fargvektor Färger från minskning via noll till ökning, tolkade
+#'   som ankarfärger och interpolerade till en färg per klass. `NULL`
+#'   (standard) = `rddiagram::diagramfarger("rd_karta_rod_gron")`.
+#' @param legend_position Teckenförklaringens placering. `"auto"` (standard)
+#'   väljer ett hörn där den inte hamnar ovanpå någon kommun, annars utanför
+#'   kartan. Se [rddiagram::skapa_koropletkarta_ggplot()].
 #' @param utmapp Mapp där kartfilen sparas. Måste finnas om
 #'   `skriv_diagramfil` är `TRUE`.
 #' @param skriv_diagramfil TRUE om kartan ska skrivas som bildfil.
@@ -33,12 +40,14 @@ karta_gg_befolkningsprognos_kommun_scb <- function(
     region_vekt = "20",
     start_ar = "9999",
     till_ar = "+10",
+    karta_fargvektor = NULL,
+    legend_position = "auto",
     utmapp = rdverktyg::utskriftsmapp(),
     skriv_diagramfil = TRUE,
     filnamns_prefix = NA,
     kommuner_egetnamn = NA,
     prognosskapare = "Region Dalarna",
-    diagram_capt = "Källa: <prognosskapare>s befolkningsprognos från år <prognos_ar>\nBearbetning: Samhällsanalys, Region Dalarna",
+    diagram_capt = "Källa: <prognosskapare>s befolkningsprognos från år <prognos_ar>. Bearbetning: Samhällsanalys, Region Dalarna",
     returnera_figur = TRUE
 ) {
 
@@ -55,21 +64,26 @@ karta_gg_befolkningsprognos_kommun_scb <- function(
     stringr::str_replace_all("<prognosskapare>", "{prognosskapare}") |>
     glue::glue()
 
-  # Diskreta, nollcentrerade klasser (i stället för en kontinuerlig skala) - skapa_koropletkarta_
-  # ggplot()s kontinuerliga läge (scale_fill_gradientn) centrerar mittfärgen på MITTEN AV DATAINTERVALLET,
-  # inte på 0, vilket hade varit missvisande för ökning/minskning om intervallet inte råkar vara
-  # symmetriskt. max_abs + pretty() ger symmetriska klassgränser som alltid inkluderar 0 som gräns.
-  max_abs <- max(abs(bef_karta$diff_proc), na.rm = TRUE)
-  diff_breaks <- pretty(c(-max_abs, max_abs), n = 6)
+  if (is.null(karta_fargvektor) || all(is.na(karta_fargvektor))) {
+    karta_fargvektor <- rddiagram::diagramfarger("rd_karta_rod_gron")
+  }
 
+  # Diskreta klasser, symmetriska kring noll med ett smalt vitt mittenintervall (se
+  # intern_nollcentrerade_klassgranser()). En kontinuerlig skala hade centrerat mittfärgen på mitten av
+  # dataintervallet, inte på 0, vilket vore missvisande för minskning och ökning.
   befprognos_gg <- rddiagram::skapa_koropletkarta_ggplot(
     sf_objekt = bef_karta,
     vardekolumn = "diff_proc",
-    klassindelning = diff_breaks,
-    karta_fargvektor = c("#F15060", "white", "#0e5a4c"),
+    klassindelning = intern_nollcentrerade_klassgranser(max_abs, minsta_mitt = 0.1),
+    karta_fargvektor = karta_fargvektor,
+    karta_farg_hogst = NULL,
     legend_titel = "Förändring (%)",
-    karta_titel = paste0("Prognosticerad befolkningsutveckling i ", kommuner_egetnamn),
-    karta_caption = paste0("år ", min_ar, "-", max_ar, "\n", diagram_capt_utfyllt),
+    legend_position = legend_position,
+    legend_titel_storlek = 10, legend_text_storlek = 8, legend_objekt_storlek = 1,
+    karta_titel = paste0("Prognosticerad befolkningsutveckling i ", kommuner_egetnamn, " år ", min_ar, "–", max_ar),
+    karta_titel_avstand = 12,
+    karta_caption = paste0(diagram_capt_utfyllt, "\nFörändring i procent mellan år ", min_ar, " och ", max_ar),
+    karta_caption_storlek = 7,
     filnamn = if (skriv_diagramfil) paste0(filnamn_pre, ".png") else NULL,
     output_mapp = if (skriv_diagramfil) utmapp else NULL
   )

@@ -1,3 +1,17 @@
+# rddiagramkatalog 0.0.0.9046
+
+* `karta_gg_befolkningsprognos_kommun_scb()` och
+  `karta_lf_befolkningsprognos_kommun_scb()` har samma stil som
+  nettopendlingskartan: profilens färger (`diagramfarger("rd_karta_rod_gron")`,
+  grönt för ökning och rött för minskning), klasser symmetriska kring noll med
+  ett smalt vitt mittenintervall (minst ±0,1 procent) och upp till 11 klasser.
+  Titeln är "Prognosticerad befolkningsutveckling i <region> år <från>–<till>",
+  källtexten två rader (källa och bearbetning på första) och ggplot-kartan har
+  teckenförklaringen i ett fritt hörn (`legend_position = "auto"`), något
+  mindre text och mer luft under titeln. Ny parameter `karta_fargvektor`.
+  Leaflet-kartan använder samma klasser och färger som ggplot-kartan. Kräver
+  rddiagram 0.0.0.9029.
+
 # rddiagramkatalog 0.0.0.9045
 
 * `karta_gg_nettopendling_kommun_scb()`: ny parameter `legend_position`.

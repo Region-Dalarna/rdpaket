@@ -1,7 +1,8 @@
 #' Leaflet-karta: prognosticerad befolkningsförändring
 #'
 #' Interaktiv leaflet-karta på kommunnivå över procentuell
-#' befolkningsförändring enligt befolkningsprognosen, mellan senaste
+#' befolkningsförändring enligt befolkningsprognosen, med samma klasser och färger som
+#' [karta_gg_befolkningsprognos_kommun_scb()], mellan senaste
 #' tillgängliga befolkningsstatistik och ett valt framtida år. Håll muspekaren
 #' över en kommun för att se förändringen i procent och antal invånare. Samma
 #' karta som bild (ggplot) finns i [karta_gg_befolkningsprognos_kommun_scb()].
@@ -12,6 +13,9 @@
 #'   tillgängliga år med befolkningsstatistik.
 #' @param till_ar Slutår. `"+10"` (standard) = 10 år efter startåret, eller
 #'   ett enskilt årtal.
+#' @param karta_fargvektor Färger från minskning via noll till ökning, tolkade
+#'   som ankarfärger och interpolerade till en färg per klass. `NULL`
+#'   (standard) = `rddiagram::diagramfarger("rd_karta_rod_gron")`.
 #' @param utmapp Mapp där kartfilen sparas. Måste finnas om
 #'   `skriv_leaflet_fil` är `TRUE`.
 #' @param skriv_leaflet_fil TRUE om kartan ska skrivas till fil.
@@ -37,13 +41,14 @@ karta_lf_befolkningsprognos_kommun_scb <- function(
     region_vekt = "20",
     start_ar = "9999",
     till_ar = "+10",
+    karta_fargvektor = NULL,
     utmapp = rdverktyg::utskriftsmapp(),
     skriv_leaflet_fil = TRUE,
     leaflet_filformat = "html",
     filnamns_prefix = NA,
     kommuner_egetnamn = NA,
     prognosskapare = "Region Dalarna",
-    diagram_capt_leaflet = "Källa: <prognosskapare>s befolkningsprognos från år <prognos_ar>, bearbetning av Samhällsanalys, Region Dalarna",
+    diagram_capt_leaflet = "Källa: <prognosskapare>s befolkningsprognos från år <prognos_ar>. Bearbetning: Samhällsanalys, Region Dalarna",
     returnera_figur = TRUE
 ) {
 
@@ -60,9 +65,16 @@ karta_lf_befolkningsprognos_kommun_scb <- function(
     stringr::str_replace_all("<prognosskapare>", "{prognosskapare}") |>
     glue::glue()
 
-  fargskala <- leaflet::colorNumeric(
-    palette = c("#F15060", "white", "#0e5a4c"),
-    domain = c(-max_abs, max_abs)
+  if (is.null(karta_fargvektor) || all(is.na(karta_fargvektor))) {
+    karta_fargvektor <- rddiagram::diagramfarger("rd_karta_rod_gron")
+  }
+
+  # samma klasser och färger som i ggplot-kartan
+  klassgranser <- intern_nollcentrerade_klassgranser(max_abs, minsta_mitt = 0.1)
+  fargskala <- leaflet::colorBin(
+    palette = grDevices::colorRampPalette(karta_fargvektor)(length(klassgranser) - 1),
+    domain = range(klassgranser),
+    bins = klassgranser
   )
 
   bef_leaflet <- bef_karta |>
@@ -84,6 +96,10 @@ karta_lf_befolkningsprognos_kommun_scb <- function(
     leaflet::addLegend(
       pal = fargskala,
       values = bef_karta$diff_proc,
+      labFormat = function(type, cuts, p) {
+        tal <- scales::number(cuts, accuracy = if (all(cuts == round(cuts))) 1 else 0.1, big.mark = " ", decimal.mark = ",")
+        paste0(tal[-length(tal)], " – ", tal[-1])
+      },
       title = htmltools::HTML(glue::glue("Förändring (%)<br/><span style='font-size:11px; font-weight:normal'>år {min_ar}-{max_ar} enligt<br>befolkningsprognos</span>")),
       position = "bottomright"
     ) |>
