@@ -32,7 +32,7 @@ library(rddiagramkatalog)
 utmapp <- file.path("packages", "rddiagramkatalog", "man", "figures")
 if (!dir.exists(utmapp)) dir.create(utmapp, recursive = TRUE)
 
-funktioner <- sort(grep("^(diag_|karta_)", getNamespaceExports("rddiagramkatalog"), value = TRUE))
+funktioner <- sort(grep("^(diag_|karta_gg_|karta_lf_)", getNamespaceExports("rddiagramkatalog"), value = TRUE))
 
 resultat <- lapply(funktioner, function(fn) {
   cat("Genererar exempel för", fn, "... ")
@@ -54,24 +54,21 @@ resultat <- lapply(funktioner, function(fn) {
 
     diagram_lista <- do.call(fn, anropsargument)
 
-    # karta_*()-funktioner som producerar EN karta returnerar list(ggplot = ..., leaflet = ...) -
-    # plockar ggplot-versionen direkt. karta_*()-funktioner som kan producera FLERA kartor i ett
-    # anrop (t.ex. en per kommun/pendlingstyp) returnerar i stället en namngiven lista där varje
-    # element SJÄLVT är list(ggplot = ..., leaflet = ...) - plockar ggplot ur det första elementet
-    # då. Annars (diag_*()-funktionerna) är det första elementet redan ett ggplot-objekt.
-    plot_obj <- if ("ggplot" %in% names(diagram_lista)) {
-      diagram_lista$ggplot
-    } else if ("ggplot" %in% names(diagram_lista[[1]])) {
-      diagram_lista[[1]]$ggplot
+    # Alla diag_*()- och karta_*()-funktioner returnerar en namngiven lista; exemplet görs av det
+    # första elementet. karta_lf_*() ger leaflet-kartor: de sparas som en png (ögonblicksbild via
+    # webshot2) och som en html-fil. html-filerna delar ett gemensamt bibliotek (mappen lib) i
+    # stället för att bädda in JavaScript i varje fil, så att de blir små.
+    if (grepl("^karta_lf_", fn)) {
+      rddiagram::skriv_leaflet_till_fil(diagram_lista[[1]], utmapp, fn, karta_filformat = "html", delat_bibliotek = TRUE)
+      rddiagram::skriv_leaflet_till_fil(diagram_lista[[1]], utmapp, fn, karta_filformat = "png",
+                                         karta_bredd = 770, karta_hojd = 495)
     } else {
-      diagram_lista[[1]]
+      ggplot2::ggsave(
+        filename = bildfil,
+        plot = diagram_lista[[1]],
+        width = 7, height = 4.5, dpi = 110
+      )
     }
-
-    ggplot2::ggsave(
-      filename = bildfil,
-      plot = plot_obj,
-      width = 7, height = 4.5, dpi = 110
-    )
     "OK"
   }, error = function(e) paste("FEL:", conditionMessage(e)))
   cat(res, "\n")

@@ -149,7 +149,15 @@ diagramkatalog_utforska <- function() {
             src = file.path("rddiagramkatalog_exempel", paste0(fn, ".png")),
             alt = paste("Exempeldiagram för", fn),
             style = "max-width: 100%; border: 1px solid #ddd; margin-bottom: 10px;"
-          )
+          ),
+          if (file.exists(file.path(figurmapp, paste0(fn, ".html")))) {
+            shiny::tags$p(
+              shiny::tags$a("Öppna den interaktiva exempelkartan",
+                            href = file.path("rddiagramkatalog_exempel", paste0(fn, ".html")),
+                            target = "_blank"),
+              style = "font-size: 12px;"
+            )
+          }
         )
       } else {
         shiny::tags$p(
@@ -220,26 +228,25 @@ diagramkatalog_utforska <- function() {
           NULL
         })
         if (is.null(resultat)) return(NULL)
-        # karta_*()-funktioner som producerar EN karta returnerar list(ggplot = ..., leaflet = ...)
-        # - förhandsvisningen här (shiny::renderPlot()) kan bara visa ggplot-versionen, som plockas
-        # ut direkt. karta_*()-funktioner som kan producera FLERA kartor i ett anrop returnerar i
-        # stället en lista där varje element självt är list(ggplot = ..., leaflet = ...) - visar då
-        # bara den FÖRSTA kartan (ingen navigering mellan flera förhandsvisningar ännu). Annars
-        # (diag_*()-funktionerna) är det första elementet redan ett ggplot-objekt.
-        if ("ggplot" %in% names(resultat)) {
-          resultat$ggplot
-        } else if ("ggplot" %in% names(resultat[[1]])) {
-          resultat[[1]]$ggplot
-        } else {
-          resultat[[1]]
+        # Alla funktioner returnerar en namngiven lista; förhandsvisningen visar det första
+        # elementet. karta_lf_*() ger leaflet-kartor, som inte kan ritas av renderPlot() - de öppnas
+        # i stället i webbläsaren (en tillfällig html-fil).
+        if (inherits(resultat[[1]], "leaflet")) {
+          html <- tempfile(fileext = ".html")
+          htmlwidgets::saveWidget(resultat[[1]], html, selfcontained = FALSE)
+          utils::browseURL(html)
+          shiny::showNotification("Den interaktiva kartan har öppnats i webbläsaren.", type = "message", duration = 7)
+          return(NULL)
         }
+        resultat[[1]]
       })
     })
 
     shiny::observeEvent(input$skriv_fil, {
       args <- vald_args()
 
-      if (!all(c("utmapp", "skriv_diagramfil") %in% names(args))) {
+      skriv_param <- intersect(c("skriv_diagramfil", "skriv_leaflet_fil"), names(args))[1]
+      if (!"utmapp" %in% names(args) || is.na(skriv_param)) {
         shiny::showNotification(
           "Den här funktionen har ingen utmapp/skriv_diagramfil-parameter - kan inte skriva till fil.",
           type = "error", duration = NULL
@@ -256,11 +263,11 @@ diagramkatalog_utforska <- function() {
         return()
       }
 
-      # skriv_diagramfil tvingas till TRUE oavsett kryssrutans läge - det är hela poängen med
+      # skriv_diagramfil (skriv_leaflet_fil för karta_lf_*()) tvingas till TRUE oavsett kryssrutans läge - det är hela poängen med
       # knappen. innan_tid används för att efteråt avgöra vilka fil(er) i utmapp som faktiskt
       # skrevs/uppdaterades av just detta anrop (funktionerna returnerar bara ggplot-/leaflet-
       # objekt, inte vilket filnamn de skrev till).
-      kod <- bygg_anrop(overrides = list(skriv_diagramfil = "TRUE"))
+      kod <- bygg_anrop(overrides = stats::setNames(list("TRUE"), skriv_param))
       innan_tid <- Sys.time()
       notis_id <- shiny::showNotification("Skriver diagram till fil...", duration = NULL, type = "message")
 

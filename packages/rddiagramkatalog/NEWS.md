@@ -1,3 +1,35 @@
+# rddiagramkatalog 0.0.0.9042
+
+## Kartfunktionerna delade i ggplot och leaflet
+
+Prefixet säger nu vilken sorts output en funktion ger (se
+`KONVENTIONER.md`): `diag_` och `karta_gg_` ger ggplot (png/svg),
+`karta_lf_` ger interaktiva leaflet-kartor (html).
+
+* `karta_pendling_scb()` är ersatt av
+  `karta_gg_nettopendling_kommun_scb()` (koropletkarta över nettopendling per
+  kommun i ett län) och `karta_lf_pendlingsfloden_scb()` (flödeslinjer från en
+  kommun). De delade bara data. `valt_ar` kan vara vilket år som helst från
+  1993. Flödeskartan hämtar bara data för de valda kommunerna i stället för
+  för hela länet.
+* `karta_befolkningsprognos_scb()` är ersatt av
+  `karta_gg_befolkningsprognos_kommun_scb()` och
+  `karta_lf_befolkningsprognos_kommun_scb()`: samma karta i varsitt format.
+* De gamla namnen är borttagna utan övergång.
+* Alla `karta_*()` returnerar en namngiven lista av `ggplot`- respektive
+  `leaflet`-objekt, osynligt. Det ger inte längre en lång utskrift av alla
+  kartor i konsolen; det som skrivs är "Karta skapad: <sökväg>" för varje
+  fil. Kräver rddiagram 0.0.0.9025.
+* Filnamnen för flödeskartorna börjar nu på `pendlingsfloden_`.
+* `diag_arbetspendling_over_tid_scb()` hämtar sin data med
+  `rdhamtadata::hamta_pendling_rams_bas_scb()` i stället för med en egen kopia
+  av samma kod.
+* `diagramkatalog_utforska()`: leaflet-kartor öppnas i webbläsaren vid
+  "Skapa diagram", "Skriv till fil" fungerar även för `karta_lf_*()`, och
+  exempelkartor har en länk till den interaktiva kartan.
+* `data-raw/skapa_exempeldiagram.R` skriver för `karta_lf_*()` både en png
+  och en html-fil (med delat `lib/`).
+
 # rddiagramkatalog 0.0.0.9041
 
 * `karta_pendling_scb()` och `karta_befolkningsprognos_scb()` använder inte

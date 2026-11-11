@@ -80,7 +80,7 @@ intern_diagram_index <- function() {
   # Enbart diag_*()- och karta_*()-funktionerna - inte paketets egna
   # katalogverktyg (sok_diagram(), diagramkatalog_utforska()), som också är
   # exporterade men inte är diagram/kartor att söka fram.
-  funktioner <- sort(grep("^(diag_|karta_)", getNamespaceExports("rddiagramkatalog"), value = TRUE))
+  funktioner <- sort(grep("^(diag_|karta_gg_|karta_lf_)", getNamespaceExports("rddiagramkatalog"), value = TRUE))
 
   rader <- lapply(funktioner, function(fn) {
     rd <- rd_db[[paste0(fn, ".Rd")]]

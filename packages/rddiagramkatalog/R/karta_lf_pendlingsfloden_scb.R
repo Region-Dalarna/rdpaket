@@ -1,46 +1,39 @@
-#' Karta: arbetspendling mellan kommuner
+#' Leaflet-karta: pendlingsflöden mellan kommuner
 #'
-#' Flödeskartor över arbetspendling (RAMS/BAS) mellan en eller flera valda
-#' kommuner och övriga kommuner, för en eller flera pendlingstyper
-#' (bruttopendling, nettopendling, in- eller utpendling). Till skillnad
-#' från [karta_befolkningsprognos_scb()] kan den här funktionen producera
-#' FLERA kartor i ett och samma anrop - en kombination av `vald_kommun_kod`
-#' och `vald_pendlingstyp` i taget, precis som källskriptets batch-mönster.
+#' Interaktiv leaflet-karta med flödeslinjer för arbetspendling (RAMS/BAS) mellan
+#' en eller flera valda kommuner och övriga kommuner, för en eller flera
+#' pendlingstyper (bruttopendling, nettopendling, in- eller utpendling).
+#' Linjebredden visar antal pendlare och färgen pendlingstyp (för
+#' nettopendling positivt eller negativt tecken). Klicka på en linje för att se
+#' antalet pendlare. Funktionen kan göra FLERA kartor i ett anrop: en per
+#' kombination av `vald_kommun_kod` och `vald_pendlingstyp`.
 #'
-#' ggplot-versionen av varje karta är en enklare, regional choroplettkarta
-#' över nettopendling per kommun (inpendlare minus utpendlare, oavsett
-#' vald `vald_pendlingstyp`) i det län den valda kommunen ligger i - inte
-#' samma flödeslinjer som leaflet-versionen. De två versionerna visar
-#' alltså kompletterande vyer, inte samma information i två format. Är
-#' flera av de valda kommunerna i samma län återanvänds samma
-#' ggplot-karta för dem i stället för att räknas om i onödan.
+#' Pendlingsdata finns för åren 1993 och framåt (se
+#' [rdhamtadata::hamta_pendling_rams_bas_scb()]), men kartan visar alltid
+#' kommunindelningen och kommunernas lägen i dag. Äldre år visar därför
+#' pendling mellan dagens kommuner.
 #'
-#' leaflet-versionen behåller källskriptets detaljerade flödeslinjer
-#' (linjebredd = antal pendlare, färg = pendlingstyp/nettotecken) till och
-#' från den specifika kommunen.
+#' Kartan som koropletkarta över nettopendling per kommun i hela länet finns i
+#' [karta_gg_nettopendling_kommun_scb()].
 #'
 #' @param vald_kommun_kod En eller flera kommunkoder. Standard `"2080"` (Falun).
-#' @param valt_ar År. `"9999"` (standard) = senaste tillgängliga.
+#' @param valt_ar År, 1993 eller senare. `"9999"` (standard) = senaste
+#'   tillgängliga.
 #' @param vald_pendlingstyp En eller flera av `"Bruttopendling"`,
 #'   `"Nettopendling"`, `"Inpendling"`, `"Utpendling"`, eller `"alla"`
 #'   (standard) för samtliga fyra.
 #' @param grans_for_antal_pendlare Pendlingsrelationer med färre pendlare
 #'   än detta filtreras bort.
-#' @param legend_intervaller Antal intervaller i leaflet-legenden.
+#' @param legend_intervaller Antal intervaller i legenden.
 #' @param linjefarg_positiva_tal,linjefarg_negativa_tal Linjefärg vid
-#'   nettopendling, beroende på tecken. Återanvänds även som
-#'   ggplot-choroplettens färgskala (positiv/negativ nettopendling).
+#'   nettopendling, beroende på tecken.
 #' @param linjefarg_utpendling,linjefarg_inpendling Linjefärg vid ren
 #'   in- eller utpendling.
 #' @param linjebredd_min,linjebredd_max Linjebredd (px) för minsta
 #'   respektive största antal pendlare.
 #' @param utmapp Mapp där kartfilerna sparas. Måste finnas om
-#'   `skriv_diagramfil`, `skriv_leaflet_fil` eller `skriv_gpkg_fil` är
-#'   `TRUE`.
-#' @param skriv_diagramfil TRUE om ggplot-choropletten ska skrivas som
-#'   bildfil.
-#' @param skriv_leaflet_fil TRUE om leaflet-flödeskartan ska skrivas till
-#'   fil.
+#'   `skriv_leaflet_fil` eller `skriv_gpkg_fil` är `TRUE`.
+#' @param skriv_leaflet_fil TRUE om kartan ska skrivas till fil.
 #' @param leaflet_filformat `"html"` (standard, interaktiv) eller `"png"`
 #'   (statisk ögonblicksbild via webshot2, se
 #'   [rddiagram::skriv_leaflet_till_fil()]).
@@ -53,16 +46,15 @@
 #'   (standard) skriver en `.qml`- och en `.lyrx`-fil (QGIS respektive
 #'   ArcGIS Pro) med samma basnamn som gpkg-filen, samt en inbäddad
 #'   QGIS-stil i själva gpkg-filen, så linjerna redan är färdigstilade.
-#' @param returnera_figur Skall kartorna returneras.
+#' @param returnera_figur TRUE (standard) för att returnera kartorna.
 #'
-#' @return Om bara EN kombination av `vald_kommun_kod`/`vald_pendlingstyp`
-#'   efterfrågas: en namngiven lista `list(ggplot =, leaflet =)`, precis
-#'   som [karta_befolkningsprognos_scb()]. Om FLERA kombinationer
-#'   efterfrågas: en namngiven lista (en per kombination, t.ex.
-#'   `"Falun_Nettopendling"`) där varje element självt är
-#'   `list(ggplot =, leaflet =)`.
+#' @return Osynligt: en namngiven lista av `leaflet`-objekt, en per
+#'   kombination av kommun och pendlingstyp. Namnet är filens namn utan
+#'   ändelse (t.ex. `"pendlingsfloden_nettopendling_Falun_ar2024"`).
+#'   Filsökvägarna skrivs ut som meddelanden när filer skrivs.
+#' @seealso [karta_gg_nettopendling_kommun_scb()]
 #' @export
-karta_pendling_scb <- function(
+karta_lf_pendlingsfloden_scb <- function(
     vald_kommun_kod = "2080",
     valt_ar = "9999",
     vald_pendlingstyp = "alla",
@@ -75,7 +67,6 @@ karta_pendling_scb <- function(
     linjebredd_min = 3,
     linjebredd_max = 25,
     utmapp = rdverktyg::utskriftsmapp(),
-    skriv_diagramfil = TRUE,
     skriv_leaflet_fil = TRUE,
     leaflet_filformat = "html",
     skriv_gpkg_fil = FALSE,
@@ -84,13 +75,12 @@ karta_pendling_scb <- function(
 ) {
 
   # ========================================== Allmän info ============================================
-  # Flödeskartor över arbetspendling. leaflet-delen är en trogen portning av källskriptets
-  # flödeslinjekarta (en per kommun/pendlingstyp). ggplot-delen är ett medvetet ANNORLUNDA,
-  # kompletterande innehåll (regional nettopendling-choroplett, inte flödeslinjer) - beslutat med
-  # användaren, se KONVENTIONER.md och NEWS.md för motivering.
+  # Flödeslinjekarta (leaflet) över arbetspendling, en karta per kommun och pendlingstyp. Trogen
+  # portning av källskriptets karta. Koropletkartan över nettopendling i länet är en egen funktion,
+  # karta_gg_nettopendling_kommun_scb().
   # ========================================== Inställningar ============================================
 
-  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil || skriv_leaflet_fil || skriv_gpkg_fil)
+  utmapp <- intern_sakerstall_utmapp(utmapp, skriv_leaflet_fil || skriv_gpkg_fil)
 
   if (skriv_gpkg_fil && skriv_stilfiler) {
     if (!requireNamespace("RSQLite", quietly = TRUE) || !requireNamespace("jsonlite", quietly = TRUE)) {
@@ -106,21 +96,7 @@ karta_pendling_scb <- function(
 
   regionnyckel <- rdverktyg::hamtaregtab()
 
-  # Datan hämtas för HELA länet/länen de valda kommunerna ligger i, inte bara de uttryckligen valda
-  # kommunerna - källskriptet hämtade bara data för vald_kommun_kod (räckte där, eftersom det bara
-  # behövde flödeslinjer till/från just de kommunerna). Den nya ggplot-choropletten behöver däremot
-  # nettopendling för SAMTLIGA kommuner i länet, inte bara de valda - därför den bredare hämtningen.
-  lanskoder <- unique(stringr::str_sub(vald_kommun_kod, 1, 2))
-  lanets_kommunkoder <- unique(unlist(lapply(lanskoder, function(l) rdverktyg::hamtakommuner(l, FALSE, FALSE))))
-  region_vekt_hamta <- unique(c(vald_kommun_kod, lanets_kommunkoder))
-
-  pendling_uttag <- rdverktyg::funktion_upprepa_forsok_om_fel(function()
-    rdhamtadata::hamta_pendling_rams_bas_scb(region_vekt = region_vekt_hamta, tid_vekt = valt_ar)
-  )
-
-  pendling_df <- pendling_uttag |>
-    dplyr::filter(regionkod_bo != regionkod_arb,
-           pendlare > 0)
+  pendling_df <- intern_hamta_pendling(vald_kommun_kod, valt_ar)
 
   pendling_enkelriktad <- pendling_df |>
     dplyr::mutate(pendl_id = ifelse(regionkod_bo < regionkod_arb, paste0(regionkod_bo, regionkod_arb), paste0(regionkod_arb, regionkod_bo))) |>
@@ -131,7 +107,6 @@ karta_pendling_scb <- function(
     dplyr::left_join(dplyr::rename(regionnyckel, bostadsregion = region), by = c("regionkod_bo" = "regionkod")) |>
     dplyr::left_join(dplyr::rename(regionnyckel, arbetsställeregion = region), by = c("regionkod_arb" = "regionkod"))
 
-  unikt_ar <- unique(pendling_df$år)
 
   # ============================ hämta och bearbeta kartlager =====================================
   # Hela Sveriges kommuner hämtas en gång (inte bara de valda) - flödeslinjerna kan gå till/från
@@ -307,56 +282,6 @@ karta_pendling_scb <- function(
                          auto_unbox = TRUE, pretty = TRUE, null = "null")
   }
 
-  # ==================== nettopendling per kommun i länet (ggplot-choropletten) ====================
-  # Inpendlare (regionkod_arb = kommunen) minus utpendlare (regionkod_bo = kommunen), oavsett
-  # vald_pendlingstyp - choropletten visar alltid NETTO, se roxygen-dokumentationen ovan för varför.
-  berakna_nettopendling_regional <- function(kommunkoder) {
-    inp <- pendling_df |>
-      dplyr::filter(regionkod_arb %in% kommunkoder) |>
-      dplyr::group_by(regionkod = regionkod_arb) |>
-      dplyr::summarise(inpendlare = sum(pendlare, na.rm = TRUE), .groups = "drop")
-    utp <- pendling_df |>
-      dplyr::filter(regionkod_bo %in% kommunkoder) |>
-      dplyr::group_by(regionkod = regionkod_bo) |>
-      dplyr::summarise(utpendlare = sum(pendlare, na.rm = TRUE), .groups = "drop")
-    dplyr::full_join(inp, utp, by = "regionkod") |>
-      dplyr::mutate(dplyr::across(c(inpendlare, utpendlare), ~ tidyr::replace_na(.x, 0)),
-             nettopendling = inpendlare - utpendlare)
-  }
-
-  ggplot_cache <- new.env(parent = emptyenv())
-
-  bygg_nettopendling_ggplot <- function(lanskod) {
-    cache_key <- lanskod
-    if (!is.null(ggplot_cache[[cache_key]])) return(ggplot_cache[[cache_key]])
-
-    kommunkoder_i_lan <- rdverktyg::hamtakommuner(lanskod, FALSE, FALSE)
-    netto_df <- berakna_nettopendling_regional(kommunkoder_i_lan)
-
-    netto_karta <- kommuner_gis |>
-      dplyr::filter(knkod %in% kommunkoder_i_lan) |>
-      dplyr::left_join(netto_df, by = c("knkod" = "regionkod")) |>
-      dplyr::mutate(nettopendling = tidyr::replace_na(nettopendling, 0))
-
-    max_abs <- max(abs(netto_karta$nettopendling), na.rm = TRUE)
-    breaks <- pretty(c(-max_abs, max_abs), n = 6)
-    lan_namn <- unique(rdverktyg::hamtaregion_kod_namn(lanskod)$region)
-
-    gg <- rddiagram::skapa_koropletkarta_ggplot(
-      sf_objekt = netto_karta,
-      vardekolumn = "nettopendling",
-      klassindelning = breaks,
-      karta_fargvektor = c(linjefarg_negativa_tal, "white", linjefarg_positiva_tal),
-      legend_titel = "Nettopendling",
-      karta_titel = paste0("Nettopendling per kommun i ", lan_namn),
-      karta_caption = paste0("år ", unikt_ar, "\nKälla: SCB (RAMS/BAS)\nBearbetning: Samhällsanalys, Region Dalarna\nNettopendling = inpendlare minus utpendlare"),
-      filnamn = if (skriv_diagramfil) paste0("nettopendling_", lan_namn, "_ar", unikt_ar, ".png") else NULL,
-      output_mapp = if (skriv_diagramfil) utmapp else NULL
-    )
-    assign(cache_key, gg, envir = ggplot_cache)
-    gg
-  }
-
   # ==================================== funktion för att skapa EN karta ========================================
 
   skapa_karta <- function(karta_kommunkod, skickad_pendlingstyp) {
@@ -439,7 +364,7 @@ karta_pendling_scb <- function(
       return(retur_varde)
     }
 
-    filnamn_bas <- paste0(tolower(skickad_pendlingstyp), "_pendling_", kommunnamn, "_ar", unique(giskarta_vald_kommun$år))
+    filnamn_bas <- paste0("pendlingsfloden_", tolower(skickad_pendlingstyp), "_", kommunnamn, "_ar", unique(giskarta_vald_kommun$år))
 
     if (skriv_gpkg_fil) {
       linjefarg_hex <- apply(grDevices::col2rgb(farg_pos_neg_tal(giskarta_vald_kommun$pendlare)), 2,
@@ -560,19 +485,14 @@ karta_pendling_scb <- function(
       rddiagram::skriv_leaflet_till_fil(leaflet_map, utmapp, filnamn_bas, karta_filformat = leaflet_filformat)
     }
 
-    list(ggplot = bygg_nettopendling_ggplot(lanskod_vald), leaflet = leaflet_map)
+    stats::setNames(list(leaflet_map), filnamn_bas)
   } # slut skapa_karta()
 
   # ==================================== bygg alla kombinationer ========================================
 
   kombinationer <- expand.grid(kommun = vald_kommun_kod, typ = vald_pendlingstyp, stringsAsFactors = FALSE)
 
-  resultat_lista <- purrr::map2(kombinationer$kommun, kombinationer$typ, skapa_karta)
-  names(resultat_lista) <- paste0(
-    rdverktyg::hamtaregion_kod_namn(kombinationer$kommun)$region, "_", kombinationer$typ
-  )
+  resultat_lista <- purrr::list_flatten(purrr::map2(kombinationer$kommun, kombinationer$typ, skapa_karta))
 
-  if (returnera_figur) {
-    if (length(resultat_lista) == 1) resultat_lista[[1]] else resultat_lista
-  }
+  if (returnera_figur) invisible(resultat_lista)
 }

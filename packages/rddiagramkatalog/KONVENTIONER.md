@@ -12,8 +12,18 @@ migrerade.
 
 ## Funktionsnamn
 
-- `diag_*()` för diagram (returnerar `ggplot`-objekt), `karta_*()` för
-  kartor (returnerar både `ggplot` och `leaflet`, se nedan).
+- Prefixet anger **vilken sorts output** funktionen ger, så att man ser det på namnet:
+
+  | Prefix | Output | Filer |
+  |---|---|---|
+  | `diag_` | ggplot-diagram | png/svg |
+  | `karta_gg_` | statisk karta (ggplot) | png/svg |
+  | `karta_lf_` | interaktiv karta (leaflet) | html (eller png via webshot2) |
+
+  Samma karta i båda formaten är två funktioner med samma namn efter
+  prefixet, t.ex. `karta_gg_befolkningsprognos_kommun_scb()` och
+  `karta_lf_befolkningsprognos_kommun_scb()`. En funktion ger aldrig både
+  ggplot och leaflet.
 - Helt gemener, understreck mellan ord.
 - Avslutas med källsuffix där det är relevant och inte redan uppenbart av
   resten av namnet: `_scb`, `_fohm`, `_kolada`, `_forsakringskassan`,
@@ -51,7 +61,8 @@ kräver en kommun använder `"2080"` (Falun). Det är också vad
 | `visa_logga_i_diagram`, `logga_sokvag` | Styr Region Dalarna-loggan på diagrammet. |
 | `filformat` | Bildformat, t.ex. `"png"` (standard) eller `"svg"`. |
 
-`karta_*()`-funktioner använder samma mönster, plus:
+`karta_gg_*()` har samma parametrar som `diag_*()` (`skriv_diagramfil`
+m.fl.). `karta_lf_*()` har i stället:
 
 | Parameter | Betydelse |
 |---|---|
@@ -60,28 +71,25 @@ kräver en kommun använder `"2080"` (Falun). Det är också vad
 
 ## Returvärde
 
-- `diag_*()` returnerar **alltid en namngiven lista av `ggplot`-objekt**,
-  även när det bara blir ett diagram. Namnen ska motsvara det filnamn
-  (utan ändelse) diagrammet skulle sparas som - `sok_diagram()`,
-  `diagramkatalog_utforska()` och `data-raw/skapa_exempeldiagram.R`
-  förlitar sig alla på att första elementet (`[[1]]`) går att skicka
-  rakt in i `ggplot2::ggsave()`/`shiny::renderPlot()`.
-- `karta_*()` returnerar i stället `list(ggplot = <ggplot-objekt>,
-  leaflet = <leaflet-objekt>)` - en statisk och en interaktiv version av
-  samma karta. Katalogens delade infrastruktur (sökindex, exempelbilder,
-  gadgetens förhandsvisning) plockar automatiskt ut `$ggplot`-elementet
-  när det finns, så nya `karta_*()`-funktioner fungerar utan vidare
-  ändringar där - bara följ samma returstruktur.
-- En `karta_*()`-funktion som kan producera FLERA kartor i ett och samma
-  anrop (t.ex. en per kommun/typ, likt originalskriptens
-  batch-/loop-mönster) returnerar i stället en namngiven lista där varje
-  element SJÄLVT är `list(ggplot = ..., leaflet = ...)` - namnen ska
-  motsvara filnamnet (utan ändelse) respektive karta skulle sparas som,
-  precis som för `diag_*()`. Katalogens delade infrastruktur känner av
-  det här automatiskt (kollar om `$ggplot` finns direkt på toppnivån
-  först, annars på det första elementet) - ingen ytterligare ändring
-  behövs där så länge strukturen följs. Första exemplet:
-  `karta_pendling_scb()` (flera kommuner/pendlingstyper i ett anrop).
+- `diag_*()` och `karta_gg_*()` returnerar **alltid en namngiven lista av
+  `ggplot`-objekt**, även när det bara blir ett diagram. `karta_lf_*()`
+  returnerar på samma sätt en namngiven lista av `leaflet`-objekt. Namnen
+  ska motsvara det filnamn (utan ändelse) som objektet skulle sparas som -
+  `sok_diagram()`, `diagramkatalog_utforska()` och
+  `data-raw/skapa_exempeldiagram.R` förlitar sig alla på att första
+  elementet (`[[1]]`) är det som visas.
+- `karta_*()` returnerar listan **osynligt** (`invisible()`), så att man
+  inte får en lång utskrift av alla kartor i konsolen när man kör en
+  funktion utan att tilldela den. De filer som skrivs meddelas med
+  "Karta skapad: <sökväg>".
+- En karta som kan göras i flera varianter i samma anrop (en per kommun,
+  pendlingstyp osv.) ger ett element per variant, t.ex.
+  `karta_lf_pendlingsfloden_scb()`.
+- Katalogens exempelbilder (`man/figures/`) består för `karta_lf_*()` av en
+  png (ögonblicksbild) och en html-fil. html-filerna delar ett gemensamt
+  `lib/` med kartbiblioteket (`skriv_leaflet_till_fil(delat_bibliotek =
+  TRUE)`), så de blir små. Gadgeten visar bilden och länkar till den
+  interaktiva kartan.
 
 ## Paketberoenden - inga lösa skript
 
