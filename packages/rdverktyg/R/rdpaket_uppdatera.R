@@ -48,11 +48,7 @@ rdpaket_uppdatera_alla <- function(paket = NULL,
         }
         paket <- c(paket, saknade_paket)
       } else {
-        message(
-          "Följande rd*-paket i '", repo, "' är inte installerade: ",
-          paste(saknade_paket, collapse = ", "), ".\n",
-          "Installera dem med rdpaket_uppdatera_alla(installera_saknade_paket = TRUE)."
-        )
+        message(intern_rdpaket_saknade_meddelande(saknade_paket, repo))
       }
     }
   }
@@ -102,9 +98,24 @@ rdpaket_uppdatera_alla <- function(paket = NULL,
 
 # Alla rd*-paket i monorepot, i den beroendeordning install_all.R använder.
 rdpaket_alla_paketnamn <- c(
-  "rdverktyg", "rddiagram", "rddiagramkatalog", "rdpostgres", "rdgis", "rdgtfs",
-  "rdgeorouting", "rdshinyappar", "rddeploy", "rdadminportal", "rd"
+  "rdverktyg", "rdhamtadata", "rddiagram", "rddiagramkatalog", "rdpostgres", "rdgis",
+  "rdgtfs", "rdgeorouting", "rdshinyappar", "rddeploy", "rdppt", "rdadminportal", "rd"
 )
+
+# Meddelandet om paket som finns i monorepot men inte är installerade.
+#' @noRd
+intern_rdpaket_saknade_meddelande <- function(saknade_paket, repo) {
+  if (length(saknade_paket) > 1) {
+    inledning <- paste0("Paketen ", list_komma_och(saknade_paket), " finns i ", repo,
+                        " men är inte installerade ännu.")
+    slut <- "för att installera även dessa."
+  } else {
+    inledning <- paste0("Paketet ", saknade_paket, " finns i ", repo,
+                        " men är inte installerat ännu.")
+    slut <- "för att installera även det."
+  }
+  paste0(inledning, "\nKör rdpaket_uppdatera_alla(installera_saknade_paket = TRUE) ", slut)
+}
 
 #' @noRd
 intern_rdpaket_status_df <- function(paket = character(0),

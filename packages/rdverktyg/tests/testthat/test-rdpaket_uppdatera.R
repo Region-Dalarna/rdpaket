@@ -70,3 +70,18 @@ test_that("rdpaket_uppdatera_alla installerar om via remotes när nyare version 
   expect_equal(installerat_med$subdir, "packages/rdverktyg")
   expect_equal(installerat_med$ref, "main")
 })
+
+test_that("rdpaket_alla_paketnamn innehåller bland annat rdppt och rdhamtadata", {
+  expect_true(all(c("rdppt", "rdhamtadata", "rddiagram") %in% rdpaket_alla_paketnamn))
+  expect_false(anyDuplicated(rdpaket_alla_paketnamn) > 0)
+})
+
+test_that("meddelandet om saknade paket listar dem och säger hur de installeras", {
+  flera <- intern_rdpaket_saknade_meddelande(c("rdppt", "rdgis", "rddiagram"), "Region-Dalarna/rdpaket")
+  expect_match(flera, "Paketen rdppt, rdgis och rddiagram finns i Region-Dalarna/rdpaket men är inte installerade ännu.", fixed = TRUE)
+  expect_match(flera, "rdpaket_uppdatera_alla(installera_saknade_paket = TRUE)", fixed = TRUE)
+
+  ett <- intern_rdpaket_saknade_meddelande("rdppt", "Region-Dalarna/rdpaket")
+  expect_match(ett, "Paketet rdppt finns i Region-Dalarna/rdpaket men är inte installerat ännu.", fixed = TRUE)
+  expect_match(ett, "även det.", fixed = TRUE)
+})

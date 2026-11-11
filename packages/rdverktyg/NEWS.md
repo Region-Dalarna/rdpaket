@@ -1,3 +1,14 @@
+# rdverktyg 0.0.0.9009
+
+* `rdpaket_uppdatera_alla()` kollar nu också `rdppt` och `rdhamtadata`,
+  som saknades i listan över paket i monorepot, så de hålls uppdaterade
+  tillsammans med de andra.
+* Meddelandet om paket som finns i monorepot men inte är installerade är
+  tydligare: "Paketen rdppt, rdgis och rddiagram finns i
+  Region-Dalarna/rdpaket men är inte installerade ännu. Kör
+  rdpaket_uppdatera_alla(installera_saknade_paket = TRUE) för att installera
+  även dessa."
+
 # rdverktyg 0.0.0.9008
 
 * `funktion_upprepa_forsok_om_fel()` skriver nu alltid ut det sista
