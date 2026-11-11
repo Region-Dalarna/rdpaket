@@ -1,3 +1,10 @@
+# rddiagram 0.0.0.9031
+
+* `lagg_till_bakgrundskarta()`: `etiketter` kan nu också vara `"orter"` (bara
+  namn på orter, städer, län och länder - inga vägnamn, vattennamn eller
+  flygplatser). Ny parameter `etikett_opacitet` (0-1) tonar ner texten utan att
+  ta bort den, t.ex. `etiketter = "orter", etikett_opacitet = 0.5`.
+
 # rddiagram 0.0.0.9030
 
 * `skriv_leaflet_till_fil(karta_filformat = "png")` letar nu efter en

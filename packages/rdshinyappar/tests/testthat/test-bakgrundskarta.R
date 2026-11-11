@@ -12,7 +12,8 @@ test_that("lagg_till_bakgrundskarta() bäddar in MapLibre och lägger till bakgr
 
   js <- karta$jsHooks$render[[1]]
   expect_equal(js$data$stil_url, "https://tiles.openfreemap.org/styles/positron")
-  expect_true(js$data$etiketter)
+  expect_equal(js$data$etiketter, "alla")
+  expect_equal(js$data$etikett_opacitet, 1)
   expect_match(js$data$attribution, "OpenStreetMap")
 })
 
@@ -21,7 +22,7 @@ test_that("stil och etiketter styr vad som läggs till, och felaktiga värden st
   karta <- lagg_till_bakgrundskarta(leaflet::leaflet(), stil = "bright", etiketter = FALSE)
   js <- karta$jsHooks$render[[1]]
   expect_equal(js$data$stil_url, "https://tiles.openfreemap.org/styles/bright")
-  expect_false(js$data$etiketter)
+  expect_equal(js$data$etiketter, "inga")
 
   expect_equal(lagg_till_bakgrundskarta(leaflet::leaflet(), stil = "https://exempel.se/stil.json")$jsHooks$render[[1]]$data$stil_url,
                "https://exempel.se/stil.json")
@@ -42,4 +43,14 @@ test_that("kartan med bakgrund sparas som html med filerna inbäddade", {
   filer <- list.files(file.path(mapp, "karta_files"), recursive = TRUE)
   expect_true(all(c("maplibre-gl.js", "maplibre-gl.css", "leaflet-maplibre-gl.js") %in% basename(filer)))
   expect_false(any(grepl("unpkg|cdn", readLines(file.path(mapp, "karta.html"), warn = FALSE))))
+})
+
+test_that("etiketter = 'orter' och etikett_opacitet styr textens utseende, felaktiga värden stoppas", {
+  skip_if_not_installed("leaflet")
+  js <- lagg_till_bakgrundskarta(leaflet::leaflet(), etiketter = "orter", etikett_opacitet = 0.5)$jsHooks$render[[1]]
+  expect_equal(js$data$etiketter, "orter")
+  expect_equal(js$data$etikett_opacitet, 0.5)
+
+  expect_error(lagg_till_bakgrundskarta(leaflet::leaflet(), etiketter = "alla"), "etiketter ska vara")
+  expect_error(lagg_till_bakgrundskarta(leaflet::leaflet(), etikett_opacitet = 2), "mellan 0 och 1")
 })

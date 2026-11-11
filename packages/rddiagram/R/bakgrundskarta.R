@@ -17,9 +17,13 @@
 #' @param stil Vilken stil bakgrunden ska ha: `"positron"` (standard, ljusgrå
 #'   och diskret), `"bright"` eller `"liberty"` (mer färg), eller en url
 #'   till en egen MapLibre-stil (en json-fil).
-#' @param etiketter `TRUE` (standard) för bakgrund med ortnamn, vägnummer och
-#'   liknande text. `FALSE` tar bort all text, för kartor där du lägger dina
-#'   egna etiketter ovanpå.
+#' @param etiketter Vilken text bakgrunden ska ha: `TRUE` (standard) = ortnamn,
+#'   vägnamn, vattennamn m.m., `"orter"` = bara namn på orter, städer, län och
+#'   länder (inga vägar, vatten eller flygplatser), `FALSE` = ingen text, för
+#'   kartor där du lägger dina egna etiketter ovanpå.
+#' @param etikett_opacitet Hur kraftig texten ska vara, mellan 0 (osynlig) och 1
+#'   (standard, som i originalstilen). Ett lägre värde, t.ex. `0.5`, ger en
+#'   diskretare text utan att ta bort den.
 #'
 #' @return Leaflet-objektet, med bakgrundskartan tillagd.
 #' @examples
@@ -30,15 +34,26 @@
 #'
 #' # utan text, för en karta med egna etiketter
 #' leaflet::leaflet() |> lagg_till_bakgrundskarta(etiketter = FALSE)
+#'
+#' # bara ortnamn, och dessutom tonade
+#' leaflet::leaflet() |> lagg_till_bakgrundskarta(etiketter = "orter", etikett_opacitet = 0.6)
 #' }
 #' @seealso [skriv_leaflet_till_fil()]
 #' @export
-lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE) {
+lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE, etikett_opacitet = 1) {
   if (!inherits(karta, "leaflet")) {
     stop("karta ska vara ett leaflet-objekt, t.ex. skapat med leaflet::leaflet().", call. = FALSE)
   }
   if (!is.character(stil) || length(stil) != 1 || is.na(stil)) {
     stop("stil ska vara \"positron\", \"bright\", \"liberty\" eller en url till en MapLibre-stil.", call. = FALSE)
+  }
+
+  if (!(isTRUE(etiketter) || isFALSE(etiketter) || identical(etiketter, "orter"))) {
+    stop("etiketter ska vara TRUE, FALSE eller \"orter\".", call. = FALSE)
+  }
+  if (!is.numeric(etikett_opacitet) || length(etikett_opacitet) != 1 || is.na(etikett_opacitet) ||
+      etikett_opacitet < 0 || etikett_opacitet > 1) {
+    stop("etikett_opacitet ska vara ett tal mellan 0 och 1.", call. = FALSE)
   }
 
   stil_url <- if (stil %in% c("positron", "bright", "liberty")) {
@@ -59,15 +74,28 @@ lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE)
                               script = "leaflet-maplibre-gl.js")
   ))
 
-  # Stilen hämtas som json så att etiketterna (lager av typen "symbol") kan tas bort innan den
-  # används. Misslyckas hämtningen (t.ex. utan internet) visas kartan utan bakgrund.
+  # Stilen hämtas som json så att etiketterna (lager av typen "symbol") kan tas bort eller tonas ner
+  # innan den används. Misslyckas hämtningen (t.ex. utan internet) visas kartan utan bakgrund.
   js <- "function(el, x, data) {
     var karta = this;
     fetch(data.stil_url)
       .then(function(svar) { return svar.json(); })
       .then(function(stil) {
-        if (!data.etiketter) {
+        if (data.etiketter === 'inga') {
           stil.layers = stil.layers.filter(function(lager) { return lager.type !== 'symbol'; });
+        } else if (data.etiketter === 'orter') {
+          stil.layers = stil.layers.filter(function(lager) {
+            return lager.type !== 'symbol' || lager['source-layer'] === 'place';
+          });
+        }
+        if (data.etikett_opacitet < 1) {
+          stil.layers.forEach(function(lager) {
+            if (lager.type === 'symbol') {
+              lager.paint = lager.paint || {};
+              lager.paint['text-opacity'] = data.etikett_opacitet;
+              lager.paint['icon-opacity'] = data.etikett_opacitet;
+            }
+          });
         }
         L.maplibreGL({style: stil, attribution: data.attribution}).addTo(karta);
       })
@@ -76,7 +104,8 @@ lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE)
 
   htmlwidgets::onRender(karta, js, data = list(
     stil_url = stil_url,
-    etiketter = isTRUE(etiketter),
+    etiketter = if (isFALSE(etiketter)) "inga" else if (identical(etiketter, "orter")) "orter" else "alla",
+    etikett_opacitet = etikett_opacitet,
     attribution = paste0(
       '<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> ',
       '&copy; <a href="https://www.openmaptiles.org/" target="_blank">OpenMapTiles</a> ',

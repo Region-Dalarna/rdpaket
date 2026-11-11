@@ -4,7 +4,12 @@
 \alias{lagg_till_bakgrundskarta}
 \title{Lägg till en bakgrundskarta i en leaflet-karta}
 \usage{
-lagg_till_bakgrundskarta(karta, stil = "positron", etiketter = TRUE)
+lagg_till_bakgrundskarta(
+  karta,
+  stil = "positron",
+  etiketter = TRUE,
+  etikett_opacitet = 1
+)
 }
 \arguments{
 \item{karta}{Ett leaflet-objekt, t.ex. \code{leaflet::leaflet()}.}
@@ -13,9 +18,14 @@ lagg_till_bakgrundskarta(karta, stil = "positron", etiketter = TRUE)
 och diskret), \code{"bright"} eller \code{"liberty"} (mer färg), eller en url
 till en egen MapLibre-stil (en json-fil).}
 
-\item{etiketter}{\code{TRUE} (standard) för bakgrund med ortnamn, vägnummer och
-liknande text. \code{FALSE} tar bort all text, för kartor där du lägger dina
-egna etiketter ovanpå.}
+\item{etiketter}{Vilken text bakgrunden ska ha: \code{TRUE} (standard) = ortnamn,
+vägnamn, vattennamn m.m., \code{"orter"} = bara namn på orter, städer, län och
+länder (inga vägar, vatten eller flygplatser), \code{FALSE} = ingen text, för
+kartor där du lägger dina egna etiketter ovanpå.}
+
+\item{etikett_opacitet}{Hur kraftig texten ska vara, mellan 0 (osynlig) och 1
+(standard, som i originalstilen). Ett lägre värde, t.ex. \code{0.5}, ger en
+diskretare text utan att ta bort den.}
 }
 \value{
 Leaflet-objektet, med bakgrundskartan tillagd.
@@ -43,6 +53,9 @@ leaflet::leaflet() |>
 
 # utan text, för en karta med egna etiketter
 leaflet::leaflet() |> lagg_till_bakgrundskarta(etiketter = FALSE)
+
+# bara ortnamn, och dessutom tonade
+leaflet::leaflet() |> lagg_till_bakgrundskarta(etiketter = "orter", etikett_opacitet = 0.6)
 }
 }
 \seealso{

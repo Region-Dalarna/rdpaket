@@ -1,3 +1,12 @@
+# rdshinyappar 0.0.0.9005
+
+* `lagg_till_bakgrundskarta()`: `etiketter = "orter"` ger bara namn på orter,
+  städer, län och länder (inga vägnamn, vattennamn eller flygplatser), och den
+  nya parametern `etikett_opacitet` (0-1) tonar ner texten utan att ta bort
+  den, t.ex. `lagg_till_bakgrundskarta(etiketter = "orter", etikett_opacitet = 0.5)`.
+
+---
+
 # rdshinyappar 0.0.0.9004
 
 * Ny funktion `lagg_till_bakgrundskarta()`: en ljus, neutral bakgrundskarta
