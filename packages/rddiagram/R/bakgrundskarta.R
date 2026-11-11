@@ -24,6 +24,10 @@
 #' @param etikett_opacitet Hur kraftig texten ska vara, mellan 0 (osynlig) och 1
 #'   (standard, som i originalstilen). Ett lägre värde, t.ex. `0.5`, ger en
 #'   diskretare text utan att ta bort den.
+#' @param sprak Språk för namnen på kartan, som språkkod: `"sv"` (standard,
+#'   svenska), `"en"`, `"de"` osv. Där det valda språket saknas används engelska
+#'   och därefter ortens eget namn. `NULL` behåller stilens originaltext
+#'   (engelska).
 #' @param landsnamn `TRUE` (standard) för att visa landsnamn (t.ex. "Sweden"),
 #'   `FALSE` för att dölja dem. Övrig text påverkas inte.
 #'
@@ -46,7 +50,7 @@
 #' @seealso [skriv_leaflet_till_fil()]
 #' @export
 lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE, etikett_opacitet = 1,
-                                     landsnamn = TRUE) {
+                                     landsnamn = TRUE, sprak = "sv") {
   if (!inherits(karta, "leaflet")) {
     stop("karta ska vara ett leaflet-objekt, t.ex. skapat med leaflet::leaflet().", call. = FALSE)
   }
@@ -62,6 +66,9 @@ lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE,
     stop("etikett_opacitet ska vara ett tal mellan 0 och 1.", call. = FALSE)
   }
 
+  if (!is.null(sprak) && !(is.character(sprak) && length(sprak) == 1 && grepl("^[a-z]{2,3}(-[A-Za-z]+)?$", sprak))) {
+    stop("sprak ska vara en språkkod som \"sv\" eller \"en\", eller NULL.", call. = FALSE)
+  }
   if (!(isTRUE(landsnamn) || isFALSE(landsnamn))) stop("landsnamn ska vara TRUE eller FALSE.", call. = FALSE)
 
   stil_url <- if (stil %in% c("positron", "bright", "liberty")) {
@@ -96,6 +103,25 @@ lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE,
             return lager.type !== 'symbol' || lager['source-layer'] === 'place';
           });
         }
+        if (data.sprak) {
+          // namnen väljs på valt språk först, sedan engelska och slutligen ortens eget namn
+          var byt = function(uttryck) {
+            if (Array.isArray(uttryck)) {
+              if (uttryck.length === 3 && uttryck[0] === 'coalesce' &&
+                  JSON.stringify(uttryck[1]) === '[\"get\",\"name_en\"]' &&
+                  JSON.stringify(uttryck[2]) === '[\"get\",\"name\"]') {
+                return ['coalesce', ['get', 'name:' + data.sprak], uttryck[1], uttryck[2]];
+              }
+              return uttryck.map(byt);
+            }
+            return uttryck;
+          };
+          stil.layers.forEach(function(lager) {
+            if (lager.type === 'symbol' && lager.layout && lager.layout['text-field']) {
+              lager.layout['text-field'] = byt(lager.layout['text-field']);
+            }
+          });
+        }
         if (!data.landsnamn) {
           stil.layers = stil.layers.filter(function(lager) { return !/^label_country/.test(lager.id); });
         }
@@ -118,6 +144,7 @@ lagg_till_bakgrundskarta <- function(karta, stil = "positron", etiketter = TRUE,
     etiketter = if (isFALSE(etiketter)) "inga" else if (identical(etiketter, "orter")) "orter" else "alla",
     etikett_opacitet = etikett_opacitet,
     landsnamn = landsnamn,
+    sprak = if (is.null(sprak)) FALSE else sprak,
     attribution = paste0(
       '<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> ',
       '&copy; <a href="https://www.openmaptiles.org/" target="_blank">OpenMapTiles</a> ',

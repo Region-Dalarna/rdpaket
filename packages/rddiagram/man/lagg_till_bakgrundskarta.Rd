@@ -9,7 +9,8 @@ lagg_till_bakgrundskarta(
   stil = "positron",
   etiketter = TRUE,
   etikett_opacitet = 1,
-  landsnamn = TRUE
+  landsnamn = TRUE,
+  sprak = "sv"
 )
 }
 \arguments{
@@ -30,6 +31,11 @@ diskretare text utan att ta bort den.}
 
 \item{landsnamn}{\code{TRUE} (standard) för att visa landsnamn (t.ex. "Sweden"),
 \code{FALSE} för att dölja dem. Övrig text påverkas inte.}
+
+\item{sprak}{Språk för namnen på kartan, som språkkod: \code{"sv"} (standard,
+svenska), \code{"en"}, \code{"de"} osv. Där det valda språket saknas används engelska
+och därefter ortens eget namn. \code{NULL} behåller stilens originaltext
+(engelska).}
 }
 \value{
 Leaflet-objektet, med bakgrundskartan tillagd.

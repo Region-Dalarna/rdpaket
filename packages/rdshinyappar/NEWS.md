@@ -1,3 +1,13 @@
+# rdshinyappar 0.0.0.9007
+
+* `lagg_till_bakgrundskarta()`: namnen på kartan visas nu på svenska som standard
+  (ny parameter `sprak = "sv"`), t.ex. "Sverige" och "Norge" i stället för
+  "Sweden" och "Norway". Där svenskt namn saknas används engelska och därefter
+  ortens eget namn. `sprak = "en"` ger engelska namn, `sprak = NULL` stilens
+  originaltext.
+
+---
+
 # rdshinyappar 0.0.0.9006
 
 * `lagg_till_bakgrundskarta()`: ny parameter `landsnamn`. Med `landsnamn = FALSE`

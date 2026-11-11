@@ -61,3 +61,11 @@ test_that("landsnamn = FALSE skickas vidare och felaktiga värden stoppas", {
   expect_false(lagg_till_bakgrundskarta(leaflet::leaflet(), landsnamn = FALSE)$jsHooks$render[[1]]$data$landsnamn)
   expect_error(lagg_till_bakgrundskarta(leaflet::leaflet(), landsnamn = "nej"), "landsnamn ska vara")
 })
+
+test_that("sprak styr namnens språk, med svenska som standard, och felaktiga värden stoppas", {
+  skip_if_not_installed("leaflet")
+  expect_equal(lagg_till_bakgrundskarta(leaflet::leaflet())$jsHooks$render[[1]]$data$sprak, "sv")
+  expect_equal(lagg_till_bakgrundskarta(leaflet::leaflet(), sprak = "en")$jsHooks$render[[1]]$data$sprak, "en")
+  expect_false(lagg_till_bakgrundskarta(leaflet::leaflet(), sprak = NULL)$jsHooks$render[[1]]$data$sprak)
+  expect_error(lagg_till_bakgrundskarta(leaflet::leaflet(), sprak = "svenska!"), "sprak ska vara")
+})

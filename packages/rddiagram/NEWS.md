@@ -1,3 +1,11 @@
+# rddiagram 0.0.0.9033
+
+* `lagg_till_bakgrundskarta()`: namnen på kartan visas nu på svenska som standard
+  (ny parameter `sprak = "sv"`), t.ex. "Sverige" och "Norge" i stället för
+  "Sweden" och "Norway". Där svenskt namn saknas används engelska och därefter
+  ortens eget namn. `sprak = "en"` ger engelska namn, `sprak = NULL` stilens
+  originaltext. Gäller även kartorna som skapas av rddiagramkatalog.
+
 # rddiagram 0.0.0.9032
 
 * `lagg_till_bakgrundskarta()`: ny parameter `landsnamn`. Med `landsnamn = FALSE`
