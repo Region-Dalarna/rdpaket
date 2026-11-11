@@ -32,6 +32,11 @@ library(rddiagramkatalog)
 utmapp <- file.path("packages", "rddiagramkatalog", "man", "figures")
 if (!dir.exists(utmapp)) dir.create(utmapp, recursive = TRUE)
 
+if (any(grepl("^karta_lf_", getNamespaceExports("rddiagramkatalog"))) && !requireNamespace("webshot2", quietly = TRUE)) {
+  cat("OBS: paketet webshot2 (och Chrome/Chromium) saknas - exempelbilderna (png) för karta_lf_*() kan inte skapas.\n",
+      "Installera med install.packages(\"webshot2\").\n\n")
+}
+
 funktioner <- sort(grep("^(diag_|karta_gg_|karta_lf_)", getNamespaceExports("rddiagramkatalog"), value = TRUE))
 
 resultat <- lapply(funktioner, function(fn) {
@@ -63,10 +68,11 @@ resultat <- lapply(funktioner, function(fn) {
       rddiagram::skriv_leaflet_till_fil(diagram_lista[[1]], utmapp, fn, karta_filformat = "png",
                                          karta_bredd = 770, karta_hojd = 495)
     } else {
+      # kartor är oftast högre än breda och får därför en högre bild än diagrammen
       ggplot2::ggsave(
         filename = bildfil,
         plot = diagram_lista[[1]],
-        width = 7, height = 4.5, dpi = 110
+        width = 7, height = if (grepl("^karta_gg_", fn)) 7 else 4.5, dpi = 110
       )
     }
     "OK"
@@ -88,10 +94,12 @@ print(unlist(resultat))
 # behöver installera om paketet.
 installerad_figurmapp <- system.file("help", "figures", package = "rddiagramkatalog")
 if (nzchar(installerad_figurmapp)) {
+  # recursive = TRUE tar med mappen lib, som de interaktiva exempelkartorna (html) delar
   kopierade <- file.copy(
     list.files(utmapp, full.names = TRUE),
     installerad_figurmapp,
-    overwrite = TRUE
+    overwrite = TRUE,
+    recursive = TRUE
   )
   cat("\nKopierade", sum(kopierade), "bild(er) till installerat paket (", installerad_figurmapp, ") - diagramkatalog_utforska() visar nu aktuella bilder.\n")
 } else {
