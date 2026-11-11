@@ -81,7 +81,8 @@ landningssida_synka_app_lista <- function(target = c("publik", "intern"),
 #' @param visa_borttagna Ta även med `status = 'borttagen'`.
 #'
 #' @return En `data.frame` med `namn`, `typ`, `status`, `senast_sedd`,
-#'   `exkluderad`, `ikon`, `beskrivning`.
+#'   `exkluderad`, `ikon`, `beskrivning`, `ordning` (handpåförd ordning, `NA` om
+#'   ingen satt), sorterad som på landningssidan (appar, webbrapporter, pdf).
 #' @export
 landningssida_app_oversikt <- function(target = c("publik", "intern"),
                                        visa_borttagna = FALSE) {
@@ -89,15 +90,26 @@ landningssida_app_oversikt <- function(target = c("publik", "intern"),
   con <- intern_con_las(); on.exit(DBI::dbDisconnect(con), add = TRUE)
 
   status_villkor <- if (visa_borttagna) "" else "AND a.status = 'aktiv'"
+
+  # Handpåförd ordning (adminshiny.landningssida_ordning) - tabellen behöver inte finnas ännu.
+  har_ordning <- intern_ordning_tabell_finns(con)
+  ordning_kol  <- if (har_ordning) "o.ordning" else "NULL::integer AS ordning"
+  ordning_join <- if (har_ordning) "LEFT JOIN adminshiny.landningssida_ordning o ON o.server = a.server AND o.namn = a.namn" else ""
+  ordning_sort <- if (har_ordning) "o.ordning NULLS LAST, " else ""
+
+  # Samma ordning som på landningssidan: appar, webbrapporter, pdf-rapporter; inom en grupp handpåförd
+  # ordning först och därefter alfabetiskt.
   DBI::dbGetQuery(con, sprintf("
     SELECT a.namn, a.typ, a.status, a.senast_sedd,
-           (e.namn IS NOT NULL) AS exkluderad, i.ikon, b.beskrivning
+           (e.namn IS NOT NULL) AS exkluderad, i.ikon, b.beskrivning, %s
     FROM adminshiny.landningssida_app a
     LEFT JOIN adminshiny.landningssida_exkludering e  ON e.server = a.server AND e.namn = a.namn
     LEFT JOIN adminshiny.landningssida_ikon i         ON i.server = a.server AND i.namn = a.namn
     LEFT JOIN adminshiny.landningssida_beskrivning b  ON b.server = a.server AND b.namn = a.namn
+    %s
     WHERE a.server = $1 %s
-    ORDER BY a.typ, a.namn", status_villkor), params = list(target))
+    ORDER BY CASE a.typ WHEN 'app' THEN 1 WHEN 'rapport' THEN 2 ELSE 3 END, %sa.namn",
+    ordning_kol, ordning_join, status_villkor, ordning_sort), params = list(target))
 }
 
 #' Begär en synk av app-listan nu

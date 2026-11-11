@@ -1,3 +1,19 @@
+# rdadminportal 0.0.0.9006
+
+## Ordningen på landningssidan
+
+* Nya funktioner `landningssida_ordning_satt()`, `landningssida_ordning_lista()`
+  och `landningssida_ordning_aterstall()` för en handpåförd ordning på appar och
+  webbrapporter på landningssidan. Ordningen sparas i den nya tabellen
+  `adminshiny.landningssida_ordning`. Poster utan ordning kommer efter de
+  ordnade, alfabetiskt. PDF-rapporter sorteras på publiceringsdatum.
+* `landningssida_app_oversikt()` har en ny kolumn `ordning` och sorteras som
+  landningssidan: appar, webbrapporter, pdf-rapporter, och inom en grupp
+  handpåförd ordning först och därefter alfabetiskt. Fungerar även om tabellen
+  inte skapats ännu (då är `ordning` `NA`).
+* En ändring på den publika servern notifierar lyssnaren (`pg_notify` på kanalen
+  `adminportal_publik`), så att landningssidan regenereras inom några sekunder.
+
 # rdadminportal 0.0.0.9005
 
 * Funktionerna som ändrar landningssidans poster (`landningssida_exkludera()`,
