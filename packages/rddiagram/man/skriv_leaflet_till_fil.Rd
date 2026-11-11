@@ -9,6 +9,7 @@ skriv_leaflet_till_fil(
   output_mapp,
   filnamn_karta,
   karta_filformat = "html",
+  delat_bibliotek = FALSE,
   karta_bredd = 1000,
   karta_hojd = 800,
   karta_fordrojning = 4
@@ -27,13 +28,20 @@ med en medföljande \verb{_files}-mapp. \code{"png"} - en statisk ögonblicksbil
 paketet webshot2 (kräver det paketet samt en lokalt installerad
 Chrome/Chromium).}
 
+\item{delat_bibliotek}{\code{FALSE} (standard). \code{TRUE} skriver html-filen utan
+inbäddade bibliotek: kartans JavaScript läggs i en mapp \code{lib} bredvid
+filen och delas av alla kartor i samma mapp, så att varje fil blir
+liten. Bra för många kartor i samma mapp, till exempel exempelkartor i
+ett repo. Filen måste då ligga kvar bredvid \code{lib}. Gäller bara
+\code{"html"}.}
+
 \item{karta_bredd, karta_hojd}{Bildmått i pixlar. Gäller bara \code{"png"}.}
 
 \item{karta_fordrojning}{Antal sekunder att vänta innan bilden tas, så att
 bakgrundskartan hinner ritas. Gäller bara \code{"png"}.}
 }
 \value{
-Inget - skriver filen.
+Osynligt: filens sökväg. Sökvägen skrivs också ut som ett meddelande.
 }
 \description{
 Motsvarigheten till \code{\link[=skriv_till_diagramfil]{skriv_till_diagramfil()}} för leaflet-/htmlwidget-objekt

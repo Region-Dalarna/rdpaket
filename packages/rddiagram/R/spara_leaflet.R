@@ -11,14 +11,21 @@
 #'   med en medföljande `_files`-mapp. `"png"` - en statisk ögonblicksbild via
 #'   paketet webshot2 (kräver det paketet samt en lokalt installerad
 #'   Chrome/Chromium).
+#' @param delat_bibliotek `FALSE` (standard). `TRUE` skriver html-filen utan
+#'   inbäddade bibliotek: kartans JavaScript läggs i en mapp `lib` bredvid
+#'   filen och delas av alla kartor i samma mapp, så att varje fil blir
+#'   liten. Bra för många kartor i samma mapp, till exempel exempelkartor i
+#'   ett repo. Filen måste då ligga kvar bredvid `lib`. Gäller bara
+#'   `"html"`.
 #' @param karta_bredd,karta_hojd Bildmått i pixlar. Gäller bara `"png"`.
 #' @param karta_fordrojning Antal sekunder att vänta innan bilden tas, så att
 #'   bakgrundskartan hinner ritas. Gäller bara `"png"`.
 #'
-#' @return Inget - skriver filen.
+#' @return Osynligt: filens sökväg. Sökvägen skrivs också ut som ett meddelande.
 #' @export
 skriv_leaflet_till_fil <- function(leaflet_objekt, output_mapp, filnamn_karta,
                                     karta_filformat = "html",
+                                    delat_bibliotek = FALSE,
                                     karta_bredd = 1000, karta_hojd = 800,
                                     karta_fordrojning = 4) {
 
@@ -38,12 +45,14 @@ skriv_leaflet_till_fil <- function(leaflet_objekt, output_mapp, filnamn_karta,
     # selfcontained = TRUE (en portabel enfilsversion, lätt att dela/maila) kräver pandoc. Om det
     # saknas sparas i stället en vanlig html-fil med en medföljande "_files"-mapp - fungerar precis
     # lika bra lokalt/på en webbserver, bara inte lika portabel - i stället för att krascha.
-    sparad_portabel <- tryCatch({
+    sparad_portabel <- !delat_bibliotek && tryCatch({
       htmlwidgets::saveWidget(leaflet_objekt, fullpath, selfcontained = TRUE)
       TRUE
     }, error = function(e) FALSE)
 
-    if (!sparad_portabel) {
+    if (delat_bibliotek) {
+      htmlwidgets::saveWidget(leaflet_objekt, fullpath, selfcontained = FALSE, libdir = "lib")
+    } else if (!sparad_portabel) {
       htmlwidgets::saveWidget(leaflet_objekt, fullpath, selfcontained = FALSE)
       message(
         "Pandoc hittades inte - sparade en icke-självständig html-fil (med en medföljande ",
@@ -80,5 +89,6 @@ skriv_leaflet_till_fil <- function(leaflet_objekt, output_mapp, filnamn_karta,
     stop("Okänt kartfilformat: ", format, " (stöds: \"html\", \"png\")", call. = FALSE)
   }
 
-  invisible(NULL)
+  message("Karta skapad: ", fullpath)
+  invisible(fullpath)
 }

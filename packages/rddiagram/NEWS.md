@@ -1,3 +1,12 @@
+# rddiagram 0.0.0.9024
+
+* `skriv_leaflet_till_fil()` skriver nu ett meddelande med filens sökväg
+  ("Karta skapad: ..."), som `skapa_koropletkarta_ggplot()` redan gjorde,
+  och returnerar sökvägen osynligt.
+* Ny parameter `delat_bibliotek`. Med `TRUE` läggs kartans JavaScript i en
+  gemensam mapp `lib` bredvid html-filerna i stället för att bäddas in i
+  varje fil, så att många kartor i samma mapp blir små filer.
+
 # rddiagram 0.0.0.9023
 
 ## Ny funktion: `lagg_till_bakgrundskarta()`
