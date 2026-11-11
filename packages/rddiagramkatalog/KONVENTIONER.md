@@ -84,8 +84,8 @@ på en egen färg i funktionen: lägg i så fall en ny namngiven färgskala i
   standardvärde i funktionens parameterlista.
 - Kartor som visar både minskning och ökning kring noll använder
   `diagramfarger("rd_karta_rod_gron")` (profilens röda och gröna med vitt
-  vid noll). Klassgränserna ska då vara symmetriska kring noll med ett vitt
-  mittenintervall, se `intern_nollcentrerade_klassgranser()`. Röd och grön
+  vid noll). Klassgränserna ska då vara symmetriska kring noll med ett mycket smalt
+  vitt mittenintervall ("i princip oförändrat"), se `intern_nollcentrerade_klassgranser()`. Röd och grön
   kan vara svåra att skilja åt vid färgblindhet; profilens färger skiljer sig
   i ljushet, så mörkt och ljust går fortfarande att läsa. Vill man vara
   helt säker kan man byta till en röd-blå skala.

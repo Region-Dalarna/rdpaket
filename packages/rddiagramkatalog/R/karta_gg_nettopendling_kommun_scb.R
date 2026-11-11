@@ -3,8 +3,10 @@
 #' Koropletkarta (ggplot) över nettopendling per kommun i ett eller flera län:
 #' inpendlare minus utpendlare. Kommuner med fler som pendlar in än ut är gröna
 #' och kommuner med fler som pendlar ut än in är röda, med vitt kring noll.
-#' Klassgränserna är symmetriska kring noll, med ett vitt mittenintervall
-#' (t.ex. -500 till 500), och anpassas efter hur stor nettopendlingen är.
+#' Klassgränserna är symmetriska kring noll, med ett mycket smalt vitt
+#' mittenintervall (cirka 1 % av största värdet, t.ex. -50 till 50) för
+#' kommuner där pendlingen i princip är i balans, och anpassas efter hur stor
+#' nettopendlingen är.
 #'
 #' Pendlingsdata finns för åren 1993 och framåt (se
 #' [rdhamtadata::hamta_pendling_rams_bas_scb()]), men kartan visar alltid

@@ -1,16 +1,25 @@
 # Klassgränser för värden som kan vara både negativa och positiva, t.ex. nettopendling: symmetriska
-# kring noll, med ett mittenintervall som sträcker sig lika långt åt båda hållen (-s/2 till s/2) så
-# att "ungefär noll" blir en egen, vit klass. Stegbredden s är ett "snyggt" tal (1, 2, 5 gånger
-# en tiopotens) som ger ungefär antal_per_sida klasser på varje sida om mittenintervallet.
+# kring noll, med ett mycket smalt mittenintervall (cirka 1 % av största värdet, avrundat till ett
+# snyggt tal) som är en egen, vit klass för "i princip oförändrat". Utanför det följer klasser med
+# jämn stegbredd s (1, 2 eller 5 gånger en tiopotens), så få och breda som krävs för att inte få fler
+# än 11 klasser totalt. Första klassen utanför mitten går alltså från mittenintervallets
+# kant till s.
 #' @noRd
-intern_nollcentrerade_klassgranser <- function(max_abs, antal_per_sida = 5) {
+intern_nollcentrerade_klassgranser <- function(max_abs, mitt_andel = 0.01) {
   if (!is.finite(max_abs) || max_abs <= 0) return(c(-1, 1))
-  ra <- max_abs / (antal_per_sida + 0.5)
-  tiopotens <- 10^floor(log10(ra))
-  steg <- c(1, 2, 5, 10, 20, 50) * tiopotens
-  # största steget som ger minst ungefär antal_per_sida klasser per sida, men aldrig fler än 11 klasser
-  s <- max(steg[steg <= ra * 1.25])
-  while (ceiling((max_abs - s / 2) / s) * 2 + 1 > 11) s <- steg[which(steg > s)[1]]
-  k <- ceiling((max_abs - s / 2) / s)
-  seq(-(k + 0.5) * s, (k + 0.5) * s, by = s)
+  # största "snygga" tal (1, 2 eller 5 gånger en tiopotens) som är högst x
+  snyggt <- function(x) {
+    steg <- c(1, 2, 5, 10) * 10^floor(log10(x))
+    max(steg[steg <= x])
+  }
+  mitt <- snyggt(max_abs * mitt_andel)
+
+  # minsta snygga stegbredd som ger högst 11 klasser totalt
+  potens <- floor(log10(max_abs))
+  kandidater <- sort(as.vector(outer(c(1, 2, 5), 10^((potens - 3):(potens + 1)))))
+  s <- kandidater[ceiling(max_abs / kandidater) * 2 + 1 <= 11][1]
+
+  k <- ceiling(max_abs / s)
+  positiva <- unique(c(mitt, seq(s, k * s, by = s)))
+  c(-rev(positiva), positiva)
 }
