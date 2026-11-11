@@ -6,7 +6,7 @@
 \alias{rdshinyappar-package}
 \title{rdshinyappar: Runtime-hjälpare för Region Dalarnas Shiny-appar}
 \description{
-Hjälpfunktioner som Region Dalarnas Shiny-appar använder i drift: databasuppkopplingar (läs/skriv), lösenordshantering via .Renviron, tabellistning i PostGIS, EWKB-till-sf-konvertering och gemensam shiny.telemetry-loggning. Utbrutet ur func_shinyappar.R i Region-Dalarna/funktioner.
+Hjälpfunktioner som Region Dalarnas Shiny-appar använder i drift: databasuppkopplingar (läs/skriv), lösenordshantering via .Renviron, tabellistning i PostGIS, EWKB-till-sf-konvertering, gemensam shiny.telemetry-loggning och en gratis bakgrundskarta för leaflet-kartor. Utbrutet ur func_shinyappar.R i Region-Dalarna/funktioner.
 }
 \seealso{
 Useful links:

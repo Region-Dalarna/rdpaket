@@ -1,3 +1,15 @@
+# rdshinyappar 0.0.0.9004
+
+* Ny funktion `lagg_till_bakgrundskarta()`: en ljus, neutral bakgrundskarta
+  (OpenFreeMap Positron, gratis, utan API-nyckel) för leaflet-kartor, att
+  använda i `renderLeaflet()` i stället för `addProviderTiles()`. MapLibre GL
+  JS som kartan behöver följer med paketet (`inst/leaflet-maplibre`), så
+  inget hämtas från något CDN. Samma funktion som i rddiagram, så att
+  apparna inte behöver rddiagram och dess beroenden. Paketet importerar nu
+  `htmltools` och `htmlwidgets` (följer redan med `leaflet`).
+
+---
+
 # rdshinyappar 0.0.0.9002
 
 * `df_till_sf()` fungerar nu med sf 1.1-3. Geometri som RPostgres levererar

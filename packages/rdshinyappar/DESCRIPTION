@@ -1,14 +1,14 @@
 Package: rdshinyappar
 Title: Runtime-hjälpare för Region Dalarnas Shiny-appar
-Version: 0.0.0.9003
+Version: 0.0.0.9004
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
   )
 Description: Hjälpfunktioner som Region Dalarnas Shiny-appar använder i drift:
     databasuppkopplingar (läs/skriv), lösenordshantering via .Renviron,
-    tabellistning i PostGIS, EWKB-till-sf-konvertering och gemensam
-    shiny.telemetry-loggning. Utbrutet ur func_shinyappar.R i
+    tabellistning i PostGIS, EWKB-till-sf-konvertering, gemensam
+    shiny.telemetry-loggning och en gratis bakgrundskarta för leaflet-kartor. Utbrutet ur func_shinyappar.R i
     Region-Dalarna/funktioner.
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -17,10 +17,13 @@ Depends:
     R (>= 4.5.0)
 Imports:
     DBI,
+    htmltools,
+    htmlwidgets,
     jsonlite,
     RPostgres,
     stats
 Suggests:
+    leaflet,
     sf,
     shiny.telemetry,
     testthat (>= 3.0.0),
