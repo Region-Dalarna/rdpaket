@@ -10,7 +10,9 @@
 #'   självständig enfilsversion om pandoc är installerat, annars en html-fil
 #'   med en medföljande `_files`-mapp. `"png"` - en statisk ögonblicksbild via
 #'   paketet webshot2 (kräver det paketet samt en lokalt installerad
-#'   Chrome/Chromium).
+#'   Chrome eller Microsoft Edge; Edge används automatiskt om ingen Chrome
+#'   hittas, annars kan du ange sökvägen med
+#'   `Sys.setenv(CHROMOTE_CHROME = "sökväg")`).
 #' @param delat_bibliotek `FALSE` (standard). `TRUE` skriver html-filen utan
 #'   inbäddade bibliotek: kartans JavaScript läggs i en mapp `lib` bredvid
 #'   filen och delas av alla kartor i samma mapp, så att varje fil blir
@@ -72,6 +74,8 @@ skriv_leaflet_till_fil <- function(leaflet_objekt, output_mapp, filnamn_karta,
 
     fullpath <- paste0(output_mapp, filnamn_bas, ".png")
 
+    intern_sakerstall_webblasare()
+
     # Widgeten sparas först som en vanlig (icke-portabel) temporär html-fil - bara webshot2 ska läsa
     # den lokalt, så pandoc/selfcontained behövs inte här.
     temp_html <- tempfile(fileext = ".html")
@@ -91,4 +95,43 @@ skriv_leaflet_till_fil <- function(leaflet_objekt, output_mapp, filnamn_karta,
 
   message("Karta skapad: ", fullpath)
   invisible(fullpath)
+}
+
+# webshot2 behöver en Chromium-baserad webbläsare. Hittar chromote ingen Chrome provas Microsoft Edge
+# (som är Chromium-baserad och finns på de flesta Windows-datorer) och sökvägen sätts då för sessionen via
+# CHROMOTE_CHROME. Finns ingen alls stoppas funktionen med ett meddelande om vad som behövs.
+#' @noRd
+intern_sakerstall_webblasare <- function() {
+  hittad <- intern_hitta_webblasare()
+  if (is.null(hittad)) {
+    stop("Hittar ingen webbl\u00e4sare att ta bilden med. En png av en leaflet-karta g\u00f6rs med Chrome eller ",
+         "Microsoft Edge (via paketet webshot2). Installera Chrome, eller ange s\u00f6kv\u00e4gen till en Chrome- eller ",
+         "Edge-fil, t.ex.:\n  Sys.setenv(CHROMOTE_CHROME = \"C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe\")",
+         call. = FALSE)
+  }
+  invisible(hittad)
+}
+
+#' @noRd
+intern_hitta_webblasare <- function() {
+  # sökväg angiven av användaren (CHROMOTE_CHROME) gäller först
+  angiven <- Sys.getenv("CHROMOTE_CHROME", "")
+  if (nzchar(angiven) && file.exists(angiven)) return(angiven)
+
+  chrome <- tryCatch(unname(chromote::find_chrome()), error = function(e) NULL)
+  if (length(chrome) == 1 && !is.na(chrome) && nzchar(chrome) && file.exists(chrome)) return(chrome)
+
+  edge <- c(
+    "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+    "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
+    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+    Sys.which("microsoft-edge")
+  )
+  edge <- edge[nzchar(edge) & file.exists(edge)]
+  if (length(edge) > 0) {
+    Sys.setenv(CHROMOTE_CHROME = edge[[1]])
+    message("Hittade ingen Chrome - anv\u00e4nder Microsoft Edge: ", edge[[1]])
+    return(edge[[1]])
+  }
+  NULL
 }

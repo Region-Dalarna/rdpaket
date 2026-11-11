@@ -1,3 +1,45 @@
+# rdshinyappar 0.0.0.9007
+
+* Nya standardvärden för `lagg_till_bakgrundskarta()`: `landsnamn = FALSE` (landsnamn
+  som "Sverige" döljs) och `etikett_opacitet = 0.5` (diskret text). Ange
+  `landsnamn = TRUE, etikett_opacitet = 1` för den tidigare texten.
+
+* `lagg_till_bakgrundskarta()`: namnen på kartan visas nu på svenska som standard
+  (ny parameter `sprak = "sv"`), t.ex. "Sverige" och "Norge" i stället för
+  "Sweden" och "Norway". Där svenskt namn saknas används engelska och därefter
+  ortens eget namn. `sprak = "en"` ger engelska namn, `sprak = NULL` stilens
+  originaltext.
+
+---
+
+# rdshinyappar 0.0.0.9006
+
+* `lagg_till_bakgrundskarta()`: ny parameter `landsnamn`. Med `landsnamn = FALSE`
+  döljs landsnamn (t.ex. "Sweden") medan övrig text finns kvar.
+
+---
+
+# rdshinyappar 0.0.0.9005
+
+* `lagg_till_bakgrundskarta()`: `etiketter = "orter"` ger bara namn på orter,
+  städer, län och länder (inga vägnamn, vattennamn eller flygplatser), och den
+  nya parametern `etikett_opacitet` (0-1) tonar ner texten utan att ta bort
+  den, t.ex. `lagg_till_bakgrundskarta(etiketter = "orter", etikett_opacitet = 0.5)`.
+
+---
+
+# rdshinyappar 0.0.0.9004
+
+* Ny funktion `lagg_till_bakgrundskarta()`: en ljus, neutral bakgrundskarta
+  (OpenFreeMap Positron, gratis, utan API-nyckel) för leaflet-kartor, att
+  använda i `renderLeaflet()` i stället för `addProviderTiles()`. MapLibre GL
+  JS som kartan behöver följer med paketet (`inst/leaflet-maplibre`), så
+  inget hämtas från något CDN. Samma funktion som i rddiagram, så att
+  apparna inte behöver rddiagram och dess beroenden. Paketet importerar nu
+  `htmltools` och `htmlwidgets` (följer redan med `leaflet`).
+
+---
+
 # rdshinyappar 0.0.0.9002
 
 * `df_till_sf()` fungerar nu med sf 1.1-3. Geometri som RPostgres levererar

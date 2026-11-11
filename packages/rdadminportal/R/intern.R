@@ -26,6 +26,27 @@ intern_validera_namn <- function(namn) {
   invisible(TRUE)
 }
 
+# Namn på poster på landningssidan (exkludering, ikon, beskrivning): ett app-/rapportnamn enligt
+# intern_validera_namn(), eller en pdf-rapport "<pdf_mapp>/<filnamn>.pdf". Filnamnet får innehålla
+# bokstäver (även å, ä, ö), siffror, mellanslag och vanliga skiljetecken, men inga snedstreck,
+# kontrolltecken eller "..". Namnen skickas alltid som parametrar till SQL och blir aldrig en sökväg.
+# Nedladdningsfunktionerna (som gör namnet till en sökväg) använder den strängare intern_validera_namn().
+#' @noRd
+intern_validera_landningssidenamn <- function(namn, pdf_mapp = "pdf-rapporter") {
+  if (!is.character(namn) || length(namn) == 0 || any(is.na(namn)) || any(!nzchar(namn))) {
+    stop("namn måste vara en icke-tom teckenvektor.", call. = FALSE)
+  }
+  pdf_monster <- paste0("^", pdf_mapp, "/[^/\\\\[:cntrl:]]+\\.pdf$")
+  ar_pdf <- grepl(pdf_monster, namn, ignore.case = TRUE) & !grepl("\\.\\.", namn)
+  ar_vanlig <- grepl("^[a-zA-Z0-9_-]+$", namn)
+  ogiltiga <- namn[!(ar_pdf | ar_vanlig)]
+  if (length(ogiltiga) > 0) {
+    stop("Ogiltiga namn (bara bokstäver/siffror/_/- eller en pdf-rapport '", pdf_mapp,
+         "/<filnamn>.pdf' tillåtna): ", paste(ogiltiga, collapse = ", "), call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
 # DB-anslutning (läs/skriv) mot sekretess-databasen via rdshinyappar.
 intern_con_las <- function() {
   con <- rdshinyappar::shiny_uppkoppling_las(db_name = "sekretess",

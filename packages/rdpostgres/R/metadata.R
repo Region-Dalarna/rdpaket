@@ -182,7 +182,9 @@ postgres_tabell_uppdaterades <- function(con = "default", schema, tabell = NULL)
 #' @return En sträng som `"2024-04-12T06:00:00Z"`.
 #' @export
 fil_dataset_uppdaterades <- function(filnamn_med_sokvag) {
-  mtime <- file.info(filnamn_med_sokvag)$mtime
+  # file.mtime() i stället för file.info(): den senare slår på Windows upp filens ägare och varnar för
+  # filer vars ägarkonto inte går att slå upp
+  mtime <- file.mtime(filnamn_med_sokvag)
   paste0(format(as.Date(mtime), "%Y-%m-%d"), "T",
          substr(as.character(mtime), 12, 19), "Z")
 }

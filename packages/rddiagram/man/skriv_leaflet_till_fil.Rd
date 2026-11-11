@@ -26,7 +26,9 @@ skriv_leaflet_till_fil(
 självständig enfilsversion om pandoc är installerat, annars en html-fil
 med en medföljande \verb{_files}-mapp. \code{"png"} - en statisk ögonblicksbild via
 paketet webshot2 (kräver det paketet samt en lokalt installerad
-Chrome/Chromium).}
+Chrome eller Microsoft Edge; Edge används automatiskt om ingen Chrome
+hittas, annars kan du ange sökvägen med
+\code{Sys.setenv(CHROMOTE_CHROME = "sökväg")}).}
 
 \item{delat_bibliotek}{\code{FALSE} (standard). \code{TRUE} skriver html-filen utan
 inbäddade bibliotek: kartans JavaScript läggs i en mapp \code{lib} bredvid

@@ -1,3 +1,36 @@
+# rddiagram 0.0.0.9033
+
+* Nya standardvärden för `lagg_till_bakgrundskarta()`: `landsnamn = FALSE` (landsnamn
+  som "Sverige" döljs) och `etikett_opacitet = 0.5` (diskret text). Ange
+  `landsnamn = TRUE, etikett_opacitet = 1` för den tidigare texten.
+
+* `lagg_till_bakgrundskarta()`: namnen på kartan visas nu på svenska som standard
+  (ny parameter `sprak = "sv"`), t.ex. "Sverige" och "Norge" i stället för
+  "Sweden" och "Norway". Där svenskt namn saknas används engelska och därefter
+  ortens eget namn. `sprak = "en"` ger engelska namn, `sprak = NULL` stilens
+  originaltext. Gäller även kartorna som skapas av rddiagramkatalog.
+
+# rddiagram 0.0.0.9032
+
+* `lagg_till_bakgrundskarta()`: ny parameter `landsnamn`. Med `landsnamn = FALSE`
+  döljs landsnamn (t.ex. "Sweden") medan övrig text finns kvar.
+
+# rddiagram 0.0.0.9031
+
+* `lagg_till_bakgrundskarta()`: `etiketter` kan nu också vara `"orter"` (bara
+  namn på orter, städer, län och länder - inga vägnamn, vattennamn eller
+  flygplatser). Ny parameter `etikett_opacitet` (0-1) tonar ner texten utan att
+  ta bort den, t.ex. `etiketter = "orter", etikett_opacitet = 0.5`.
+
+# rddiagram 0.0.0.9030
+
+* `skriv_leaflet_till_fil(karta_filformat = "png")` letar nu efter en
+  webbläsare själv: hittar `chromote` ingen Chrome provas Microsoft Edge
+  (Chromium-baserad, finns på de flesta Windows-datorer), och sökvägen sätts
+  för sessionen. Finns ingen alls stoppas funktionen med ett meddelande om
+  vad som behövs, i stället för webshot2:s "Invalid path to Chrome". Egen
+  sökväg anges med `Sys.setenv(CHROMOTE_CHROME = "sökväg/till/chrome-eller-msedge")`.
+
 # rddiagram 0.0.0.9029
 
 * `skapa_koropletkarta_ggplot()`: klassgränserna i teckenförklaringen skrivs

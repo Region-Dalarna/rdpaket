@@ -19,8 +19,9 @@ intern_hamta_senaste_fil <- function(mapp, monster, recursive = FALSE) {
       call. = FALSE
     )
   }
-  info <- file.info(kandidater)
-  senaste <- kandidater[which.max(info$mtime)]
+  # file.mtime() i stället för file.info(): den senare försöker på Windows slå upp filens ägare, vilket ger
+  # varningar för filer på G: vars ägarkonto inte går att slå upp
+  senaste <- kandidater[which.max(file.mtime(kandidater))]
   rdverktyg::meddela_manuell_datakalla(senaste)
   senaste
 }

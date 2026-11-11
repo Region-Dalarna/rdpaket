@@ -1,3 +1,46 @@
+# rdadminportal 0.0.0.9006
+
+## Ordningen på landningssidan
+
+* Nya funktioner `landningssida_ordning_satt()`, `landningssida_ordning_lista()`
+  och `landningssida_ordning_aterstall()` för en handpåförd ordning på appar och
+  webbrapporter på landningssidan. Ordningen sparas i den nya tabellen
+  `adminshiny.landningssida_ordning`. Poster utan ordning kommer efter de
+  ordnade, alfabetiskt. PDF-rapporter sorteras på publiceringsdatum.
+* `landningssida_app_oversikt()` har en ny kolumn `ordning` och sorteras som
+  landningssidan: appar, webbrapporter, pdf-rapporter, och inom en grupp
+  handpåförd ordning först och därefter alfabetiskt. Fungerar även om tabellen
+  inte skapats ännu (då är `ordning` `NA`).
+* En ändring på den publika servern notifierar lyssnaren (`pg_notify` på kanalen
+  `adminportal_publik`), så att landningssidan regenereras inom några sekunder.
+
+# rdadminportal 0.0.0.9005
+
+* Funktionerna som ändrar landningssidans poster (`landningssida_exkludera()`,
+  `landningssida_inkludera()`, ta bort ikon- och beskrivningskoppling)
+  godkänner nu även pdf-rapporter, med namn som
+  `pdf-rapporter/Årsrapport 2025.pdf`. Tidigare stoppades de av kravet att
+  namn bara fick innehålla bokstäver, siffror, `_` och `-`, så en pdf-rapport
+  hade inte gått att dölja eller ta bort ikon/beskrivning för. Filnamnet får inte
+  innehålla `/`, `..` eller kontrolltecken. Nedladdningsfunktionerna är
+  oförändrat strikta.
+
+# rdadminportal 0.0.0.9004
+
+* `landningssida_synka_app_lista()` tar nu med pdf-filerna i
+  `/srv/rapporter/pdf-rapporter/` (ny parameter `pdf_mapp`) som egna poster med
+  typ `"pdf"` och namnet `"pdf-rapporter/<filnamn>"`, så att de syns i
+  adminportalen (synlighet, ikon och beskrivning) och på landningssidan under
+  "Publicerade rapporter". Förutsätter att kolumnen `typ` i
+  `adminshiny.landningssida_app` tillåter värdet `"pdf"`.
+
+# rdadminportal 0.0.0.9003
+
+* Listningen av nedladdningsfiler hämtar inte längre filägare
+  (`file.info(extra_cols = FALSE)`). På Windows gav uppslagningen varningar
+  ("cannot resolve owner of file ...") för filer vars ägarkonto inte går att
+  slå upp.
+
 # rdadminportal 0.0.0.9001
 
 Versionsbump utan innehållsändring (för att `remotes`/`pak`

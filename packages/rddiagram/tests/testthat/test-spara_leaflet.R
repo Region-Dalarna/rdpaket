@@ -26,3 +26,15 @@ test_that("delat_bibliotek = TRUE ger ett gemensamt lib-bibliotek för flera kar
   expect_true(any(grepl("maplibre-gl", list.files(file.path(mapp, "lib")))))
   expect_false(any(grepl("_files", list.files(mapp))))
 })
+
+test_that("intern_hitta_webblasare() använder CHROMOTE_CHROME när den pekar på en fil", {
+  fil <- withr::local_tempfile(fileext = ".exe")
+  file.create(fil)
+  withr::local_envvar(CHROMOTE_CHROME = fil)
+  expect_equal(intern_hitta_webblasare(), fil)
+})
+
+test_that("intern_sakerstall_webblasare() ger ett tydligt fel när ingen webbläsare finns", {
+  testthat::local_mocked_bindings(intern_hitta_webblasare = function() NULL)
+  expect_error(intern_sakerstall_webblasare(), "Chrome eller Microsoft Edge")
+})

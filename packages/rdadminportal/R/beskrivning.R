@@ -63,7 +63,7 @@ landningssida_beskrivning_koppla <- function(target = c("publik", "intern"), nam
 #' @export
 landningssida_beskrivning_ta_bort_koppling <- function(target = c("publik", "intern"), namn) {
   target <- intern_validera_target(match.arg(target))
-  intern_validera_namn(namn)
+  intern_validera_landningssidenamn(namn)
 
   con <- intern_con_skriv(); on.exit(DBI::dbDisconnect(con), add = TRUE)
   borttagna <- 0

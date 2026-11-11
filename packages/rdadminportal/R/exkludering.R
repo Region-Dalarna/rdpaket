@@ -36,7 +36,7 @@ landningssida_lista_exkluderade <- function(target = c("publik", "intern")) {
 landningssida_exkludera <- function(target = c("publik", "intern"), namn,
                                     andrad_av = NA_character_) {
   target <- intern_validera_target(match.arg(target))
-  intern_validera_namn(namn)
+  intern_validera_landningssidenamn(namn)
 
   con <- intern_con_skriv(); on.exit(DBI::dbDisconnect(con), add = TRUE)
   for (n in namn) {
@@ -59,7 +59,7 @@ landningssida_exkludera <- function(target = c("publik", "intern"), namn,
 #' @export
 landningssida_inkludera <- function(target = c("publik", "intern"), namn) {
   target <- intern_validera_target(match.arg(target))
-  intern_validera_namn(namn)
+  intern_validera_landningssidenamn(namn)
 
   con <- intern_con_skriv(); on.exit(DBI::dbDisconnect(con), add = TRUE)
   borttagna <- 0
