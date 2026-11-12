@@ -12,7 +12,8 @@ analysrapport_publicera(
   github_org = intern_gh_org(),
   commit_meddelande = NULL,
   tillat_annan_branch = FALSE,
-  aven_om_html_aldre = FALSE
+  aven_om_html_aldre = FALSE,
+  html_fil = NULL
 )
 }
 \arguments{
@@ -38,6 +39,13 @@ alltid tillåten.}
 \item{aven_om_html_aldre}{\code{FALSE} (standard) stoppar publiceringen om
 rapportens html är äldre än dess Rmd/qmd (rapporten är troligen inte
 omknittad). \code{TRUE} = publicera ändå.}
+
+\item{html_fil}{Sökväg till en färdig html-fil som ska publiceras i stället
+för den som ligger i repot, t.ex. en fil från \code{publicera_rapporter/docs}
+under migreringen. Filen kopieras till \verb{<deploynamn>.html} i repot (som
+skrivs över), committas på källbranchen och publiceras. \code{NULL} (standard)
+= den html som redan ligger i repot. Kontrollen av att htmlen är
+omknittad hoppas över.}
 }
 \value{
 Osynligt: en lista med \code{rapport_repo}, \code{target}, \code{to_branch}.

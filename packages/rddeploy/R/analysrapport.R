@@ -142,6 +142,13 @@ intern_med_wd <- function(dir, expr) {
 #'   rapportens html är äldre än dess Rmd/qmd (rapporten är troligen inte
 #'   omknittad). `TRUE` = publicera ändå.
 #'
+#' @param html_fil Sökväg till en färdig html-fil som ska publiceras i stället
+#'   för den som ligger i repot, t.ex. en fil från `publicera_rapporter/docs`
+#'   under migreringen. Filen kopieras till `<deploynamn>.html` i repot (som
+#'   skrivs över), committas på källbranchen och publiceras. `NULL` (standard)
+#'   = den html som redan ligger i repot. Kontrollen av att htmlen är
+#'   omknittad hoppas över.
+#'
 #' @details Repot måste ha `.github/workflows/deploy.yml`; saknas den, kör
 #'   [analysrapport_gor_publicerbar()]. Använd `from_branch` och `target`
 #'   tillsammans för att låta kollegor granska en utvecklingsbranch på den
@@ -157,8 +164,12 @@ analysrapport_publicera <- function(rapport_repo,
                                   github_org       = intern_gh_org(),
                                   commit_meddelande = NULL,
                                   tillat_annan_branch = FALSE,
-                                  aven_om_html_aldre  = FALSE) {
+                                  aven_om_html_aldre  = FALSE,
+                                  html_fil            = NULL) {
   target <- match.arg(target)
+  if (!is.null(html_fil) && (!is.character(html_fil) || length(html_fil) != 1 || !file.exists(html_fil))) {
+    cli::cli_abort("Hittar inte {.arg html_fil}: {.path {html_fil}}")
+  }
   to_branch <- paste0("publicera-", target)
   repo_dir <- file.path(grundsokvag, rapport_repo)
   if (!dir.exists(file.path(repo_dir, ".git"))) {
@@ -201,11 +212,14 @@ analysrapport_publicera <- function(rapport_repo,
                      "i" = "Kör {.code analysrapport_gor_publicerbar(\"{rapport_repo}\")}, committa och pusha."))
   }
   namn <- intern_analysrapport_deploynamn(repo_dir, rapport_repo)
-  if (!file.exists(file.path(repo_dir, paste0(namn, ".html")))) {
+  if (!is.null(html_fil)) {
+    file.copy(html_fil, file.path(repo_dir, paste0(namn, ".html")), overwrite = TRUE)
+    cli::cli_alert_info("Använder {.path {html_fil}} som {.file {namn}.html}.")
+  } else if (!file.exists(file.path(repo_dir, paste0(namn, ".html")))) {
     cli::cli_abort(c("Hittar inte {.file {namn}.html} i repo-roten - deployen skulle stoppa.",
                      "i" = "Knitta rapporten, eller ställ in deploynamnet med {.code analysrapport_gor_publicerbar(..., deploynamn = )}."))
   }
-  if (!isTRUE(aven_om_html_aldre) && intern_analysrapport_html_foraldrad(repo_dir, rapport_repo)) {
+  if (is.null(html_fil) && !isTRUE(aven_om_html_aldre) && intern_analysrapport_html_foraldrad(repo_dir, rapport_repo)) {
     cli::cli_abort(c("{.file {namn}.html} är äldre än rapportens Rmd/qmd - rapporten är troligen inte omknittad.",
                      "i" = "Knitta om, eller använd {.code aven_om_html_aldre = TRUE} för att publicera ändå."))
   }

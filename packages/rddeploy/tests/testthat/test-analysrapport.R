@@ -98,3 +98,7 @@ test_that("intern_analysrapport_html_foraldrad jämför html med Rmd/qmd (versal
   unlink(rmd)
   expect_false(intern_analysrapport_html_foraldrad(r$repo, "laget_i_Dalarna"))
 })
+
+test_that("analysrapport_publicera kräver att html_fil finns", {
+  expect_error(analysrapport_publicera("rapport", html_fil = "/finns/inte.html"), "html_fil")
+})

@@ -4,8 +4,8 @@
 
 - `webbrapport_publicera()`, `webbrapport_avpublicera()` och
   `skapa_webbrapport_github()` heter nu `analysrapport_publicera()`,
-  `analysrapport_avpublicera()` och `skapa_analysrapport_github()`. De gamla
-  namnen fungerar men varnar. Mallmappen heter `inst/templates/analysrapport/`.
+  `analysrapport_avpublicera()` och `skapa_analysrapport_github()` (utan
+  gamla namn, de hann aldrig användas). Mallmappen heter `inst/templates/analysrapport/`.
 
 ## Analysrapporter: migrering från GitHub Pages till Shinyservern
 
@@ -24,6 +24,9 @@
   parameter `aven_om_html_aldre`: stoppar om htmlen är äldre än rapportens
   Rmd/qmd (60 sekunders tolerans, eftersom git inte bevarar filtider). Kontrollerar
   också att `deploy.yml` och `<deploynamn>.html` finns innan något pushas.
+- **`analysrapport_publicera(html_fil = )`**: publicerar en angiven html-fil
+  (t.ex. från `publicera_rapporter/docs` under migreringen) i stället för den
+  som ligger i repot. Filen kopieras till `<deploynamn>.html` och committas.
 - **Mall `deploy.yml`**: en mapp `underrapporter/` i repot följer med vid deploy
   och hamnar under rapportens adress, utan eget kort på landningssidan.
 
