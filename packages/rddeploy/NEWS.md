@@ -1,3 +1,9 @@
+# rddeploy 0.0.0.9025
+
+- `analysrapport_publicera(html_fil = )` använder som standard beskrivningen i
+  repots `hero_image.html` (utan att du anger `beskrivning`). Versionen höjd så
+  att det går att se om den nya koden är installerad (`packageVersion("rddeploy")`).
+
 # rddeploy 0.0.0.9024
 
 ## Webbrapporter heter nu analysrapporter
