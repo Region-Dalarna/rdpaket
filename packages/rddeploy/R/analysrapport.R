@@ -148,6 +148,10 @@ intern_med_wd <- function(dir, expr) {
 #'   skrivs över), committas på källbranchen och publiceras. `NULL` (standard)
 #'   = den html som redan ligger i repot. Kontrollen av att htmlen är
 #'   omknittad hoppas över.
+#' @param beskrivning Bara tillsammans med `html_fil`: en beskrivning som
+#'   läggs in i htmlen före publiceringen, se
+#'   [analysrapport_html_beskrivning_satt()]. `NULL` (standard) = rör inte
+#'   beskrivningen i filen.
 #'
 #' @details Repot måste ha `.github/workflows/deploy.yml`; saknas den, kör
 #'   [analysrapport_gor_publicerbar()]. Använd `from_branch` och `target`
@@ -165,10 +169,15 @@ analysrapport_publicera <- function(rapport_repo,
                                   commit_meddelande = NULL,
                                   tillat_annan_branch = FALSE,
                                   aven_om_html_aldre  = FALSE,
-                                  html_fil            = NULL) {
+                                  html_fil            = NULL,
+                                  beskrivning         = NULL) {
   target <- match.arg(target)
   if (!is.null(html_fil) && (!is.character(html_fil) || length(html_fil) != 1 || !file.exists(html_fil))) {
     cli::cli_abort("Hittar inte {.arg html_fil}: {.path {html_fil}}")
+  }
+  if (!is.null(beskrivning) && is.null(html_fil)) {
+    cli::cli_abort(c("{.arg beskrivning} kan bara användas tillsammans med {.arg html_fil}.",
+                     "i" = "För en rapport som knittas i repot: {.code analysrapport_beskrivning_satt()}, knitta om och publicera."))
   }
   to_branch <- paste0("publicera-", target)
   repo_dir <- file.path(grundsokvag, rapport_repo)
@@ -215,6 +224,9 @@ analysrapport_publicera <- function(rapport_repo,
   if (!is.null(html_fil)) {
     file.copy(html_fil, file.path(repo_dir, paste0(namn, ".html")), overwrite = TRUE)
     cli::cli_alert_info("Använder {.path {html_fil}} som {.file {namn}.html}.")
+    if (!is.null(beskrivning)) {
+      suppressMessages(analysrapport_html_beskrivning_satt(file.path(repo_dir, paste0(namn, ".html")), beskrivning))
+    }
   } else if (!file.exists(file.path(repo_dir, paste0(namn, ".html")))) {
     cli::cli_abort(c("Hittar inte {.file {namn}.html} i repo-roten - deployen skulle stoppa.",
                      "i" = "Knitta rapporten, eller ställ in deploynamnet med {.code analysrapport_gor_publicerbar(..., deploynamn = )}."))

@@ -13,7 +13,8 @@ analysrapport_publicera(
   commit_meddelande = NULL,
   tillat_annan_branch = FALSE,
   aven_om_html_aldre = FALSE,
-  html_fil = NULL
+  html_fil = NULL,
+  beskrivning = NULL
 )
 }
 \arguments{
@@ -46,6 +47,11 @@ under migreringen. Filen kopieras till \verb{<deploynamn>.html} i repot (som
 skrivs över), committas på källbranchen och publiceras. \code{NULL} (standard)
 = den html som redan ligger i repot. Kontrollen av att htmlen är
 omknittad hoppas över.}
+
+\item{beskrivning}{Bara tillsammans med \code{html_fil}: en beskrivning som
+läggs in i htmlen före publiceringen, se
+\code{\link[=analysrapport_html_beskrivning_satt]{analysrapport_html_beskrivning_satt()}}. \code{NULL} (standard) = rör inte
+beskrivningen i filen.}
 }
 \value{
 Osynligt: en lista med \code{rapport_repo}, \code{target}, \code{to_branch}.

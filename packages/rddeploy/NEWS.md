@@ -27,6 +27,10 @@
 - **`analysrapport_publicera(html_fil = )`**: publicerar en angiven html-fil
   (t.ex. från `publicera_rapporter/docs` under migreringen) i stället för den
   som ligger i repot. Filen kopieras till `<deploynamn>.html` och committas.
+- **`analysrapport_html_beskrivning_satt(html_fil, beskrivning)`** (ny): lägger
+  in (eller ersätter/tar bort) beskrivningen direkt i en färdigknittad html,
+  utan omknittning. `analysrapport_publicera(html_fil =, beskrivning = )` gör
+  det i samma steg.
 - **Mall `deploy.yml`**: en mapp `underrapporter/` i repot följer med vid deploy
   och hamnar under rapportens adress, utan eget kort på landningssidan.
 

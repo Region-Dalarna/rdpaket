@@ -102,3 +102,33 @@ test_that("intern_analysrapport_html_foraldrad jämför html med Rmd/qmd (versal
 test_that("analysrapport_publicera kräver att html_fil finns", {
   expect_error(analysrapport_publicera("rapport", html_fil = "/finns/inte.html"), "html_fil")
 })
+
+test_that("analysrapport_html_beskrivning_satt lägger in, ersätter och tar bort beskrivningen i en html", {
+  f <- tempfile(fileext = ".html")
+  writeLines(c("<!DOCTYPE html>", "<html>", "<head>", "<meta charset=\"utf-8\">",
+               "<meta name=\"description\" content=\"Gammal\" />", "<title>Rapport åäö</title>", "</head>",
+               "<body>Text med \\1 och $ tecken</body>", "</html>"), f, useBytes = TRUE)
+  original <- readLines(f, encoding = "UTF-8")
+  suppressMessages(analysrapport_html_beskrivning_satt(f, "Ny \\1 beskrivning med åäö & mer."))
+  txt <- readLines(f, encoding = "UTF-8")
+  expect_equal(sum(grepl("name=\"description\"", txt)), 1)
+  expect_equal(txt[4], intern_beskrivning_start)
+  expect_match(txt[5], "Ny \\1 beskrivning med åäö &amp; mer.", fixed = TRUE)
+  expect_equal(txt[3], "<head>")
+  expect_true("<body>Text med \\1 och $ tecken</body>" %in% txt)
+
+  suppressMessages(analysrapport_html_beskrivning_satt(f, "Andra."))
+  txt <- readLines(f, encoding = "UTF-8")
+  expect_equal(sum(txt == intern_beskrivning_start), 1)
+  expect_equal(sum(grepl("name=\"description\"", txt)), 1)
+
+  suppressMessages(analysrapport_html_beskrivning_satt(f, NA))
+  expect_equal(readLines(f, encoding = "UTF-8"), original[-5])
+
+  g <- tempfile(fileext = ".html"); writeLines("ingen head", g)
+  expect_error(analysrapport_html_beskrivning_satt(g, "x"), "head")
+})
+
+test_that("analysrapport_publicera kräver html_fil för beskrivning", {
+  expect_error(analysrapport_publicera("rapport", beskrivning = "x"), "html_fil")
+})

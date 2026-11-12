@@ -132,17 +132,9 @@ analysrapport_beskrivning_satt <- function(rapport_repo, beskrivning, grundsokva
   slut  <- which(text == intern_beskrivning_slut)
   if (length(start) == 1 && length(slut) == 1 && slut >= start) text <- text[-(start:slut)]
 
-  ingen <- is.null(beskrivning) || length(beskrivning) == 0 || is.na(beskrivning[1]) || !nzchar(trimws(beskrivning[1]))
-  if (!ingen) {
-    beskrivning <- trimws(gsub("[[:space:]]+", " ", beskrivning[1]))
-    if (nchar(beskrivning) > 200) {
-      cli::cli_warn("Beskrivningen är {nchar(beskrivning)} tecken lång - kortet visar ca 3 rader, överväg att korta ner den.")
-    }
-    esk <- gsub("\"", "&quot;", gsub(">", "&gt;", gsub("<", "&lt;", gsub("&", "&amp;", beskrivning, fixed = TRUE), fixed = TRUE), fixed = TRUE), fixed = TRUE)
-    text <- c(intern_beskrivning_start,
-              paste0("<meta name=\"description\" content=\"", esk, "\">"),
-              intern_beskrivning_slut, text)
-  }
+  ny <- intern_beskrivning_block(beskrivning)
+  ingen <- is.null(ny)
+  text <- c(ny, text)
 
   con <- file(fil, "wb")
   on.exit(close(con))
@@ -150,6 +142,64 @@ analysrapport_beskrivning_satt <- function(rapport_repo, beskrivning, grundsokva
   if (ingen) cli::cli_alert_success("Beskrivningen borttagen ur {.path {fil}}.")
   else cli::cli_alert_success("Beskrivning skriven till {.path {fil}}. Knitta om rapporten och publicera.")
   invisible(fil)
+}
+
+# Beskrivningsblocket (markörer + meta-tagg) som textrader, eller NULL om beskrivningen är tom.
+intern_beskrivning_block <- function(beskrivning) {
+  ingen <- is.null(beskrivning) || length(beskrivning) == 0 || is.na(beskrivning[1]) || !nzchar(trimws(beskrivning[1]))
+  if (ingen) return(NULL)
+  beskrivning <- trimws(gsub("[[:space:]]+", " ", beskrivning[1]))
+  if (nchar(beskrivning) > 200) {
+    cli::cli_warn("Beskrivningen är {nchar(beskrivning)} tecken lång - kortet visar ca 3 rader, överväg att korta ner den.")
+  }
+  esk <- gsub("\"", "&quot;", gsub(">", "&gt;", gsub("<", "&lt;", gsub("&", "&amp;", beskrivning, fixed = TRUE), fixed = TRUE), fixed = TRUE), fixed = TRUE)
+  c(intern_beskrivning_start, paste0("<meta name=\"description\" content=\"", esk, "\">"), intern_beskrivning_slut)
+}
+
+#' Sätt eller ta bort beskrivningen i en färdig html-fil
+#'
+#' Som [analysrapport_beskrivning_satt()], men skriver direkt i en redan
+#' knittad html-fil i stället för i `hero_image.html`, så att du slipper knitta
+#' om. Passar t.ex. en html som kopierats från `publicera_rapporter/docs`
+#' under migreringen. Beskrivningen läggs som en `<meta name="description">`
+#' direkt efter `<head>`, och en `description` som redan finns i filen tas
+#' bort så att det bara finns en. Att köra funktionen igen ersätter den.
+#'
+#' Knittas rapporten om försvinner beskrivningen ur htmlen, om den inte också
+#' ligger i `hero_image.html` (se [analysrapport_beskrivning_satt()]).
+#'
+#' @param html_fil Sökväg till html-filen. Skrivs över på plats.
+#' @param beskrivning En eller två meningar (ca 120-200 tecken). `NULL`, `NA`
+#'   eller `""` tar bort beskrivningen.
+#'
+#' @return Osynligt: `html_fil`.
+#' @seealso [analysrapport_publicera()] (`html_fil` och `beskrivning`).
+#' @export
+analysrapport_html_beskrivning_satt <- function(html_fil, beskrivning) {
+  if (!is.character(html_fil) || length(html_fil) != 1 || !file.exists(html_fil)) {
+    cli::cli_abort("Hittar inte html-filen: {.path {html_fil}}")
+  }
+  # filen läses som en enda sträng (bytes) så att utf-8 och radbrytningar bevaras exakt
+  bytes <- readBin(html_fil, "raw", file.info(html_fil)$size)
+  text <- rawToChar(bytes)
+  Encoding(text) <- "UTF-8"
+
+  blockmonster <- paste0("(?s)", intern_beskrivning_start, ".*?", intern_beskrivning_slut, "\\r?\\n?")
+  text <- gsub(blockmonster, "", text, perl = TRUE)
+  text <- gsub("(?is)<meta\\b[^>]*\\bname\\s*=\\s*([\"'])description\\1[^>]*>[ \\t]*\\r?\\n?", "", text, perl = TRUE)
+
+  ny <- intern_beskrivning_block(beskrivning)
+  if (!is.null(ny)) {
+    if (!grepl("(?i)<head\\b[^>]*>", text, perl = TRUE)) {
+      cli::cli_abort("Hittar ingen {.code <head>} i {.path {html_fil}} - är det en färdig html-fil?")
+    }
+    text <- sub("(?i)(<head\\b[^>]*>)", paste0("\\1\n", gsub("\\", "\\\\", paste(ny, collapse = "\n"), fixed = TRUE)), text, perl = TRUE)
+  }
+
+  writeBin(charToRaw(enc2utf8(text)), html_fil)
+  if (is.null(ny)) cli::cli_alert_success("Beskrivningen borttagen ur {.path {html_fil}}.")
+  else cli::cli_alert_success("Beskrivning skriven i {.path {html_fil}}.")
+  invisible(html_fil)
 }
 
 # TRUE om rapportens html är äldre (mer än `tolerans` sekunder) än dess Rmd/qmd-källa. Källfilen letas upp
