@@ -1,3 +1,25 @@
+# rddeploy 0.0.0.9024
+
+## Webbrapporter: migrering från GitHub Pages till Shinyservern
+
+- **`webbrapport_gor_publicerbar(rapport_repo, deploynamn = NULL)`** (ny): lägger
+  `deploy.yml` och `avpublicera.yml` i ett befintligt rapportrepo och skriver
+  vid behov `.rapport_deploy_namn` (deploynamnet styr källfilen `<namn>.html`,
+  servermappen/adressen och namnet på landningssidan). Skriver inte över
+  workflow-filer som skiljer sig från mallen utan `skriv_over = TRUE`.
+- **`webbrapport_beskrivning_satt(rapport_repo, beskrivning)`** (ny): skriver en
+  `<meta name="description">` överst i rapportens `hero_image.html`.
+  Landningssidans generator läser den ur den publicerade htmlen och visar den
+  på rapportens kort. `NA`/`""` tar bort den.
+- **`webbrapport_publicera()`**: ny parameter `tillat_annan_branch` - publik
+  publicering från en annan branch än main/master kräver nu bekräftelse (intern
+  publicering för granskning från valfri branch är alltid tillåten). Ny
+  parameter `aven_om_html_aldre`: stoppar om htmlen är äldre än rapportens
+  Rmd/qmd (60 sekunders tolerans, eftersom git inte bevarar filtider). Kontrollerar
+  också att `deploy.yml` och `<deploynamn>.html` finns innan något pushas.
+- **Mall `deploy.yml`**: en mapp `underrapporter/` i repot följer med vid deploy
+  och hamnar under rapportens adress, utan eget kort på landningssidan.
+
 # rddeploy 0.0.0.9022
 
 ## Ny funktion: `landningssida_publicera()`

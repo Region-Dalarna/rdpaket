@@ -133,6 +133,20 @@ intern_med_wd <- function(dir, expr) {
 #' @param grundsokvag Lokal föräldermapp. Standard: [rddeploy-config] `gh_mapp`.
 #' @param github_org Organisation. Standard: [rddeploy-config] `gh_org`.
 #' @param commit_meddelande Meddelande för ev. commit av lokala ändringar.
+#' @param tillat_annan_branch Publicering till `"publik"` från en annan branch
+#'   än `main`/`master` (t.ex. en utvecklingsbranch) kräver en bekräftelse, så
+#'   att `main` är det som är publicerat. `TRUE` = bekräfta i förväg (t.ex. i
+#'   skript). Publicering till `"intern"` från valfri branch (granskning) är
+#'   alltid tillåten.
+#' @param aven_om_html_aldre `FALSE` (standard) stoppar publiceringen om
+#'   rapportens html är äldre än dess Rmd/qmd (rapporten är troligen inte
+#'   omknittad). `TRUE` = publicera ändå.
+#'
+#' @details Repot måste ha `.github/workflows/deploy.yml`; saknas den, kör
+#'   [webbrapport_gor_publicerbar()]. Använd `from_branch` och `target`
+#'   tillsammans för att låta kollegor granska en utvecklingsbranch på den
+#'   interna servern: `webbrapport_publicera("rapport", target = "intern",
+#'   from_branch = "utveckling")`.
 #'
 #' @return Osynligt: en lista med `rapport_repo`, `target`, `to_branch`.
 #' @export
@@ -141,7 +155,9 @@ webbrapport_publicera <- function(rapport_repo,
                                   from_branch      = "main",
                                   grundsokvag      = intern_gh_mapp(),
                                   github_org       = intern_gh_org(),
-                                  commit_meddelande = NULL) {
+                                  commit_meddelande = NULL,
+                                  tillat_annan_branch = FALSE,
+                                  aven_om_html_aldre  = FALSE) {
   target <- match.arg(target)
   to_branch <- paste0("publicera-", target)
   repo_dir <- file.path(grundsokvag, rapport_repo)
@@ -163,10 +179,36 @@ webbrapport_publicera <- function(rapport_repo,
     }
   }
 
+  # main är det publicerade: publik publicering från annan branch kräver bekräftelse
+  if (target == "publik" && !from_branch %in% c("main", "master") && !isTRUE(tillat_annan_branch)) {
+    svar <- if (interactive()) {
+      readline(paste0("Publicera branchen '", from_branch, "' till PUBLIK server? ",
+                      "Vanligtvis publiceras main. Skriv ja för att fortsätta: "))
+    } else ""
+    if (!identical(tolower(trimws(svar)), "ja")) {
+      cli::cli_abort(c("Avbryter: publik publicering från {.val {from_branch}} (inte main).",
+                       "i" = "Använd {.code tillat_annan_branch = TRUE} om det är avsiktligt, eller {.code target = \"intern\"} för granskning."))
+    }
+  }
+
   if (gert::git_branch(repo = repo_dir) != from_branch) {
     gert::git_branch_checkout(from_branch, repo = repo_dir)
   }
   suppressMessages(gert::git_pull(repo = repo_dir))
+
+  if (!file.exists(file.path(repo_dir, ".github", "workflows", "deploy.yml"))) {
+    cli::cli_abort(c("{.val {rapport_repo}} saknar {.file .github/workflows/deploy.yml} på branchen {.val {from_branch}}.",
+                     "i" = "Kör {.code webbrapport_gor_publicerbar(\"{rapport_repo}\")}, committa och pusha."))
+  }
+  namn <- intern_webbrapport_deploynamn(repo_dir, rapport_repo)
+  if (!file.exists(file.path(repo_dir, paste0(namn, ".html")))) {
+    cli::cli_abort(c("Hittar inte {.file {namn}.html} i repo-roten - deployen skulle stoppa.",
+                     "i" = "Knitta rapporten, eller ställ in deploynamnet med {.code webbrapport_gor_publicerbar(..., deploynamn = )}."))
+  }
+  if (!isTRUE(aven_om_html_aldre) && intern_webbrapport_html_foraldrad(repo_dir, rapport_repo)) {
+    cli::cli_abort(c("{.file {namn}.html} är äldre än rapportens Rmd/qmd - rapporten är troligen inte omknittad.",
+                     "i" = "Knitta om, eller använd {.code aven_om_html_aldre = TRUE} för att publicera ändå."))
+  }
 
   st <- gert::git_status(repo = repo_dir)
   if (nrow(st) > 0) {

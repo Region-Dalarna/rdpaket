@@ -10,7 +10,9 @@ webbrapport_publicera(
   from_branch = "main",
   grundsokvag = intern_gh_mapp(),
   github_org = intern_gh_org(),
-  commit_meddelande = NULL
+  commit_meddelande = NULL,
+  tillat_annan_branch = FALSE,
+  aven_om_html_aldre = FALSE
 )
 }
 \arguments{
@@ -26,6 +28,16 @@ webbrapport_publicera(
 \item{github_org}{Organisation. Standard: \link{rddeploy-config} \code{gh_org}.}
 
 \item{commit_meddelande}{Meddelande för ev. commit av lokala ändringar.}
+
+\item{tillat_annan_branch}{Publicering till \code{"publik"} från en annan branch
+än \code{main}/\code{master} (t.ex. en utvecklingsbranch) kräver en bekräftelse, så
+att \code{main} är det som är publicerat. \code{TRUE} = bekräfta i förväg (t.ex. i
+skript). Publicering till \code{"intern"} från valfri branch (granskning) är
+alltid tillåten.}
+
+\item{aven_om_html_aldre}{\code{FALSE} (standard) stoppar publiceringen om
+rapportens html är äldre än dess Rmd/qmd (rapporten är troligen inte
+omknittad). \code{TRUE} = publicera ändå.}
 }
 \value{
 Osynligt: en lista med \code{rapport_repo}, \code{target}, \code{to_branch}.
@@ -33,4 +45,10 @@ Osynligt: en lista med \code{rapport_repo}, \code{target}, \code{to_branch}.
 \description{
 Committar ev. lokala ändringar på källbranchen och pushar den till
 \verb{publicera-<target>}, vilket triggar repots deploy-workflow.
+}
+\details{
+Repot måste ha \code{.github/workflows/deploy.yml}; saknas den, kör
+\code{\link[=webbrapport_gor_publicerbar]{webbrapport_gor_publicerbar()}}. Använd \code{from_branch} och \code{target}
+tillsammans för att låta kollegor granska en utvecklingsbranch på den
+interna servern: \code{webbrapport_publicera("rapport", target = "intern", from_branch = "utveckling")}.
 }
