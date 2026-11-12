@@ -150,8 +150,9 @@ intern_med_wd <- function(dir, expr) {
 #'   omknittad hoppas över.
 #' @param beskrivning Bara tillsammans med `html_fil`: en beskrivning som
 #'   läggs in i htmlen före publiceringen, se
-#'   [analysrapport_html_beskrivning_satt()]. `NULL` (standard) = rör inte
-#'   beskrivningen i filen.
+#'   [analysrapport_html_beskrivning_satt()]. `NULL` (standard) = beskrivningen
+#'   i repots `hero_image.html` (se [analysrapport_beskrivning_satt()]) om det
+#'   finns en, annars rörs inte beskrivningen i filen.
 #'
 #' @details Repot måste ha `.github/workflows/deploy.yml`; saknas den, kör
 #'   [analysrapport_gor_publicerbar()]. Använd `from_branch` och `target`
@@ -224,6 +225,7 @@ analysrapport_publicera <- function(rapport_repo,
   if (!is.null(html_fil)) {
     file.copy(html_fil, file.path(repo_dir, paste0(namn, ".html")), overwrite = TRUE)
     cli::cli_alert_info("Använder {.path {html_fil}} som {.file {namn}.html}.")
+    if (is.null(beskrivning)) beskrivning <- intern_las_hero_beskrivning(repo_dir)
     if (!is.null(beskrivning)) {
       suppressMessages(analysrapport_html_beskrivning_satt(file.path(repo_dir, paste0(namn, ".html")), beskrivning))
     }

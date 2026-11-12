@@ -132,3 +132,11 @@ test_that("analysrapport_html_beskrivning_satt lägger in, ersätter och tar bor
 test_that("analysrapport_publicera kräver html_fil för beskrivning", {
   expect_error(analysrapport_publicera("rapport", beskrivning = "x"), "html_fil")
 })
+
+test_that("intern_las_hero_beskrivning läser tillbaka beskrivningen som analysrapport_beskrivning_satt skrev", {
+  r <- nytt_rapportrepo()
+  expect_null(intern_las_hero_beskrivning(r$repo))
+  text <- "Läget: \"ekonomi\" & arbete <nu>."
+  suppressMessages(analysrapport_beskrivning_satt("rapport", text, grundsokvag = r$rot))
+  expect_equal(intern_las_hero_beskrivning(r$repo), text)
+})

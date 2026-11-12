@@ -50,8 +50,9 @@ omknittad hoppas över.}
 
 \item{beskrivning}{Bara tillsammans med \code{html_fil}: en beskrivning som
 läggs in i htmlen före publiceringen, se
-\code{\link[=analysrapport_html_beskrivning_satt]{analysrapport_html_beskrivning_satt()}}. \code{NULL} (standard) = rör inte
-beskrivningen i filen.}
+\code{\link[=analysrapport_html_beskrivning_satt]{analysrapport_html_beskrivning_satt()}}. \code{NULL} (standard) = beskrivningen
+i repots \code{hero_image.html} (se \code{\link[=analysrapport_beskrivning_satt]{analysrapport_beskrivning_satt()}}) om det
+finns en, annars rörs inte beskrivningen i filen.}
 }
 \value{
 Osynligt: en lista med \code{rapport_repo}, \code{target}, \code{to_branch}.

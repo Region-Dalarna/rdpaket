@@ -156,6 +156,21 @@ intern_beskrivning_block <- function(beskrivning) {
   c(intern_beskrivning_start, paste0("<meta name=\"description\" content=\"", esk, "\">"), intern_beskrivning_slut)
 }
 
+# Beskrivningen som står i repots hero_image.html (blocket som analysrapport_beskrivning_satt() skriver), som vanlig
+# text, eller NULL om den inte finns.
+intern_las_hero_beskrivning <- function(repo_dir) {
+  fil <- file.path(repo_dir, "hero_image.html")
+  if (!file.exists(fil)) return(NULL)
+  text <- readLines(fil, warn = FALSE, encoding = "UTF-8")
+  start <- which(text == intern_beskrivning_start)
+  if (length(start) != 1 || length(text) < start + 1) return(NULL)
+  m <- regmatches(text[start + 1], regexec("content=\"(.*)\">$", text[start + 1]))[[1]]
+  if (length(m) < 2) return(NULL)
+  x <- m[2]
+  for (par in list(c("&quot;", "\""), c("&lt;", "<"), c("&gt;", ">"), c("&amp;", "&"))) x <- gsub(par[1], par[2], x, fixed = TRUE)
+  x
+}
+
 #' Sätt eller ta bort beskrivningen i en färdig html-fil
 #'
 #' Som [analysrapport_beskrivning_satt()], men skriver direkt i en redan
