@@ -1,7 +1,7 @@
-# Webbrapporter (RMarkdown -> GitHub Pages via publicera_rapporter).
+# Analysrapporter: skapa repo, publicera och avpublicera (tidigare "webbrapporter").
 
-# Statiska filer i depot-roten som varje webbrapport behöver.
-intern_webbrapport_assets <- list(
+# Statiska filer i depot-roten som varje analysrapport behöver.
+intern_analysrapport_assets <- list(
   bin  = c("Dalastrategin.jpg", "dalastrategin_hjul.png", "logga_korrekt.png",
            "logo_liggande_fri_vit.png", "logo_liggande_platta_farg.png",
            "logo_liggande_platta_svart.png", "rd_logo_liggande_fri_svart.png",
@@ -9,7 +9,7 @@ intern_webbrapport_assets <- list(
   text = c("styles_hero.css", "favicon.html")
 )
 
-intern_webbrapport_skript <- c(
+intern_analysrapport_skript <- c(
   "1_hamta_data.R"                = "1_hamta_data.R",
   "2_knitta_rapport.R"            = "2_knitta_rapport.R",
   "3_kopiera_till_publicera_rapporter_docs_for_publicering_pa_webben.R" =
@@ -17,7 +17,7 @@ intern_webbrapport_skript <- c(
   "4_push_av_hela_repo_till_github.R" = "4_push_av_hela_repo_till_github.R"
 )
 
-#' Skapa ett nytt webbrapport-repo på GitHub
+#' Skapa ett nytt analysrapport-repo på GitHub
 #'
 #' Skapar projektstrukturen (`figurer/`, `skript/`), hämtar delade
 #' bild-/stilfiler och hjälpskript från `Region-Dalarna/depot`, skriver en
@@ -36,7 +36,7 @@ intern_webbrapport_skript <- c(
 #'
 #' @return Osynligt: sökvägen till det lokala projektet.
 #' @export
-skapa_webbrapport_github <- function(github_repo,
+skapa_analysrapport_github <- function(github_repo,
                                      rapport_titel,
                                      rapport_undertitel = NULL,
                                      github_org         = intern_gh_org(),
@@ -58,15 +58,15 @@ skapa_webbrapport_github <- function(github_repo,
 
   # --- Hämta delade filer från depot ---
   cli::cli_alert_info("Hämtar bild- och stilfiler från depot ...")
-  for (f in intern_webbrapport_assets$bin) {
+  for (f in intern_analysrapport_assets$bin) {
     depot_hamta_fran(f, file.path(sokvag_proj, f), as_text = FALSE)
   }
-  for (f in intern_webbrapport_assets$text) {
+  for (f in intern_analysrapport_assets$text) {
     depot_hamta_fran(f, file.path(sokvag_proj, f), as_text = TRUE)
   }
-  for (i in seq_along(intern_webbrapport_skript)) {
-    depot_hamta_fran(names(intern_webbrapport_skript)[i],
-                     file.path(sokvag_proj, "skript", intern_webbrapport_skript[i]),
+  for (i in seq_along(intern_analysrapport_skript)) {
+    depot_hamta_fran(names(intern_analysrapport_skript)[i],
+                     file.path(sokvag_proj, "skript", intern_analysrapport_skript[i]),
                      as_text = TRUE)
   }
 
@@ -75,13 +75,13 @@ skapa_webbrapport_github <- function(github_repo,
     paste0('<div class="bottom_text">', rapport_undertitel, "</div>")
   } else ""
 
-  intern_skriv_mall("webbrapport", "hero_image.html",
+  intern_skriv_mall("analysrapport", "hero_image.html",
                     file.path(sokvag_proj, "hero_image.html"),
                     list(rapport_titel = rapport_titel, undertitel_html = undertitel_html))
-  intern_skriv_mall("webbrapport", "rapport.Rmd",
+  intern_skriv_mall("analysrapport", "rapport.Rmd",
                     file.path(sokvag_proj, paste0(github_repo, ".Rmd")),
                     list(rapport_titel = rapport_titel))
-  intern_skriv_mall("webbrapport", "gitignore", file.path(sokvag_proj, ".gitignore"))
+  intern_skriv_mall("analysrapport", "gitignore", file.path(sokvag_proj, ".gitignore"))
 
   cli::cli_alert_success("Lokal projektstruktur skapad i {.path {sokvag_proj}}")
 
@@ -94,7 +94,7 @@ skapa_webbrapport_github <- function(github_repo,
   gert::git_init(path = sokvag_proj)
   git_kontrollera_id_uppgifter(repo = sokvag_proj)
   gert::git_add(".", repo = sokvag_proj)
-  gert::git_commit("Initiera webbrapport", repo = sokvag_proj)
+  gert::git_commit("Initiera analysrapport", repo = sokvag_proj)
 
   if (!requireNamespace("usethis", quietly = TRUE)) {
     cli::cli_abort("Paketet {.pkg usethis} krävs för att skapa GitHub-repot.")
@@ -109,7 +109,7 @@ skapa_webbrapport_github <- function(github_repo,
   })
 
   intern_ge_team_behorighet(github_repo, team = behorighet_team, github_org = github_org)
-  cli::cli_alert_success("Webbrapport-repo {.val {github_repo}} skapat.")
+  cli::cli_alert_success("Analysrapport-repo {.val {github_repo}} skapat.")
   invisible(sokvag_proj)
 }
 
@@ -121,7 +121,7 @@ intern_med_wd <- function(dir, expr) {
   force(expr)
 }
 
-#' Publicera en webbrapport till publik eller intern server
+#' Publicera en analysrapport till publik eller intern server
 #'
 #' Committar ev. lokala ändringar på källbranchen och pushar den till
 #' `publicera-<target>`, vilket triggar repots deploy-workflow.
@@ -143,14 +143,14 @@ intern_med_wd <- function(dir, expr) {
 #'   omknittad). `TRUE` = publicera ändå.
 #'
 #' @details Repot måste ha `.github/workflows/deploy.yml`; saknas den, kör
-#'   [webbrapport_gor_publicerbar()]. Använd `from_branch` och `target`
+#'   [analysrapport_gor_publicerbar()]. Använd `from_branch` och `target`
 #'   tillsammans för att låta kollegor granska en utvecklingsbranch på den
-#'   interna servern: `webbrapport_publicera("rapport", target = "intern",
+#'   interna servern: `analysrapport_publicera("rapport", target = "intern",
 #'   from_branch = "utveckling")`.
 #'
 #' @return Osynligt: en lista med `rapport_repo`, `target`, `to_branch`.
 #' @export
-webbrapport_publicera <- function(rapport_repo,
+analysrapport_publicera <- function(rapport_repo,
                                   target           = c("publik", "intern"),
                                   from_branch      = "main",
                                   grundsokvag      = intern_gh_mapp(),
@@ -198,14 +198,14 @@ webbrapport_publicera <- function(rapport_repo,
 
   if (!file.exists(file.path(repo_dir, ".github", "workflows", "deploy.yml"))) {
     cli::cli_abort(c("{.val {rapport_repo}} saknar {.file .github/workflows/deploy.yml} på branchen {.val {from_branch}}.",
-                     "i" = "Kör {.code webbrapport_gor_publicerbar(\"{rapport_repo}\")}, committa och pusha."))
+                     "i" = "Kör {.code analysrapport_gor_publicerbar(\"{rapport_repo}\")}, committa och pusha."))
   }
-  namn <- intern_webbrapport_deploynamn(repo_dir, rapport_repo)
+  namn <- intern_analysrapport_deploynamn(repo_dir, rapport_repo)
   if (!file.exists(file.path(repo_dir, paste0(namn, ".html")))) {
     cli::cli_abort(c("Hittar inte {.file {namn}.html} i repo-roten - deployen skulle stoppa.",
-                     "i" = "Knitta rapporten, eller ställ in deploynamnet med {.code webbrapport_gor_publicerbar(..., deploynamn = )}."))
+                     "i" = "Knitta rapporten, eller ställ in deploynamnet med {.code analysrapport_gor_publicerbar(..., deploynamn = )}."))
   }
-  if (!isTRUE(aven_om_html_aldre) && intern_webbrapport_html_foraldrad(repo_dir, rapport_repo)) {
+  if (!isTRUE(aven_om_html_aldre) && intern_analysrapport_html_foraldrad(repo_dir, rapport_repo)) {
     cli::cli_abort(c("{.file {namn}.html} är äldre än rapportens Rmd/qmd - rapporten är troligen inte omknittad.",
                      "i" = "Knitta om, eller använd {.code aven_om_html_aldre = TRUE} för att publicera ändå."))
   }
@@ -237,7 +237,7 @@ webbrapport_publicera <- function(rapport_repo,
   invisible(list(rapport_repo = rapport_repo, target = target, to_branch = to_branch))
 }
 
-#' Avpublicera en webbrapport
+#' Avpublicera en analysrapport
 #'
 #' Triggar repots `avpublicera.yml`-workflow.
 #'
@@ -250,7 +250,7 @@ webbrapport_publicera <- function(rapport_repo,
 #'
 #' @return Osynligt `TRUE` om workflow triggades, annars `FALSE`.
 #' @export
-webbrapport_avpublicera <- function(rapport_repo,
+analysrapport_avpublicera <- function(rapport_repo,
                                     target     = c("publik", "intern"),
                                     github_org = intern_gh_org(),
                                     ref        = "main",

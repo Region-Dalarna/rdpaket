@@ -1,9 +1,9 @@
-# Webbrapporter: gör ett befintligt rapportrepo publicerbart, sätt beskrivning för landningssidan och
-# kontroller som webbrapport_publicera() gör före publicering.
+# Analysrapporter: gör ett befintligt rapportrepo publicerbart, sätt beskrivning för landningssidan och
+# kontroller som analysrapport_publicera() gör före publicering.
 
 # Deploynamnet: det namn som styr källfilen (<namn>.html), servermappen/adressen och landningssidans namn.
 # Normalt reponamnet; en fil .rapport_deploy_namn i repo-roten ersätter det (se deploy.yml).
-intern_webbrapport_deploynamn <- function(repo_dir, rapport_repo) {
+intern_analysrapport_deploynamn <- function(repo_dir, rapport_repo) {
   fil <- file.path(repo_dir, ".rapport_deploy_namn")
   if (!file.exists(fil)) return(rapport_repo)
   namn <- gsub("[[:space:]]", "", paste(readLines(fil, n = 1, warn = FALSE), collapse = ""))
@@ -20,7 +20,7 @@ intern_validera_deploynamn <- function(namn) {
 #' Gör ett befintligt rapportrepo publicerbart på Shinyservern
 #'
 #' Lägger till `deploy.yml` och `avpublicera.yml` i `.github/workflows/` (samma
-#' mallar som nya webbrapporter får) och, om rapportens html inte heter som
+#' mallar som nya analysrapporter får) och, om rapportens html inte heter som
 #' repot, en fil `.rapport_deploy_namn` med **deploynamnet**.
 #'
 #' Deploynamnet styr tre saker: vilken fil i repo-roten som publiceras
@@ -34,7 +34,7 @@ intern_validera_deploynamn <- function(namn) {
 #' hamnar under rapportens adress, utan eget kort på landningssidan.
 #'
 #' Skriver bara lokala filer - committa och publicera själv efteråt, med
-#' [github_commit_push()] och [webbrapport_publicera()].
+#' [github_commit_push()] och [analysrapport_publicera()].
 #'
 #' @param rapport_repo Reponamn.
 #' @param deploynamn Deploynamn (se ovan) eller `NULL` = reponamnet. Skrivs till
@@ -45,7 +45,7 @@ intern_validera_deploynamn <- function(namn) {
 #'
 #' @return Osynligt: sökvägarna till de filer som skrevs.
 #' @export
-webbrapport_gor_publicerbar <- function(rapport_repo,
+analysrapport_gor_publicerbar <- function(rapport_repo,
                                         deploynamn  = NULL,
                                         grundsokvag = intern_gh_mapp(),
                                         skriv_over  = FALSE) {
@@ -58,7 +58,7 @@ webbrapport_gor_publicerbar <- function(rapport_repo,
   skrivna <- character(0)
   for (fil in c("deploy.yml", "avpublicera.yml")) {
     mal <- file.path(repo_dir, ".github", "workflows", fil)
-    ny  <- intern_las_mall("webbrapport", fil)
+    ny  <- intern_las_mall("analysrapport", fil)
     if (file.exists(mal)) {
       nuvarande <- paste(readLines(mal, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
       if (identical(trimws(nuvarande), trimws(ny))) {
@@ -70,7 +70,7 @@ webbrapport_gor_publicerbar <- function(rapport_repo,
         next
       }
     }
-    intern_skriv_mall("webbrapport", fil, mal)
+    intern_skriv_mall("analysrapport", fil, mal)
     skrivna <- c(skrivna, mal)
     cli::cli_alert_success("Skrev {.path {mal}}")
   }
@@ -81,17 +81,17 @@ webbrapport_gor_publicerbar <- function(rapport_repo,
     skrivna <- c(skrivna, namn_fil)
     cli::cli_alert_success("Deploynamn {.val {deploynamn}} skrivet till {.file .rapport_deploy_namn}")
   } else if (file.exists(namn_fil)) {
-    cli::cli_alert_info("{.file .rapport_deploy_namn} finns redan ({.val {intern_webbrapport_deploynamn(repo_dir, rapport_repo)}}) och lämnas orörd.")
+    cli::cli_alert_info("{.file .rapport_deploy_namn} finns redan ({.val {intern_analysrapport_deploynamn(repo_dir, rapport_repo)}}) och lämnas orörd.")
   }
 
-  namn <- intern_webbrapport_deploynamn(repo_dir, rapport_repo)
+  namn <- intern_analysrapport_deploynamn(repo_dir, rapport_repo)
   if (!file.exists(file.path(repo_dir, paste0(namn, ".html")))) {
     cli::cli_alert_warning(c(
       "Hittar inte {.file {namn}.html} i repo-roten - deployen stoppar utan den. ",
       "Knitta rapporten, eller ange rätt {.arg deploynamn}."))
   }
 
-  cli::cli_alert_info("Nästa steg: committa och pusha, och kör sedan {.code webbrapport_publicera(\"{rapport_repo}\")}.")
+  cli::cli_alert_info("Nästa steg: committa och pusha, och kör sedan {.code analysrapport_publicera(\"{rapport_repo}\")}.")
   invisible(skrivna)
 }
 
@@ -99,7 +99,7 @@ webbrapport_gor_publicerbar <- function(rapport_repo,
 intern_beskrivning_start <- "<!-- beskrivning:start -->"
 intern_beskrivning_slut  <- "<!-- beskrivning:slut -->"
 
-#' Sätt eller ta bort en webbrapports beskrivning för landningssidan
+#' Sätt eller ta bort en analysrapports beskrivning för landningssidan
 #'
 #' Skriver en `<meta name="description">`-rad överst i rapportens
 #' `hero_image.html`, som redan ingår i rapportens `<head>`. Landningssidans
@@ -119,7 +119,7 @@ intern_beskrivning_slut  <- "<!-- beskrivning:slut -->"
 #'
 #' @return Osynligt: sökvägen till `hero_image.html`.
 #' @export
-webbrapport_beskrivning_satt <- function(rapport_repo, beskrivning, grundsokvag = intern_gh_mapp()) {
+analysrapport_beskrivning_satt <- function(rapport_repo, beskrivning, grundsokvag = intern_gh_mapp()) {
   fil <- file.path(grundsokvag, rapport_repo, "hero_image.html")
   if (!file.exists(fil)) {
     cli::cli_abort(c("Hittar inte {.path {fil}}.",
@@ -155,8 +155,8 @@ webbrapport_beskrivning_satt <- function(rapport_repo, beskrivning, grundsokvag 
 # TRUE om rapportens html är äldre (mer än `tolerans` sekunder) än dess Rmd/qmd-källa. Källfilen letas upp
 # med reponamnet eller deploynamnet som basnamn (versaler spelar ingen roll). Hittas ingen källa är svaret
 # FALSE (kan inte jämföras). Filtider bevaras inte av git, därför toleransen.
-intern_webbrapport_html_foraldrad <- function(repo_dir, rapport_repo, tolerans = 60) {
-  namn <- intern_webbrapport_deploynamn(repo_dir, rapport_repo)
+intern_analysrapport_html_foraldrad <- function(repo_dir, rapport_repo, tolerans = 60) {
+  namn <- intern_analysrapport_deploynamn(repo_dir, rapport_repo)
   filer <- list.files(repo_dir, full.names = TRUE)
   basnamn <- tolower(basename(filer))
   html <- filer[basnamn == tolower(paste0(namn, ".html"))]
