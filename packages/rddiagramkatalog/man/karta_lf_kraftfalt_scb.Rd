@@ -21,6 +21,7 @@ karta_lf_kraftfalt_scb(
   karta_bredd = 1200,
   karta_hojd = 850,
   zoom = 1,
+  karta_fordrojning = 8,
   favicon = TRUE,
   ...,
   utmapp = rdverktyg::utskriftsmapp(),
@@ -65,9 +66,11 @@ tröskelvärdena.}
 
 \item{etikettstorlek}{Textstorlek (px) på ortnamnen.}
 
-\item{karta_bredd, karta_hojd, zoom}{Bildmått (pixlar) och pixeltäthet för png,
-se \code{\link[rddiagram:skriv_leaflet_till_fil]{rddiagram::skriv_leaflet_till_fil()}}. \code{zoom = 3} ger en skarp bild för
-utskrift. Gäller bara \code{leaflet_filformat = "png"}.}
+\item{karta_bredd, karta_hojd, zoom, karta_fordrojning}{Bildmått (pixlar),
+pixeltäthet och väntetid (sekunder, så att bakgrundskartan hinner ritas)
+för png, se \code{\link[rddiagram:skriv_leaflet_till_fil]{rddiagram::skriv_leaflet_till_fil()}}. \code{zoom = 3} ger en skarp
+bild för utskrift. En png görs utan zoomknappar och utan texten om att
+klicka på tätorterna. Gäller bara \code{leaflet_filformat = "png"}.}
 
 \item{favicon}{Ikon på webbläsarfliken för html: \code{TRUE} (standard), \code{FALSE}
 eller sökväg till en bildfil, se \code{\link[rddiagram:skriv_leaflet_till_fil]{rddiagram::skriv_leaflet_till_fil()}}.}

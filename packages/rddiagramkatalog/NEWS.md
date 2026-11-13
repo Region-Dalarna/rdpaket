@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9057
+
+* `karta_lf_kraftfalt_scb()`: en png görs utan zoomknappar och utan texten om att
+  klicka på tätorterna (går inte att klicka i en bild). Ny parameter
+  `karta_fordrojning` (standard 8 sekunder). Kräver rddiagram 0.0.0.9036.
+
 # rddiagramkatalog 0.0.0.9056
 
 * Kräver rdgeorouting 0.0.0.9007, som döljer databasens NOTIS-meddelanden i `karta_lf_kraftfalt_scb()`.

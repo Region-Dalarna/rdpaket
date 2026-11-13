@@ -40,9 +40,11 @@
 #' @param forklaringstext Texten i textrutan, som ett eller flera stycken
 #'   (en teckenvektor). `NULL` (standard) = en standardtext som anger
 #'   tröskelvärdena.
-#' @param karta_bredd,karta_hojd,zoom Bildmått (pixlar) och pixeltäthet för png,
-#'   se [rddiagram::skriv_leaflet_till_fil()]. `zoom = 3` ger en skarp bild för
-#'   utskrift. Gäller bara `leaflet_filformat = "png"`.
+#' @param karta_bredd,karta_hojd,zoom,karta_fordrojning Bildmått (pixlar),
+#'   pixeltäthet och väntetid (sekunder, så att bakgrundskartan hinner ritas)
+#'   för png, se [rddiagram::skriv_leaflet_till_fil()]. `zoom = 3` ger en skarp
+#'   bild för utskrift. En png görs utan zoomknappar och utan texten om att
+#'   klicka på tätorterna. Gäller bara `leaflet_filformat = "png"`.
 #' @param favicon Ikon på webbläsarfliken för html: `TRUE` (standard), `FALSE`
 #'   eller sökväg till en bildfil, se [rddiagram::skriv_leaflet_till_fil()].
 #' @param ... Skickas vidare till [rdgeorouting::pendling_kraftfalt()], t.ex.
@@ -80,6 +82,7 @@ karta_lf_kraftfalt_scb <- function(
     karta_bredd = 1200,
     karta_hojd = 850,
     zoom = 1,
+    karta_fordrojning = 8,
     favicon = TRUE,
     ...,
     utmapp = rdverktyg::utskriftsmapp(),
@@ -110,10 +113,14 @@ karta_lf_kraftfalt_scb <- function(
   lan_gis <- rdgis::hamta_karta("lan", regionkoder = vald_lan)
   lansnamn <- rdverktyg::hamtaregion_kod_namn(vald_lan)$region[1]
 
-  leaflet_map <- intern_bygg_kraftfaltskarta(
-    kraftfalt, lan_gis, pendlingsar = pendlingsar,
-    enskilt_troskelvarde = enskilt_troskelvarde, totalt_troskelvarde = totalt_troskelvarde,
-    kartrubrik = kartrubrik, forklaringstext = forklaringstext, etikettstorlek = etikettstorlek)
+  bygg_karta <- function(interaktiv) {
+    intern_bygg_kraftfaltskarta(
+      kraftfalt, lan_gis, pendlingsar = pendlingsar,
+      enskilt_troskelvarde = enskilt_troskelvarde, totalt_troskelvarde = totalt_troskelvarde,
+      kartrubrik = kartrubrik, forklaringstext = forklaringstext, etikettstorlek = etikettstorlek,
+      interaktiv = interaktiv)
+  }
+  leaflet_map <- bygg_karta(interaktiv = TRUE)
 
   filnamn_bas <- paste0("kraftfalt_", gsub("[^a-z0-9]+", "_", tolower(stringi::stri_trans_general(lansnamn, "Latin-ASCII"))),
                         "_ar", pendlingsar)
@@ -129,8 +136,12 @@ karta_lf_kraftfalt_scb <- function(
   }
 
   if (skriv_leaflet_fil) {
-    rddiagram::skriv_leaflet_till_fil(leaflet_map, utmapp, filnamn_bas, karta_filformat = leaflet_filformat,
-                                      karta_bredd = karta_bredd, karta_hojd = karta_hojd, zoom = zoom, favicon = favicon)
+    # en png går inte att klicka i: utan zoomknappar och utan texten om att klicka på tätorterna
+    ar_png <- tolower(sub("^\\.+", "", trimws(leaflet_filformat))) == "png"
+    karta_for_fil <- if (ar_png) bygg_karta(interaktiv = FALSE) else leaflet_map
+    rddiagram::skriv_leaflet_till_fil(karta_for_fil, utmapp, filnamn_bas, karta_filformat = leaflet_filformat,
+                                      karta_bredd = karta_bredd, karta_hojd = karta_hojd, zoom = zoom,
+                                      karta_fordrojning = karta_fordrojning, favicon = favicon)
   }
 
   if (returnera_figur) invisible(stats::setNames(list(leaflet_map), filnamn_bas))
@@ -155,7 +166,7 @@ intern_hamta_pendling_tatorter <- function(con = NA) {
 # ritdelen går att köra och testa utan databas.
 intern_bygg_kraftfaltskarta <- function(kraftfalt, lan_gis, pendlingsar, enskilt_troskelvarde,
                                         totalt_troskelvarde, kartrubrik, forklaringstext,
-                                        etikettstorlek) {
+                                        etikettstorlek, interaktiv = TRUE) {
   farg_la <- "#f28c28"
   farg_sekundar <- "#2a9d8f"
   farg_satellit <- "#c62828"
@@ -211,14 +222,15 @@ intern_bygg_kraftfaltskarta <- function(kraftfalt, lan_gis, pendlingsar, enskilt
   kalla <- htmltools::div(
     style = "background: rgba(255,255,255,0.7); padding: 2px 6px; font-size: 10px;",
     paste0("Karta skapad av: Samhällsanalys, Region Dalarna. Källa: pendlingsdata år ", pendlingsar,
-           ", bearbetning av Region Dalarna. Klicka på en tätort för att se andelen som pendlar."))
+           ", bearbetning av Region Dalarna.",
+           if (interaktiv) " Klicka på en tätort för att se andelen som pendlar."))
 
   # ===== utsnitt: länets yta, med extra plats åt öster där textrutorna ligger =====
   bb <- as.numeric(sf::st_bbox(lan_gis))  # xmin, ymin, xmax, ymax (utan namn - namngivna värden blir json-objekt)
   bredd <- bb[3] - bb[1]
   hojd <- bb[4] - bb[2]
 
-  m <- leaflet::leaflet(options = leaflet::leafletOptions(zoomSnap = 0.25)) |>
+  m <- leaflet::leaflet(options = leaflet::leafletOptions(zoomSnap = 0.25, zoomControl = interaktiv)) |>
     rddiagram::lagg_till_bakgrundskarta(etiketter = "orter", etikett_opacitet = 0.35) |>
     leaflet::fitBounds(bb[1] - 0.02 * bredd, bb[2] - 0.02 * hojd, bb[3] + 0.35 * bredd, bb[4] + 0.02 * hojd)
 

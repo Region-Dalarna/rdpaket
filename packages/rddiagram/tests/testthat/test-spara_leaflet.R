@@ -75,9 +75,11 @@ test_that("png tas direkt med webbläsaren när webshot2 misslyckas", {
   anropad <- NULL
   testthat::local_mocked_bindings(
     intern_sakerstall_webblasare = function() falsk_webblasare,
+    intern_hitta_alla_webblasare = function() c("falsk_edge", "falsk_chrome"),
     intern_png_med_webblasare = function(webblasare, html_fil, png_fil, bredd, hojd, zoom, fordrojning) {
       anropad <<- list(webblasare = webblasare, bredd = bredd, zoom = zoom)
-      writeBin(as.raw(1), png_fil)
+      if (webblasare == "falsk_chrome") writeBin(as.raw(1), png_fil)  # Edge "misslyckas", Chrome lyckas
+      file.exists(png_fil)
     }
   )
   testthat::local_mocked_bindings(webshot = function(...) stop("blockerad av grupprincip"), .package = "webshot2")
@@ -86,5 +88,18 @@ test_that("png tas direkt med webbläsaren när webshot2 misslyckas", {
     "webshot2 kunde inte starta"
   )
   expect_equal(anropad$zoom, 3)
+  expect_equal(anropad$webblasare, "falsk_chrome")  # Edge provades först, sedan Chrome
   expect_true(file.exists(file.path(mapp, "k.png")))
+})
+
+test_that("Edge provas före Chrome när ingen webbläsare angetts", {
+  withr::local_envvar(CHROMOTE_CHROME = "")
+  edge <- withr::local_tempfile(fileext = ".exe")
+  chrome <- withr::local_tempfile(fileext = ".exe")
+  file.create(edge, chrome)
+  testthat::local_mocked_bindings(find_chrome = function() chrome, .package = "chromote")
+  testthat::local_mocked_bindings(Sys.which = function(names) stats::setNames(edge, names), .package = "base")
+  alla <- intern_hitta_alla_webblasare()
+  expect_equal(alla[[1]], edge)
+  expect_true(chrome %in% alla)
 })

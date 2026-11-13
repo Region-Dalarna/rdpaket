@@ -1,3 +1,10 @@
+# rddiagram 0.0.0.9036
+
+* `skriv_leaflet_till_fil()` (png utan webshot2): Edge provas före Chrome, och
+  webbläsaren startas utan `--disable-gpu` men med programvaru-WebGL
+  (`--enable-unsafe-swiftshader`), så att bakgrundskartan ritas även i nyare Edge
+  där WebGL annars saknas i headless-läge. Väntar minst 8 sekunder på kartan.
+
 # rddiagram 0.0.0.9035
 
 * `skriv_leaflet_till_fil()`: standardfaviconen i html-kartor är nu Region Dalarnas

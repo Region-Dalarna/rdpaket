@@ -107,8 +107,16 @@ skriv_leaflet_till_fil <- function(leaflet_objekt, output_mapp, filnamn_karta,
       file.exists(fullpath)
     }, error = function(e) FALSE)
     if (!klar) {
-      message("webshot2 kunde inte starta webbl\u00e4saren - tar bilden direkt med ", basename(webblasare), ".")
-      intern_png_med_webblasare(webblasare, temp_html, fullpath, karta_bredd, karta_hojd, zoom, karta_fordrojning)
+      # Edge provas först, därefter Chrome (se intern_hitta_alla_webblasare()); den första som ger en bild räcker
+      for (kandidat in intern_hitta_alla_webblasare()) {
+        message("webshot2 kunde inte starta webbl\u00e4saren - tar bilden direkt med ", basename(kandidat), ".")
+        klar <- isTRUE(intern_png_med_webblasare(kandidat, temp_html, fullpath, karta_bredd, karta_hojd, zoom, karta_fordrojning))
+        if (klar) break
+      }
+      if (!klar) {
+        stop("Kunde inte ta bilden med n\u00e5gon webbl\u00e4sare. Spara kartan som html i st\u00e4llet ",
+             "(leaflet_filformat = \"html\") och ta en sk\u00e4rmbild eller skriv ut den som pdf.", call. = FALSE)
+      }
     }
 
   } else {
@@ -135,30 +143,35 @@ intern_sakerstall_webblasare <- function() {
 }
 
 #' @noRd
-intern_hitta_webblasare <- function() {
-  # sökväg angiven av användaren (CHROMOTE_CHROME) gäller först
+intern_hitta_alla_webblasare <- function() {
+  # sökväg angiven av användaren (CHROMOTE_CHROME) gäller först, därefter Microsoft Edge, sist Chrome
   angiven <- Sys.getenv("CHROMOTE_CHROME", "")
-  if (nzchar(angiven) && file.exists(angiven)) return(angiven)
-
-  chrome <- tryCatch(unname(chromote::find_chrome()), error = function(e) NULL)
-  if (length(chrome) == 1 && !is.na(chrome) && nzchar(chrome) && file.exists(chrome)) return(chrome)
-
   edge <- c(
     "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
     "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
     "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
     Sys.which("microsoft-edge")
   )
-  edge <- edge[nzchar(edge) & file.exists(edge)]
-  if (length(edge) > 0) {
-    Sys.setenv(CHROMOTE_CHROME = edge[[1]])
-    message("Hittade ingen Chrome - anv\u00e4nder Microsoft Edge: ", edge[[1]])
-    return(edge[[1]])
+  chrome <- tryCatch(unname(chromote::find_chrome()), error = function(e) NULL)
+  kandidater <- c(angiven, edge, if (length(chrome) == 1) chrome)
+  kandidater <- kandidater[!is.na(kandidater) & nzchar(kandidater) & file.exists(kandidater)]
+  unique(kandidater)
+}
+
+#' @noRd
+intern_hitta_webblasare <- function() {
+  alla <- intern_hitta_alla_webblasare()
+  if (length(alla) == 0) return(NULL)
+  forsta <- alla[[1]]
+  if (!nzchar(Sys.getenv("CHROMOTE_CHROME", ""))) {
+    Sys.setenv(CHROMOTE_CHROME = forsta)
+    message("Anv\u00e4nder ", basename(forsta), " f\u00f6r att ta bilden: ", forsta)
   }
-  NULL
+  forsta
 }
 
 # Tar en png av en html-fil direkt med Chrome/Edge (headless), utan webshot2/chromote/processx.
+# Returnerar (osynligt) TRUE om bilden skapades.
 #' @noRd
 intern_png_med_webblasare <- function(webblasare, html_fil, png_fil, bredd, hojd, zoom, fordrojning) {
   profil <- tempfile("webblasare_profil_")
@@ -166,19 +179,20 @@ intern_png_med_webblasare <- function(webblasare, html_fil, png_fil, bredd, hojd
   on.exit(unlink(profil, recursive = TRUE), add = TRUE)
   png_fil <- normalizePath(png_fil, winslash = "/", mustWork = FALSE)
   url <- paste0("file:///", sub("^/", "", normalizePath(html_fil, winslash = "/", mustWork = TRUE)))
-  args <- c("--headless", "--disable-gpu", "--hide-scrollbars", "--no-first-run",
+  # Bakgrundskartan ritas med WebGL (MapLibre). Utan grafikkort i headless-läge saknas WebGL om inte
+  # programvarurendering (SwiftShader) uttryckligen tillåts (och --disable-gpu ska inte anges) - nyare
+  # Chrome/Edge gör det inte på egen hand, och då blir bakgrunden tom medan resten av kartan syns.
+  args <- c("--headless", "--hide-scrollbars", "--no-first-run",
+            "--enable-webgl", "--ignore-gpu-blocklist", "--enable-unsafe-swiftshader",
             paste0("--user-data-dir=", shQuote(normalizePath(profil, winslash = "/", mustWork = FALSE))),
             paste0("--screenshot=", shQuote(png_fil)),
             paste0("--window-size=", bredd, ",", hojd),
             paste0("--force-device-scale-factor=", zoom),
-            paste0("--virtual-time-budget=", round(max(fordrojning, 5) * 1000)),
+            paste0("--virtual-time-budget=", round(max(fordrojning, 8) * 1000)),
             shQuote(url))
+  unlink(png_fil)
   suppressWarnings(system2(webblasare, args, stdout = FALSE, stderr = FALSE, timeout = 120))
-  if (!file.exists(png_fil)) {
-    stop("Kunde inte ta bilden med webbl\u00e4saren (", webblasare, "). Spara kartan som html i st\u00e4llet ",
-         "(leaflet_filformat = \"html\") och ta en sk\u00e4rmbild eller skriv ut den som pdf.", call. = FALSE)
-  }
-  invisible(png_fil)
+  invisible(file.exists(png_fil))
 }
 
 # Lägger en favicon i en leaflet-karta (html-filens <head>). TRUE = Region Dalarnas ikon, FALSE = ingen,
