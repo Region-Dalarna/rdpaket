@@ -18,6 +18,10 @@ karta_lf_kraftfalt_scb(
   kartrubrik = "Kraftfält",
   forklaringstext = NULL,
   etikettstorlek = 13,
+  karta_bredd = 1200,
+  karta_hojd = 850,
+  zoom = 1,
+  favicon = TRUE,
   ...,
   utmapp = rdverktyg::utskriftsmapp(),
   skriv_leaflet_fil = TRUE,
@@ -60,6 +64,13 @@ på kraftfälten runt pendlingsvägarna.}
 tröskelvärdena.}
 
 \item{etikettstorlek}{Textstorlek (px) på ortnamnen.}
+
+\item{karta_bredd, karta_hojd, zoom}{Bildmått (pixlar) och pixeltäthet för png,
+se \code{\link[rddiagram:skriv_leaflet_till_fil]{rddiagram::skriv_leaflet_till_fil()}}. \code{zoom = 3} ger en skarp bild för
+utskrift. Gäller bara \code{leaflet_filformat = "png"}.}
+
+\item{favicon}{Ikon på webbläsarfliken för html: \code{TRUE} (standard), \code{FALSE}
+eller sökväg till en bildfil, se \code{\link[rddiagram:skriv_leaflet_till_fil]{rddiagram::skriv_leaflet_till_fil()}}.}
 
 \item{...}{Skickas vidare till \code{\link[rdgeorouting:pendling_kraftfalt]{rdgeorouting::pendling_kraftfalt()}}, t.ex.
 \code{kant_tabell} för att räkna på ett annat vägnät.}
