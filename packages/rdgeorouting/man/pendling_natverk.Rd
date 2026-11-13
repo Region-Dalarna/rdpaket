@@ -40,9 +40,9 @@ tabell med vägsegment och tabell med noder. Standard är bilnätet
 \item{kant_id_kol, kost_kol}{Kolumn med segmentets id och kolumn med kostnaden
 (meter) i vägnätet. Rutterna söks med samma kostnad i båda riktningarna.}
 
-\item{tatorter}{Tätorterna som \code{sf}-objekt med kolumnerna \code{tokod},
+\item{tatorter}{Tätorternas punkter som \code{sf}-objekt med kolumnerna \code{tokod},
 \code{tobeteckn}, \code{kommun}, \code{kommunnamn}, \code{lan} och geometri, eller \code{NULL} för att
-hämta \code{karta.tatorter} ur geodata. Pendlingstabellens koder ska vara
+hämta \code{karta.tatortspunkter} ur geodata. Pendlingstabellens koder ska vara
 SCB:s tätortskoder.}
 }
 \value{

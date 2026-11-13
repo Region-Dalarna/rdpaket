@@ -1,7 +1,7 @@
 # Pendlingsanalyser: pendlingsnätverk, kraftfält och in-/utpendling på ruta.
 #
 # Kräver att vägnätet (en pgRouting-graf med kant- och nodtabell) redan finns i ruttanalyser, som
-# standard grafer.nvdb_bil_adresser. Tätorterna hämtas ur geodata (karta.tatorter) och skrivs till
+# standard grafer.nvdb_bil_adresser. Tätorterna hämtas ur geodata (karta.tatortspunkter) och skrivs till
 # grafer.pendling_tatort vid varje körning.
 
 intern_utskriftsmapp <- function() {
@@ -21,7 +21,7 @@ intern_hamta_tatorter <- function() {
   cg <- rdpostgres::uppkoppling_db(db_name = "geodata", service_name = "rd_geodata")
   if (is.null(cg)) stop("Kunde inte ansluta till geodata för att hämta tätorterna.", call. = FALSE)
   on.exit(DBI::dbDisconnect(cg), add = TRUE)
-  x <- sf::st_read(cg, query = "SELECT * FROM karta.tatorter", quiet = TRUE)
+  x <- sf::st_read(cg, query = "SELECT * FROM karta.tatortspunkter", quiet = TRUE)
   x <- x[, c("tatortskod", "tatort", "kommun", "kommunnamn", "lan")]
   names(x)[names(x) == "tatortskod"] <- "tokod"
   names(x)[names(x) == "tatort"] <- "tobeteckn"
@@ -53,7 +53,7 @@ intern_pendling_forbered <- function(tabell_pend_relation, con, schema_graf, kan
 
   if (is.null(tatorter)) tatorter <- intern_hamta_tatorter()
   if (!any(unique(tabell_pend_relation$from_id) %in% tatorter$tokod)) {
-    stop("Inga from_id i pendlingstabellen matchar tätortskoderna (tatortskod) i karta.tatorter.", call. = FALSE)
+    stop("Inga from_id i pendlingstabellen matchar tätortskoderna (tatortskod) i karta.tatortspunkter.", call. = FALSE)
   }
   tatorter <- sf::st_transform(tatorter, srid)
   sf::st_write(tatorter, con, DBI::Id(schema = schema_graf, table = "pendling_tatort"),
@@ -80,9 +80,9 @@ intern_pendling_forbered <- function(tabell_pend_relation, con, schema_graf, kan
 #'   `grafer.nvdb_bil_adresser` och dess `_vertices_pgr`.
 #' @param kant_id_kol,kost_kol Kolumn med segmentets id och kolumn med kostnaden
 #'   (meter) i vägnätet. Rutterna söks med samma kostnad i båda riktningarna.
-#' @param tatorter Tätorterna som `sf`-objekt med kolumnerna `tokod`,
+#' @param tatorter Tätorternas punkter som `sf`-objekt med kolumnerna `tokod`,
 #'   `tobeteckn`, `kommun`, `kommunnamn`, `lan` och geometri, eller `NULL` för att
-#'   hämta `karta.tatorter` ur geodata. Pendlingstabellens koder ska vara
+#'   hämta `karta.tatortspunkter` ur geodata. Pendlingstabellens koder ska vara
 #'   SCB:s tätortskoder.
 #' @param dist Max avstånd (m) från tätort till närmaste vägnod.
 #' @param skriv_till_gpkg Skriv resultatet till GeoPackage i stället för att
@@ -170,9 +170,9 @@ pendling_natverk <- function(tabell_pend_relation, con = NA, dist = 2000,
 #'   `grafer.nvdb_bil_adresser` och dess `_vertices_pgr`.
 #' @param kant_id_kol,kost_kol Kolumn med segmentets id och kolumn med kostnaden
 #'   (meter) i vägnätet. Rutterna söks med samma kostnad i båda riktningarna.
-#' @param tatorter Tätorterna som `sf`-objekt med kolumnerna `tokod`,
+#' @param tatorter Tätorternas punkter som `sf`-objekt med kolumnerna `tokod`,
 #'   `tobeteckn`, `kommun`, `kommunnamn`, `lan` och geometri, eller `NULL` för att
-#'   hämta `karta.tatorter` ur geodata. Pendlingstabellens koder ska vara
+#'   hämta `karta.tatortspunkter` ur geodata. Pendlingstabellens koder ska vara
 #'   SCB:s tätortskoder.
 #' @param dist Max avstånd (m) från tätort till vägnod.
 #' @param skriv_till_gpkg Skriv lagren till GeoPackage i stället för att
