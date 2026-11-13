@@ -48,6 +48,12 @@
 #'   även där webbläsaren saknar WebGL, t.ex. för png-filer på en dator där
 #'   headless Edge/Chrome inte får fram WebGL. Kontrollera Esris användarvillkor
 #'   för ditt användningsfall.
+#' @param bakgrund_dimning Hur mycket bakgrundskartan ska tonas ner, mellan 0 och 1.
+#'   0 (standard) = ingen nedtoning. Annars läggs en ljusgrå, delvis genomskinlig
+#'   yta över bakgrundskartan (under kraftfälten, prickarna och texten), så att
+#'   bakgrunden blir blekare och mer grå. Ungefär 0.4-0.6 ger en diskret bakgrund.
+#'   Gäller både html och png.
+#' @param bakgrund_dimfarg Färgen på nedtoningsytan (standard `"#f2f2f2"`).
 #' @param karta_bredd,karta_hojd,zoom,karta_fordrojning Bildmått (pixlar),
 #'   pixeltäthet och väntetid (sekunder, så att bakgrundskartan hinner ritas)
 #'   för png, se [rddiagram::skriv_leaflet_till_fil()]. `zoom = 3` ger en skarp
@@ -93,6 +99,8 @@ karta_lf_kraftfalt_scb <- function(
     forklaringstext = NULL,
     etikettstorlek = 13,
     bakgrundskarta = "openfreemap",
+    bakgrund_dimning = 0,
+    bakgrund_dimfarg = "#f2f2f2",
     karta_bredd = 1200,
     karta_hojd = 850,
     zoom = 1,
@@ -109,6 +117,10 @@ karta_lf_kraftfalt_scb <- function(
   # ========================================== Inställningar ============================================
 
   bakgrundskarta <- match.arg(bakgrundskarta, c("openfreemap", "esri_gra"))
+  if (!is.numeric(bakgrund_dimning) || length(bakgrund_dimning) != 1 || is.na(bakgrund_dimning) ||
+      bakgrund_dimning < 0 || bakgrund_dimning > 1) {
+    stop("bakgrund_dimning ska vara ett tal mellan 0 och 1.", call. = FALSE)
+  }
   intern_kontrollera_utdata(c(skriv_leaflet_fil, skriv_gpkg_fil), returnera_figur, c("skriv_leaflet_fil", "skriv_gpkg_fil"))
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_leaflet_fil || skriv_gpkg_fil)
 
@@ -133,7 +145,8 @@ karta_lf_kraftfalt_scb <- function(
       kraftfalt, lan_gis, pendlingsar = pendlingsar,
       enskilt_troskelvarde = enskilt_troskelvarde, totalt_troskelvarde = totalt_troskelvarde,
       kartrubrik = kartrubrik, forklaringstext = forklaringstext, etikettstorlek = etikettstorlek,
-      interaktiv = interaktiv, bakgrundskarta = bakgrundskarta)
+      interaktiv = interaktiv, bakgrundskarta = bakgrundskarta,
+      bakgrund_dimning = bakgrund_dimning, bakgrund_dimfarg = bakgrund_dimfarg)
   }
   leaflet_map <- bygg_karta(interaktiv = TRUE)
 
@@ -201,7 +214,8 @@ intern_hamta_pendling_tatorter <- function(con = NA) {
 # ritdelen går att köra och testa utan databas.
 intern_bygg_kraftfaltskarta <- function(kraftfalt, lan_gis, pendlingsar, enskilt_troskelvarde,
                                         totalt_troskelvarde, kartrubrik, forklaringstext,
-                                        etikettstorlek, interaktiv = TRUE, bakgrundskarta = "openfreemap") {
+                                        etikettstorlek, interaktiv = TRUE, bakgrundskarta = "openfreemap",
+                                        bakgrund_dimning = 0, bakgrund_dimfarg = "#f2f2f2") {
   farg_la <- "#f28c28"
   farg_sekundar <- "#2a9d8f"
   farg_satellit <- "#c62828"
@@ -275,6 +289,12 @@ intern_bygg_kraftfaltskarta <- function(kraftfalt, lan_gis, pendlingsar, enskilt
       options = leaflet::tileOptions(tileSize = 128, zoomOffset = 1))
   } else {
     m <- rddiagram::lagg_till_bakgrundskarta(m, etiketter = "orter", etikett_opacitet = 0.35)
+  }
+  if (bakgrund_dimning > 0) {
+    # ljus yta över bakgrunden men under våra lager (de läggs till efter), utan att fånga klick
+    m <- leaflet::addRectangles(m, lng1 = -180, lat1 = -85, lng2 = 180, lat2 = 85, stroke = FALSE,
+                                fillColor = bakgrund_dimfarg, fillOpacity = bakgrund_dimning,
+                                options = leaflet::pathOptions(interactive = FALSE))
   }
   m <- leaflet::fitBounds(m, bb[1] - 0.02 * bredd, bb[2] - 0.02 * hojd, bb[3] + 0.35 * bredd, bb[4] + 0.02 * hojd)
 

@@ -19,6 +19,8 @@ karta_lf_kraftfalt_scb(
   forklaringstext = NULL,
   etikettstorlek = 13,
   bakgrundskarta = "openfreemap",
+  bakgrund_dimning = 0,
+  bakgrund_dimfarg = "#f2f2f2",
   karta_bredd = 1200,
   karta_hojd = 850,
   zoom = 1,
@@ -75,6 +77,14 @@ kraftfältskartans egna). Den ritas av vanliga bildrutor och fungerar därför
 även där webbläsaren saknar WebGL, t.ex. för png-filer på en dator där
 headless Edge/Chrome inte får fram WebGL. Kontrollera Esris användarvillkor
 för ditt användningsfall.}
+
+\item{bakgrund_dimning}{Hur mycket bakgrundskartan ska tonas ner, mellan 0 och 1.
+0 (standard) = ingen nedtoning. Annars läggs en ljusgrå, delvis genomskinlig
+yta över bakgrundskartan (under kraftfälten, prickarna och texten), så att
+bakgrunden blir blekare och mer grå. Ungefär 0.4-0.6 ger en diskret bakgrund.
+Gäller både html och png.}
+
+\item{bakgrund_dimfarg}{Färgen på nedtoningsytan (standard \code{"#f2f2f2"}).}
 
 \item{karta_bredd, karta_hojd, zoom, karta_fordrojning}{Bildmått (pixlar),
 pixeltäthet och väntetid (sekunder, så att bakgrundskartan hinner ritas)
