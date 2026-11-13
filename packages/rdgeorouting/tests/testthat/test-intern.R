@@ -23,3 +23,11 @@ test_that("intern_rutt_con släpper igenom en befintlig anslutning", {
   expect_identical(res$con, fejk)
   expect_false(res$egen)
 })
+
+test_that("intern_tyst_notiser() döljer bara databasens notiser", {
+  expect_silent(intern_tyst_notiser(message("NOTIS:  tabell \"la\" finns inte, hoppar över\n")))
+  expect_silent(intern_tyst_notiser(message("NOTICE:  Ger rättigheter på table: grafer.data")))
+  # andra meddelanden (t.ex. "Karta skapad: ...") passerar
+  expect_message(intern_tyst_notiser(message("Karta skapad: x.html")), "Karta skapad")
+  expect_equal(intern_tyst_notiser({ message("NOTIS:  x"); 42 }), 42)
+})

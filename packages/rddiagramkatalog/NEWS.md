@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9056
+
+* Kräver rdgeorouting 0.0.0.9007, som döljer databasens NOTIS-meddelanden i `karta_lf_kraftfalt_scb()`.
+
 # rddiagramkatalog 0.0.0.9055
 
 * Kräver rddiagram 0.0.0.9035, där html-kartorna får Region Dalarnas ikon som favicon.

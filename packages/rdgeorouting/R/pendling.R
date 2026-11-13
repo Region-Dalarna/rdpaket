@@ -38,7 +38,7 @@ intern_pendling_forbered <- function(tabell_pend_relation, con, schema_graf, kan
   cc <- intern_rutt_con(con, adm = TRUE, standard_db = "ruttanalyser")
   con <- cc$con
   # tysta NOTICE-meddelanden från databasen ("tabell finns inte, hoppar över", "Ger rättigheter på ...")
-  DBI::dbExecute(con, "SET client_min_messages TO warning;")
+  intern_dbexec(con, "SET client_min_messages TO warning;")
   ok <- FALSE
   on.exit(if (!ok) intern_stang(cc), add = TRUE)
 
@@ -66,18 +66,18 @@ intern_pendling_forbered <- function(tabell_pend_relation, con, schema_graf, kan
     stop("Inga from_id i pendlingstabellen matchar tätortskoderna (tatortskod) i karta.tatortspunkter.", call. = FALSE)
   }
   tatorter <- sf::st_transform(tatorter, srid)
-  sf::st_write(tatorter, con, DBI::Id(schema = schema_graf, table = "pendling_tatort"),
-               delete_layer = TRUE, quiet = TRUE)
+  intern_tyst_notiser(sf::st_write(tatorter, con, DBI::Id(schema = schema_graf, table = "pendling_tatort"),
+                                   delete_layer = TRUE, quiet = TRUE))
   # säkerställ att geometrikolumnen har ett registrerat koordinatsystem (annars blir SRID 0 i alla
   # lager som bygger på tabellen och sf kan inte läsa dem: "crs not found: EPSG:0")
-  DBI::dbExecute(con, glue::glue(
+  intern_dbexec(con, glue::glue(
     "ALTER TABLE {schema_graf}.pendling_tatort ALTER COLUMN geom TYPE geometry(Geometry, {srid})
      USING ST_SetSRID(geom, {srid});"))
-  DBI::dbExecute(con, glue::glue(
+  intern_dbexec(con, glue::glue(
     "CREATE INDEX IF NOT EXISTS pendling_tatort_geom_idx ON {schema_graf}.pendling_tatort USING gist (geom);"))
 
-  DBI::dbWriteTable(con, DBI::Id(schema = schema_graf, table = "data"),
-                    tabell_pend_relation[, c("from_id", "to_id", "n")], overwrite = TRUE)
+  intern_tyst_notiser(DBI::dbWriteTable(con, DBI::Id(schema = schema_graf, table = "data"),
+                                        tabell_pend_relation[, c("from_id", "to_id", "n")], overwrite = TRUE))
 
   ok <- TRUE
   list(cc = cc, kant = paste0(schema_graf, ".", kant_tabell), nod = paste0(schema_graf, ".", nod_tabell),
@@ -121,11 +121,11 @@ pendling_natverk <- function(tabell_pend_relation, con = NA, dist = 2000,
   fb <- intern_pendling_forbered(tabell_pend_relation, con, schema_graf, kant_tabell, nod_tabell, tatorter)
   on.exit(intern_stang(fb$cc), add = TRUE)
   con <- fb$cc$con
-  DBI::dbExecute(con, glue::glue("SET search_path TO {schema_graf}, public;"))
+  intern_dbexec(con, glue::glue("SET search_path TO {schema_graf}, public;"))
   kant_full <- fb$kant; nod_full <- fb$nod; nodgeom <- fb$nodgeom; tatort_tabell <- fb$tatort
 
-  DBI::dbExecute(con, "DROP TABLE IF EXISTS tatort_vertex;")
-  DBI::dbExecute(con, glue::glue("
+  intern_dbexec(con, "DROP TABLE IF EXISTS tatort_vertex;")
+  intern_dbexec(con, glue::glue("
     CREATE TEMP TABLE tatort_vertex AS
     SELECT t.tokod, e.id, e.dist
     FROM {tatort_tabell} t
@@ -135,8 +135,8 @@ pendling_natverk <- function(tabell_pend_relation, con = NA, dist = 2000,
     ) AS e ON true
     WHERE dist < {dist};"))
 
-  DBI::dbExecute(con, "DROP TABLE IF EXISTS combinations;")
-  DBI::dbExecute(con, glue::glue("
+  intern_dbexec(con, "DROP TABLE IF EXISTS combinations;")
+  intern_dbexec(con, glue::glue("
     CREATE TEMP TABLE combinations AS
     SELECT c.*, t.id AS start_vid, f.id AS end_vid
     FROM {schema_graf}.data c
@@ -215,11 +215,11 @@ pendling_kraftfalt <- function(tabell_pend_relation, ut_mapp = NA, gpkg_namn = N
   fb <- intern_pendling_forbered(tabell_pend_relation, con, schema_graf, kant_tabell, nod_tabell, tatorter)
   on.exit(intern_stang(fb$cc), add = TRUE)
   con <- fb$cc$con
-  DBI::dbExecute(con, glue::glue("SET search_path TO {schema_graf}, public;"))
+  intern_dbexec(con, glue::glue("SET search_path TO {schema_graf}, public;"))
   kant_full <- fb$kant; nod_full <- fb$nod; nodgeom <- fb$nodgeom; tatort_tabell <- fb$tatort
   et <- enskilt_troskelvarde; tt <- totalt_troskelvarde
 
-  kor <- function(drop, sql) { DBI::dbExecute(con, drop); DBI::dbExecute(con, sql) }
+  kor <- function(drop, sql) { intern_dbexec(con, drop); intern_dbexec(con, sql) }
 
   kor("DROP TABLE IF EXISTS tatort_vertex;", glue::glue("
     CREATE TEMP TABLE tatort_vertex AS
@@ -455,7 +455,7 @@ intern_rutor_kalla <- function(rutor, con_arg, id_kol) {
 
     if (anvand_postgis) {
       DBI::dbWriteTable(con_arg, "rutor_tmp", rutor, overwrite = TRUE, temporary = TRUE)
-      DBI::dbExecute(con_arg, "CREATE INDEX ON rutor_tmp USING GIST (geom);")
+      intern_dbexec(con_arg, "CREATE INDEX ON rutor_tmp USING GIST (geom);")
       srid <- sf::st_crs(rutor)$epsg
       if (is.na(srid)) stop("Kunde inte avgöra SRID för `rutor`.", call. = FALSE)
     }

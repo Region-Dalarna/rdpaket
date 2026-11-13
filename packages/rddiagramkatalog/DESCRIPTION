@@ -1,6 +1,6 @@
 Package: rddiagramkatalog
 Title: Katalog av färdiga diagramfunktioner för Region Dalarnas rapporter
-Version: 0.0.0.9055
+Version: 0.0.0.9056
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
@@ -34,7 +34,7 @@ Imports:
     pxweb2r,
     RColorBrewer,
     rddiagram (>= 0.0.0.9035),
-    rdgeorouting (>= 0.0.0.9005),
+    rdgeorouting (>= 0.0.0.9007),
     rdgis,
     rdhamtadata,
     rdpostgres,

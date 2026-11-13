@@ -1,3 +1,10 @@
+# rdgeorouting 0.0.0.9007
+
+* `pendling_kraftfalt()` och `pendling_natverk()` döljer nu databasens NOTICE-/NOTIS-
+  meddelanden i R ("tabell ... finns inte, hoppar över", "Ger rättigheter på
+  table ...") i stället för att bara be servern tiga, vilket inte räckte.
+  Övriga meddelanden och varningar visas som förut.
+
 # rdgeorouting 0.0.0.9006
 
 ## PostGIS-funktioner flyttade
