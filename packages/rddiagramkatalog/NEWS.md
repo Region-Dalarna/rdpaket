@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9059
+
+* Kräver rddiagram 0.0.0.9038 (kontroll av att png-filen uppdaterats).
+
 # rddiagramkatalog 0.0.0.9058
 
 * Kräver rddiagram 0.0.0.9037 och rdgeorouting 0.0.0.9008.

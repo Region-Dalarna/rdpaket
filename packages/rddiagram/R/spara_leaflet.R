@@ -223,7 +223,20 @@ intern_png_med_webblasare <- function(webblasare, html_fil, png_fil, bredd, hojd
     message("Bilden ser ut att sakna bakgrundskarta (webbl\u00e4saren fick inte fram WebGL). Prova en h\u00f6gre ",
             "karta_fordrojning, eller spara kartan som html och ta en sk\u00e4rmbild.")
   }
-  invisible(file.copy(bast, png_fil, overwrite = TRUE))
+  kopierad <- isTRUE(file.copy(bast, png_fil, overwrite = TRUE))
+  # kontrollera att målfilen faktiskt blev uppdaterad (t.ex. inte låst av ett program som har bilden öppen)
+  if (kopierad) {
+    ny <- file.exists(png_fil) && file.size(png_fil) == file.size(bast) &&
+      as.numeric(difftime(Sys.time(), file.mtime(png_fil), units = "secs")) < 120
+    if (!ny) {
+      message("Varning: ", png_fil, " verkar inte ha uppdaterats (storlek ", file.size(png_fil), " byte, \u00e4ndrad ",
+              format(file.mtime(png_fil), "%Y-%m-%d %H:%M:%S"), "; nu \u00e4r klockan ", format(Sys.time(), "%H:%M:%S"),
+              "). St\u00e4ng bilden om den \u00e4r \u00f6ppen i ett program, och uppdatera mappen.")
+    }
+  } else {
+    message("Kunde inte skriva ", png_fil, ". St\u00e4ng bilden om den \u00e4r \u00f6ppen i ett program, eller kontrollera skrivr\u00e4ttigheterna.")
+  }
+  invisible(kopierad)
 }
 
 # Lägger en favicon i en leaflet-karta (html-filens <head>). TRUE = Region Dalarnas ikon, FALSE = ingen,

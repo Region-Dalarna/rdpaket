@@ -1,3 +1,11 @@
+# rddiagram 0.0.0.9038
+
+* `skriv_leaflet_till_fil()` (png via webbläsaren): efter att bilden kopierats till
+  målmappen kontrolleras att målfilen faktiskt uppdaterats; annars visas ett
+  meddelande med filens storlek och ändringstid, och ett fel om kopieringen
+  misslyckas (tidigare kunde meddelandet "Karta skapad" visas utan att filen
+  ändrats).
+
 # rddiagram 0.0.0.9037
 
 * `skriv_leaflet_till_fil()` (png utan webshot2): webbläsaren provas med flera
