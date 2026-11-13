@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9055
+
+* Kräver rddiagram 0.0.0.9035, där html-kartorna får Region Dalarnas ikon som favicon.
+
 # rddiagramkatalog 0.0.0.9054
 
 * `karta_lf_kraftfalt_scb()`: nya parametrar `karta_bredd`, `karta_hojd`, `zoom`

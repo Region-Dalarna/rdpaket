@@ -52,8 +52,8 @@ bakgrundskartan hinner ritas. Gäller bara \code{"png"}.}
 samma storlek på text och symboler men två respektive tre gånger så många
 pixlar - skarpare, för utskrift och presentationer.}
 
-\item{favicon}{Ikonen som visas på webbläsarens flik. \code{TRUE} (standard) = en
-enkel inbyggd kartikon, \code{FALSE} = ingen, eller sökväg till en png-, svg-
+\item{favicon}{Ikonen som visas på webbläsarens flik. \code{TRUE} (standard) = Region
+Dalarnas ikon (följer med paketet), \code{FALSE} = ingen, eller sökväg till en png-, svg-
 eller ico-fil som bäddas in i html-filen. Gäller bara \code{"html"}.}
 }
 \value{

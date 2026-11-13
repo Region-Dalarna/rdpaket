@@ -29,8 +29,8 @@
 #'   pixlar - skarpare, för utskrift och presentationer.
 #' @param karta_fordrojning Antal sekunder att vänta innan bilden tas, så att
 #'   bakgrundskartan hinner ritas. Gäller bara `"png"`.
-#' @param favicon Ikonen som visas på webbläsarens flik. `TRUE` (standard) = en
-#'   enkel inbyggd kartikon, `FALSE` = ingen, eller sökväg till en png-, svg-
+#' @param favicon Ikonen som visas på webbläsarens flik. `TRUE` (standard) = Region
+#'   Dalarnas ikon (följer med paketet), `FALSE` = ingen, eller sökväg till en png-, svg-
 #'   eller ico-fil som bäddas in i html-filen. Gäller bara `"html"`.
 #'
 #' @return Osynligt: filens sökväg. Sökvägen skrivs också ut som ett meddelande.
@@ -181,19 +181,25 @@ intern_png_med_webblasare <- function(webblasare, html_fil, png_fil, bredd, hojd
   invisible(png_fil)
 }
 
-# Lägger en favicon i en leaflet-karta (html-filens <head>). TRUE = inbyggd kartikon, FALSE = ingen,
+# Lägger en favicon i en leaflet-karta (html-filens <head>). TRUE = Region Dalarnas ikon, FALSE = ingen,
 # annars sökväg till en png-, svg- eller ico-fil som bäddas in.
 #' @noRd
 intern_lagg_till_favicon <- function(leaflet_objekt, favicon) {
   if (isFALSE(favicon) || is.null(favicon)) return(leaflet_objekt)
 
   href <- if (isTRUE(favicon)) {
-    svg <- paste0(
-      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>",
-      "<rect width='32' height='32' rx='6' fill='#158daf'/>",
-      "<path d='M16 5a7 7 0 0 0-7 7c0 5 7 14 7 14s7-9 7-14a7 7 0 0 0-7-7z' fill='#fff'/>",
-      "<circle cx='16' cy='12' r='2.6' fill='#158daf'/></svg>")
-    paste0("data:image/svg+xml,", utils::URLencode(svg, reserved = TRUE))
+    # Region Dalarnas ikon (256x256 png ur favicon.ico i Region-Dalarna/depot), följer med paketet
+    ikon <- system.file("extdata", "favicon_regiondalarna.png", package = "rddiagram")
+    if (nzchar(ikon)) {
+      paste0("data:image/png;base64,", jsonlite::base64_enc(readBin(ikon, "raw", file.size(ikon))))
+    } else {
+      svg <- paste0(
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>",
+        "<rect width='32' height='32' rx='6' fill='#158daf'/>",
+        "<path d='M16 5a7 7 0 0 0-7 7c0 5 7 14 7 14s7-9 7-14a7 7 0 0 0-7-7z' fill='#fff'/>",
+        "<circle cx='16' cy='12' r='2.6' fill='#158daf'/></svg>")
+      paste0("data:image/svg+xml,", utils::URLencode(svg, reserved = TRUE))
+    }
   } else {
     if (!is.character(favicon) || length(favicon) != 1 || !file.exists(favicon)) {
       stop("favicon ska vara TRUE, FALSE eller s\u00f6kv\u00e4gen till en befintlig bildfil.", call. = FALSE)

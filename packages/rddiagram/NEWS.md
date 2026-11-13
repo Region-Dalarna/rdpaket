@@ -1,3 +1,9 @@
+# rddiagram 0.0.0.9035
+
+* `skriv_leaflet_till_fil()`: standardfaviconen i html-kartor är nu Region Dalarnas
+  ikon (256x256 png ur `favicon.ico` i `Region-Dalarna/depot`, ligger i paketet) i
+  stället för en neutral kartikon.
+
 # rddiagram 0.0.0.9034
 
 * `skriv_leaflet_till_fil()` med `karta_filformat = "png"`: kan nu ta bilden
