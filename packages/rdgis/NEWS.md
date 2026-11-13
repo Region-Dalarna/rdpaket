@@ -3,6 +3,12 @@
 Versionsbump utan innehållsändring (för att `remotes`/`pak`
 tillförlitligt ska upptäcka uppdateringar i det här monorepot).
 
+## PostGIS-funktioner
+
+Äger nu `postgis_tabell()`, sf-skrivning, metadatahanterad skrivning,
+kopiering mellan databaser, skapande av områdesnyckeltabeller/-vyer och
+export av områdesnycklar till mikrodatabasformat.
+
 ---
 
 # rdgis 0.0.0.9000

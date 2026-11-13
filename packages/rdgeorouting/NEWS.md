@@ -3,6 +3,15 @@
 Versionsbump utan innehållsändring (för att `remotes`/`pak`
 tillförlitligt ska upptäcka uppdateringar i det här monorepot).
 
+## PostGIS-funktioner flyttade
+
+Funktioner för geometri, spatial skrivning, metadata och områdesnycklar
+implementeras nu i `rdgis`; generell tabellkopiering/flytt och aktivering av
+PostGIS implementeras i `rdpostgres`. De gamla `postgis_*()`-namnen finns kvar
+här som kompatibilitetswrappers. Områdesnycklarnas mikrodatabasexport är
+flyttad till `rdgis`; `postgis_isokroner_dela_upp_polygoner()` stannar här
+eftersom den hör till isokronbearbetning.
+
 ---
 
 # rdgeorouting 0.0.0.9000

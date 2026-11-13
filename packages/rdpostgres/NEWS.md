@@ -1,5 +1,9 @@
 # rdpostgres 0.0.0.9004
 
+## PostGIS-tabelladministration
+
+Äger nu PostGIS-aktivering samt kopiering och flytt av tabeller.
+
 * `fil_dataset_uppdaterades()` använder `file.mtime()` i stället för
   `file.info()`. Den senare slår på Windows upp filens ägare och gav varningar
   ("cannot resolve owner of file ...") för filer på G: vars ägarkonto inte

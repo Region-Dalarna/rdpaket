@@ -20,11 +20,10 @@ Imports:
     dplyr,
     glue,
     purrr,
+    rdgis,
     rdpostgres,
     stringr
 Suggests:
-    clipr,
-    data.table,
     keyring,
     rdverktyg,
     sf,
@@ -37,5 +36,6 @@ BugReports: https://github.com/Region-Dalarna/rdpaket/issues
 Config/roxygen2/version: 8.1.0
 Remotes:
     FaluPeppe/pxweb2r,
+    Region-Dalarna/rdpaket/packages/rdgis,
     Region-Dalarna/rdpaket/packages/rdverktyg,
     Region-Dalarna/rdpaket/packages/rdpostgres
