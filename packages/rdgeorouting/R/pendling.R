@@ -37,6 +37,8 @@ intern_hamta_tatorter <- function() {
 intern_pendling_forbered <- function(tabell_pend_relation, con, schema_graf, kant_tabell, nod_tabell, tatorter) {
   cc <- intern_rutt_con(con, adm = TRUE, standard_db = "ruttanalyser")
   con <- cc$con
+  # tysta NOTICE-meddelanden från databasen ("tabell finns inte, hoppar över", "Ger rättigheter på ...")
+  DBI::dbExecute(con, "SET client_min_messages TO warning;")
   ok <- FALSE
   on.exit(if (!ok) intern_stang(cc), add = TRUE)
 

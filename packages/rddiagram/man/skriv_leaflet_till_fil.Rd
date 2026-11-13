@@ -12,7 +12,9 @@ skriv_leaflet_till_fil(
   delat_bibliotek = FALSE,
   karta_bredd = 1000,
   karta_hojd = 800,
-  karta_fordrojning = 4
+  karta_fordrojning = 4,
+  zoom = 1,
+  favicon = TRUE
 )
 }
 \arguments{
@@ -35,12 +37,24 @@ inbäddade bibliotek: kartans JavaScript läggs i en mapp \code{lib} bredvid
 filen och delas av alla kartor i samma mapp, så att varje fil blir
 liten. Bra för många kartor i samma mapp, till exempel exempelkartor i
 ett repo. Filen måste då ligga kvar bredvid \code{lib}. Gäller bara
-\code{"html"}.}
+\code{"html"}.
+Fungerar inte webshot2 (t.ex. när en grupprincip blockerar att R startar
+programmet som webshot2 behöver, \code{processx/supervisor.exe}) tas bilden i
+stället direkt av Chrome eller Edge i bakgrunden, utan webshot2.}
 
 \item{karta_bredd, karta_hojd}{Bildmått i pixlar. Gäller bara \code{"png"}.}
 
 \item{karta_fordrojning}{Antal sekunder att vänta innan bilden tas, så att
 bakgrundskartan hinner ritas. Gäller bara \code{"png"}.}
+
+\item{zoom}{Pixeltäthet för \code{"png"}: \code{1} (standard) ger bilden i
+\code{karta_bredd} x \code{karta_hojd} pixlar, \code{2} eller \code{3} ger samma utsnitt och
+samma storlek på text och symboler men två respektive tre gånger så många
+pixlar - skarpare, för utskrift och presentationer.}
+
+\item{favicon}{Ikonen som visas på webbläsarens flik. \code{TRUE} (standard) = en
+enkel inbyggd kartikon, \code{FALSE} = ingen, eller sökväg till en png-, svg-
+eller ico-fil som bäddas in i html-filen. Gäller bara \code{"html"}.}
 }
 \value{
 Osynligt: filens sökväg. Sökvägen skrivs också ut som ett meddelande.

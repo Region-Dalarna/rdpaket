@@ -1,3 +1,9 @@
+# rdgeorouting 0.0.0.9005
+
+* `pendling_kraftfalt()` och `pendling_natverk()` skriver inte längre ut
+  databasens NOTICE-meddelanden ("tabell ... finns inte, hoppar över" och
+  "Ger rättigheter på table ...").
+
 # rdgeorouting 0.0.0.9004
 
 * `pendling_kraftfalt()` och `pendling_natverk()`: tätortstabellen

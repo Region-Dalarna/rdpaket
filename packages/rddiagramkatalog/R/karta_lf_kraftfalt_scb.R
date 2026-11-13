@@ -40,6 +40,11 @@
 #' @param forklaringstext Texten i textrutan, som ett eller flera stycken
 #'   (en teckenvektor). `NULL` (standard) = en standardtext som anger
 #'   tröskelvärdena.
+#' @param karta_bredd,karta_hojd,zoom Bildmått (pixlar) och pixeltäthet för png,
+#'   se [rddiagram::skriv_leaflet_till_fil()]. `zoom = 3` ger en skarp bild för
+#'   utskrift. Gäller bara `leaflet_filformat = "png"`.
+#' @param favicon Ikon på webbläsarfliken för html: `TRUE` (standard), `FALSE`
+#'   eller sökväg till en bildfil, se [rddiagram::skriv_leaflet_till_fil()].
 #' @param ... Skickas vidare till [rdgeorouting::pendling_kraftfalt()], t.ex.
 #'   `kant_tabell` för att räkna på ett annat vägnät.
 #' @param etikettstorlek Textstorlek (px) på ortnamnen.
@@ -72,6 +77,10 @@ karta_lf_kraftfalt_scb <- function(
     kartrubrik = "Kraftfält",
     forklaringstext = NULL,
     etikettstorlek = 13,
+    karta_bredd = 1200,
+    karta_hojd = 850,
+    zoom = 1,
+    favicon = TRUE,
     ...,
     utmapp = rdverktyg::utskriftsmapp(),
     skriv_leaflet_fil = TRUE,
@@ -120,7 +129,8 @@ karta_lf_kraftfalt_scb <- function(
   }
 
   if (skriv_leaflet_fil) {
-    rddiagram::skriv_leaflet_till_fil(leaflet_map, utmapp, filnamn_bas, karta_filformat = leaflet_filformat)
+    rddiagram::skriv_leaflet_till_fil(leaflet_map, utmapp, filnamn_bas, karta_filformat = leaflet_filformat,
+                                      karta_bredd = karta_bredd, karta_hojd = karta_hojd, zoom = zoom, favicon = favicon)
   }
 
   if (returnera_figur) invisible(stats::setNames(list(leaflet_map), filnamn_bas))

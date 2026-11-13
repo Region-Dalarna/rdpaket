@@ -1,6 +1,6 @@
 Package: rddiagram
 Title: Region Dalarnas Diagrammallar
-Version: 0.0.0.9033
+Version: 0.0.0.9034
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
@@ -36,6 +36,7 @@ Suggests:
     ggforce,
     ggrepel,
     readxl,
+    jsonlite,
     leaflet,
     rdverktyg,
     showtext,

@@ -1,3 +1,10 @@
+# rddiagramkatalog 0.0.0.9054
+
+* `karta_lf_kraftfalt_scb()`: nya parametrar `karta_bredd`, `karta_hojd`, `zoom`
+  (skarp png, `zoom = 3`) och `favicon`. png fungerar nu även när webshot2 inte
+  går att köra (Chrome/Edge tar bilden direkt). Kräver rddiagram 0.0.0.9034 och
+  rdgeorouting 0.0.0.9005 (tystare databasnotiser).
+
 # rddiagramkatalog 0.0.0.9053
 
 * Kräver rdgeorouting 0.0.0.9004.

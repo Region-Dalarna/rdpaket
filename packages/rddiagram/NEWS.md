@@ -1,3 +1,14 @@
+# rddiagram 0.0.0.9034
+
+* `skriv_leaflet_till_fil()` med `karta_filformat = "png"`: kan nu ta bilden
+  direkt med Chrome/Edge när webshot2 inte går att köra (t.ex. när en
+  grupprincip blockerar `processx/supervisor.exe`, "Det här programmet är
+  blockerat av en grupprincip"). Ny parameter `zoom` (pixeltäthet, `2` eller
+  `3` ger en skarpare bild i samma utsnitt).
+* `skriv_leaflet_till_fil()` med html: ny parameter `favicon` (standard `TRUE` =
+  en inbyggd kartikon på webbläsarens flik; `FALSE` = ingen; eller sökväg till
+  en png/svg/ico) och html-filens titel är nu filnamnet i stället för "leaflet".
+
 # rddiagram 0.0.0.9033
 
 * Nya standardvärden för `lagg_till_bakgrundskarta()`: `landsnamn = FALSE` (landsnamn
