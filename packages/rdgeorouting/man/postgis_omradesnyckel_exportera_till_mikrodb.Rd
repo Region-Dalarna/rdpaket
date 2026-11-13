@@ -38,3 +38,6 @@ Osynligt \code{NULL} (eller kolumnvektorn om \code{kolumner_lista = TRUE}).
 \description{
 Exportera en områdesnyckeltabell till csv (uppdelad i delar vid behov)
 }
+\seealso{
+\code{\link[rdgis:postgis_omradesnyckel_exportera_till_mikrodb]{rdgis::postgis_omradesnyckel_exportera_till_mikrodb()}}
+}
