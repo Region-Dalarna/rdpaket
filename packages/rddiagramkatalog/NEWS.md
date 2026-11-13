@@ -1,3 +1,8 @@
+# rddiagramkatalog 0.0.0.9050
+
+* `karta_lf_kraftfalt_scb()` kopplar upp mot sekretessdatabasen med
+  `rdpostgres::uppkoppling_adm("sekretess")`.
+
 # rddiagramkatalog 0.0.0.9049
 
 * Ny funktion `karta_lf_kraftfalt_scb()`: leaflet-karta över tätorters

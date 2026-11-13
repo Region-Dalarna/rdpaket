@@ -33,7 +33,7 @@
 #' @param primar_la_buffer,sekundar_la_buffer,gemensam_la_buffer Bredd (meter)
 #'   på kraftfälten runt pendlingsvägarna.
 #' @param con_sekretess En `DBIConnection` mot sekretessdatabasen, eller `NA`
-#'   (standard) för att koppla upp som vanligt. Används bara när
+#'   (standard) för att koppla upp med `rdpostgres::uppkoppling_adm("sekretess")`. Används bara när
 #'   `tabell_pend_relation` är `NULL`.
 #' @param kartrubrik Rubriken i textrutan uppe till höger. Standard
 #'   `"Kraftfält"`.
@@ -127,7 +127,7 @@ karta_lf_kraftfalt_scb <- function(
 intern_hamta_pendling_tatorter <- function(con = NA) {
   egen <- FALSE
   if (!inherits(con, "DBIConnection")) {
-    con <- rdpostgres::uppkoppling_db(db_name = "sekretess", service_name = "rd_geodata")
+    con <- rdpostgres::uppkoppling_adm("sekretess")
     if (is.null(con)) stop("Kunde inte ansluta till sekretessdatabasen.", call. = FALSE)
     egen <- TRUE
   }

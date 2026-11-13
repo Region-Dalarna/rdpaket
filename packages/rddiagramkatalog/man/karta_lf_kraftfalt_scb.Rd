@@ -48,7 +48,7 @@ klassificeringen, se \code{\link[rdgeorouting:pendling_kraftfalt]{rdgeorouting::
 på kraftfälten runt pendlingsvägarna.}
 
 \item{con_sekretess}{En \code{DBIConnection} mot sekretessdatabasen, eller \code{NA}
-(standard) för att koppla upp som vanligt. Används bara när
+(standard) för att koppla upp med \code{rdpostgres::uppkoppling_adm("sekretess")}. Används bara när
 \code{tabell_pend_relation} är \code{NULL}.}
 
 \item{kartrubrik}{Rubriken i textrutan uppe till höger. Standard
