@@ -1,3 +1,9 @@
+# rdgeorouting 0.0.0.9003
+
+* `pendling_kraftfalt()` och `pendling_natverk()`: koordinatsystemet läses från
+  en rad i vägnätet om geometrikolumnen saknar registrerat SRID (gav
+  "crs not found: EPSG:0"); faller annars tillbaka på EPSG:3006.
+
 # rdgeorouting 0.0.0.9002
 
 * `pendling_kraftfalt()` och `pendling_natverk()` körs nu mot `ruttanalyser`

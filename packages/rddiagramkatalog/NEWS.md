@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9052
+
+* Kräver rdgeorouting 0.0.0.9003 (rättar "crs not found" i kraftfältsberäkningen).
+
 # rddiagramkatalog 0.0.0.9051
 
 * `karta_lf_kraftfalt_scb()`: tar `...` som skickas till

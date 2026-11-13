@@ -49,7 +49,15 @@ intern_pendling_forbered <- function(tabell_pend_relation, con, schema_graf, kan
          "Ange kant_tabell och nod_tabell för ett vägnät som finns i ", schema_graf, ".", call. = FALSE)
   }
   nodgeom <- nodgeom[1]
+  # Find_SRID ger 0 om geometrikolumnen saknar registrerat koordinatsystem - läs då det från en rad
   srid <- DBI::dbGetQuery(con, glue::glue("SELECT Find_SRID('{schema_graf}', '{kant_tabell}', 'geom')"))[1, 1]
+  if (is.na(srid) || srid == 0) {
+    srid <- DBI::dbGetQuery(con, glue::glue("SELECT ST_SRID(geom) FROM {schema_graf}.{kant_tabell} LIMIT 1"))[1, 1]
+  }
+  if (is.na(srid) || srid == 0) {
+    message("Hittar inget koordinatsystem på vägnätet - antar SWEREF 99 TM (EPSG:3006).")
+    srid <- 3006
+  }
 
   if (is.null(tatorter)) tatorter <- intern_hamta_tatorter()
   if (!any(unique(tabell_pend_relation$from_id) %in% tatorter$tokod)) {
