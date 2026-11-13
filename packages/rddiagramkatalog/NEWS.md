@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9065
+
+* `karta_lf_kraftfalt_scb()`: ny parameter `tryck_kvalitet` (standard `FALSE`). Med
+  `bakgrundskarta = "osm"` hämtas bildrutorna från en zoomnivå djupare, så att bakgrunden
+  blir dubbelt så skarp för utskrift (fler rutor hämtas från OSM:s server).
+
 # rddiagramkatalog 0.0.0.9064
 
 * `karta_lf_kraftfalt_scb()`: `bakgrundskarta = "osm"` ger OpenStreetMaps vanliga bildrutor

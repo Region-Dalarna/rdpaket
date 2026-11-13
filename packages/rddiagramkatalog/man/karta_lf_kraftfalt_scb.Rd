@@ -21,6 +21,7 @@ karta_lf_kraftfalt_scb(
   bakgrundskarta = "openfreemap",
   bakgrund_dimning = 0,
   bakgrund_dimfarg = "#f2f2f2",
+  tryck_kvalitet = FALSE,
   karta_bredd = 1200,
   karta_hojd = 850,
   zoom = 1,
@@ -88,6 +89,13 @@ bakgrunden blir blekare och mer grå. Ungefär 0.4-0.6 ger en diskret bakgrund.
 Gäller både html och png.}
 
 \item{bakgrund_dimfarg}{Färgen på nedtoningsytan (standard \code{"#f2f2f2"}).}
+
+\item{tryck_kvalitet}{\code{TRUE} ger en skarpare bakgrundskarta för utskrift när
+\code{bakgrundskarta = "osm"}: bildrutorna hämtas från en zoomnivå djupare och
+visas halverade, så bakgrunden får dubbelt så hög upplösning (men ungefär
+fyra gånger så många rutor hämtas från OSM:s server, och bakgrundens
+ortnamn blir mindre). Standard \code{FALSE}. Påverkar inte \code{"openfreemap"}
+(vektorkarta, redan skarp) eller \code{"esri_gra"} (alltid skarp).}
 
 \item{karta_bredd, karta_hojd, zoom, karta_fordrojning}{Bildmått (pixlar),
 pixeltäthet och väntetid (sekunder, så att bakgrundskartan hinner ritas)

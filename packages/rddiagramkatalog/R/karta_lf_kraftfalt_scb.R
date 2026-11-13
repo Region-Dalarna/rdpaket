@@ -57,6 +57,12 @@
 #'   bakgrunden blir blekare och mer grå. Ungefär 0.4-0.6 ger en diskret bakgrund.
 #'   Gäller både html och png.
 #' @param bakgrund_dimfarg Färgen på nedtoningsytan (standard `"#f2f2f2"`).
+#' @param tryck_kvalitet `TRUE` ger en skarpare bakgrundskarta för utskrift när
+#'   `bakgrundskarta = "osm"`: bildrutorna hämtas från en zoomnivå djupare och
+#'   visas halverade, så bakgrunden får dubbelt så hög upplösning (men ungefär
+#'   fyra gånger så många rutor hämtas från OSM:s server, och bakgrundens
+#'   ortnamn blir mindre). Standard `FALSE`. Påverkar inte `"openfreemap"`
+#'   (vektorkarta, redan skarp) eller `"esri_gra"` (alltid skarp).
 #' @param karta_bredd,karta_hojd,zoom,karta_fordrojning Bildmått (pixlar),
 #'   pixeltäthet och väntetid (sekunder, så att bakgrundskartan hinner ritas)
 #'   för png, se [rddiagram::skriv_leaflet_till_fil()]. `zoom = 3` ger en skarp
@@ -104,6 +110,7 @@ karta_lf_kraftfalt_scb <- function(
     bakgrundskarta = "openfreemap",
     bakgrund_dimning = 0,
     bakgrund_dimfarg = "#f2f2f2",
+    tryck_kvalitet = FALSE,
     karta_bredd = 1200,
     karta_hojd = 850,
     zoom = 1,
@@ -120,6 +127,9 @@ karta_lf_kraftfalt_scb <- function(
   # ========================================== Inställningar ============================================
 
   bakgrundskarta <- match.arg(bakgrundskarta, c("openfreemap", "esri_gra", "osm"))
+  if (!is.logical(tryck_kvalitet) || length(tryck_kvalitet) != 1 || is.na(tryck_kvalitet)) {
+    stop("tryck_kvalitet ska vara TRUE eller FALSE.", call. = FALSE)
+  }
   if (!is.numeric(bakgrund_dimning) || length(bakgrund_dimning) != 1 || is.na(bakgrund_dimning) ||
       bakgrund_dimning < 0 || bakgrund_dimning > 1) {
     stop("bakgrund_dimning ska vara ett tal mellan 0 och 1.", call. = FALSE)
@@ -149,7 +159,8 @@ karta_lf_kraftfalt_scb <- function(
       enskilt_troskelvarde = enskilt_troskelvarde, totalt_troskelvarde = totalt_troskelvarde,
       kartrubrik = kartrubrik, forklaringstext = forklaringstext, etikettstorlek = etikettstorlek,
       interaktiv = interaktiv, bakgrundskarta = bakgrundskarta,
-      bakgrund_dimning = bakgrund_dimning, bakgrund_dimfarg = bakgrund_dimfarg)
+      bakgrund_dimning = bakgrund_dimning, bakgrund_dimfarg = bakgrund_dimfarg,
+      tryck_kvalitet = tryck_kvalitet)
   }
   leaflet_map <- bygg_karta(interaktiv = TRUE)
 
@@ -218,7 +229,8 @@ intern_hamta_pendling_tatorter <- function(con = NA) {
 intern_bygg_kraftfaltskarta <- function(kraftfalt, lan_gis, pendlingsar, enskilt_troskelvarde,
                                         totalt_troskelvarde, kartrubrik, forklaringstext,
                                         etikettstorlek, interaktiv = TRUE, bakgrundskarta = "openfreemap",
-                                        bakgrund_dimning = 0, bakgrund_dimfarg = "#f2f2f2") {
+                                        bakgrund_dimning = 0, bakgrund_dimfarg = "#f2f2f2",
+                                        tryck_kvalitet = FALSE) {
   farg_la <- "#f28c28"
   farg_sekundar <- "#2a9d8f"
   farg_satellit <- "#c62828"
@@ -291,11 +303,13 @@ intern_bygg_kraftfaltskarta <- function(kraftfalt, lan_gis, pendlingsar, enskilt
       attribution = "Bakgrundskarta: Esri, HERE, Garmin, \u00a9 OpenStreetMap contributors",
       options = leaflet::tileOptions(tileSize = 128, zoomOffset = 1))
   } else if (identical(bakgrundskarta, "osm")) {
-    # OpenStreetMaps vanliga rastertiles (inget WebGL)
+    # OpenStreetMaps vanliga rastertiles (inget WebGL). tryck_kvalitet: tileSize 128 + zoomOffset 1 hämtar
+    # tiles en zoomnivå djupare och visar dem halverade, som för Esri.
     m <- leaflet::addTiles(
       m, urlTemplate = "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       attribution = "\u00a9 OpenStreetMap contributors",
-      options = leaflet::tileOptions(maxZoom = 19))
+      options = if (isTRUE(tryck_kvalitet)) leaflet::tileOptions(maxZoom = 19, tileSize = 128, zoomOffset = 1)
+                else leaflet::tileOptions(maxZoom = 19))
   } else {
     m <- rddiagram::lagg_till_bakgrundskarta(m, etiketter = "orter", etikett_opacitet = 0.35)
   }
