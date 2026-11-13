@@ -18,6 +18,7 @@ karta_lf_kraftfalt_scb(
   kartrubrik = "Kraftfält",
   forklaringstext = NULL,
   etikettstorlek = 13,
+  bakgrundskarta = "openfreemap",
   karta_bredd = 1200,
   karta_hojd = 850,
   zoom = 1,
@@ -65,6 +66,15 @@ på kraftfälten runt pendlingsvägarna.}
 tröskelvärdena.}
 
 \item{etikettstorlek}{Textstorlek (px) på ortnamnen.}
+
+\item{bakgrundskarta}{Vilken bakgrundskarta kartan ska ha: \code{"openfreemap"}
+(standard) är den neutrala bakgrundskartan i
+\code{\link[rddiagram:lagg_till_bakgrundskarta]{rddiagram::lagg_till_bakgrundskarta()}}, som ritas med WebGL. \code{"esri_gra"} är
+Esris grå bakgrundskarta ("World Light Gray Base", utan text; ortnamnen är
+kraftfältskartans egna). Den ritas av vanliga bildrutor och fungerar därför
+även där webbläsaren saknar WebGL, t.ex. för png-filer på en dator där
+headless Edge/Chrome inte får fram WebGL. Kontrollera Esris användarvillkor
+för ditt användningsfall.}
 
 \item{karta_bredd, karta_hojd, zoom, karta_fordrojning}{Bildmått (pixlar),
 pixeltäthet och väntetid (sekunder, så att bakgrundskartan hinner ritas)

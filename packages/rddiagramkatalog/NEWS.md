@@ -1,8 +1,8 @@
-# rddiagramkatalog 0.0.0.9060
+# rddiagramkatalog 0.0.0.9061
 
-* `karta_lf_kraftfalt_scb(skriv_gpkg_fil = TRUE)` skriver en GeoPackage (EPSG:3006)
-  med lagren `tatorter` (alla tätorter med kolumnen `typ`), `primla_areas`,
-  `secla_areas`, `commonla_areas`, `routes`, de enskilda lagren från beräkningen
-  och `lansgrans`, redo att öppnas i QGIS. Meddelandet efter skrivningen listar
-  lagren. `skriv_leaflet_fil = FALSE` ger bara GeoPackage-filen.
+* `karta_lf_kraftfalt_scb()`: ny parameter `bakgrundskarta`. `"openfreemap"`
+  (standard) är som tidigare; `"esri_gra"` är Esris gråa bakgrundskarta som
+  rastertiles. Den ritas utan WebGL och ger därför bakgrund även i png-filer på
+  datorer där headless Edge/Chrome saknar WebGL. Kontrollera Esris
+  användarvillkor för ditt användningsfall.
 

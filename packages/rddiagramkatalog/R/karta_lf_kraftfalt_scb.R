@@ -40,6 +40,14 @@
 #' @param forklaringstext Texten i textrutan, som ett eller flera stycken
 #'   (en teckenvektor). `NULL` (standard) = en standardtext som anger
 #'   tröskelvärdena.
+#' @param bakgrundskarta Vilken bakgrundskarta kartan ska ha: `"openfreemap"`
+#'   (standard) är den neutrala bakgrundskartan i
+#'   [rddiagram::lagg_till_bakgrundskarta()], som ritas med WebGL. `"esri_gra"` är
+#'   Esris grå bakgrundskarta ("World Light Gray Base", utan text; ortnamnen är
+#'   kraftfältskartans egna). Den ritas av vanliga bildrutor och fungerar därför
+#'   även där webbläsaren saknar WebGL, t.ex. för png-filer på en dator där
+#'   headless Edge/Chrome inte får fram WebGL. Kontrollera Esris användarvillkor
+#'   för ditt användningsfall.
 #' @param karta_bredd,karta_hojd,zoom,karta_fordrojning Bildmått (pixlar),
 #'   pixeltäthet och väntetid (sekunder, så att bakgrundskartan hinner ritas)
 #'   för png, se [rddiagram::skriv_leaflet_till_fil()]. `zoom = 3` ger en skarp
@@ -84,6 +92,7 @@ karta_lf_kraftfalt_scb <- function(
     kartrubrik = "Kraftfält",
     forklaringstext = NULL,
     etikettstorlek = 13,
+    bakgrundskarta = "openfreemap",
     karta_bredd = 1200,
     karta_hojd = 850,
     zoom = 1,
@@ -118,12 +127,13 @@ karta_lf_kraftfalt_scb <- function(
   lan_gis <- rdgis::hamta_karta("lan", regionkoder = vald_lan)
   lansnamn <- rdverktyg::hamtaregion_kod_namn(vald_lan)$region[1]
 
+  bakgrundskarta <- match.arg(bakgrundskarta, c("openfreemap", "esri_gra"))
   bygg_karta <- function(interaktiv) {
     intern_bygg_kraftfaltskarta(
       kraftfalt, lan_gis, pendlingsar = pendlingsar,
       enskilt_troskelvarde = enskilt_troskelvarde, totalt_troskelvarde = totalt_troskelvarde,
       kartrubrik = kartrubrik, forklaringstext = forklaringstext, etikettstorlek = etikettstorlek,
-      interaktiv = interaktiv)
+      interaktiv = interaktiv, bakgrundskarta = bakgrundskarta)
   }
   leaflet_map <- bygg_karta(interaktiv = TRUE)
 
@@ -191,7 +201,7 @@ intern_hamta_pendling_tatorter <- function(con = NA) {
 # ritdelen går att köra och testa utan databas.
 intern_bygg_kraftfaltskarta <- function(kraftfalt, lan_gis, pendlingsar, enskilt_troskelvarde,
                                         totalt_troskelvarde, kartrubrik, forklaringstext,
-                                        etikettstorlek, interaktiv = TRUE) {
+                                        etikettstorlek, interaktiv = TRUE, bakgrundskarta = "openfreemap") {
   farg_la <- "#f28c28"
   farg_sekundar <- "#2a9d8f"
   farg_satellit <- "#c62828"
@@ -255,9 +265,18 @@ intern_bygg_kraftfaltskarta <- function(kraftfalt, lan_gis, pendlingsar, enskilt
   bredd <- bb[3] - bb[1]
   hojd <- bb[4] - bb[2]
 
-  m <- leaflet::leaflet(options = leaflet::leafletOptions(zoomSnap = 0.25, zoomControl = interaktiv)) |>
-    rddiagram::lagg_till_bakgrundskarta(etiketter = "orter", etikett_opacitet = 0.35) |>
-    leaflet::fitBounds(bb[1] - 0.02 * bredd, bb[2] - 0.02 * hojd, bb[3] + 0.35 * bredd, bb[4] + 0.02 * hojd)
+  m <- leaflet::leaflet(options = leaflet::leafletOptions(zoomSnap = 0.25, zoomControl = interaktiv))
+  if (identical(bakgrundskarta, "esri_gra")) {
+    # Esris gråa bakgrundskarta som rastertiles (vanliga bilder, inget WebGL). tileSize 128 + zoomOffset 1
+    # hämtar tiles en zoomnivå djupare och visar dem halverade, så att kartan blir dubbelt så skarp.
+    m <- leaflet::addTiles(
+      m, urlTemplate = "https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+      attribution = "Bakgrundskarta: Esri, HERE, Garmin, \u00a9 OpenStreetMap contributors",
+      options = leaflet::tileOptions(tileSize = 128, zoomOffset = 1))
+  } else {
+    m <- rddiagram::lagg_till_bakgrundskarta(m, etiketter = "orter", etikett_opacitet = 0.35)
+  }
+  m <- leaflet::fitBounds(m, bb[1] - 0.02 * bredd, bb[2] - 0.02 * hojd, bb[3] + 0.35 * bredd, bb[4] + 0.02 * hojd)
 
   for (f in falt) {
     if (!is.null(f)) {
