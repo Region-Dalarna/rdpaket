@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9058
+
+* Kräver rddiagram 0.0.0.9037 och rdgeorouting 0.0.0.9008.
+
 # rddiagramkatalog 0.0.0.9057
 
 * `karta_lf_kraftfalt_scb()`: en png görs utan zoomknappar och utan texten om att

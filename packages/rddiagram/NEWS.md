@@ -1,3 +1,12 @@
+# rddiagram 0.0.0.9037
+
+* `skriv_leaflet_till_fil()` (png utan webshot2): webbläsaren provas med flera
+  flaggsatser för WebGL (nyare Chrome/Edge kräver `--enable-unsafe-swiftshader`
+  för programvaru-WebGL i headless-läge) och den bild som ser ut att ha
+  bakgrundskarta behålls. Webbläsarens eventuella felutskrift visas om ingen
+  bild skapades. Chrome slås upp tyst (inget "Google Chrome was not found"
+  när Edge används).
+
 # rddiagram 0.0.0.9036
 
 * `skriv_leaflet_till_fil()` (png utan webshot2): Edge provas före Chrome, och

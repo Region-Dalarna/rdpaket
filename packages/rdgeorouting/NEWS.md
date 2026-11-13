@@ -1,3 +1,8 @@
+# rdgeorouting 0.0.0.9008
+
+* `pendling_kraftfalt()` och `pendling_natverk()` döljer även S4-notisen "Note:
+  method with signature 'DBIObject#sf' chosen for function 'dbDataType'".
+
 # rdgeorouting 0.0.0.9007
 
 * `pendling_kraftfalt()` och `pendling_natverk()` döljer nu databasens NOTICE-/NOTIS-

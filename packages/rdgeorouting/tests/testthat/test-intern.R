@@ -31,3 +31,7 @@ test_that("intern_tyst_notiser() döljer bara databasens notiser", {
   expect_message(intern_tyst_notiser(message("Karta skapad: x.html")), "Karta skapad")
   expect_equal(intern_tyst_notiser({ message("NOTIS:  x"); 42 }), 42)
 })
+
+test_that("intern_tyst_notiser() döljer även S4-notisen från sf", {
+  expect_silent(intern_tyst_notiser(message("Note: method with signature 'DBIObject#sf' chosen for function 'dbDataType'")))
+})

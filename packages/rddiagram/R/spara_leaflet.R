@@ -152,7 +152,7 @@ intern_hitta_alla_webblasare <- function() {
     "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
     Sys.which("microsoft-edge")
   )
-  chrome <- tryCatch(unname(chromote::find_chrome()), error = function(e) NULL)
+  chrome <- tryCatch(suppressMessages(unname(chromote::find_chrome())), error = function(e) NULL)
   kandidater <- c(angiven, edge, if (length(chrome) == 1) chrome)
   kandidater <- kandidater[!is.na(kandidater) & nzchar(kandidater) & file.exists(kandidater)]
   unique(kandidater)
@@ -171,28 +171,59 @@ intern_hitta_webblasare <- function() {
 }
 
 # Tar en png av en html-fil direkt med Chrome/Edge (headless), utan webshot2/chromote/processx.
-# Returnerar (osynligt) TRUE om bilden skapades.
+# Returnerar (osynligt) TRUE om en bild skapades.
+#
+# Bakgrundskartan ritas med WebGL (MapLibre), och hur man får WebGL i headless-läge utan grafikkort skiljer
+# sig mellan webbläsarversioner. Därför provas några flaggsatser i tur och ordning och den bild som ser ut
+# att ha bakgrund behålls: en karta med bakgrund är flera gånger större i bytes per pixel än en utan.
+# Tar första flaggsatsen fram en bild som ser ut att ha bakgrund (se grans) provas inga fler.
 #' @noRd
 intern_png_med_webblasare <- function(webblasare, html_fil, png_fil, bredd, hojd, zoom, fordrojning) {
-  profil <- tempfile("webblasare_profil_")
-  dir.create(profil)
-  on.exit(unlink(profil, recursive = TRUE), add = TRUE)
   png_fil <- normalizePath(png_fil, winslash = "/", mustWork = FALSE)
   url <- paste0("file:///", sub("^/", "", normalizePath(html_fil, winslash = "/", mustWork = TRUE)))
-  # Bakgrundskartan ritas med WebGL (MapLibre). Utan grafikkort i headless-läge saknas WebGL om inte
-  # programvarurendering (SwiftShader) uttryckligen tillåts (och --disable-gpu ska inte anges) - nyare
-  # Chrome/Edge gör det inte på egen hand, och då blir bakgrunden tom medan resten av kartan syns.
-  args <- c("--headless", "--hide-scrollbars", "--no-first-run",
-            "--enable-webgl", "--ignore-gpu-blocklist", "--enable-unsafe-swiftshader",
-            paste0("--user-data-dir=", shQuote(normalizePath(profil, winslash = "/", mustWork = FALSE))),
-            paste0("--screenshot=", shQuote(png_fil)),
-            paste0("--window-size=", bredd, ",", hojd),
-            paste0("--force-device-scale-factor=", zoom),
-            paste0("--virtual-time-budget=", round(max(fordrojning, 8) * 1000)),
-            shQuote(url))
-  unlink(png_fil)
-  suppressWarnings(system2(webblasare, args, stdout = FALSE, stderr = FALSE, timeout = 120))
-  invisible(file.exists(png_fil))
+  grans <- 0.2 * bredd * hojd * zoom^2  # bytes: över detta ser bilden ut att ha bakgrundskartan med
+
+  flaggsatser <- list(
+    c("--enable-webgl", "--ignore-gpu-blocklist", "--enable-unsafe-swiftshader"),
+    c("--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"),
+    c("--disable-gpu")
+  )
+
+  bast <- NULL
+  logg <- character(0)
+  for (flaggor in flaggsatser) {
+    profil <- tempfile("webblasare_profil_")
+    dir.create(profil)
+    loggfil <- tempfile("webblasare_logg_", fileext = ".txt")
+    forsok <- tempfile("webblasare_bild_", fileext = ".png")
+    args <- c("--headless", "--hide-scrollbars", "--no-first-run", flaggor,
+              paste0("--user-data-dir=", shQuote(normalizePath(profil, winslash = "/", mustWork = FALSE))),
+              paste0("--screenshot=", shQuote(normalizePath(forsok, winslash = "/", mustWork = FALSE))),
+              paste0("--window-size=", bredd, ",", hojd),
+              paste0("--force-device-scale-factor=", zoom),
+              paste0("--virtual-time-budget=", round(max(fordrojning, 8) * 1000)),
+              shQuote(url))
+    suppressWarnings(system2(webblasare, args, stdout = loggfil, stderr = loggfil, timeout = 90))
+
+    if (file.exists(forsok)) {
+      storlek <- file.size(forsok)
+      if (is.null(bast) || storlek > file.size(bast)) bast <- forsok
+      if (storlek > grans) break
+    } else if (file.exists(loggfil)) {
+      logg <- c(logg, utils::tail(readLines(loggfil, warn = FALSE), 3))
+    }
+    unlink(profil, recursive = TRUE)
+  }
+
+  if (is.null(bast)) {
+    if (length(logg) > 0) message("Webbl\u00e4saren skrev:\n", paste(unique(logg), collapse = "\n"))
+    return(invisible(FALSE))
+  }
+  if (file.size(bast) <= grans) {
+    message("Bilden ser ut att sakna bakgrundskarta (webbl\u00e4saren fick inte fram WebGL). Prova en h\u00f6gre ",
+            "karta_fordrojning, eller spara kartan som html och ta en sk\u00e4rmbild.")
+  }
+  invisible(file.copy(bast, png_fil, overwrite = TRUE))
 }
 
 # Lägger en favicon i en leaflet-karta (html-filens <head>). TRUE = Region Dalarnas ikon, FALSE = ingen,
