@@ -1,8 +1,15 @@
-# rdpostgres 0.0.0.9004
+# rdpostgres 0.0.0.9005
 
 ## PostGIS-tabelladministration
 
-Äger nu PostGIS-aktivering samt kopiering och flytt av tabeller.
+Från `rdgeorouting` flyttas `postgis_aktivera_i_postgres_db()` (med alias
+`postgis_installera_i_postgres_db()`), `postgis_kopiera_tabell()` och
+`postgis_flytta_tabell()`. Gamla publika anrop finns kvar som
+kompatibilitetswrappers i `rdgeorouting`.
+
+---
+
+# rdpostgres 0.0.0.9004
 
 * `fil_dataset_uppdaterades()` använder `file.mtime()` i stället för
   `file.info()`. Den senare slår på Windows upp filens ägare och gav varningar

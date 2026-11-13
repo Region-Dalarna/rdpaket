@@ -1,7 +1,4 @@
-# rdgeorouting 0.0.0.9001
-
-Versionsbump utan innehållsändring (för att `remotes`/`pak`
-tillförlitligt ska upptäcka uppdateringar i det här monorepot).
+# rdgeorouting 0.0.0.9002
 
 ## PostGIS-funktioner flyttade
 
@@ -11,6 +8,16 @@ PostGIS implementeras i `rdpostgres`. De gamla `postgis_*()`-namnen finns kvar
 här som kompatibilitetswrappers. Områdesnycklarnas mikrodatabasexport är
 flyttad till `rdgis`; `postgis_isokroner_dela_upp_polygoner()` stannar här
 eftersom den hör till isokronbearbetning.
+
+Kräver `rdgis >= 0.0.0.9002` och `rdpostgres >= 0.0.0.9005` så att
+kompatibilitetswrappernas implementationer finns i mottagarpaketen.
+
+---
+
+# rdgeorouting 0.0.0.9001
+
+Versionsbump utan innehållsändring (för att `remotes`/`pak`
+tillförlitligt ska upptäcka uppdateringar i det här monorepot).
 
 ---
 
