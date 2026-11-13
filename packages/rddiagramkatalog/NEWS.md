@@ -1,3 +1,13 @@
+# rddiagramkatalog 0.0.0.9049
+
+* Ny funktion `karta_lf_kraftfalt_scb()`: leaflet-karta över tätorters
+  kraftfält (lokala arbetsmarknadscentrum, satelliter och kraftfältens lila
+  fält), beräknade med `rdgeorouting::pendling_kraftfalt()` på
+  `rutor.pend_relation_tatorter` i sekretessdatabasen. Neutral bakgrundskarta
+  utan logga, länsgräns, förklaringsruta och textruta. Året pendlingsdata
+  gäller (standard 2022) anges med `pendlingsar` eftersom tabellen saknar
+  årskolumn. Kräver paketet rdgeorouting.
+
 # rddiagramkatalog 0.0.0.9048
 
 * "Skriv till fil" i `diagramkatalog_utforska()` gav varningar som
