@@ -108,6 +108,7 @@ karta_lf_kraftfalt_scb <- function(
 
   # ========================================== Inställningar ============================================
 
+  bakgrundskarta <- match.arg(bakgrundskarta, c("openfreemap", "esri_gra"))
   intern_kontrollera_utdata(c(skriv_leaflet_fil, skriv_gpkg_fil), returnera_figur, c("skriv_leaflet_fil", "skriv_gpkg_fil"))
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_leaflet_fil || skriv_gpkg_fil)
 
@@ -127,7 +128,6 @@ karta_lf_kraftfalt_scb <- function(
   lan_gis <- rdgis::hamta_karta("lan", regionkoder = vald_lan)
   lansnamn <- rdverktyg::hamtaregion_kod_namn(vald_lan)$region[1]
 
-  bakgrundskarta <- match.arg(bakgrundskarta, c("openfreemap", "esri_gra"))
   bygg_karta <- function(interaktiv) {
     intern_bygg_kraftfaltskarta(
       kraftfalt, lan_gis, pendlingsar = pendlingsar,

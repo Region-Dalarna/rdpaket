@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9062
+
+* `karta_lf_kraftfalt_scb()` kontrollerar `bakgrundskarta` innan något hämtas.
+
 # rddiagramkatalog 0.0.0.9061
 
 * `karta_lf_kraftfalt_scb()`: ny parameter `bakgrundskarta`. `"openfreemap"`
