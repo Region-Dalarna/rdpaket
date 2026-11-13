@@ -1,3 +1,15 @@
+# rdgeorouting 0.0.0.9002
+
+* `pendling_kraftfalt()` och `pendling_natverk()` körs nu mot `ruttanalyser`
+  (före: geodata, där vägnätet inte finns) och mot vägnätet
+  `grafer.nvdb_bil_adresser` i stället för det gamla `nvdb_noded`. Rutterna
+  söks med `pgr_dijkstra()` på `kostnad_meter`, eftersom nätet saknar de
+  koordinatkolumner `pgr_aStar()` kräver. Tätorterna hämtas ur
+  `karta.tatorter` i geodata (matchar på SCB:s tätortskod) och skrivs till
+  `grafer.pendling_tatort`; pendlingstabellen skrivs uttryckligen till
+  `grafer.data`. Nya parametrar: `schema_graf`, `kant_tabell`, `nod_tabell`,
+  `kant_id_kol`, `kost_kol` och `tatorter`.
+
 # rdgeorouting 0.0.0.9001
 
 Versionsbump utan innehållsändring (för att `remotes`/`pak`

@@ -40,6 +40,8 @@
 #' @param forklaringstext Texten i textrutan, som ett eller flera stycken
 #'   (en teckenvektor). `NULL` (standard) = en standardtext som anger
 #'   tröskelvärdena.
+#' @param ... Skickas vidare till [rdgeorouting::pendling_kraftfalt()], t.ex.
+#'   `kant_tabell` för att räkna på ett annat vägnät.
 #' @param etikettstorlek Textstorlek (px) på ortnamnen.
 #' @param utmapp Mapp där kartfilen sparas. Måste finnas om
 #'   `skriv_leaflet_fil` eller `skriv_gpkg_fil` är `TRUE`.
@@ -70,6 +72,7 @@ karta_lf_kraftfalt_scb <- function(
     kartrubrik = "Kraftfält",
     forklaringstext = NULL,
     etikettstorlek = 13,
+    ...,
     utmapp = rdverktyg::utskriftsmapp(),
     skriv_leaflet_fil = TRUE,
     leaflet_filformat = "html",
@@ -92,7 +95,7 @@ karta_lf_kraftfalt_scb <- function(
       tabell_pend_relation,
       enskilt_troskelvarde = enskilt_troskelvarde, totalt_troskelvarde = totalt_troskelvarde,
       primar_la_buffer = primar_la_buffer, sekundar_la_buffer = sekundar_la_buffer,
-      gemensam_la_buffer = gemensam_la_buffer)
+      gemensam_la_buffer = gemensam_la_buffer, ...)
   }
 
   lan_gis <- rdgis::hamta_karta("lan", regionkoder = vald_lan)

@@ -18,6 +18,7 @@ karta_lf_kraftfalt_scb(
   kartrubrik = "Kraftfält",
   forklaringstext = NULL,
   etikettstorlek = 13,
+  ...,
   utmapp = rdverktyg::utskriftsmapp(),
   skriv_leaflet_fil = TRUE,
   leaflet_filformat = "html",
@@ -59,6 +60,9 @@ på kraftfälten runt pendlingsvägarna.}
 tröskelvärdena.}
 
 \item{etikettstorlek}{Textstorlek (px) på ortnamnen.}
+
+\item{...}{Skickas vidare till \code{\link[rdgeorouting:pendling_kraftfalt]{rdgeorouting::pendling_kraftfalt()}}, t.ex.
+\code{kant_tabell} för att räkna på ett annat vägnät.}
 
 \item{utmapp}{Mapp där kartfilen sparas. Måste finnas om
 \code{skriv_leaflet_fil} eller \code{skriv_gpkg_fil} är \code{TRUE}.}

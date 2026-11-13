@@ -10,14 +10,21 @@ pendling_natverk(
   dist = 2000,
   skriv_till_gpkg = FALSE,
   ut_mapp = NA,
-  gpkg_namn = NA
+  gpkg_namn = NA,
+  schema_graf = "grafer",
+  kant_tabell = "nvdb_bil_adresser",
+  nod_tabell = paste0(kant_tabell, "_vertices_pgr"),
+  kant_id_kol = "rad_id",
+  kost_kol = "kostnad_meter",
+  tatorter = NULL
 )
 }
 \arguments{
 \item{tabell_pend_relation}{Data.frame med kolumnerna \code{from_id}, \code{to_id},
 \code{n} (pendlingsrelationer, hämtas t.ex. på MONA).}
 
-\item{con}{En \code{DBIConnection}, eller \code{NA} för Region Dalarnas databas.}
+\item{con}{En \code{DBIConnection} mot ruttanalyser, eller \code{NA} för Region
+Dalarnas databas \code{ruttanalyser}.}
 
 \item{dist}{Max avstånd (m) från tätort till närmaste vägnod.}
 
@@ -25,6 +32,18 @@ pendling_natverk(
 returnera det.}
 
 \item{ut_mapp, gpkg_namn}{Målmapp och filnamn för GeoPackage.}
+
+\item{schema_graf, kant_tabell, nod_tabell}{Vägnätet (en pgRouting-graf): schema,
+tabell med vägsegment och tabell med noder. Standard är bilnätet
+\code{grafer.nvdb_bil_adresser} och dess \verb{_vertices_pgr}.}
+
+\item{kant_id_kol, kost_kol}{Kolumn med segmentets id och kolumn med kostnaden
+(meter) i vägnätet. Rutterna söks med samma kostnad i båda riktningarna.}
+
+\item{tatorter}{Tätorterna som \code{sf}-objekt med kolumnerna \code{tokod},
+\code{tobeteckn}, \code{kommun}, \code{kommunnamn}, \code{lan} och geometri, eller \code{NULL} för att
+hämta \code{karta.tatorter} ur geodata. Pendlingstabellens koder ska vara
+SCB:s tätortskoder.}
 }
 \value{
 Ett \code{sf}-objekt, eller osynligt \code{NULL} om \code{skriv_till_gpkg}.

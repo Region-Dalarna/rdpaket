@@ -1,7 +1,8 @@
 # Pendlingsanalyser: pendlingsnätverk, kraftfält och in-/utpendling på ruta.
 #
-# Kräver att vägnätet redan finns i schemat "grafer" (tabellerna nvdb_noded,
-# nvdb_noded_vertices_pgr och tatort).
+# Kräver att vägnätet (en pgRouting-graf med kant- och nodtabell) redan finns i ruttanalyser, som
+# standard grafer.nvdb_bil_adresser. Tätorterna hämtas ur geodata (karta.tatorter) och skrivs till
+# grafer.pendling_tatort vid varje körning.
 
 intern_utskriftsmapp <- function() {
   if (requireNamespace("rdverktyg", quietly = TRUE)) rdverktyg::utskriftsmapp() else getwd()
@@ -14,11 +15,75 @@ intern_pendling_con <- function(con) {
   list(con = ny, egen = TRUE)
 }
 
+# Hämtar tätorterna (SCB) ur geodatabasens karta-schema, med de kolumnnamn som pendlingsberäkningen
+# använder: tokod (tätortskod), tobeteckn (namn), kommun, kommunnamn, lan och geom.
+intern_hamta_tatorter <- function() {
+  cg <- rdpostgres::uppkoppling_db(db_name = "geodata", service_name = "rd_geodata")
+  if (is.null(cg)) stop("Kunde inte ansluta till geodata för att hämta tätorterna.", call. = FALSE)
+  on.exit(DBI::dbDisconnect(cg), add = TRUE)
+  x <- sf::st_read(cg, query = "SELECT * FROM karta.tatorter", quiet = TRUE)
+  x <- x[, c("tatortskod", "tatort", "kommun", "kommunnamn", "lan")]
+  names(x)[names(x) == "tatortskod"] <- "tokod"
+  names(x)[names(x) == "tatort"] <- "tobeteckn"
+  g <- attr(x, "sf_column")
+  names(x)[names(x) == g] <- "geom"
+  attr(x, "sf_column") <- "geom"
+  x
+}
+
+# Förbereder en pendlingsberäkning i ruttanalyser: kopplar upp, skriver pendlingstabellen och
+# tätorterna (skrivs i vägnätets koordinatsystem) till schemat och returnerar de fullständiga tabellnamnen.
+# Vägnätet (kant- och nodtabell) måste redan finnas i schemat.
+intern_pendling_forbered <- function(tabell_pend_relation, con, schema_graf, kant_tabell, nod_tabell, tatorter) {
+  cc <- intern_rutt_con(con, adm = TRUE, standard_db = "ruttanalyser")
+  con <- cc$con
+  ok <- FALSE
+  on.exit(if (!ok) intern_stang(cc), add = TRUE)
+
+  nodgeom <- DBI::dbGetQuery(con, glue::glue(
+    "SELECT column_name FROM information_schema.columns
+     WHERE table_schema = '{schema_graf}' AND table_name = '{nod_tabell}'
+       AND column_name IN ('the_geom', 'geom')"))$column_name
+  if (length(nodgeom) == 0) {
+    stop("Hittar inte nodtabellen ", schema_graf, ".", nod_tabell, " (med geometrikolumn the_geom eller geom). ",
+         "Ange kant_tabell och nod_tabell för ett vägnät som finns i ", schema_graf, ".", call. = FALSE)
+  }
+  nodgeom <- nodgeom[1]
+  srid <- DBI::dbGetQuery(con, glue::glue("SELECT Find_SRID('{schema_graf}', '{kant_tabell}', 'geom')"))[1, 1]
+
+  if (is.null(tatorter)) tatorter <- intern_hamta_tatorter()
+  if (!any(unique(tabell_pend_relation$from_id) %in% tatorter$tokod)) {
+    stop("Inga from_id i pendlingstabellen matchar tätortskoderna (tatortskod) i karta.tatorter.", call. = FALSE)
+  }
+  tatorter <- sf::st_transform(tatorter, srid)
+  sf::st_write(tatorter, con, DBI::Id(schema = schema_graf, table = "pendling_tatort"),
+               delete_layer = TRUE, quiet = TRUE)
+  DBI::dbExecute(con, glue::glue(
+    "CREATE INDEX IF NOT EXISTS pendling_tatort_geom_idx ON {schema_graf}.pendling_tatort USING gist (geom);"))
+
+  DBI::dbWriteTable(con, DBI::Id(schema = schema_graf, table = "data"),
+                    tabell_pend_relation[, c("from_id", "to_id", "n")], overwrite = TRUE)
+
+  ok <- TRUE
+  list(cc = cc, kant = paste0(schema_graf, ".", kant_tabell), nod = paste0(schema_graf, ".", nod_tabell),
+       nodgeom = nodgeom, tatort = paste0(schema_graf, ".pendling_tatort"))
+}
+
 #' Bygg ett pendlingsnätverk och beräkna antal pendlare per vägsträcka
 #'
 #' @param tabell_pend_relation Data.frame med kolumnerna `from_id`, `to_id`,
 #'   `n` (pendlingsrelationer, hämtas t.ex. på MONA).
-#' @param con En `DBIConnection`, eller `NA` för Region Dalarnas databas.
+#' @param con En `DBIConnection` mot ruttanalyser, eller `NA` för Region
+#'   Dalarnas databas `ruttanalyser`.
+#' @param schema_graf,kant_tabell,nod_tabell Vägnätet (en pgRouting-graf): schema,
+#'   tabell med vägsegment och tabell med noder. Standard är bilnätet
+#'   `grafer.nvdb_bil_adresser` och dess `_vertices_pgr`.
+#' @param kant_id_kol,kost_kol Kolumn med segmentets id och kolumn med kostnaden
+#'   (meter) i vägnätet. Rutterna söks med samma kostnad i båda riktningarna.
+#' @param tatorter Tätorterna som `sf`-objekt med kolumnerna `tokod`,
+#'   `tobeteckn`, `kommun`, `kommunnamn`, `lan` och geometri, eller `NULL` för att
+#'   hämta `karta.tatorter` ur geodata. Pendlingstabellens koder ska vara
+#'   SCB:s tätortskoder.
 #' @param dist Max avstånd (m) från tätort till närmaste vägnod.
 #' @param skriv_till_gpkg Skriv resultatet till GeoPackage i stället för att
 #'   returnera det.
@@ -27,7 +92,10 @@ intern_pendling_con <- function(con) {
 #' @return Ett `sf`-objekt, eller osynligt `NULL` om `skriv_till_gpkg`.
 #' @export
 pendling_natverk <- function(tabell_pend_relation, con = NA, dist = 2000,
-                             skriv_till_gpkg = FALSE, ut_mapp = NA, gpkg_namn = NA) {
+                             skriv_till_gpkg = FALSE, ut_mapp = NA, gpkg_namn = NA,
+                             schema_graf = "grafer", kant_tabell = "nvdb_bil_adresser",
+                             nod_tabell = paste0(kant_tabell, "_vertices_pgr"),
+                             kant_id_kol = "rad_id", kost_kol = "kostnad_meter", tatorter = NULL) {
   intern_krav("sf")
   if (!all(c("from_id", "to_id", "n") %in% colnames(tabell_pend_relation))) {
     stop("`tabell_pend_relation` måste innehålla kolumnerna 'from_id', 'to_id', 'n'.", call. = FALSE)
@@ -35,41 +103,36 @@ pendling_natverk <- function(tabell_pend_relation, con = NA, dist = 2000,
   if (is.na(ut_mapp)) ut_mapp <- intern_utskriftsmapp()
   if (is.na(gpkg_namn)) gpkg_namn <- "pendling_natverk.gpkg"
 
-  cc <- intern_pendling_con(con)
-  on.exit(intern_stang(cc), add = TRUE)
-  con <- cc$con
-
-  DBI::dbExecute(con, "SET search_path TO grafer, public;")
-  kant_tabell <- "nvdb_noded"
-  nod_tabell <- "grafer.nvdb_noded_vertices_pgr"
-  kost_kol <- "dist_cost"; omvand_kost_kol <- "dist_reverse_cost"
-
-  DBI::dbWriteTable(con, "data", tabell_pend_relation, overwrite = TRUE, temporary = FALSE)
+  fb <- intern_pendling_forbered(tabell_pend_relation, con, schema_graf, kant_tabell, nod_tabell, tatorter)
+  on.exit(intern_stang(fb$cc), add = TRUE)
+  con <- fb$cc$con
+  DBI::dbExecute(con, glue::glue("SET search_path TO {schema_graf}, public;"))
+  kant_full <- fb$kant; nod_full <- fb$nod; nodgeom <- fb$nodgeom; tatort_tabell <- fb$tatort
 
   DBI::dbExecute(con, "DROP TABLE IF EXISTS tatort_vertex;")
   DBI::dbExecute(con, glue::glue("
     CREATE TEMP TABLE tatort_vertex AS
     SELECT t.tokod, e.id, e.dist
-    FROM tatort t
+    FROM {tatort_tabell} t
     JOIN lateral(
-      SELECT id, e.geom <-> t.geom as dist FROM {nod_tabell} e
-      ORDER BY t.geom <-> e.geom LIMIT 1
+      SELECT id, e.{nodgeom} <-> t.geom as dist FROM {nod_full} e
+      ORDER BY t.geom <-> e.{nodgeom} LIMIT 1
     ) AS e ON true
     WHERE dist < {dist};"))
 
   DBI::dbExecute(con, "DROP TABLE IF EXISTS combinations;")
-  DBI::dbExecute(con, "
+  DBI::dbExecute(con, glue::glue("
     CREATE TEMP TABLE combinations AS
     SELECT c.*, t.id AS start_vid, f.id AS end_vid
-    FROM data c
+    FROM {schema_graf}.data c
     JOIN tatort_vertex t ON c.from_id = t.tokod
     JOIN tatort_vertex f ON c.to_id = f.tokod
-    WHERE c.from_id <> c.to_id;")
+    WHERE c.from_id <> c.to_id;"))
 
   query <- glue::glue("
     WITH astar AS (
-      SELECT * FROM pgr_aStar(
-        'SELECT id, source, target, {kost_kol} AS cost, {omvand_kost_kol} AS reverse_cost, x1, y1, x2, y2 FROM {kant_tabell}',
+      SELECT * FROM pgr_dijkstra(
+        'SELECT {kant_id_kol} AS id, source, target, {kost_kol} AS cost, {kost_kol} AS reverse_cost FROM {kant_full}',
         'SELECT start_vid AS source, end_vid AS target FROM combinations'
       )
     ), edges AS (
@@ -77,7 +140,7 @@ pendling_natverk <- function(tabell_pend_relation, con = NA, dist = 2000,
       FROM astar a JOIN combinations d ON a.start_vid = d.start_vid AND a.end_vid = d.end_vid
       WHERE edge <> -1 GROUP BY edge
     )
-    SELECT * FROM edges e JOIN {kant_tabell} r ON e.edge_id = r.id;")
+    SELECT * FROM edges e JOIN {kant_full} r ON e.edge_id = r.{kant_id_kol};")
 
   natverk <- sf::st_read(con, query = query, quiet = TRUE)
 
@@ -100,7 +163,17 @@ pendling_natverk <- function(tabell_pend_relation, con = NA, dist = 2000,
 #' @param enskilt_troskelvarde,totalt_troskelvarde Tröskelvärden (%) för
 #'   klassificeringen.
 #' @param primar_la_buffer,sekundar_la_buffer,gemensam_la_buffer Buffertavstånd (m).
-#' @param con En `DBIConnection`, eller `NA` för Region Dalarnas databas.
+#' @param con En `DBIConnection` mot ruttanalyser, eller `NA` för Region
+#'   Dalarnas databas `ruttanalyser`.
+#' @param schema_graf,kant_tabell,nod_tabell Vägnätet (en pgRouting-graf): schema,
+#'   tabell med vägsegment och tabell med noder. Standard är bilnätet
+#'   `grafer.nvdb_bil_adresser` och dess `_vertices_pgr`.
+#' @param kant_id_kol,kost_kol Kolumn med segmentets id och kolumn med kostnaden
+#'   (meter) i vägnätet. Rutterna söks med samma kostnad i båda riktningarna.
+#' @param tatorter Tätorterna som `sf`-objekt med kolumnerna `tokod`,
+#'   `tobeteckn`, `kommun`, `kommunnamn`, `lan` och geometri, eller `NULL` för att
+#'   hämta `karta.tatorter` ur geodata. Pendlingstabellens koder ska vara
+#'   SCB:s tätortskoder.
 #' @param dist Max avstånd (m) från tätort till vägnod.
 #' @param skriv_till_gpkg Skriv lagren till GeoPackage i stället för att
 #'   returnera dem.
@@ -113,7 +186,10 @@ pendling_kraftfalt <- function(tabell_pend_relation, ut_mapp = NA, gpkg_namn = N
                                enskilt_troskelvarde = 20, totalt_troskelvarde = 35,
                                primar_la_buffer = 2000, sekundar_la_buffer = 1000,
                                gemensam_la_buffer = 5000, con = NA, dist = 2000,
-                               skriv_till_gpkg = FALSE) {
+                               skriv_till_gpkg = FALSE,
+                               schema_graf = "grafer", kant_tabell = "nvdb_bil_adresser",
+                               nod_tabell = paste0(kant_tabell, "_vertices_pgr"),
+                               kant_id_kol = "rad_id", kost_kol = "kostnad_meter", tatorter = NULL) {
   intern_krav("sf")
   if (!all(c("from_id", "to_id", "n") %in% colnames(tabell_pend_relation))) {
     stop("`tabell_pend_relation` måste innehålla kolumnerna 'from_id', 'to_id', 'n'.", call. = FALSE)
@@ -121,24 +197,20 @@ pendling_kraftfalt <- function(tabell_pend_relation, ut_mapp = NA, gpkg_namn = N
   if (is.na(ut_mapp)) ut_mapp <- intern_utskriftsmapp()
   if (is.na(gpkg_namn)) gpkg_namn <- "kraftfalt.gpkg"
 
-  cc <- intern_pendling_con(con)
-  on.exit(intern_stang(cc), add = TRUE)
-  con <- cc$con
-
-  DBI::dbExecute(con, "SET search_path TO grafer, public;")
-  kant_tabell <- "nvdb_noded"; nod_tabell <- "grafer.nvdb_noded_vertices_pgr"
-  kost_kol <- "dist_cost"; omvand_kost_kol <- "dist_reverse_cost"
+  fb <- intern_pendling_forbered(tabell_pend_relation, con, schema_graf, kant_tabell, nod_tabell, tatorter)
+  on.exit(intern_stang(fb$cc), add = TRUE)
+  con <- fb$cc$con
+  DBI::dbExecute(con, glue::glue("SET search_path TO {schema_graf}, public;"))
+  kant_full <- fb$kant; nod_full <- fb$nod; nodgeom <- fb$nodgeom; tatort_tabell <- fb$tatort
   et <- enskilt_troskelvarde; tt <- totalt_troskelvarde
-
-  DBI::dbWriteTable(con, "data", tabell_pend_relation, overwrite = TRUE, temporary = FALSE)
 
   kor <- function(drop, sql) { DBI::dbExecute(con, drop); DBI::dbExecute(con, sql) }
 
   kor("DROP TABLE IF EXISTS tatort_vertex;", glue::glue("
     CREATE TEMP TABLE tatort_vertex AS
-    SELECT t.tokod, e.id, e.dist FROM tatort t
-    JOIN lateral(SELECT id, e.geom <-> t.geom as dist FROM {nod_tabell} e
-                 ORDER BY t.geom <-> e.geom LIMIT 1) AS e ON true
+    SELECT t.tokod, e.id, e.dist FROM {tatort_tabell} t
+    JOIN lateral(SELECT id, e.{nodgeom} <-> t.geom as dist FROM {nod_full} e
+                 ORDER BY t.geom <-> e.{nodgeom} LIMIT 1) AS e ON true
     WHERE dist < {dist};"))
 
   kor("DROP TABLE IF EXISTS commute_combinations;", glue::glue("
@@ -147,7 +219,7 @@ pendling_kraftfalt <- function(tabell_pend_relation, ut_mapp = NA, gpkg_namn = N
       SELECT from_id, to_id, n,
         sum(n) OVER w AS totalworkers,
         sum(n) FILTER (WHERE from_id=to_id) OVER w AS localworkers
-      FROM grafer.data
+      FROM {schema_graf}.data
       WHERE from_id IN (SELECT tokod FROM tatort_vertex)
       WINDOW w AS (PARTITION BY from_id)
     )
@@ -165,14 +237,14 @@ pendling_kraftfalt <- function(tabell_pend_relation, ut_mapp = NA, gpkg_namn = N
     CREATE TEMP TABLE la AS
     SELECT c.from_id AS id, c.totalworkers, c.localworkers, c.perc_total_commuters,
            t.tobeteckn, t.lan, t.kommun, t.kommunnamn, t.geom
-    FROM commute_combinations c JOIN grafer.tatort t ON t.tokod = c.from_id
+    FROM commute_combinations c JOIN {tatort_tabell} t ON t.tokod = c.from_id
     WHERE ranking = 1 AND perc <= {et} AND perc_total_commuters <= {tt};"))
 
   kor("DROP TABLE IF EXISTS solitary;", glue::glue("
     CREATE TEMP TABLE solitary AS
     SELECT c.from_id as id, c.totalworkers, c.localworkers, c.perc_total_commuters,
            t.tobeteckn, t.lan, t.kommun, t.kommunnamn, t.geom
-    FROM commute_combinations c JOIN grafer.tatort t ON t.tokod=c.from_id
+    FROM commute_combinations c JOIN {tatort_tabell} t ON t.tokod=c.from_id
     WHERE ranking=1 AND perc <= {et} AND perc_total_commuters > {tt};"))
 
   kor("DROP TABLE IF EXISTS common_la;", glue::glue("
@@ -183,7 +255,7 @@ pendling_kraftfalt <- function(tabell_pend_relation, ut_mapp = NA, gpkg_namn = N
     )
     SELECT c.from_id AS id, c.to_id AS common_la, c.totalworkers, c.localworkers, c.perc_total_commuters,
            t.tobeteckn, t.lan, t.kommun, t.kommunnamn, t.geom
-    FROM common_la_cte c JOIN grafer.tatort t ON t.tokod = c.from_id;"))
+    FROM common_la_cte c JOIN {tatort_tabell} t ON t.tokod = c.from_id;"))
 
   kor("DROP TABLE IF EXISTS satellites;", glue::glue("
     CREATE TEMP TABLE satellites AS
@@ -202,7 +274,7 @@ pendling_kraftfalt <- function(tabell_pend_relation, ut_mapp = NA, gpkg_namn = N
            s.totalworkers, s.localworkers, s.perc_total_commuters,
            t.tobeteckn, t.lan, t.kommun, t.kommunnamn, t.geom
     FROM agg a JOIN sats s ON a.from_id = s.from_id
-    JOIN grafer.tatort t ON t.tokod = s.from_id;"))
+    JOIN {tatort_tabell} t ON t.tokod = s.from_id;"))
 
   kor("DROP TABLE IF EXISTS route_combinations;", glue::glue("
     CREATE TEMP TABLE route_combinations AS
@@ -213,14 +285,14 @@ pendling_kraftfalt <- function(tabell_pend_relation, ut_mapp = NA, gpkg_namn = N
   kor("DROP TABLE IF EXISTS routes;", glue::glue("
     CREATE TEMP TABLE routes AS
     WITH astar AS (
-      SELECT * FROM pgr_aStar(
-        'SELECT id, source, target, {kost_kol} AS cost, {omvand_kost_kol} AS reverse_cost, x1, y1, x2, y2 FROM grafer.{kant_tabell}',
+      SELECT * FROM pgr_dijkstra(
+        'SELECT {kant_id_kol} AS id, source, target, {kost_kol} AS cost, {kost_kol} AS reverse_cost FROM {kant_full}',
         'SELECT start_vid AS source, end_vid AS target FROM route_combinations'
       )
     ), paths AS (
       SELECT a.start_vid, a.end_vid, sum(a.cost) AS cost, max(a.agg_cost) AS agg_cost,
              st_LineMerge(st_union(r.geom)) AS geom
-      FROM astar a JOIN grafer.{kant_tabell} r ON a.edge=r.id
+      FROM astar a JOIN {kant_full} r ON a.edge=r.{kant_id_kol}
       GROUP BY a.start_vid, a.end_vid
     )
     SELECT c.*, p.agg_cost, p.geom

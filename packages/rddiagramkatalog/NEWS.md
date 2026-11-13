@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9051
+
+* `karta_lf_kraftfalt_scb()`: tar `...` som skickas till
+  `rdgeorouting::pendling_kraftfalt()` (t.ex. `kant_tabell`). Kräver
+  rdgeorouting 0.0.0.9002, som räknar mot ruttanalyser och rätt vägnät.
+
 # rddiagramkatalog 0.0.0.9050
 
 * `karta_lf_kraftfalt_scb()` kopplar upp mot sekretessdatabasen med

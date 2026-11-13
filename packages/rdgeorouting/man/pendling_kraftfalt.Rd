@@ -15,7 +15,13 @@ pendling_kraftfalt(
   gemensam_la_buffer = 5000,
   con = NA,
   dist = 2000,
-  skriv_till_gpkg = FALSE
+  skriv_till_gpkg = FALSE,
+  schema_graf = "grafer",
+  kant_tabell = "nvdb_bil_adresser",
+  nod_tabell = paste0(kant_tabell, "_vertices_pgr"),
+  kant_id_kol = "rad_id",
+  kost_kol = "kostnad_meter",
+  tatorter = NULL
 )
 }
 \arguments{
@@ -28,12 +34,25 @@ klassificeringen.}
 
 \item{primar_la_buffer, sekundar_la_buffer, gemensam_la_buffer}{Buffertavstånd (m).}
 
-\item{con}{En \code{DBIConnection}, eller \code{NA} för Region Dalarnas databas.}
+\item{con}{En \code{DBIConnection} mot ruttanalyser, eller \code{NA} för Region
+Dalarnas databas \code{ruttanalyser}.}
 
 \item{dist}{Max avstånd (m) från tätort till vägnod.}
 
 \item{skriv_till_gpkg}{Skriv lagren till GeoPackage i stället för att
 returnera dem.}
+
+\item{schema_graf, kant_tabell, nod_tabell}{Vägnätet (en pgRouting-graf): schema,
+tabell med vägsegment och tabell med noder. Standard är bilnätet
+\code{grafer.nvdb_bil_adresser} och dess \verb{_vertices_pgr}.}
+
+\item{kant_id_kol, kost_kol}{Kolumn med segmentets id och kolumn med kostnaden
+(meter) i vägnätet. Rutterna söks med samma kostnad i båda riktningarna.}
+
+\item{tatorter}{Tätorterna som \code{sf}-objekt med kolumnerna \code{tokod},
+\code{tobeteckn}, \code{kommun}, \code{kommunnamn}, \code{lan} och geometri, eller \code{NULL} för att
+hämta \code{karta.tatorter} ur geodata. Pendlingstabellens koder ska vara
+SCB:s tätortskoder.}
 }
 \value{
 En namngiven lista med \code{sf}-objekt (\code{la}, \code{solitary}, \code{common_la},
