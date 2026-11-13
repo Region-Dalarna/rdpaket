@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9053
+
+* Kräver rdgeorouting 0.0.0.9004.
+
 # rddiagramkatalog 0.0.0.9052
 
 * Kräver rdgeorouting 0.0.0.9003 (rättar "crs not found" i kraftfältsberäkningen).

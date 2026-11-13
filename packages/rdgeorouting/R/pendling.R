@@ -66,6 +66,11 @@ intern_pendling_forbered <- function(tabell_pend_relation, con, schema_graf, kan
   tatorter <- sf::st_transform(tatorter, srid)
   sf::st_write(tatorter, con, DBI::Id(schema = schema_graf, table = "pendling_tatort"),
                delete_layer = TRUE, quiet = TRUE)
+  # säkerställ att geometrikolumnen har ett registrerat koordinatsystem (annars blir SRID 0 i alla
+  # lager som bygger på tabellen och sf kan inte läsa dem: "crs not found: EPSG:0")
+  DBI::dbExecute(con, glue::glue(
+    "ALTER TABLE {schema_graf}.pendling_tatort ALTER COLUMN geom TYPE geometry(Geometry, {srid})
+     USING ST_SetSRID(geom, {srid});"))
   DBI::dbExecute(con, glue::glue(
     "CREATE INDEX IF NOT EXISTS pendling_tatort_geom_idx ON {schema_graf}.pendling_tatort USING gist (geom);"))
 

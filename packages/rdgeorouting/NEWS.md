@@ -1,3 +1,10 @@
+# rdgeorouting 0.0.0.9004
+
+* `pendling_kraftfalt()` och `pendling_natverk()`: tätortstabellen
+  (`grafer.pendling_tatort`) får uttryckligen ett registrerat koordinatsystem
+  (SRID) efter att den skrivits, så att lagren som bygger på den går att läsa
+  in utan "crs not found: EPSG:0".
+
 # rdgeorouting 0.0.0.9003
 
 * `pendling_kraftfalt()` och `pendling_natverk()`: koordinatsystemet läses från
