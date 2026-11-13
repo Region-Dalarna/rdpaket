@@ -88,7 +88,12 @@ eller sökväg till en bildfil, se \code{\link[rddiagram:skriv_leaflet_till_fil]
 \code{\link[rddiagram:skriv_leaflet_till_fil]{rddiagram::skriv_leaflet_till_fil()}}).}
 
 \item{skriv_gpkg_fil}{TRUE om kraftfältslagren dessutom ska skrivas till en
-GeoPackage-fil (SWEREF99 TM) för vidare arbete i t.ex. QGIS.}
+GeoPackage-fil (SWEREF99 TM, EPSG:3006) för vidare arbete i t.ex. QGIS.
+Filen får lagren \code{tatorter} (alla tätorter med kolumnen \code{typ}), fälten
+\code{primla_areas}, \code{secla_areas} och \code{commonla_areas}, \code{routes} (rutterna de
+bygger på), de enskilda lagren från beräkningen (\code{la}, \code{solitary},
+\code{common_la}, \code{satellites}) och \code{lansgrans}. Tomma lager hoppas över. Sätt
+\code{skriv_leaflet_fil = FALSE} om du bara vill ha GeoPackage-filen.}
 
 \item{returnera_figur}{TRUE (standard) för att returnera kartan.}
 }

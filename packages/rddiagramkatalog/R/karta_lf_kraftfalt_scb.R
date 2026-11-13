@@ -57,7 +57,12 @@
 #'   (statisk ögonblicksbild via webshot2, se
 #'   [rddiagram::skriv_leaflet_till_fil()]).
 #' @param skriv_gpkg_fil TRUE om kraftfältslagren dessutom ska skrivas till en
-#'   GeoPackage-fil (SWEREF99 TM) för vidare arbete i t.ex. QGIS.
+#'   GeoPackage-fil (SWEREF99 TM, EPSG:3006) för vidare arbete i t.ex. QGIS.
+#'   Filen får lagren `tatorter` (alla tätorter med kolumnen `typ`), fälten
+#'   `primla_areas`, `secla_areas` och `commonla_areas`, `routes` (rutterna de
+#'   bygger på), de enskilda lagren från beräkningen (`la`, `solitary`,
+#'   `common_la`, `satellites`) och `lansgrans`. Tomma lager hoppas över. Sätt
+#'   `skriv_leaflet_fil = FALSE` om du bara vill ha GeoPackage-filen.
 #' @param returnera_figur TRUE (standard) för att returnera kartan.
 #'
 #' @return Osynligt: en namngiven lista med ett `leaflet`-objekt. Namnet är
@@ -128,11 +133,31 @@ karta_lf_kraftfalt_scb <- function(
   if (skriv_gpkg_fil) {
     gpkg <- paste0(utmapp, filnamn_bas, ".gpkg")
     if (file.exists(gpkg)) file.remove(gpkg)
-    for (namn in names(kraftfalt)) {
-      lager <- kraftfalt[[namn]]
+    skriv_lager <- function(lager, namn) {
       if (!is.null(lager) && nrow(lager) > 0) sf::st_write(lager, gpkg, layer = namn, append = TRUE, quiet = TRUE)
     }
-    message("Lager skrivna till ", gpkg)
+
+    # tätorterna i ett samlat lager med kolumnen typ, så att de går att färgsätta i ett steg i QGIS
+    tatorter <- Filter(Negate(is.null), list(
+      "Lokalt arbetsmarknadscentrum" = rbind_sf_kolumner(kraftfalt$la, kraftfalt$solitary),
+      "Sekundärt lokalt arbetsmarknadscentrum" = kraftfalt$common_la,
+      "Lokal arbetsmarknadssatellit" = kraftfalt$satellites))
+    tatorter <- Filter(function(x) nrow(x) > 0, tatorter)
+    if (length(tatorter) > 0) {
+      gemensamma <- Reduce(intersect, lapply(tatorter, names))
+      tatorter <- do.call(rbind, Map(function(x, typ) {
+        x <- x[, gemensamma]
+        x$typ <- typ
+        x
+      }, tatorter, names(tatorter)))
+      skriv_lager(tatorter, "tatorter")
+    }
+
+    # kraftfältens fält, rutterna och de enskilda lagren från beräkningen, samt länsgränsen
+    for (namn in names(kraftfalt)) skriv_lager(kraftfalt[[namn]], namn)
+    skriv_lager(sf::st_transform(lan_gis, 3006), "lansgrans")
+    message("Lager skrivna till ", gpkg, " (SWEREF 99 TM, EPSG:3006): ",
+            paste(sf::st_layers(gpkg)$name, collapse = ", "))
   }
 
   if (skriv_leaflet_fil) {
