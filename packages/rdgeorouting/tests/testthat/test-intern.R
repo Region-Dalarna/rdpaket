@@ -23,27 +23,3 @@ test_that("intern_rutt_con släpper igenom en befintlig anslutning", {
   expect_identical(res$con, fejk)
   expect_false(res$egen)
 })
-
-test_that("postgis_installera_i_postgres_db är en alias för aktivera", {
-  expect_identical(postgis_installera_i_postgres_db, postgis_aktivera_i_postgres_db)
-})
-
-test_that("PostGIS-kompatibilitetswrappers behåller de flyttade funktionernas argument", {
-  expect_identical(formals(postgis_tabell), formals(rdgis::postgis_tabell))
-  expect_identical(formals(postgis_aktivera_i_postgres_db),
-                   formals(rdpostgres::postgis_aktivera_i_postgres_db))
-  expect_identical(formals(postgis_sf_till_postgistabell),
-                   formals(rdgis::postgis_sf_till_postgistabell))
-  expect_identical(formals(postgis_databas_skriv_med_metadata),
-                   formals(rdgis::postgis_databas_skriv_med_metadata))
-  expect_identical(formals(postgis_kopiera_tabell_mellan_databaser),
-                   formals(rdgis::postgis_kopiera_tabell_mellan_databaser))
-  expect_identical(formals(postgis_skapa_omradesnyckel_tabell_vy),
-                   formals(rdgis::postgis_skapa_omradesnyckel_tabell_vy))
-  expect_identical(formals(postgis_omradesnyckel_exportera_till_mikrodb),
-                   formals(rdgis::postgis_omradesnyckel_exportera_till_mikrodb))
-  expect_identical(formals(postgis_kopiera_tabell),
-                   formals(rdpostgres::postgis_kopiera_tabell))
-  expect_identical(formals(postgis_flytta_tabell),
-                   formals(rdpostgres::postgis_flytta_tabell))
-})

@@ -21,13 +21,13 @@ pendling_ruta(
 \code{antalpend}.}
 
 \item{rutor}{Ett \code{sf}-objekt med polygon-/multipolygongeometri och en
-id-kolumn (namnges med \code{rutor_id_kol}), eller en \code{\link[=postgis_tabell]{postgis_tabell()}}-
+id-kolumn (namnges med \code{rutor_id_kol}), eller en \code{\link[rdgis:postgis_tabell]{rdgis::postgis_tabell()}}-
 referens till en motsvarande tabell i databasen. Rasterdata eller andra
 geometrityper (punkter, linjer) stöds inte.}
 
 \item{fokusomrade}{Området pendlingen ska räknas mot - ett \code{sf}-objekt med
 polygon-/multipolygongeometri (t.ex. en tätortsgräns eller ett eget
-avgränsat område), eller en \code{\link[=postgis_tabell]{postgis_tabell()}}-referens. Rasterdata
+avgränsat område), eller en \code{\link[rdgis:postgis_tabell]{rdgis::postgis_tabell()}}-referens. Rasterdata
 eller andra geometrityper stöds inte.}
 
 \item{rutor_id_kol}{Namnet på kolumnen i \code{rutor} som identifierar varje
@@ -39,7 +39,7 @@ kolumnen något annat - annars hittas inga träffar alls.}
 till någon databas alls. Behövs bara om \code{rutor} och \code{fokusomrade} båda
 är \code{sf}-objekt och man ändå vill köra rutfiltreringen
 databasaccelererat - annars ignoreras den (om \code{rutor} eller
-\code{fokusomrade} redan är en \code{\link[=postgis_tabell]{postgis_tabell()}}-referens används dess
+\code{fokusomrade} redan är en \code{\link[rdgis:postgis_tabell]{rdgis::postgis_tabell()}}-referens används dess
 egen anslutning i stället).}
 
 \item{ut_mapp}{Målmapp för GeoPackage.}
@@ -61,11 +61,11 @@ fokusområde, utifrån en tabell med pendlingsrelationer mellan rutor.
 \details{
 \code{rutor} och \code{fokusomrade} kan var för sig anges antingen som ett redan
 inläst \code{sf}-objekt eller som en referens till en tabell i en PostGIS-
-databas (skapad med \code{\link[=postgis_tabell]{postgis_tabell()}}) - funktionen avgör själv vilket,
+databas (skapad med \code{\link[rdgis:postgis_tabell]{rdgis::postgis_tabell()}}) - funktionen avgör själv vilket,
 och läser bara in det som faktiskt behövs (aldrig hela \code{rutor}, oavsett
 hur stor den är). Beräkningen körs databasaccelererat så fort en
 anslutning finns tillgänglig - antingen för att \code{rutor} eller
-\code{fokusomrade} angetts som en \code{\link[=postgis_tabell]{postgis_tabell()}}-referens, eller för att
+\code{fokusomrade} angetts som en \code{\link[rdgis:postgis_tabell]{rdgis::postgis_tabell()}}-referens, eller för att
 ett eget \code{con} skickas med trots att båda är \code{sf}-objekt. Ges ingen
 anslutning alls (standardläget om båda är \code{sf}-objekt) körs allt i ren R
 utan databaskontakt.
@@ -76,5 +76,5 @@ utpendlingsrutorna med antal pendlare) och/eller en GeoPackage-fil.
 }
 \seealso{
 \code{\link[=pendling_ruta_karta]{pendling_ruta_karta()}} för att göra resultatet till en karta,
-\code{\link[=postgis_tabell]{postgis_tabell()}} för att referera till en tabell i databasen.
+\code{\link[rdgis:postgis_tabell]{rdgis::postgis_tabell()}} för att referera till en tabell i databasen.
 }

@@ -4,9 +4,9 @@
 \name{rddeploy-package}
 \alias{rddeploy}
 \alias{rddeploy-package}
-\title{rddeploy: Deploy-verktyg för Region Dalarnas GitHub, webbrapporter och Shiny-appar}
+\title{rddeploy: Deploy-verktyg för Region Dalarnas GitHub, analysrapporter och Shiny-appar}
 \description{
-Samlar Region Dalarnas arbetsflöden för git och GitHub, publicering av webbrapporter och portaler samt scaffolding och publicering av Shiny-appar. Bygger på gert, gh och gitcreds i stället för handrullade git-anrop. Utbrutet ur func_API.R och func_landningssida_adminportal.R i Region-Dalarna/funktioner.
+Samlar Region Dalarnas arbetsflöden för git och GitHub, publicering av analysrapporter och portaler samt scaffolding och publicering av Shiny-appar. Bygger på gert, gh och gitcreds i stället för handrullade git-anrop. Utbrutet ur func_API.R och func_landningssida_adminportal.R i Region-Dalarna/funktioner.
 }
 \seealso{
 Useful links:

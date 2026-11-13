@@ -19,9 +19,19 @@
 #'   liten. Bra för många kartor i samma mapp, till exempel exempelkartor i
 #'   ett repo. Filen måste då ligga kvar bredvid `lib`. Gäller bara
 #'   `"html"`.
+#'   Fungerar inte webshot2 (t.ex. när en grupprincip blockerar att R startar
+#'   programmet som webshot2 behöver, `processx/supervisor.exe`) tas bilden i
+#'   stället direkt av Chrome eller Edge i bakgrunden, utan webshot2.
 #' @param karta_bredd,karta_hojd Bildmått i pixlar. Gäller bara `"png"`.
+#' @param zoom Pixeltäthet för `"png"`: `1` (standard) ger bilden i
+#'   `karta_bredd` x `karta_hojd` pixlar, `2` eller `3` ger samma utsnitt och
+#'   samma storlek på text och symboler men två respektive tre gånger så många
+#'   pixlar - skarpare, för utskrift och presentationer.
 #' @param karta_fordrojning Antal sekunder att vänta innan bilden tas, så att
 #'   bakgrundskartan hinner ritas. Gäller bara `"png"`.
+#' @param favicon Ikonen som visas på webbläsarens flik. `TRUE` (standard) = Region
+#'   Dalarnas ikon (följer med paketet), `FALSE` = ingen, eller sökväg till en png-, svg-
+#'   eller ico-fil som bäddas in i html-filen. Gäller bara `"html"`.
 #'
 #' @return Osynligt: filens sökväg. Sökvägen skrivs också ut som ett meddelande.
 #' @export
@@ -29,7 +39,9 @@ skriv_leaflet_till_fil <- function(leaflet_objekt, output_mapp, filnamn_karta,
                                     karta_filformat = "html",
                                     delat_bibliotek = FALSE,
                                     karta_bredd = 1000, karta_hojd = 800,
-                                    karta_fordrojning = 4) {
+                                    karta_fordrojning = 4,
+                                    zoom = 1,
+                                    favicon = TRUE) {
 
   if (!requireNamespace("htmlwidgets", quietly = TRUE)) {
     stop("Paketet 'htmlwidgets' krävs. Installera med install.packages(\"htmlwidgets\").", call. = FALSE)
@@ -43,19 +55,20 @@ skriv_leaflet_till_fil <- function(leaflet_objekt, output_mapp, filnamn_karta,
   if (format == "html") {
 
     fullpath <- paste0(output_mapp, filnamn_bas, ".html")
+    leaflet_objekt <- intern_lagg_till_favicon(leaflet_objekt, favicon)
 
     # selfcontained = TRUE (en portabel enfilsversion, lätt att dela/maila) kräver pandoc. Om det
     # saknas sparas i stället en vanlig html-fil med en medföljande "_files"-mapp - fungerar precis
     # lika bra lokalt/på en webbserver, bara inte lika portabel - i stället för att krascha.
     sparad_portabel <- !delat_bibliotek && tryCatch({
-      htmlwidgets::saveWidget(leaflet_objekt, fullpath, selfcontained = TRUE)
+      htmlwidgets::saveWidget(leaflet_objekt, fullpath, selfcontained = TRUE, title = filnamn_bas)
       TRUE
     }, error = function(e) FALSE)
 
     if (delat_bibliotek) {
-      htmlwidgets::saveWidget(leaflet_objekt, fullpath, selfcontained = FALSE, libdir = "lib")
+      htmlwidgets::saveWidget(leaflet_objekt, fullpath, selfcontained = FALSE, libdir = "lib", title = filnamn_bas)
     } else if (!sparad_portabel) {
-      htmlwidgets::saveWidget(leaflet_objekt, fullpath, selfcontained = FALSE)
+      htmlwidgets::saveWidget(leaflet_objekt, fullpath, selfcontained = FALSE, title = filnamn_bas)
       message(
         "Pandoc hittades inte - sparade en icke-självständig html-fil (med en medföljande ",
         "\"_files\"-mapp) i stället för en portabel enfilsversion."
@@ -74,9 +87,9 @@ skriv_leaflet_till_fil <- function(leaflet_objekt, output_mapp, filnamn_karta,
 
     fullpath <- paste0(output_mapp, filnamn_bas, ".png")
 
-    intern_sakerstall_webblasare()
+    webblasare <- intern_sakerstall_webblasare()
 
-    # Widgeten sparas först som en vanlig (icke-portabel) temporär html-fil - bara webshot2 ska läsa
+    # Widgeten sparas först som en vanlig (icke-portabel) temporär html-fil - bara webbläsaren ska läsa
     # den lokalt, så pandoc/selfcontained behövs inte här.
     temp_html <- tempfile(fileext = ".html")
     htmlwidgets::saveWidget(leaflet_objekt, temp_html, selfcontained = FALSE)
@@ -85,9 +98,18 @@ skriv_leaflet_till_fil <- function(leaflet_objekt, output_mapp, filnamn_karta,
       unlink(sub("\\.html$", "_files", temp_html), recursive = TRUE)
     }, add = TRUE)
 
-    # bakgrundskartan (se lagg_till_bakgrundskarta()) hämtas och ritas först när sidan visas
-    webshot2::webshot(temp_html, file = fullpath, vwidth = karta_bredd, vheight = karta_hojd,
-                      delay = karta_fordrojning)
+    # bakgrundskartan (se lagg_till_bakgrundskarta()) hämtas och ritas först när sidan visas.
+    # webshot2 startar webbläsaren via processx. Går det inte (t.ex. blockerat av en grupprincip) tas
+    # bilden i stället direkt av webbläsaren med ett vanligt systemanrop.
+    klar <- tryCatch({
+      webshot2::webshot(temp_html, file = fullpath, vwidth = karta_bredd, vheight = karta_hojd,
+                        delay = karta_fordrojning, zoom = zoom)
+      file.exists(fullpath)
+    }, error = function(e) FALSE)
+    if (!klar) {
+      message("webshot2 kunde inte starta webbl\u00e4saren - tar bilden direkt med ", basename(webblasare), ".")
+      intern_png_med_webblasare(webblasare, temp_html, fullpath, karta_bredd, karta_hojd, zoom, karta_fordrojning)
+    }
 
   } else {
     stop("Okänt kartfilformat: ", format, " (stöds: \"html\", \"png\")", call. = FALSE)
@@ -134,4 +156,57 @@ intern_hitta_webblasare <- function() {
     return(edge[[1]])
   }
   NULL
+}
+
+# Tar en png av en html-fil direkt med Chrome/Edge (headless), utan webshot2/chromote/processx.
+#' @noRd
+intern_png_med_webblasare <- function(webblasare, html_fil, png_fil, bredd, hojd, zoom, fordrojning) {
+  profil <- tempfile("webblasare_profil_")
+  dir.create(profil)
+  on.exit(unlink(profil, recursive = TRUE), add = TRUE)
+  png_fil <- normalizePath(png_fil, winslash = "/", mustWork = FALSE)
+  url <- paste0("file:///", sub("^/", "", normalizePath(html_fil, winslash = "/", mustWork = TRUE)))
+  args <- c("--headless", "--disable-gpu", "--hide-scrollbars", "--no-first-run",
+            paste0("--user-data-dir=", shQuote(normalizePath(profil, winslash = "/", mustWork = FALSE))),
+            paste0("--screenshot=", shQuote(png_fil)),
+            paste0("--window-size=", bredd, ",", hojd),
+            paste0("--force-device-scale-factor=", zoom),
+            paste0("--virtual-time-budget=", round(max(fordrojning, 5) * 1000)),
+            shQuote(url))
+  suppressWarnings(system2(webblasare, args, stdout = FALSE, stderr = FALSE, timeout = 120))
+  if (!file.exists(png_fil)) {
+    stop("Kunde inte ta bilden med webbl\u00e4saren (", webblasare, "). Spara kartan som html i st\u00e4llet ",
+         "(leaflet_filformat = \"html\") och ta en sk\u00e4rmbild eller skriv ut den som pdf.", call. = FALSE)
+  }
+  invisible(png_fil)
+}
+
+# Lägger en favicon i en leaflet-karta (html-filens <head>). TRUE = Region Dalarnas ikon, FALSE = ingen,
+# annars sökväg till en png-, svg- eller ico-fil som bäddas in.
+#' @noRd
+intern_lagg_till_favicon <- function(leaflet_objekt, favicon) {
+  if (isFALSE(favicon) || is.null(favicon)) return(leaflet_objekt)
+
+  href <- if (isTRUE(favicon)) {
+    # Region Dalarnas ikon (256x256 png ur favicon.ico i Region-Dalarna/depot), följer med paketet
+    ikon <- system.file("extdata", "favicon_regiondalarna.png", package = "rddiagram")
+    if (nzchar(ikon)) {
+      paste0("data:image/png;base64,", jsonlite::base64_enc(readBin(ikon, "raw", file.size(ikon))))
+    } else {
+      svg <- paste0(
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>",
+        "<rect width='32' height='32' rx='6' fill='#158daf'/>",
+        "<path d='M16 5a7 7 0 0 0-7 7c0 5 7 14 7 14s7-9 7-14a7 7 0 0 0-7-7z' fill='#fff'/>",
+        "<circle cx='16' cy='12' r='2.6' fill='#158daf'/></svg>")
+      paste0("data:image/svg+xml,", utils::URLencode(svg, reserved = TRUE))
+    }
+  } else {
+    if (!is.character(favicon) || length(favicon) != 1 || !file.exists(favicon)) {
+      stop("favicon ska vara TRUE, FALSE eller s\u00f6kv\u00e4gen till en befintlig bildfil.", call. = FALSE)
+    }
+    typ <- switch(tolower(tools::file_ext(favicon)), png = "image/png", svg = "image/svg+xml",
+                  ico = "image/x-icon", stop("favicon: filen ska vara png, svg eller ico.", call. = FALSE))
+    paste0("data:", typ, ";base64,", jsonlite::base64_enc(readBin(favicon, "raw", file.size(favicon))))
+  }
+  htmlwidgets::prependContent(leaflet_objekt, htmltools::tags$link(rel = "icon", href = href))
 }

@@ -1,3 +1,43 @@
+# rddiagramkatalog 0.0.0.9055
+
+* Kräver rddiagram 0.0.0.9035, där html-kartorna får Region Dalarnas ikon som favicon.
+
+# rddiagramkatalog 0.0.0.9054
+
+* `karta_lf_kraftfalt_scb()`: nya parametrar `karta_bredd`, `karta_hojd`, `zoom`
+  (skarp png, `zoom = 3`) och `favicon`. png fungerar nu även när webshot2 inte
+  går att köra (Chrome/Edge tar bilden direkt). Kräver rddiagram 0.0.0.9034 och
+  rdgeorouting 0.0.0.9005 (tystare databasnotiser).
+
+# rddiagramkatalog 0.0.0.9053
+
+* Kräver rdgeorouting 0.0.0.9004.
+
+# rddiagramkatalog 0.0.0.9052
+
+* Kräver rdgeorouting 0.0.0.9003 (rättar "crs not found" i kraftfältsberäkningen).
+
+# rddiagramkatalog 0.0.0.9051
+
+* `karta_lf_kraftfalt_scb()`: tar `...` som skickas till
+  `rdgeorouting::pendling_kraftfalt()` (t.ex. `kant_tabell`). Kräver
+  rdgeorouting 0.0.0.9002, som räknar mot ruttanalyser och rätt vägnät.
+
+# rddiagramkatalog 0.0.0.9050
+
+* `karta_lf_kraftfalt_scb()` kopplar upp mot sekretessdatabasen med
+  `rdpostgres::uppkoppling_adm("sekretess")`.
+
+# rddiagramkatalog 0.0.0.9049
+
+* Ny funktion `karta_lf_kraftfalt_scb()`: leaflet-karta över tätorters
+  kraftfält (lokala arbetsmarknadscentrum, satelliter och kraftfältens lila
+  fält), beräknade med `rdgeorouting::pendling_kraftfalt()` på
+  `rutor.pend_relation_tatorter` i sekretessdatabasen. Neutral bakgrundskarta
+  utan logga, länsgräns, förklaringsruta och textruta. Året pendlingsdata
+  gäller (standard 2022) anges med `pendlingsar` eftersom tabellen saknar
+  årskolumn. Kräver paketet rdgeorouting.
+
 # rddiagramkatalog 0.0.0.9048
 
 * "Skriv till fil" i `diagramkatalog_utforska()` gav varningar som

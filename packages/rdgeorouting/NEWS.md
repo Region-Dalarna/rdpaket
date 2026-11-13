@@ -1,18 +1,56 @@
-# rdgeorouting 0.0.0.9002
+# rdgeorouting 0.0.0.9006
 
 ## PostGIS-funktioner flyttade
 
-Funktioner för geometri, spatial skrivning, metadata och områdesnycklar
-implementeras nu i `rdgis`; generell tabellkopiering/flytt och aktivering av
-PostGIS implementeras i `rdpostgres`. De gamla `postgis_*()`-namnen finns kvar
-här som kompatibilitetswrappers. Områdesnycklarnas mikrodatabasexport är
-flyttad till `rdgis`; `postgis_isokroner_dela_upp_polygoner()` stannar här
-eftersom den hör till isokronbearbetning.
+Funktioner för geometri, spatial skrivning, metadata och områdesnycklar finns nu
+i `rdgis`; generell tabellkopiering/flytt och aktivering av PostGIS finns i
+`rdpostgres`. De gamla `postgis_*()`-namnen i rdgeorouting är **borttagna** (inga
+kompatibilitetswrappers - paketet är så nytt att de inte behövs). Anropa i
+stället:
 
-Kräver `rdgis >= 0.0.0.9002` och `rdpostgres >= 0.0.0.9005` så att
-kompatibilitetswrappernas implementationer finns i mottagarpaketen.
+* `rdgis::postgis_tabell()`, `rdgis::postgis_sf_till_postgistabell()`,
+  `rdgis::postgis_databas_skriv_med_metadata()`,
+  `rdgis::postgis_kopiera_tabell_mellan_databaser()`,
+  `rdgis::postgis_skapa_omradesnyckel_tabell_vy()`,
+  `rdgis::postgis_omradesnyckel_exportera_till_mikrodb()`
+* `rdpostgres::postgis_aktivera_i_postgres_db()` (alias
+  `postgis_installera_i_postgres_db()`), `rdpostgres::postgis_kopiera_tabell()`,
+  `rdpostgres::postgis_flytta_tabell()`
 
----
+`postgis_isokroner_dela_upp_polygoner()` stannar i rdgeorouting eftersom den hör
+till isokronbearbetning. Kräver `rdgis >= 0.0.0.9002` och
+`rdpostgres >= 0.0.0.9005`.
+
+# rdgeorouting 0.0.0.9005
+
+* `pendling_kraftfalt()` och `pendling_natverk()` skriver inte längre ut
+  databasens NOTICE-meddelanden ("tabell ... finns inte, hoppar över" och
+  "Ger rättigheter på table ...").
+
+# rdgeorouting 0.0.0.9004
+
+* `pendling_kraftfalt()` och `pendling_natverk()`: tätortstabellen
+  (`grafer.pendling_tatort`) får uttryckligen ett registrerat koordinatsystem
+  (SRID) efter att den skrivits, så att lagren som bygger på den går att läsa
+  in utan "crs not found: EPSG:0".
+
+# rdgeorouting 0.0.0.9003
+
+* `pendling_kraftfalt()` och `pendling_natverk()`: koordinatsystemet läses från
+  en rad i vägnätet om geometrikolumnen saknar registrerat SRID (gav
+  "crs not found: EPSG:0"); faller annars tillbaka på EPSG:3006.
+
+# rdgeorouting 0.0.0.9002
+
+* `pendling_kraftfalt()` och `pendling_natverk()` körs nu mot `ruttanalyser`
+  (före: geodata, där vägnätet inte finns) och mot vägnätet
+  `grafer.nvdb_bil_adresser` i stället för det gamla `nvdb_noded`. Rutterna
+  söks med `pgr_dijkstra()` på `kostnad_meter`, eftersom nätet saknar de
+  koordinatkolumner `pgr_aStar()` kräver. Tätorterna hämtas ur
+  `karta.tatortspunkter` i geodata (matchar på SCB:s tätortskod) och skrivs till
+  `grafer.pendling_tatort`; pendlingstabellen skrivs uttryckligen till
+  `grafer.data`. Nya parametrar: `schema_graf`, `kant_tabell`, `nod_tabell`,
+  `kant_id_kol`, `kost_kol` och `tatorter`.
 
 # rdgeorouting 0.0.0.9001
 
