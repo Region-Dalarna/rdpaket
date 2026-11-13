@@ -1,3 +1,8 @@
+# rddiagramkatalog 0.0.0.9064
+
+* `karta_lf_kraftfalt_scb()`: `bakgrundskarta = "osm"` ger OpenStreetMaps vanliga bildrutor
+  (ingen WebGL). Används lämpligen med `bakgrund_dimning`.
+
 # rddiagramkatalog 0.0.0.9063
 
 * `karta_lf_kraftfalt_scb()`: ny parameter `bakgrund_dimning` (0-1, standard 0 = av) som

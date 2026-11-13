@@ -47,7 +47,10 @@
 #'   kraftfältskartans egna). Den ritas av vanliga bildrutor och fungerar därför
 #'   även där webbläsaren saknar WebGL, t.ex. för png-filer på en dator där
 #'   headless Edge/Chrome inte får fram WebGL. Kontrollera Esris användarvillkor
-#'   för ditt användningsfall.
+#'   för ditt användningsfall. `"osm"` är OpenStreetMaps vanliga bildrutor
+#'   (tile.openstreetmap.org), också utan WebGL. Kartan är färgstark, så den
+#'   används lämpligen tillsammans med `bakgrund_dimning`. OSM:s policy för
+#'   tjänsten är avsedd för måttlig användning.
 #' @param bakgrund_dimning Hur mycket bakgrundskartan ska tonas ner, mellan 0 och 1.
 #'   0 (standard) = ingen nedtoning. Annars läggs en ljusgrå, delvis genomskinlig
 #'   yta över bakgrundskartan (under kraftfälten, prickarna och texten), så att
@@ -116,7 +119,7 @@ karta_lf_kraftfalt_scb <- function(
 
   # ========================================== Inställningar ============================================
 
-  bakgrundskarta <- match.arg(bakgrundskarta, c("openfreemap", "esri_gra"))
+  bakgrundskarta <- match.arg(bakgrundskarta, c("openfreemap", "esri_gra", "osm"))
   if (!is.numeric(bakgrund_dimning) || length(bakgrund_dimning) != 1 || is.na(bakgrund_dimning) ||
       bakgrund_dimning < 0 || bakgrund_dimning > 1) {
     stop("bakgrund_dimning ska vara ett tal mellan 0 och 1.", call. = FALSE)
@@ -287,6 +290,12 @@ intern_bygg_kraftfaltskarta <- function(kraftfalt, lan_gis, pendlingsar, enskilt
       m, urlTemplate = "https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
       attribution = "Bakgrundskarta: Esri, HERE, Garmin, \u00a9 OpenStreetMap contributors",
       options = leaflet::tileOptions(tileSize = 128, zoomOffset = 1))
+  } else if (identical(bakgrundskarta, "osm")) {
+    # OpenStreetMaps vanliga rastertiles (inget WebGL)
+    m <- leaflet::addTiles(
+      m, urlTemplate = "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      attribution = "\u00a9 OpenStreetMap contributors",
+      options = leaflet::tileOptions(maxZoom = 19))
   } else {
     m <- rddiagram::lagg_till_bakgrundskarta(m, etiketter = "orter", etikett_opacitet = 0.35)
   }

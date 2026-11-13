@@ -76,7 +76,10 @@ Esris grå bakgrundskarta ("World Light Gray Base", utan text; ortnamnen är
 kraftfältskartans egna). Den ritas av vanliga bildrutor och fungerar därför
 även där webbläsaren saknar WebGL, t.ex. för png-filer på en dator där
 headless Edge/Chrome inte får fram WebGL. Kontrollera Esris användarvillkor
-för ditt användningsfall.}
+för ditt användningsfall. \code{"osm"} är OpenStreetMaps vanliga bildrutor
+(tile.openstreetmap.org), också utan WebGL. Kartan är färgstark, så den
+används lämpligen tillsammans med \code{bakgrund_dimning}. OSM:s policy för
+tjänsten är avsedd för måttlig användning.}
 
 \item{bakgrund_dimning}{Hur mycket bakgrundskartan ska tonas ner, mellan 0 och 1.
 0 (standard) = ingen nedtoning. Annars läggs en ljusgrå, delvis genomskinlig
