@@ -21,7 +21,7 @@ rad per platshållare), osynligt.
 Skriver ut en tabell över mallens layouter: vilka platshållare (rubrik,
 text, bild) varje layout har, och vilka som används för vad. Alla
 layouter i tabellen går att använda genom att ange deras namn, t.ex.
-\code{ppt_bild(..., layout = "Två innehållsdelar")}.
+\code{ppt_lagg_till_slide("Två innehållsdelar", ...)}.
 }
 \seealso{
 \code{\link[=ppt_mall_exempel]{ppt_mall_exempel()}} för att få mallens layouter som en

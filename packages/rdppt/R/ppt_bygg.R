@@ -1,9 +1,9 @@
 #' Börja på en ny presentation
 #'
 #' Första steget när en presentation byggs steg för steg: skapa den med
-#' `ppt_ny()`, lägg till slides med [ppt_diagram()], [ppt_bild()],
-#' [ppt_text()], [ppt_avsnitt()], [ppt_slutsatser()], [ppt_rapporter()],
-#' [ppt_befintlig()] och [ppt_avslut()], och spara med [ppt_spara()].
+#' `ppt_ny()`, lägg till slides med [ppt_lagg_till_slide()] (diagram, bild,
+#' text, slutsatser, avsnitt, rapporter, avslut och färdiga slides),
+#' [ppt_diagram()] och [ppt_befintlig()], och spara med [ppt_spara()].
 #' Slides hamnar i den ordning de läggs till.
 #'
 #' @param huvudrubrik Presentationens huvudrubrik (på titelsidan). `NULL`
@@ -31,9 +31,9 @@
 #' ppt_ny("Arbetsmarknad och befolkning i Dalarna") |>
 #'   ppt_diagram(rddiagramkatalog::diag_arbetsmarknadsstatus_tidsserie_scb,
 #'               region_vekt = c("20", "2080", "2081")) |>
-#'   ppt_slutsatser(c("Första slutsatsen", "Andra slutsatsen")) |>
-#'   ppt_rapporter() |>
-#'   ppt_avslut() |>
+#'   ppt_lagg_till_slide("slutsatser", text = c("Första slutsatsen", "Andra slutsatsen")) |>
+#'   ppt_lagg_till_slide("rapporter") |>
+#'   ppt_lagg_till_slide("avslut") |>
 #'   ppt_spara("arbetsmarknad_befolkning.pptx")
 #' }
 #' @export
@@ -150,12 +150,21 @@ ppt_diagram <- function(ppt,
   layout <- intern_kontrollera_layout(ppt, layout)
 
   funktion_namn <- if (is.character(funktion)) funktion else paste(deparse(substitute(funktion)), collapse = "")
+  intern_ppt_diagram(ppt, funktion, funktion_namn, list(...), region_vekt = region_vekt, rubrik = rubrik, text = text,
+                     layout = layout, anteckningar = anteckningar, regionvariabel = regionvariabel,
+                     per_region = per_region, stoppa_vid_fel = stoppa_vid_fel)
+}
+
+# Själva körningen av diagramfunktionen. Utbruten så att ppt_lagg_till_slide(layout = "diagram") kan
+# använda samma kod; funktion_namn är funktionens namn så som användaren skrev det (till felmeddelanden).
+intern_ppt_diagram <- function(ppt, funktion, funktion_namn, argument, region_vekt, rubrik, text, layout,
+                               anteckningar, regionvariabel, per_region, stoppa_vid_fel) {
+
   if (!grepl("^[a-zA-Z0-9_.:]+$", funktion_namn)) funktion_namn <- "diagramfunktionen"
   if (is.character(funktion)) funktion <- eval(parse(text = funktion))
   if (!is.function(funktion)) stop("funktion ska vara en funktion, t.ex. rddiagramkatalog::diag_befolkningsprognos_profet_scb.", call. = FALSE)
 
   parametrar <- names(formals(funktion))
-  argument <- list(...)
   okanda <- setdiff(names(argument), parametrar)
   if (!"..." %in% parametrar && (length(okanda) > 0 || (length(argument) > 0 && is.null(names(argument))))) {
     stop(funktion_namn, " har ingen parameter som heter ", paste0("'", okanda, "'", collapse = ", "),
@@ -218,139 +227,6 @@ ppt_diagram <- function(ppt,
   ppt
 }
 
-#' Lägg till en bild eller ett diagram
-#'
-#' Lägger till en slide med en färdig bild (en png-fil) eller ett
-#' ggplot-objekt. Flera bilder ger en slide per bild.
-#'
-#' @param ppt En presentation från [ppt_ny()].
-#' @param bild Sökväg till en eller flera png-filer, ett ggplot-objekt,
-#'   eller en lista med ggplot-objekt (t.ex. det en diagramfunktion
-#'   returnerar). Ggplot-objekt läggs in som redigerbar vektorgrafik.
-#' @param rubrik Rubrik på sliden.
-#' @param text Text på sliden: en textsträng, eller en vektor som blir en
-#'   punktlista.
-#' @param layout Namnet på den layout i mallen som ska användas, se
-#'   [ppt_mall_visa()]. `NULL` (standard) = väljs automatiskt efter om
-#'   sliden har rubrik och text.
-#' @param anteckningar Anteckningar till sliden.
-#' @param txt_size Textstorlek. `NA` (standard) = mallens egen.
-#'
-#' @return Presentationen, med nya slides tillagda.
-#' @export
-ppt_bild <- function(ppt, bild, rubrik = NULL, text = NULL, layout = NULL, anteckningar = NULL, txt_size = NA) {
-  intern_kontrollera_ppt(ppt)
-  layout <- intern_kontrollera_layout(ppt, layout)
-
-  if (intern_ar_ggplot(bild)) {
-    bild <- list(bild)
-  } else if (is.character(bild)) {
-    saknas <- bild[!file.exists(bild)]
-    if (length(saknas) > 0) stop("Hittar inte bildfilen:\n  ", paste(saknas, collapse = "\n  "), call. = FALSE)
-    bild <- as.list(bild)
-  } else if (!(is.list(bild) && length(bild) > 0 && all(vapply(bild, intern_ar_ggplot, logical(1))))) {
-    stop("bild ska vara en sökväg till en png-fil, ett ggplot-objekt eller en lista med ggplot-objekt.", call. = FALSE)
-  }
-
-  for (en_bild in bild) {
-    ppt <- intern_ppt_lagg_till(ppt, bild = en_bild, titel = rubrik, beskr = text, mall = layout,
-                                anteckningar = anteckningar, txt_size = txt_size)
-  }
-  ppt
-}
-
-#' Lägg till en slide med rubrik och text
-#'
-#' @param ppt En presentation från [ppt_ny()].
-#' @param rubrik Rubrik på sliden.
-#' @param text Text på sliden: en vektor med ett element per stycke/punkt.
-#'   För layouter med flera textrutor: en namngiven lista med ett element
-#'   per platshållare, t.ex. `list("Platshållare för text 2" = "Vänster",
-#'   "Platshållare för text 4" = "Höger")` - se vad de heter med
-#'   `ppt_mall_visa(layout = "...")`.
-#' @param layout Namnet på den layout i mallen som ska användas, se
-#'   [ppt_mall_visa()]. `NULL` (standard) = mallens layout för rubrik och
-#'   punktlista.
-#' @param anteckningar Anteckningar till sliden.
-#' @param txt_size Textstorlek. `NA` (standard) = mallens egen.
-#'
-#' @return Presentationen, med en ny slide tillagd.
-#' @export
-ppt_text <- function(ppt, rubrik = NULL, text = NULL, layout = NULL, anteckningar = NULL, txt_size = NA) {
-  intern_kontrollera_ppt(ppt)
-  layout <- intern_kontrollera_layout(ppt, layout)
-  intern_ppt_lagg_till(ppt, titel = rubrik, beskr = text, mall = layout, anteckningar = anteckningar, txt_size = txt_size)
-}
-
-#' Lägg till en avsnittsrubrik
-#'
-#' En slide som inleder ett nytt avsnitt i presentationen, med stor
-#' rubrik.
-#'
-#' @param ppt En presentation från [ppt_ny()].
-#' @param rubrik Avsnittets rubrik.
-#' @param text Eventuell text under rubriken.
-#' @param anteckningar Anteckningar till sliden.
-#'
-#' @return Presentationen, med en ny slide tillagd.
-#' @export
-ppt_avsnitt <- function(ppt, rubrik, text = NULL, anteckningar = NULL) {
-  intern_kontrollera_ppt(ppt)
-  intern_ppt_lagg_till(ppt, titel = rubrik, beskr = text, mall = "roll:avsnitt", anteckningar = anteckningar)
-}
-
-#' Lägg till en slide med slutsatser
-#'
-#' En slide med rubrik och punktlista.
-#'
-#' @param ppt En presentation från [ppt_ny()].
-#' @param punkter Slutsatserna, en vektor med ett element per punkt.
-#' @param rubrik Slidens rubrik.
-#' @param anteckningar Anteckningar till sliden.
-#' @param txt_size Textstorlek. `NA` (standard) = mallens egen.
-#'
-#' @return Presentationen, med en ny slide tillagd.
-#' @export
-ppt_slutsatser <- function(ppt, punkter, rubrik = "Slutsatser", anteckningar = NULL, txt_size = NA) {
-  intern_kontrollera_ppt(ppt)
-  intern_ppt_lagg_till(ppt, titel = rubrik, beskr = punkter, mall = "Slutsatser_Samhallsanalys",
-                       anteckningar = anteckningar, txt_size = txt_size)
-}
-
-#' Lägg till sidan med Samhällsanalys rapporter
-#'
-#' En slide med aktuella rapporter från regiondalarna.se i två spalter
-#' (webbrapporter och pdf-rapporter), hämtade med
-#' [rapporter_rd_webb_hamta()] när presentationen sparas. Går rapporterna
-#' inte att hämta då hoppas sidan över.
-#'
-#' @param ppt En presentation från [ppt_ny()].
-#' @param anteckningar Anteckningar till sliden.
-#'
-#' @return Presentationen, med en ny slide tillagd.
-#' @export
-ppt_rapporter <- function(ppt, anteckningar = NULL) {
-  intern_kontrollera_ppt(ppt)
-  intern_ppt_lagg_till(ppt, mall = "Rapporter_Samhallsanalys", anteckningar = anteckningar)
-}
-
-#' Lägg till en avslutsbild
-#'
-#' Samhällsanalys avslutsbild: "Tack för mig!" med ditt namn och din
-#' e-post samt gruppens e-postadress, om du inte anger något annat.
-#'
-#' @param ppt En presentation från [ppt_ny()].
-#' @param rubrik Rubrik. `NULL` (standard) = "Tack för mig!".
-#' @param text Text under rubriken. `NULL` (standard) = namn och e-post.
-#' @param anteckningar Anteckningar till sliden.
-#'
-#' @return Presentationen, med en ny slide tillagd.
-#' @export
-ppt_avslut <- function(ppt, rubrik = NULL, text = NULL, anteckningar = NULL) {
-  intern_kontrollera_ppt(ppt)
-  intern_ppt_lagg_till(ppt, titel = rubrik, beskr = text, mall = "Avslutsbild_Samhallsanalys", anteckningar = anteckningar)
-}
-
 #' Lägg in färdiga slides från en befintlig pptx-fil
 #'
 #' För slides som är svåra att skapa automatiskt: gör dem för hand i
@@ -384,9 +260,9 @@ ppt_avslut <- function(ppt, rubrik = NULL, text = NULL, anteckningar = NULL) {
 #' ppt_ny("Demografi i Dalarna") |>
 #'   ppt_diagram(rddiagramkatalog::diag_befolkningsprognos_profet_scb, region_vekt = "20") |>
 #'   ppt_befintlig(fardiga, slide = 1:2) |>   # de två första färdiga slidesen hamnar här
-#'   ppt_slutsatser(c("Första slutsatsen", "Andra slutsatsen")) |>
+#'   ppt_lagg_till_slide("slutsatser", text = c("Första slutsatsen", "Andra slutsatsen")) |>
 #'   ppt_befintlig(slide = 3) |>              # och den tredje här
-#'   ppt_avslut() |>
+#'   ppt_lagg_till_slide("avslut") |>
 #'   ppt_spara("demografi.pptx")
 #' }
 #' @export
@@ -519,7 +395,7 @@ ppt_spara <- function(ppt,
 
 intern_kontrollera_ppt <- function(ppt) {
   if (!inherits(ppt, "rdppt")) {
-    stop("Första argumentet ska vara en presentation skapad med ppt_ny(), t.ex. ppt_ny(\"Rubrik\") |> ppt_bild(...).", call. = FALSE)
+    stop("Första argumentet ska vara en presentation skapad med ppt_ny(), t.ex. ppt_ny(\"Rubrik\") |> ppt_lagg_till_slide(\"text\", ...).", call. = FALSE)
   }
   invisible(ppt)
 }

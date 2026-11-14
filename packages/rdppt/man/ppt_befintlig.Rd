@@ -43,9 +43,9 @@ fardiga <- "G:/skript/ppt/mall_rus_utan_bakgrund_demografi.pptx"
 ppt_ny("Demografi i Dalarna") |>
   ppt_diagram(rddiagramkatalog::diag_befolkningsprognos_profet_scb, region_vekt = "20") |>
   ppt_befintlig(fardiga, slide = 1:2) |>   # de två första färdiga slidesen hamnar här
-  ppt_slutsatser(c("Första slutsatsen", "Andra slutsatsen")) |>
+  ppt_lagg_till_slide("slutsatser", text = c("Första slutsatsen", "Andra slutsatsen")) |>
   ppt_befintlig(slide = 3) |>              # och den tredje här
-  ppt_avslut() |>
+  ppt_lagg_till_slide("avslut") |>
   ppt_spara("demografi.pptx")
 }
 }

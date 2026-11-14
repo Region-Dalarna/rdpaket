@@ -6,11 +6,11 @@ test_that("en presentation byggs steg för steg och sparas", {
   mapp <- testmapp()
 
   ppt <- ny_testppt() |>
-    ppt_bild(testbild(mapp)) |>
-    ppt_avsnitt("Ett avsnitt") |>
-    ppt_text("En rubrik", c("Stycke 1", "Stycke 2")) |>
-    ppt_slutsatser(c("Slutsats 1", "Slutsats 2")) |>
-    ppt_avslut()
+    ppt_lagg_till_slide("bild", bild = testbild(mapp)) |>
+    ppt_lagg_till_slide("avsnitt", rubrik = "Ett avsnitt") |>
+    ppt_lagg_till_slide("text", rubrik = "En rubrik", text = c("Stycke 1", "Stycke 2")) |>
+    ppt_lagg_till_slide("slutsatser", text = c("Slutsats 1", "Slutsats 2")) |>
+    ppt_lagg_till_slide("avslut")
 
   expect_s3_class(ppt, "rdppt")
   expect_equal(nrow(ppt$slides), 5)
@@ -23,7 +23,7 @@ test_that("en presentation byggs steg för steg och sparas", {
 
 test_that("filnamnet bildas av huvudrubriken om inget anges", {
   mapp <- testmapp()
-  ppt <- ppt_ny("Befolkning & arbetsmarknad i Älvdalen", mall = "inbyggd") |> ppt_text("Rubrik", "Text")
+  ppt <- ppt_ny("Befolkning & arbetsmarknad i Älvdalen", mall = "inbyggd") |> ppt_lagg_till_slide("text", rubrik = "Rubrik", text = "Text")
 
   fil <- suppressMessages(ppt_spara(ppt, mapp = mapp))
   expect_equal(basename(fil), "befolkning_arbetsmarknad_i_alvdalen.pptx")
@@ -71,9 +71,9 @@ test_that("ppt_diagram() stoppar direkt på felstavade parametrar", {
 })
 
 test_that("ett felstavat layoutnamn stoppas när sliden läggs till", {
-  expect_error(ppt_text(ny_testppt(), "Rubrik", layout = "Finns inte"), "finns inte i mallen")
-  expect_error(ppt_bild(ny_testppt(), "finns_inte.png"), "Hittar inte bildfilen")
-  expect_error(ppt_text("inte en presentation", "Rubrik"), "ppt_ny")
+  expect_error(ppt_lagg_till_slide(ny_testppt(), "Finns inte", rubrik = "Rubrik"), "varken en sorts slide eller en layout")
+  expect_error(ppt_lagg_till_slide(ny_testppt(), "bild", bild = "finns_inte.png"), "Hittar inte bildfilen")
+  expect_error(ppt_lagg_till_slide("inte en presentation", "text", rubrik = "Rubrik"), "ppt_ny")
 })
 
 test_that("ppt_befintlig() lägger in färdiga slides där den anropas", {
@@ -81,17 +81,17 @@ test_that("ppt_befintlig() lägger in färdiga slides där den anropas", {
   fardiga <- testfil_med_slides(mapp, c("Färdig A", "Färdig B", "Färdig C"))
 
   ppt <- ny_testppt() |>
-    ppt_text("Ny 1") |>
+    ppt_lagg_till_slide("text", rubrik = "Ny 1") |>
     ppt_befintlig(fardiga, slide = 2:3) |>
-    ppt_text("Ny 2") |>
+    ppt_lagg_till_slide("text", rubrik = "Ny 2") |>
     ppt_befintlig(slide = 1) |>
-    ppt_text("Ny 3")
+    ppt_lagg_till_slide("text", rubrik = "Ny 3")
 
   fil <- suppressMessages(ppt_spara(ppt, file.path(mapp, "med_fardiga.pptx")))
   expect_equal(pptx_ordning(fil), c("Testpresentation", "Ny 1", "Färdig B", "Färdig C", "Ny 2", "Färdig A", "Ny 3"))
 
   # utan slide läggs alla in, och de som inte läggs in alls kommer inte med
-  alla <- ny_testppt() |> ppt_befintlig(fardiga) |> ppt_text("Sist")
+  alla <- ny_testppt() |> ppt_befintlig(fardiga) |> ppt_lagg_till_slide("text", rubrik = "Sist")
   expect_equal(pptx_ordning(suppressMessages(ppt_spara(alla, file.path(mapp, "alla.pptx")))),
                c("Testpresentation", "Färdig A", "Färdig B", "Färdig C", "Sist"))
   en <- ny_testppt() |> ppt_befintlig(fardiga, slide = 2)
@@ -168,4 +168,53 @@ test_that("ppt_befintlig() hämtar från options(rdppt.slidebank) när ingen fil
   ppt <- ppt_ny() |> ppt_befintlig(slide = 2)
   expect_equal(ppt$grundfil, fardiga)
   expect_equal(ppt$slides$mall, "befintlig:2")
+})
+
+test_that("ppt_lagg_till_slide() lägger till olika sorters slides med anteckningar", {
+  mapp <- testmapp()
+  ppt <- ny_testppt() |>
+    ppt_lagg_till_slide("text", rubrik = "R", text = "T", anteckningar = c("Första", "Andra")) |>
+    ppt_lagg_till_slide("slutsatser", text = c("a", "b")) |>
+    ppt_lagg_till_slide("bild", bild = testbild(mapp), anteckningar = "Om bilden")
+  expect_equal(nrow(ppt$slides), 3)
+  expect_equal(ppt$slides$titel, c("R", "Slutsatser", NA))
+  expect_equal(ppt$slides$anteckningar[[1]], c("Första", "Andra"))
+  expect_equal(ppt$slides$mall[2], "Slutsatser_Samhallsanalys")
+
+  ppt <- suppressMessages(ppt_lagg_till_slide(ny_testppt(), "diagram", funktion = testdiagram,
+                                              region_vekt = c("20", "2080"), farg = "red", anteckningar = "Diagram"))
+  expect_equal(nrow(ppt$slides), 2)
+  expect_equal(ppt$slides$anteckningar[[2]], "Diagram")
+})
+
+test_that("ppt_lagg_till_slide() accepterar mallens egna layouter och med innehåll efter vad som anges", {
+  mapp <- testmapp()
+  ppt <- ny_testppt() |>
+    ppt_lagg_till_slide("Title and Content", rubrik = "R", text = c("a", "b")) |>
+    ppt_lagg_till_slide("Title Only", bild = testbild(mapp), rubrik = "Bild")
+  expect_equal(ppt$slides$mall, c("Title and Content", "Title Only"))
+  expect_false(is.na(ppt$slides$dia_path[2]))
+  fil <- ppt_spara(ppt, "layouter.pptx", mapp = mapp)
+  expect_true(file.exists(fil))
+})
+
+test_that("ppt_lagg_till_slide() säger ifrån om parametrar som inte gäller sliden", {
+  p <- ny_testppt()
+  expect_error(ppt_lagg_till_slide(p), "Ange vilken sorts slide")
+  expect_error(ppt_lagg_till_slide(p, "slutsatser", text = "a", bild = "x.png"), "ingen parameter som heter 'bild'")
+  expect_error(ppt_lagg_till_slide(p, "slutsatser"), "kräver text")
+  expect_error(ppt_lagg_till_slide(p, "diagram"), "kräver funktion")
+  expect_error(ppt_lagg_till_slide(p, "text", rubrik = "R", farg = "red"), "bara anges för diagram")
+  expect_error(ppt_lagg_till_slide(p, "rapporter", rubrik = "R"), "ingen parameter som heter 'rubrik'")
+  expect_error(ppt_lagg_till_slide(p, "Title Only", funktion = testdiagram, bild = "x.png"), "ingen parameter som heter 'bild'")
+  expect_error(ppt_lagg_till_slide(p, "Finns inte"), "varken en sorts slide eller en layout")
+})
+
+test_that("ppt_lagg_till_slide() kan hämta färdiga slides och ppt_slidetyper() listar sorterna", {
+  fardiga <- testfil_med_slides(testmapp(), c("A", "B"))
+  ppt <- ny_testppt() |> ppt_lagg_till_slide("befintlig", fil = fardiga, slide = 2)
+  expect_equal(ppt$slides$mall, "befintlig:2")
+
+  capture.output(typer <- ppt_slidetyper())
+  expect_true(all(c("diagram", "slutsatser", "befintlig") %in% typer$layout))
 })

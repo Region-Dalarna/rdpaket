@@ -43,9 +43,9 @@ En presentation (klassen \code{rdppt}) att bygga vidare på.
 }
 \description{
 Första steget när en presentation byggs steg för steg: skapa den med
-\code{ppt_ny()}, lägg till slides med \code{\link[=ppt_diagram]{ppt_diagram()}}, \code{\link[=ppt_bild]{ppt_bild()}},
-\code{\link[=ppt_text]{ppt_text()}}, \code{\link[=ppt_avsnitt]{ppt_avsnitt()}}, \code{\link[=ppt_slutsatser]{ppt_slutsatser()}}, \code{\link[=ppt_rapporter]{ppt_rapporter()}},
-\code{\link[=ppt_befintlig]{ppt_befintlig()}} och \code{\link[=ppt_avslut]{ppt_avslut()}}, och spara med \code{\link[=ppt_spara]{ppt_spara()}}.
+\code{ppt_ny()}, lägg till slides med \code{\link[=ppt_lagg_till_slide]{ppt_lagg_till_slide()}} (diagram, bild,
+text, slutsatser, avsnitt, rapporter, avslut och färdiga slides),
+\code{\link[=ppt_diagram]{ppt_diagram()}} och \code{\link[=ppt_befintlig]{ppt_befintlig()}}, och spara med \code{\link[=ppt_spara]{ppt_spara()}}.
 Slides hamnar i den ordning de läggs till.
 }
 \examples{
@@ -53,9 +53,9 @@ Slides hamnar i den ordning de läggs till.
 ppt_ny("Arbetsmarknad och befolkning i Dalarna") |>
   ppt_diagram(rddiagramkatalog::diag_arbetsmarknadsstatus_tidsserie_scb,
               region_vekt = c("20", "2080", "2081")) |>
-  ppt_slutsatser(c("Första slutsatsen", "Andra slutsatsen")) |>
-  ppt_rapporter() |>
-  ppt_avslut() |>
+  ppt_lagg_till_slide("slutsatser", text = c("Första slutsatsen", "Andra slutsatsen")) |>
+  ppt_lagg_till_slide("rapporter") |>
+  ppt_lagg_till_slide("avslut") |>
   ppt_spara("arbetsmarknad_befolkning.pptx")
 }
 }

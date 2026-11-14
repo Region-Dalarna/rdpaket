@@ -1,3 +1,19 @@
+# rdppt 0.0.0.9005
+
+* Nytt: `ppt_lagg_till_slide(ppt, layout, ...)` lägger till en slide av den sort `layout`
+  anger: `"diagram"`, `"bild"`, `"text"`, `"slutsatser"`, `"avsnitt"`, `"rapporter"`,
+  `"avslut"` eller `"befintlig"`. Namnet på en layout i mallen, t.ex. `"Två
+  innehållsdelar"`, fungerar också - sliden får då den layouten och det innehåll som
+  anges (`funktion`, `bild` eller `rubrik` och `text`). Vilka parametrar som gäller
+  beror på sliden; en parameter som inte gäller ger ett fel som listar dem som gör det.
+  `anteckningar` (slidens anteckningsfält) kan anges för alla utom `"rapporter"` och
+  `"befintlig"`. `ppt_slidetyper()` skriver ut sorterna och deras parametrar.
+
+* Borttaget (ersatta av `ppt_lagg_till_slide()`): `ppt_bild()`, `ppt_text()`,
+  `ppt_avsnitt()`, `ppt_slutsatser()`, `ppt_rapporter()` och `ppt_avslut()`.
+  Byt t.ex. `ppt_slutsatser(c("a", "b"))` mot `ppt_lagg_till_slide("slutsatser", text = c("a", "b"))`.
+  `ppt_diagram()` och `ppt_befintlig()` finns kvar.
+
 # rdppt 0.0.0.9004
 
 * Nytt: `ppt_installningar()` visar vilka inställningar som gäller (mall, slides-bank,

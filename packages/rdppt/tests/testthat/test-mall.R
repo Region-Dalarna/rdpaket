@@ -75,13 +75,13 @@ test_that("en presentation går att bygga i Region Dalarnas mall, även med äld
   bild <- testbild(mapp)
 
   ppt <- ppt_ny("Rubrik", mall = "regiondalarna", anv_uppgifter = list(namn = "Test Testsson", epost = "test@example.org")) |>
-    ppt_bild(bild) |>
-    ppt_bild(bild, rubrik = "Bild med rubrik") |>
-    ppt_bild(bild, rubrik = "Bild med text", text = "Text") |>
-    ppt_text("Klimat", c("Punkt 1", "Punkt 2"), layout = "Klimatsmart Dalarna") |>
-    ppt_avsnitt("Avsnitt") |>
-    ppt_slutsatser(c("Ett", "Två")) |>
-    ppt_avslut()
+    ppt_lagg_till_slide("bild", bild = bild) |>
+    ppt_lagg_till_slide("bild", bild = bild, rubrik = "Bild med rubrik") |>
+    ppt_lagg_till_slide("bild", bild = bild, rubrik = "Bild med text", text = "Text") |>
+    ppt_lagg_till_slide("Klimatsmart Dalarna", rubrik = "Klimat", text = c("Punkt 1", "Punkt 2")) |>
+    ppt_lagg_till_slide("avsnitt", rubrik = "Avsnitt") |>
+    ppt_lagg_till_slide("slutsatser", text = c("Ett", "Två")) |>
+    ppt_lagg_till_slide("avslut")
   fil <- suppressMessages(ppt_spara(ppt, file.path(mapp, "rd.pptx")))
   expect_equal(pptx_ordning(fil), c("Rubrik", "", "Bild med rubrik", "Bild med text", "Klimat", "Avsnitt", "Slutsatser",
                                     "Tack för mig!"))

@@ -185,7 +185,7 @@ ppt_mall_ange <- function(mall = NULL, ...) {
 #' Skriver ut en tabell över mallens layouter: vilka platshållare (rubrik,
 #' text, bild) varje layout har, och vilka som används för vad. Alla
 #' layouter i tabellen går att använda genom att ange deras namn, t.ex.
-#' `ppt_bild(..., layout = "Två innehållsdelar")`.
+#' `ppt_lagg_till_slide("Två innehållsdelar", ...)`.
 #'
 #' @param mall Mallen som ska visas, se [ppt_mall_ange()]. `NULL`
 #'   (standard) = den mall som är vald just nu.

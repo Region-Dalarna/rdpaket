@@ -16,9 +16,9 @@ library(rdppt)
 ppt_ny("Arbetsmarknad och befolkning i Dalarna") |>
   ppt_diagram(rddiagramkatalog::diag_arbetsmarknadsstatus_tidsserie_scb,
               region_vekt = c("20", "2080", "2081")) |>
-  ppt_slutsatser(c("Första slutsatsen", "Andra slutsatsen")) |>
-  ppt_rapporter() |>
-  ppt_avslut() |>
+  ppt_lagg_till_slide("slutsatser", text = c("Första slutsatsen", "Andra slutsatsen")) |>
+  ppt_lagg_till_slide("rapporter") |>
+  ppt_lagg_till_slide("avslut") |>
   ppt_spara("arbetsmarknad_befolkning.pptx")
 ```
 
@@ -46,13 +46,8 @@ lägger du till slides:
 | Funktion | Ger |
 |---|---|
 | `ppt_diagram(funktion, ...)` | En slide per diagram som diagramfunktionen skapar. |
-| `ppt_bild(bild)` | En slide med en färdig png-bild eller ett ggplot-objekt. |
-| `ppt_text(rubrik, text)` | Rubrik och text/punktlista. |
-| `ppt_avsnitt(rubrik)` | En avsnittsrubrik. |
-| `ppt_slutsatser(punkter)` | Rubriken "Slutsatser" och en punktlista. |
-| `ppt_rapporter()` | Aktuella rapporter från regiondalarna.se, hämtade automatiskt. |
+| `ppt_lagg_till_slide(layout, ...)` | En slide av den sort `layout` anger - se tabellen nedan. |
 | `ppt_befintlig(fil)` | Färdiga slides som du gjort för hand i PowerPoint (`ppt_befintlig_visa(fil)` listar dem). |
-| `ppt_avslut()` | "Tack för mig!" med ditt namn och din e-post. |
 
 Du kan också bygga upp presentationen i flera steg och titta på den under
 tiden:
@@ -63,6 +58,49 @@ ppt <- ppt_diagram(ppt, rddiagramkatalog::diag_befolkningsprognos_profet_scb, re
 ppt          # skriver ut vilka slides som ligger i presentationen
 ppt_spara(ppt, "befolkning.pptx", oppna = TRUE)
 ```
+
+### Sorter av slides
+
+Vilken sorts slide som läggs till bestäms av `layout`. `ppt_slidetyper()`
+skriver ut den här tabellen, med parametrarna för varje sort (* = måste
+anges):
+
+| `layout` | Slide | Parametrar |
+|---|---|---|
+| `"diagram"` | Diagram från en diagramfunktion | `funktion`*, funktionens egna parametrar, `region_vekt`, `rubrik`, `text` |
+| `"bild"` | En png-fil eller ett ggplot-objekt | `bild`*, `rubrik`, `text` |
+| `"text"` | Rubrik och text/punktlista | `rubrik`, `text` |
+| `"slutsatser"` | Rubriken "Slutsatser" och en punktlista | `text`*, `rubrik` |
+| `"avsnitt"` | En avsnittsrubrik | `rubrik`*, `text` |
+| `"rapporter"` | Aktuella rapporter från regiondalarna.se, hämtade automatiskt | - |
+| `"avslut"` | "Tack för mig!" med ditt namn och din e-post | `rubrik`, `text` |
+| `"befintlig"` | Färdiga slides från en pptx-fil | `fil`, `slide` |
+
+Alla utom `"rapporter"` och `"befintlig"` tar också `anteckningar`. Anger
+du en parameter som sliden inte har får du ett felmeddelande som listar
+dem som gäller. Dessutom går varje layout i mallen att använda med sitt
+eget namn, t.ex. `layout = "Två innehållsdelar"` (se längre ned).
+
+`ppt_diagram()` och `ppt_befintlig()` finns också som egna funktioner och
+gör samma sak som `layout = "diagram"` respektive `"befintlig"`.
+
+### Ställ in en gång
+
+Vill du inte ange mall med mera i varje skript sätter du det en gång med
+`options()`, t.ex. i din `.Rprofile`. En parameter i anropet går före en
+option, och en option före standardvärdet:
+
+```r
+options(
+  rdppt.mall = "G:/skript/ppt/mall_rus_utan_bakgrund.pptx",           # mallen
+  rdppt.slidebank = "G:/skript/ppt/mall_rus_utan_bakgrund_demografi.pptx"  # fil med färdiga slides
+)
+
+ppt_installningar()    # visar vad som gäller just nu, och varifrån det kommer
+```
+
+Mappen som presentationen sparas i styrs av `rdverktyg.utskriftsmapp`,
+som för övriga paket.
 
 ### Diagram
 
@@ -89,27 +127,27 @@ ppt <- ppt |>
   vektorgrafik i stället för som bilder - då går det att ändra färger och
   texter direkt i PowerPoint.
 
-Har du redan en bild eller ett diagram använder du `ppt_bild()`:
+Har du redan en bild eller ett diagram använder du `layout = "bild"`:
 
 ```r
 ppt <- ppt |>
-  ppt_bild("G:/Samhällsanalys/bilder/karta.png", rubrik = "Pendling") |>
-  ppt_bild(mitt_ggplot_diagram, rubrik = "Eget diagram", text = "En kommentar till diagrammet")
+  ppt_lagg_till_slide("bild", bild = "G:/Samhällsanalys/bilder/karta.png", rubrik = "Pendling") |>
+  ppt_lagg_till_slide("bild", bild = mitt_ggplot_diagram, rubrik = "Eget diagram", text = "En kommentar till diagrammet")
 ```
 
 Bilder måste vara i png-format.
 
 ### Rubrik, text och anteckningar
 
-Alla funktioner som lägger till slides tar `rubrik`, `text` och
+Slides som har rubrik och text tar `rubrik`, `text` och
 `anteckningar` (det som står under sliden i PowerPoint och syns i
 presentatörsvyn). Layouten väljs efter vad du anger: bara diagram, diagram
 med rubrik, eller diagram med rubrik och text.
 
 ```r
 ppt <- ppt |>
-  ppt_text("Bakgrund", c("Första punkten", "Andra punkten"),
-           anteckningar = "Kom ihåg att nämna källan.")
+  ppt_lagg_till_slide("text", rubrik = "Bakgrund", text = c("Första punkten", "Andra punkten"),
+                      anteckningar = "Kom ihåg att nämna källan.")
 ```
 
 ### Färdiga slides som du gjort för hand
@@ -128,9 +166,9 @@ fardiga <- "G:/skript/ppt/mall_rus_utan_bakgrund_demografi.pptx"
 ppt_ny("Demografi i Dalarna") |>
   ppt_diagram(rddiagramkatalog::diag_befolkningsprognos_profet_scb, region_vekt = "20") |>
   ppt_befintlig(fardiga, slide = 1:2) |>   # de två första färdiga slidesen hamnar här
-  ppt_slutsatser(c("Första slutsatsen", "Andra slutsatsen")) |>
+  ppt_lagg_till_slide("slutsatser", text = c("Första slutsatsen", "Andra slutsatsen")) |>
   ppt_befintlig(slide = 3) |>              # och den tredje här
-  ppt_avslut() |>
+  ppt_lagg_till_slide("avslut") |>
   ppt_spara("demografi.pptx")
 ```
 
@@ -234,9 +272,8 @@ Alla layouter i mallen går att använda - ange namnet med `layout`:
 
 ```r
 ppt <- ppt |>
-  ppt_bild(diagram, rubrik = "Diagram med text bredvid", text = "Kommentar",
-           layout = "Två innehållsdelar") |>
-  ppt_text("Klimat", c("Punkt 1", "Punkt 2"), layout = "Klimatsmart Dalarna")
+  ppt_lagg_till_slide("Två innehållsdelar", bild = diagram, rubrik = "Diagram med text bredvid", text = "Kommentar") |>
+  ppt_lagg_till_slide("Klimatsmart Dalarna", rubrik = "Klimat", text = c("Punkt 1", "Punkt 2"))
 ```
 
 Rubriken hamnar i layoutens rubrikruta, bilden i bildrutan (eller den
@@ -247,8 +284,8 @@ platshållarnas namn (de syns i `ppt_mall_visa(layout = "...")`):
 
 ```r
 ppt <- ppt |>
-  ppt_text("För och emot", layout = "Två innehållsdelar",
-           text = list("Platshållare för innehåll 2" = c("Fördel 1", "Fördel 2"),
+  ppt_lagg_till_slide("Två innehållsdelar", rubrik = "För och emot",
+                      text = list("Platshållare för innehåll 2" = c("Fördel 1", "Fördel 2"),
                        "Platshållare för innehåll 3" = c("Nackdel 1", "Nackdel 2")))
 ```
 
