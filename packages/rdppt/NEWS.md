@@ -1,3 +1,12 @@
+# rdppt 0.0.0.9004
+
+* Nytt: `ppt_installningar()` visar vilka inställningar som gäller (mall, slides-bank,
+  spara-mapp) och var varje värde kommer ifrån. Inställningarna kan sättas med
+  `options()` (t.ex. i `.Rprofile`): `rdppt.mall` (sökväg, `"regiondalarna"`, `"inbyggd"`
+  eller mallprofil) och `rdppt.slidebank` (pptx-fil med färdiga slides, som
+  `ppt_befintlig()` hämtar från när ingen fil anges). En parameter går före en
+  option, och en option före standardvärdet.
+
 # rdppt 0.0.0.9003
 
 * Nytt: `ppt_befintlig_visa()` listar sliderna i en pptx-fil med färdiga

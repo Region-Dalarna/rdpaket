@@ -368,7 +368,8 @@ ppt_avslut <- function(ppt, rubrik = NULL, text = NULL, anteckningar = NULL) {
 #'
 #' @param ppt En presentation från [ppt_ny()].
 #' @param fil Sökväg till pptx-filen med färdiga slides. `NULL` (standard)
-#'   = samma fil som senast, eller - första gången - mallfilen själv.
+#'   = samma fil som senast, eller - första gången - den fil som anges i
+#'   `options(rdppt.slidebank = )`, annars mallfilen själv.
 #' @param slide Vilka slides i filen som ska läggas in här, som nummer
 #'   (t.ex. `2` eller `c(1, 3)`). `NULL` (standard) = alla.
 #'   [ppt_befintlig_visa()] visar vilka slides filen innehåller och vilket
@@ -391,6 +392,8 @@ ppt_avslut <- function(ppt, rubrik = NULL, text = NULL, anteckningar = NULL) {
 #' @export
 ppt_befintlig <- function(ppt, fil = NULL, slide = NULL) {
   intern_kontrollera_ppt(ppt)
+
+  if (is.null(fil) && is.null(ppt$grundfil)) fil <- getOption("rdppt.slidebank")
 
   if (!is.null(fil)) {
     if (!is.null(ppt$grundfil) && normalizePath(fil, mustWork = FALSE) != normalizePath(ppt$grundfil, mustWork = FALSE)) {

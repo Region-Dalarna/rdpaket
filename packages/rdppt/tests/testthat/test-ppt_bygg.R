@@ -161,3 +161,11 @@ test_that("ppt_forhandsvisa() gör en bild per slide och en översikt", {
   # utan fil visas mallens layouter
   expect_length(suppressMessages(ppt_forhandsvisa(mall = "inbyggd", oppna = FALSE)), 7)
 })
+
+test_that("ppt_befintlig() hämtar från options(rdppt.slidebank) när ingen fil anges", {
+  fardiga <- testfil_med_slides(testmapp(), c("Färdig A", "Färdig B"))
+  withr::local_options(rdppt.mall = "inbyggd", rdppt.slidebank = fardiga)
+  ppt <- ppt_ny() |> ppt_befintlig(slide = 2)
+  expect_equal(ppt$grundfil, fardiga)
+  expect_equal(ppt$slides$mall, "befintlig:2")
+})

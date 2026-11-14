@@ -10,7 +10,8 @@ ppt_befintlig(ppt, fil = NULL, slide = NULL)
 \item{ppt}{En presentation från \code{\link[=ppt_ny]{ppt_ny()}}.}
 
 \item{fil}{Sökväg till pptx-filen med färdiga slides. \code{NULL} (standard)
-= samma fil som senast, eller - första gången - mallfilen själv.}
+= samma fil som senast, eller - första gången - den fil som anges i
+\code{options(rdppt.slidebank = )}, annars mallfilen själv.}
 
 \item{slide}{Vilka slides i filen som ska läggas in här, som nummer
 (t.ex. \code{2} eller \code{c(1, 3)}). \code{NULL} (standard) = alla.

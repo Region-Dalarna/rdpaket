@@ -92,3 +92,28 @@ test_that("en presentation går att bygga i Region Dalarnas mall, även med äld
   fil <- suppressMessages(skapa_ppt_fran_lista(ppt_lista, huvudrubrik = NULL, output_mapp = mapp, mall_fil = "regiondalarna"))
   expect_equal(pptx_ordning(fil), "Äldre layoutnamn")
 })
+
+test_that("options(rdppt.mall) kan vara en enkel sökväg eller ett namn", {
+  withr::local_options(rdppt.mall = "inbyggd")
+  expect_null(intern_mall_aktuell()$mall_fil)
+
+  fil <- intern_rd_medfoljande_mall()
+  skip_if(!nzchar(fil))
+  withr::local_options(rdppt.mall = fil)
+  expect_identical(intern_mall_aktuell()$mall_fil, fil)
+  expect_s3_class(ppt_ny("Test"), "rdppt")
+})
+
+test_that("ppt_installningar() redovisar värde och källa", {
+  withr::local_options(rdppt.mall = "inbyggd", rdppt.slidebank = NULL)
+  res <- suppressWarnings(capture.output(inst <- ppt_installningar()))
+  expect_equal(inst$installning, c("mall", "slidebank", "spara-mapp"))
+  expect_equal(inst$kalla[1], "option rdppt.mall")
+  expect_equal(inst$varde[2], "(ingen)")
+
+  fil <- intern_rd_medfoljande_mall()
+  skip_if(!nzchar(fil))
+  withr::local_options(rdppt.slidebank = fil)
+  capture.output(inst <- ppt_installningar())
+  expect_equal(inst$varde[2], fil)
+})
