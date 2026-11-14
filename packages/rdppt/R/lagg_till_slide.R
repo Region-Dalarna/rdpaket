@@ -85,6 +85,24 @@ ppt_slidetyper <- function() {
 #'
 #' Alla utom `"rapporter"` och `"befintlig"` kan också ha `anteckningar`.
 #'
+#' **Diagram.** Diagramfunktionen körs en gång per region i `region_vekt`
+#' och bilderna sparas och hittas automatiskt - du behöver inte ange någon
+#' mapp. Funktionens parametrar `utmapp` och `skriv_diagramfil` sätts
+#' automatiskt (till presentationens bildmapp respektive `TRUE`) om
+#' funktionen har dem och du inte anger dem själv. Med
+#' `skriv_diagramfil = FALSE` läggs diagrammen in som redigerbar
+#' vektorgrafik. Ger funktionen fel för en region hoppas den över med en
+#' varning (och loggas, se `loggfil` i [ppt_ny()]), och resten av
+#' presentationen byggs ändå; `stoppa_vid_fel = TRUE` stoppar i stället.
+#' Parametrar som funktionen inte har ger ett fel direkt.
+#'
+#' **Färdiga slides.** `layout = "befintlig"` lägger in slides som gjorts
+#' för hand i PowerPoint. Filen med dem används som grund för hela
+#' presentationen, så den ska vara skapad utifrån samma mall som resten
+#' (öppna mallen, lägg till dina slides och spara under ett nytt namn).
+#' Färdiga slides kan därför bara hämtas från en fil per presentation, och
+#' slides i filen som inte läggs in kommer inte med.
+#'
 #' Man kan också ange namnet på en layout i mallen, t.ex.
 #' `layout = "Två innehållsdelar"`. Sliden får då den layouten, och
 #' innehållet blir det man anger: `funktion` (diagram), `bild`, eller
@@ -107,6 +125,8 @@ ppt_slidetyper <- function() {
 #'   dem och du inte anger dem själv.
 #' @param region_vekt De kommun-/regionkoder diagramfunktionen ska köras
 #'   för, en gång per region. `NULL` (standard) = en gång, utan region.
+#'   En tom vektor (`character(0)`, t.ex. när det inte finns några
+#'   kommunkoder) betyder att diagrammet hoppas över.
 #' @param regionvariabel Namnet på diagramfunktionens parameter för region,
 #'   om det inte är `"region_vekt"`.
 #' @param per_region `TRUE` (standard) = funktionen körs en gång per region
@@ -116,17 +136,19 @@ ppt_slidetyper <- function() {
 #'   för en region hoppas den över med en varning. `TRUE` = stoppa.
 #' @param fil,slide För `"befintlig"`: pptx-filen med färdiga slides
 #'   (standard: den som anges i `options(rdppt.slidebank = )`) och vilka
-#'   slides i den som ska läggas in, som nummer. Se
-#'   [ppt_befintlig()] och [ppt_befintlig_visa()].
-#' @param anteckningar Text i sliden anteckningsfält (under sliden i
+#'   slides i den som ska läggas in, som nummer (t.ex. `2` eller `c(1, 3)`,
+#'   standard alla). [ppt_befintlig_visa()] visar vilka slides filen
+#'   innehåller och vilket nummer de har. Slidesen hamnar på den plats i
+#'   ordningen där du anropar funktionen.
+#' @param anteckningar Text i slidens anteckningsfält (under sliden i
 #'   PowerPoint): en textsträng, eller en vektor med ett stycke per
-#'   element. För diagram med flera regioner får varje slide samma
-#'   anteckningar.
+#'   element. För diagram kan det också vara en funktion av regionen,
+#'   t.ex. `\(region) mina_anteckningar(region)`, som körs en gång per
+#'   region och ger anteckningar som passar just den regionens diagram.
 #' @param txt_size Textstorlek. `NA` (standard) = mallens egen.
 #'
 #' @return Presentationen, med nya slides tillagda.
-#' @seealso [ppt_slidetyper()], [ppt_mall_visa()], [ppt_diagram()],
-#'   [ppt_befintlig()]
+#' @seealso [ppt_slidetyper()], [ppt_mall_visa()], [ppt_befintlig_visa()]
 #' @examples
 #' \dontrun{
 #' ppt_ny("Befolkning i Dalarna") |>
@@ -203,6 +225,9 @@ ppt_lagg_till_slide <- function(ppt,
     stop("Parametrar utöver de som gäller för sliden kan bara anges för diagram (parametrar till diagramfunktionen). ",
          "Se ppt_slidetyper().", call. = FALSE)
   }
+  if (is.function(anteckningar) && effektiv != "diagram") {
+    stop("anteckningar som funktion (en funktion av regionen) går bara för diagram.", call. = FALSE)
+  }
   if (!is.null(txt_size) && !is.na(txt_size) && !"txt_size" %in% tillatna) {
     stop("txt_size gäller inte för den här sortens slide.", call. = FALSE)
   }
@@ -222,7 +247,7 @@ ppt_lagg_till_slide <- function(ppt,
     avsnitt = intern_ppt_lagg_till(ppt, titel = rubrik, beskr = text, mall = "roll:avsnitt", anteckningar = anteckningar),
     rapporter = intern_ppt_lagg_till(ppt, mall = "Rapporter_Samhallsanalys", anteckningar = anteckningar),
     avslut = intern_ppt_lagg_till(ppt, titel = rubrik, beskr = text, mall = "Avslutsbild_Samhallsanalys", anteckningar = anteckningar),
-    befintlig = ppt_befintlig(ppt, fil = fil, slide = slide)
+    befintlig = intern_ppt_befintlig(ppt, fil = fil, slide = slide)
   )
 }
 

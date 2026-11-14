@@ -24,7 +24,7 @@ Listar sliderna i en pptx-fil i den ordning de visas i PowerPoint, med
 rubrik, den första texten utöver rubriken, vad sliden i övrigt
 innehåller (bilder, tabeller, diagram, grupperade figurer) och vilken
 layout den har.
-Numret i kolumnen \code{slide} är det du anger i \code{ppt_befintlig(slide = )}.
+Numret i kolumnen \code{slide} är det du anger i \code{ppt_lagg_till_slide("befintlig", slide = )}.
 }
 \examples{
 \dontrun{
@@ -32,5 +32,5 @@ ppt_befintlig_visa("G:/skript/ppt/mall_rus_utan_bakgrund_demografi.pptx")
 }
 }
 \seealso{
-\code{\link[=ppt_befintlig]{ppt_befintlig()}}, \code{\link[=ppt_forhandsvisa]{ppt_forhandsvisa()}}
+\code{\link[=ppt_lagg_till_slide]{ppt_lagg_till_slide()}}, \code{\link[=ppt_forhandsvisa]{ppt_forhandsvisa()}}
 }

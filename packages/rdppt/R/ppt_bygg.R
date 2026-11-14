@@ -2,8 +2,8 @@
 #'
 #' Första steget när en presentation byggs steg för steg: skapa den med
 #' `ppt_ny()`, lägg till slides med [ppt_lagg_till_slide()] (diagram, bild,
-#' text, slutsatser, avsnitt, rapporter, avslut och färdiga slides),
-#' [ppt_diagram()] och [ppt_befintlig()], och spara med [ppt_spara()].
+#' text, slutsatser, avsnitt, rapporter, avslut och färdiga slides) och
+#' spara med [ppt_spara()].
 #' Slides hamnar i den ordning de läggs till.
 #'
 #' @param huvudrubrik Presentationens huvudrubrik (på titelsidan). `NULL`
@@ -16,7 +16,7 @@
 #'   [ppt_mallprofil()]. `NULL` (standard) = den mall som är vald med
 #'   [ppt_mall_ange()], annars Region Dalarnas standardmall (från G: om
 #'   den går att nå, annars den kopia som följer med paketet).
-#' @param bildmapp Mapp där diagrambilderna från [ppt_diagram()] sparas.
+#' @param bildmapp Mapp där diagrambilderna från `ppt_lagg_till_slide("diagram", ...)` sparas.
 #'   `NULL` (standard) = en temporär mapp som du inte behöver bry dig om.
 #' @param anv_uppgifter Vems namn/e-post som ska stå på titel- och
 #'   avslutssidan: `NULL` (standard) = inloggad användare, ett namn som
@@ -24,13 +24,21 @@
 #'   lista `list(namn = "...", epost = "...")`.
 #' @param rubrik_namn TRUE om presentatörens namn ska skrivas ut på
 #'   titelsidan.
+#' @param stil Formatering av titelsidans och avsnittens rubriker för just
+#'   den här presentationen, t.ex. `list(titel_stlk = 54)`. Det som inte
+#'   anges får mallens stil (se [ppt_mallprofil()]) och det som anges med
+#'   `options(rdppt.stil = list(...))`.
+#' @param loggfil Sökväg till en textfil där det som går fel när
+#'   presentationen byggs (ett diagram som hoppas över, och varför) loggas
+#'   fortlöpande. `NULL` (standard) = `options(rdppt.loggfil)`, annars ingen
+#'   loggfil. Problemen sammanfattas också när presentationen sparas.
 #'
 #' @return En presentation (klassen `rdppt`) att bygga vidare på.
 #' @examples
 #' \dontrun{
 #' ppt_ny("Arbetsmarknad och befolkning i Dalarna") |>
-#'   ppt_diagram(rddiagramkatalog::diag_arbetsmarknadsstatus_tidsserie_scb,
-#'               region_vekt = c("20", "2080", "2081")) |>
+#'   ppt_lagg_till_slide("diagram", funktion = rddiagramkatalog::diag_arbetsmarknadsstatus_tidsserie_scb,
+#'                       region_vekt = c("20", "2080", "2081")) |>
 #'   ppt_lagg_till_slide("slutsatser", text = c("Första slutsatsen", "Andra slutsatsen")) |>
 #'   ppt_lagg_till_slide("rapporter") |>
 #'   ppt_lagg_till_slide("avslut") |>
@@ -42,9 +50,13 @@ ppt_ny <- function(huvudrubrik = NULL,
                    mall = NULL,
                    bildmapp = NULL,
                    anv_uppgifter = NULL,
-                   rubrik_namn = TRUE) {
+                   rubrik_namn = TRUE,
+                   stil = NULL,
+                   loggfil = NULL) {
 
   profil <- intern_mall_aktuell(mall)
+  if (!is.null(stil) && !is.null(profil$stil)) profil$stil <- utils::modifyList(profil$stil, as.list(stil))
+  if (is.null(loggfil)) loggfil <- getOption("rdppt.loggfil")
   layouter <- officer::layout_summary(intern_las_pptx(profil$mall_fil))
 
   if (is.null(bildmapp)) {
@@ -64,7 +76,9 @@ ppt_ny <- function(huvudrubrik = NULL,
       anv_uppgifter = anv_uppgifter,
       rubrik_namn = rubrik_namn,
       grundfil = NULL,
-      slides = initiera_ppt_df()
+      loggfil = loggfil,
+      logg = intern_tom_logg(),
+      slides = intern_tom_ppt_lista()
     ),
     class = "rdppt"
   )
@@ -94,67 +108,6 @@ print.rdppt <- function(x, ...) {
   invisible(x)
 }
 
-#' Lägg till diagram från en diagramfunktion
-#'
-#' Kör en diagramfunktion (t.ex. ur `rddiagramkatalog`) och lägger till en
-#' slide per diagram den skapar. Med `region_vekt` körs funktionen en gång
-#' per region. Bilderna sparas och hittas automatiskt - du behöver inte
-#' ange någon mapp.
-#'
-#' Funktionens parametrar `utmapp` och `skriv_diagramfil` sätts automatiskt
-#' (till presentationens bildmapp respektive `TRUE`) om funktionen har dem
-#' och du inte anger dem själv. Anger du `skriv_diagramfil = FALSE` läggs
-#' diagrammen i stället in som redigerbar vektorgrafik direkt från de
-#' ggplot-objekt funktionen returnerar.
-#'
-#' @param ppt En presentation från [ppt_ny()].
-#' @param funktion Diagramfunktionen, t.ex.
-#'   `rddiagramkatalog::diag_befolkningsprognos_profet_scb`.
-#' @param ... Parametrar till diagramfunktionen.
-#' @param region_vekt De kommun-/regionkoder funktionen ska köras för.
-#'   `NULL` (standard) = funktionen körs en gång, utan region.
-#' @param rubrik,text Rubrik och text på varje slide. Normalt behövs ingen
-#'   - diagrammen har sina egna rubriker.
-#' @param layout Namnet på den layout i mallen som ska användas, se
-#'   [ppt_mall_visa()]. `NULL` (standard) = väljs automatiskt.
-#' @param anteckningar Anteckningar till varje slide.
-#' @param regionvariabel Namnet på funktionens parameter för region, om
-#'   det inte är `"region_vekt"`.
-#' @param per_region `TRUE` (standard) = funktionen körs en gång per
-#'   region i `region_vekt`. `FALSE` = en gång, med hela `region_vekt`
-#'   (t.ex. för ett diagram som jämför regionerna).
-#' @param stoppa_vid_fel `FALSE` (standard) = om funktionen ger fel för
-#'   en region hoppas den över med en varning. `TRUE` = stoppa.
-#'
-#' @return Presentationen, med nya slides tillagda.
-#' @examples
-#' \dontrun{
-#' ppt <- ppt_ny("Befolkning") |>
-#'   ppt_diagram(rddiagramkatalog::diag_befolkningsprognos_profet_scb,
-#'               region_vekt = c("20", "2080"))
-#' }
-#' @export
-ppt_diagram <- function(ppt,
-                        funktion,
-                        ...,
-                        region_vekt = NULL,
-                        rubrik = NULL,
-                        text = NULL,
-                        layout = NULL,
-                        anteckningar = NULL,
-                        regionvariabel = "region_vekt",
-                        per_region = TRUE,
-                        stoppa_vid_fel = FALSE) {
-
-  intern_kontrollera_ppt(ppt)
-  layout <- intern_kontrollera_layout(ppt, layout)
-
-  funktion_namn <- if (is.character(funktion)) funktion else paste(deparse(substitute(funktion)), collapse = "")
-  intern_ppt_diagram(ppt, funktion, funktion_namn, list(...), region_vekt = region_vekt, rubrik = rubrik, text = text,
-                     layout = layout, anteckningar = anteckningar, regionvariabel = regionvariabel,
-                     per_region = per_region, stoppa_vid_fel = stoppa_vid_fel)
-}
-
 # Själva körningen av diagramfunktionen. Utbruten så att ppt_lagg_till_slide(layout = "diagram") kan
 # använda samma kod; funktion_namn är funktionens namn så som användaren skrev det (till felmeddelanden).
 intern_ppt_diagram <- function(ppt, funktion, funktion_namn, argument, region_vekt, rubrik, text, layout,
@@ -163,6 +116,11 @@ intern_ppt_diagram <- function(ppt, funktion, funktion_namn, argument, region_ve
   if (!grepl("^[a-zA-Z0-9_.:]+$", funktion_namn)) funktion_namn <- "diagramfunktionen"
   if (is.character(funktion)) funktion <- eval(parse(text = funktion))
   if (!is.function(funktion)) stop("funktion ska vara en funktion, t.ex. rddiagramkatalog::diag_befolkningsprognos_profet_scb.", call. = FALSE)
+
+  # en tom vektor med regioner betyder att det inte finns något att köra för (t.ex. inga kommunkoder) - hoppa över
+  if (!is.null(region_vekt) && length(region_vekt) == 0) {
+    return(intern_logga(ppt, funktion_namn, NA, "hoppad", "inga regioner angivna"))
+  }
 
   parametrar <- names(formals(funktion))
   okanda <- setdiff(names(argument), parametrar)
@@ -208,6 +166,7 @@ intern_ppt_diagram <- function(ppt, funktion, funktion_namn, argument, region_ve
       error = function(e) {
         if (isTRUE(stoppa_vid_fel)) stop(funktion_namn, " gav fel", for_region_txt, ": ", conditionMessage(e), call. = FALSE)
         warning(funktion_namn, " gav fel", for_region_txt, " och hoppas över: ", conditionMessage(e), call. = FALSE)
+        ppt <<- intern_logga(ppt, funktion_namn, region, "fel", conditionMessage(e))
         NULL
       }
     )
@@ -216,10 +175,19 @@ intern_ppt_diagram <- function(ppt, funktion, funktion_namn, argument, region_ve
     bilder <- intern_diagram_fran_retur(retur, mapp, bilder_fore)
     if (length(bilder) == 0) {
       warning(funktion_namn, " gav inga diagram", for_region_txt, ".", call. = FALSE)
+      ppt <- intern_logga(ppt, funktion_namn, region, "inga diagram", "funktionen gav inga diagram")
       next
     }
+    anteckningar_korning <- tryCatch(
+      intern_anteckningar_for(anteckningar, region),
+      error = function(e) {
+        warning("anteckningar för ", funktion_namn, for_region_txt, " kunde inte skapas och utelämnas: ", conditionMessage(e), call. = FALSE)
+        ppt <<- intern_logga(ppt, funktion_namn, region, "fel", paste("anteckningar:", conditionMessage(e)))
+        NULL
+      }
+    )
     for (bild in bilder) {
-      ppt <- intern_ppt_lagg_till(ppt, bild = bild, titel = rubrik, beskr = text, mall = layout, anteckningar = anteckningar)
+      ppt <- intern_ppt_lagg_till(ppt, bild = bild, titel = rubrik, beskr = text, mall = layout, anteckningar = anteckningar_korning)
     }
   }
 
@@ -227,46 +195,12 @@ intern_ppt_diagram <- function(ppt, funktion, funktion_namn, argument, region_ve
   ppt
 }
 
-#' Lägg in färdiga slides från en befintlig pptx-fil
-#'
-#' För slides som är svåra att skapa automatiskt: gör dem för hand i
-#' PowerPoint, spara dem i en pptx-fil, och låt `ppt_befintlig()` lägga
-#' in dem på rätt ställe i presentationen. De hamnar där i ordningen
-#' `ppt_befintlig()` anropas - mellan de slides som läggs till före och
-#' efter.
-#'
-#' Filen med de färdiga slidesen används som grund för hela
-#' presentationen, så den ska vara skapad utifrån samma mall som resten
-#' av presentationen (öppna mallen i PowerPoint, lägg till dina slides och
-#' spara under ett nytt namn). Det går därför bara att hämta färdiga
-#' slides från en fil per presentation. Slides i filen som inte läggs in
-#' med `ppt_befintlig()` kommer inte med i presentationen.
-#'
-#' @param ppt En presentation från [ppt_ny()].
-#' @param fil Sökväg till pptx-filen med färdiga slides. `NULL` (standard)
-#'   = samma fil som senast, eller - första gången - den fil som anges i
-#'   `options(rdppt.slidebank = )`, annars mallfilen själv.
-#' @param slide Vilka slides i filen som ska läggas in här, som nummer
-#'   (t.ex. `2` eller `c(1, 3)`). `NULL` (standard) = alla.
-#'   [ppt_befintlig_visa()] visar vilka slides filen innehåller och vilket
-#'   nummer de har.
-#'
-#' @return Presentationen, med de färdiga slidesen tillagda.
-#' @seealso [ppt_befintlig_visa()]
-#' @examples
-#' \dontrun{
-#' fardiga <- "G:/skript/ppt/mall_rus_utan_bakgrund_demografi.pptx"
-#'
-#' ppt_ny("Demografi i Dalarna") |>
-#'   ppt_diagram(rddiagramkatalog::diag_befolkningsprognos_profet_scb, region_vekt = "20") |>
-#'   ppt_befintlig(fardiga, slide = 1:2) |>   # de två första färdiga slidesen hamnar här
-#'   ppt_lagg_till_slide("slutsatser", text = c("Första slutsatsen", "Andra slutsatsen")) |>
-#'   ppt_befintlig(slide = 3) |>              # och den tredje här
-#'   ppt_lagg_till_slide("avslut") |>
-#'   ppt_spara("demografi.pptx")
-#' }
-#' @export
-ppt_befintlig <- function(ppt, fil = NULL, slide = NULL) {
+# Lägger in färdiga slides från en pptx-fil (en "slides-bank") på den plats i ordningen där den anropas.
+# Filen används som grund för hela presentationen, så den ska vara skapad utifrån samma mall som resten
+# (öppna mallen i PowerPoint, lägg till slides och spara under ett nytt namn). Färdiga slides kan därför bara
+# hämtas från en fil per presentation, och slides i filen som inte läggs in kommer inte med.
+# fil = NULL: samma fil som senast, eller - första gången - options(rdppt.slidebank), annars mallfilen själv.
+intern_ppt_befintlig <- function(ppt, fil = NULL, slide = NULL) {
   intern_kontrollera_ppt(ppt)
 
   if (is.null(fil) && is.null(ppt$grundfil)) fil <- getOption("rdppt.slidebank")
@@ -304,7 +238,7 @@ ppt_befintlig <- function(ppt, fil = NULL, slide = NULL) {
 #' rubrik, den första texten utöver rubriken, vad sliden i övrigt
 #' innehåller (bilder, tabeller, diagram, grupperade figurer) och vilken
 #' layout den har.
-#' Numret i kolumnen `slide` är det du anger i `ppt_befintlig(slide = )`.
+#' Numret i kolumnen `slide` är det du anger i `ppt_lagg_till_slide("befintlig", slide = )`.
 #'
 #' @param fil Sökväg till pptx-filen med färdiga slides.
 #' @param bilder TRUE för att också visa bilderna av sliderna, se
@@ -314,7 +248,7 @@ ppt_befintlig <- function(ppt, fil = NULL, slide = NULL) {
 #' @return Osynligt: en `data.frame` med en rad per slide och kolumnerna
 #'   `slide`, `rubrik`, `text`, `innehall` och `layout` (texterna i sin
 #'   helhet - i utskriften är de avkortade).
-#' @seealso [ppt_befintlig()], [ppt_forhandsvisa()]
+#' @seealso [ppt_lagg_till_slide()], [ppt_forhandsvisa()]
 #' @examples
 #' \dontrun{
 #' ppt_befintlig_visa("G:/skript/ppt/mall_rus_utan_bakgrund_demografi.pptx")
@@ -337,7 +271,7 @@ ppt_befintlig_visa <- function(fil, bilder = FALSE, oppna = FALSE) {
   utskrift$text <- korta(utskrift$text, 40)
   cat("\n")
   print(utskrift, right = FALSE, row.names = FALSE)
-  cat("\nLägg in dem med ppt_befintlig(fil, slide = <nummer>).\n")
+  cat("\nLägg in dem med ppt_lagg_till_slide(\"befintlig\", fil = , slide = <nummer>).\n")
 
   if (isTRUE(bilder)) ppt_forhandsvisa(fil)
   if (isTRUE(oppna)) intern_oppna_fil(fil)
@@ -346,25 +280,41 @@ ppt_befintlig_visa <- function(fil, bilder = FALSE, oppna = FALSE) {
 
 #' Spara presentationen som en pptx-fil
 #'
-#' Sista steget: bygger presentationen och skriver den till fil.
+#' Sista steget: bygger presentationen och skriver den till fil. Har
+#' något gått fel när presentationen byggdes (ett diagram som hoppades
+#' över) sammanfattas det här.
+#'
+#' Med flera personer i `anv_uppgifter` sparas en fil per person - samma
+#' slides, men med personens namn och e-post på titel- och avslutssidan.
+#' Diagrammen körs bara en gång, så det går snabbt.
 #'
 #' @param ppt En presentation från [ppt_ny()].
 #' @param filnamn Filnamn, eller en hel sökväg, på pptx-filen. `NULL`
-#'   (standard) = ett filnamn som bildas av huvudrubriken.
+#'   (standard) = ett filnamn som bildas av huvudrubriken. Med flera
+#'   personer läggs personens namn till filnamnet (`utmaningar_peter.pptx`).
 #' @param mapp Mapp att spara i, om `filnamn` inte är en hel sökväg.
 #' @param oppna `TRUE` om presentationen ska öppnas direkt.
 #' @param spara_backup_om_fil_redan_finns `TRUE` om en befintlig fil med
 #'   samma namn ska säkerhetskopieras i stället för att skrivas över.
+#' @param anv_uppgifter Vems namn/e-post som ska stå på titel- och
+#'   avslutssidan. `NULL` (standard) = det som angavs i [ppt_ny()], annars
+#'   inloggad användare. Ett namn som slås upp med
+#'   [rddeploy::anv_hamta_namn_epost_fran_lista()] (t.ex. `"peter"`),
+#'   flera sådana namn (`c("peter", "jon")`, en fil per person), eller en
+#'   lista `list(namn = "...", epost = "...")`.
 #'
-#' @return Sökvägen till den sparade presentationen, osynligt.
+#' @return Sökvägen (en per fil) till den eller de sparade
+#'   presentationerna, osynligt.
 #' @export
 ppt_spara <- function(ppt,
                       filnamn = NULL,
                       mapp = rdverktyg::utskriftsmapp(),
                       oppna = FALSE,
-                      spara_backup_om_fil_redan_finns = FALSE) {
+                      spara_backup_om_fil_redan_finns = FALSE,
+                      anv_uppgifter = NULL) {
 
   intern_kontrollera_ppt(ppt)
+  if (is.null(anv_uppgifter)) anv_uppgifter <- ppt$anv_uppgifter
 
   if (is.null(filnamn)) {
     filnamn <- if (intern_har_innehall(ppt$huvudrubrik)) {
@@ -378,19 +328,31 @@ ppt_spara <- function(ppt,
     filnamn <- basename(filnamn)
   }
 
-  fil <- skapa_ppt_fran_lista(
-    pptlista = ppt$slides,
-    huvudrubrik = ppt$huvudrubrik,
-    underrubrik = ppt$underrubrik,
-    output_mapp = mapp,
-    spara_backup_om_fil_redan_finns = spara_backup_om_fil_redan_finns,
-    filnamn = filnamn,
-    mall_fil = intern_mall_aktuell(ppt$profil, grundfil = ppt$grundfil),
-    rubrik_namn = ppt$rubrik_namn,
-    anv_uppgifter = ppt$anv_uppgifter
-  )
-  if (isTRUE(oppna)) intern_oppna_fil(fil)
-  invisible(fil)
+  # flera personer: en fil per person
+  flera <- is.character(anv_uppgifter) && length(anv_uppgifter) > 1
+  personer <- if (flera) as.list(anv_uppgifter) else list(anv_uppgifter)
+  filer <- vapply(personer, function(person) {
+    filnamn_person <- filnamn
+    if (flera) {
+      bas <- sub("\\.pptx$", "", filnamn, ignore.case = TRUE)
+      filnamn_person <- paste0(bas, "_", gsub("[^a-z0-9]+", "_", chartr("åäöéü", "aaoeu", tolower(person))), ".pptx")
+    }
+    intern_bygg_pptx(
+      pptlista = ppt$slides,
+      huvudrubrik = ppt$huvudrubrik,
+      underrubrik = ppt$underrubrik,
+      output_mapp = mapp,
+      spara_backup_om_fil_redan_finns = spara_backup_om_fil_redan_finns,
+      filnamn = filnamn_person,
+      mall_fil = intern_mall_aktuell(ppt$profil, grundfil = ppt$grundfil),
+      rubrik_namn = ppt$rubrik_namn,
+      anv_uppgifter = person
+    )
+  }, character(1))
+
+  intern_logg_sammanfatta(ppt)
+  if (isTRUE(oppna)) for (fil in filer) intern_oppna_fil(fil)
+  invisible(filer)
 }
 
 intern_kontrollera_ppt <- function(ppt) {

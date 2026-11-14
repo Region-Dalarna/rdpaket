@@ -46,7 +46,9 @@ vektorgrafik. Flera bilder ger en slide per bild.}
 dem och du inte anger dem själv.}
 
 \item{region_vekt}{De kommun-/regionkoder diagramfunktionen ska köras
-för, en gång per region. \code{NULL} (standard) = en gång, utan region.}
+för, en gång per region. \code{NULL} (standard) = en gång, utan region.
+En tom vektor (\code{character(0)}, t.ex. när det inte finns några
+kommunkoder) betyder att diagrammet hoppas över.}
 
 \item{regionvariabel}{Namnet på diagramfunktionens parameter för region,
 om det inte är \code{"region_vekt"}.}
@@ -60,13 +62,16 @@ för en region hoppas den över med en varning. \code{TRUE} = stoppa.}
 
 \item{fil, slide}{För \code{"befintlig"}: pptx-filen med färdiga slides
 (standard: den som anges i \code{options(rdppt.slidebank = )}) och vilka
-slides i den som ska läggas in, som nummer. Se
-\code{\link[=ppt_befintlig]{ppt_befintlig()}} och \code{\link[=ppt_befintlig_visa]{ppt_befintlig_visa()}}.}
+slides i den som ska läggas in, som nummer (t.ex. \code{2} eller \code{c(1, 3)},
+standard alla). \code{\link[=ppt_befintlig_visa]{ppt_befintlig_visa()}} visar vilka slides filen
+innehåller och vilket nummer de har. Slidesen hamnar på den plats i
+ordningen där du anropar funktionen.}
 
-\item{anteckningar}{Text i sliden anteckningsfält (under sliden i
+\item{anteckningar}{Text i slidens anteckningsfält (under sliden i
 PowerPoint): en textsträng, eller en vektor med ett stycke per
-element. För diagram med flera regioner får varje slide samma
-anteckningar.}
+element. För diagram kan det också vara en funktion av regionen,
+t.ex. \verb{\\(region) mina_anteckningar(region)}, som körs en gång per
+region och ger anteckningar som passar just den regionens diagram.}
 
 \item{txt_size}{Textstorlek. \code{NA} (standard) = mallens egen.}
 }
@@ -94,6 +99,24 @@ sorter och deras parametrar med \code{\link[=ppt_slidetyper]{ppt_slidetyper()}}:
 
 Alla utom \code{"rapporter"} och \code{"befintlig"} kan också ha \code{anteckningar}.
 
+\strong{Diagram.} Diagramfunktionen körs en gång per region i \code{region_vekt}
+och bilderna sparas och hittas automatiskt - du behöver inte ange någon
+mapp. Funktionens parametrar \code{utmapp} och \code{skriv_diagramfil} sätts
+automatiskt (till presentationens bildmapp respektive \code{TRUE}) om
+funktionen har dem och du inte anger dem själv. Med
+\code{skriv_diagramfil = FALSE} läggs diagrammen in som redigerbar
+vektorgrafik. Ger funktionen fel för en region hoppas den över med en
+varning (och loggas, se \code{loggfil} i \code{\link[=ppt_ny]{ppt_ny()}}), och resten av
+presentationen byggs ändå; \code{stoppa_vid_fel = TRUE} stoppar i stället.
+Parametrar som funktionen inte har ger ett fel direkt.
+
+\strong{Färdiga slides.} \code{layout = "befintlig"} lägger in slides som gjorts
+för hand i PowerPoint. Filen med dem används som grund för hela
+presentationen, så den ska vara skapad utifrån samma mall som resten
+(öppna mallen, lägg till dina slides och spara under ett nytt namn).
+Färdiga slides kan därför bara hämtas från en fil per presentation, och
+slides i filen som inte läggs in kommer inte med.
+
 Man kan också ange namnet på en layout i mallen, t.ex.
 \code{layout = "Två innehållsdelar"}. Sliden får då den layouten, och
 innehållet blir det man anger: \code{funktion} (diagram), \code{bild}, eller
@@ -114,6 +137,5 @@ ppt_ny("Befolkning i Dalarna") |>
 }
 }
 \seealso{
-\code{\link[=ppt_slidetyper]{ppt_slidetyper()}}, \code{\link[=ppt_mall_visa]{ppt_mall_visa()}}, \code{\link[=ppt_diagram]{ppt_diagram()}},
-\code{\link[=ppt_befintlig]{ppt_befintlig()}}
+\code{\link[=ppt_slidetyper]{ppt_slidetyper()}}, \code{\link[=ppt_mall_visa]{ppt_mall_visa()}}, \code{\link[=ppt_befintlig_visa]{ppt_befintlig_visa()}}
 }

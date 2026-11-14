@@ -2,7 +2,7 @@
 #'
 #' Gör en bild av varje slide i en pptx-fil och visar dem som en översikt
 #' med slidens nummer och rubrik, så att man kan se vad man har utan att
-#' öppna filen. Numret är det som [ppt_befintlig()] använder i `slide`.
+#' öppna filen. Numret är det som `ppt_lagg_till_slide("befintlig", slide = )` använder.
 #' Översikten öppnas i RStudios Viewer-flik, eller i webbläsaren.
 #'
 #' Bilderna görs med PowerPoint om du kör Windows och har PowerPoint

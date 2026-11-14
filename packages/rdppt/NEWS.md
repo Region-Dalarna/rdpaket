@@ -1,3 +1,32 @@
+# rdppt 0.0.0.9006
+
+* `ppt_spara(anv_uppgifter = )` tar flera namn (`c("peter", "jon")`) och sparar en fil per
+  person (`utmaningar_peter.pptx`, ...) utan att diagrammen körs om. Namn och e-post kan
+  alltså anges vid sparandet i stället för i `ppt_ny()`.
+
+* `anteckningar` kan för diagram vara en funktion av regionen
+  (`anteckningar = \(region) ...`), som körs en gång per region.
+
+* En tom `region_vekt` (`character(0)`) hoppar över diagrammet. `NULL` är som förut: körs
+  en gång utan region.
+
+* Diagram som hoppas över (fel, eller inga diagram) loggas i presentationen, i en loggfil om
+  `ppt_ny(loggfil = )` eller `options(rdppt.loggfil)` anges, och sammanfattas när
+  presentationen sparas.
+
+* Rubrikformateringen (titelsida, avsnitt) kan ändras för en presentation med
+  `ppt_ny(stil = list(titel_stlk = 54))` och för alla med `options(rdppt.stil = list(...))`.
+  `ppt_installningar()` visar också `stil` och `loggfil`.
+
+* Rapportsidan har rubrikerna "Analysrapporter" och "Publicerade rapporter (pdf)" (förut
+  "Webbrapporter" och "PDF-rapporter").
+
+* Borttaget: `initiera_ppt_df()`, `ppt_lista_fyll_pa()`, `skapa_ppt_fran_lista()`,
+  `ppt_diagram()` och `ppt_befintlig()`. Presentationer byggs med `ppt_ny()`,
+  `ppt_lagg_till_slide()` och `ppt_spara()`; `ppt_lagg_till_slide("diagram", funktion = , ...)`
+  och `ppt_lagg_till_slide("befintlig", fil = , slide = )` ersätter de två sista.
+  Beroendet till `glue` är borttaget.
+
 # rdppt 0.0.0.9005
 
 * Nytt: `ppt_lagg_till_slide(ppt, layout, ...)` lägger till en slide av den sort `layout`

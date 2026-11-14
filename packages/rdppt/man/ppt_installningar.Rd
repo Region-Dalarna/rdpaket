@@ -21,7 +21,9 @@ gång. En parameter går före en option, och en option före standardvärdet.
 \tabular{lll}{
    Option \tab Innebörd \tab Standard \cr
    \code{rdppt.mall} \tab Mallen: en sökväg till en pptx-fil, \code{"regiondalarna"}, \code{"inbyggd"} eller en mallprofil (\code{\link[=ppt_mall_ange]{ppt_mall_ange()}} sätter den) \tab Region Dalarnas mall på G: om den går att nå, annars den kopia som följer med paketet \cr
-   \code{rdppt.slidebank} \tab Pptx-fil med färdiga slides som \code{\link[=ppt_befintlig]{ppt_befintlig()}} hämtar från \tab mallfilen \cr
+   \code{rdppt.slidebank} \tab Pptx-fil med färdiga slides som \code{ppt_lagg_till_slide("befintlig")} hämtar från \tab mallfilen \cr
+   \code{rdppt.stil} \tab Rubrikformatering (titelsida, avsnitt): \code{list(farg_rubrik =, titel_stlk =, undertitel_stlk =, namn_stlk =, avsnitt_stlk =)}, se \code{\link[=ppt_mallprofil]{ppt_mallprofil()}} \tab Region Dalarnas standardvärden \cr
+   \code{rdppt.loggfil} \tab Textfil där diagram som hoppas över loggas, se \code{\link[=ppt_ny]{ppt_ny()}} \tab ingen loggfil \cr
    \code{rdverktyg.utskriftsmapp} \tab Mapp som \code{\link[=ppt_spara]{ppt_spara()}} sparar i \tab \code{rdverktyg::utskriftsmapp()} \cr
 }
 }
@@ -30,12 +32,14 @@ gång. En parameter går före en option, och en option före standardvärdet.
 # i .Rprofile
 options(
   rdppt.mall = "G:/skript/ppt/mall_rus_utan_bakgrund.pptx",
-  rdppt.slidebank = "G:/skript/ppt/mall_rus_utan_bakgrund_demografi.pptx"
+  rdppt.slidebank = "G:/skript/ppt/mall_rus_utan_bakgrund_demografi.pptx",
+  rdppt.stil = list(titel_stlk = 54, undertitel_stlk = 24),
+  rdppt.loggfil = "G:/skript/ppt/ppt_logg.txt"
 )
 
 ppt_installningar()
 }
 }
 \seealso{
-\code{\link[=ppt_mall_ange]{ppt_mall_ange()}}, \code{\link[=ppt_ny]{ppt_ny()}}, \code{\link[=ppt_spara]{ppt_spara()}}, \code{\link[=ppt_befintlig]{ppt_befintlig()}}
+\code{\link[=ppt_mall_ange]{ppt_mall_ange()}}, \code{\link[=ppt_ny]{ppt_ny()}}, \code{\link[=ppt_spara]{ppt_spara()}}, \code{\link[=ppt_lagg_till_slide]{ppt_lagg_till_slide()}}
 }

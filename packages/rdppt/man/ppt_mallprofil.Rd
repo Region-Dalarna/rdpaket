@@ -31,8 +31,9 @@ valet inte räcker, t.ex. \code{list("Min layout" = c(bild = "Platshållare för
 \item{stil}{Formatering av rubriker (titelsida och avsnittsrubriker).
 En lista med något av \code{farg_rubrik}, \code{titel_stlk}, \code{undertitel_stlk},
 \code{namn_stlk} och \code{avsnitt_stlk} - det som inte anges får Region
-Dalarnas standardvärden. \code{NULL} = ingen egen formatering, mallens
-egna typsnitt, storlekar och färger används.}
+Dalarnas standardvärden, eller de som anges med
+\code{options(rdppt.stil = list(...))}. \code{NULL} = ingen egen formatering,
+mallens egna typsnitt, storlekar och färger används.}
 }
 \value{
 En mallprofil (klassen \code{rdppt_mallprofil}).

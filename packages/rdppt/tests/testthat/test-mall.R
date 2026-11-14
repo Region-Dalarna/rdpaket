@@ -87,9 +87,9 @@ test_that("en presentation går att bygga i Region Dalarnas mall, även med äld
                                     "Tack för mig!"))
 
   # "Bild och text till höger" finns inte i mallen, men fungerade med äldre mallar
-  ppt_lista <- initiera_ppt_df() |>
+  ppt_lista <- intern_tom_ppt_lista() |>
     dplyr::add_row(dia_path = bild, titel = "Äldre layoutnamn", beskr = list("Text"), mall = "Bild och text till höger")
-  fil <- suppressMessages(skapa_ppt_fran_lista(ppt_lista, huvudrubrik = NULL, output_mapp = mapp, mall_fil = "regiondalarna"))
+  fil <- suppressMessages(intern_bygg_pptx(ppt_lista, huvudrubrik = NULL, output_mapp = mapp, mall_fil = "regiondalarna"))
   expect_equal(pptx_ordning(fil), "Äldre layoutnamn")
 })
 
@@ -107,7 +107,7 @@ test_that("options(rdppt.mall) kan vara en enkel sökväg eller ett namn", {
 test_that("ppt_installningar() redovisar värde och källa", {
   withr::local_options(rdppt.mall = "inbyggd", rdppt.slidebank = NULL)
   res <- suppressWarnings(capture.output(inst <- ppt_installningar()))
-  expect_equal(inst$installning, c("mall", "slidebank", "spara-mapp"))
+  expect_equal(inst$installning, c("mall", "slidebank", "stil", "loggfil", "spara-mapp"))
   expect_equal(inst$kalla[1], "option rdppt.mall")
   expect_equal(inst$varde[2], "(ingen)")
 
