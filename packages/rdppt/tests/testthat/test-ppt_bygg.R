@@ -287,3 +287,21 @@ test_that("options(rdppt.stil) och ppt_ny(stil = ) styr rubrikformateringen", {
   ppt <- ppt_ny("T", mall = "regiondalarna", stil = list(titel_stlk = 60))
   expect_equal(ppt$profil$stil$titel_stlk, 60)
 })
+
+test_that("funktionsparametrar ger diagramfunktionen parametrar som krockar med ppt_lagg_till_slide()", {
+  # funktionens egen region_vekt får ett fast värde, medan regionvariabel styr vad som körs per region
+  diagram <- function(region_vekt = "20", fokus = "a", utmapp = NA, skriv_diagramfil = FALSE) {
+    list(ggplot2::ggplot(data.frame(x = 1, y = 1), ggplot2::aes(x, y)) + ggplot2::geom_point() +
+           ggplot2::ggtitle(paste(paste(region_vekt, collapse = ","), fokus)))
+  }
+  ppt <- suppressMessages(ppt_lagg_till_slide(
+    ny_testppt(), "diagram", funktion = diagram, regionvariabel = "fokus", region_vekt = c("a", "b"),
+    funktionsparametrar = list(region_vekt = c("20", "2021"))))
+  expect_equal(nrow(ppt$slides), 2)
+  expect_equal(ppt$slides$gg_obj[[2]]$labels$title, "20,2021 b")
+
+  expect_error(ppt_lagg_till_slide(ny_testppt(), "diagram", funktion = diagram, funktionsparametrar = list("a")), "namngiven lista")
+  expect_error(ppt_lagg_till_slide(ny_testppt(), "diagram", funktion = diagram, fokus = "x", funktionsparametrar = list(fokus = "y")),
+               "både direkt och i funktionsparametrar")
+  expect_error(ppt_lagg_till_slide(ny_testppt(), "text", rubrik = "R", funktionsparametrar = list(a = 1)), "ingen parameter som heter 'funktionsparametrar'")
+})

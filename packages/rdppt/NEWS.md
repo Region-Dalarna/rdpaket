@@ -1,3 +1,10 @@
+# rdppt 0.0.0.9007
+
+* `ppt_lagg_till_slide(funktionsparametrar = list(...))`: parametrar till diagramfunktionen
+  som har samma namn som parametrar till `ppt_lagg_till_slide()` själv, framför allt när
+  funktionens egen `region_vekt` ska ha ett fast värde medan `regionvariabel` styr vad som
+  körs per region.
+
 # rdppt 0.0.0.9006
 
 * `ppt_spara(anv_uppgifter = )` tar flera namn (`c("peter", "jon")`) och sparar en fil per

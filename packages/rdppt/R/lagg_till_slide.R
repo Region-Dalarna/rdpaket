@@ -1,6 +1,6 @@
 # De sorters slides som ppt_lagg_till_slide() kan lägga till, med de parametrar som gäller för var och en och
 # vilka som krävs. En slide väljs med layout = "<typ>"; en layout i mallen väljs med layoutens eget namn.
-intern_diagramparametrar <- c("funktion", "region_vekt", "regionvariabel", "per_region", "stoppa_vid_fel")
+intern_diagramparametrar <- c("funktion", "funktionsparametrar", "region_vekt", "regionvariabel", "per_region", "stoppa_vid_fel")
 
 intern_slidetyper <- list(
   diagram = list(
@@ -134,6 +134,12 @@ ppt_slidetyper <- function() {
 #'   diagram som jämför regionerna).
 #' @param stoppa_vid_fel `FALSE` (standard) = om diagramfunktionen ger fel
 #'   för en region hoppas den över med en varning. `TRUE` = stoppa.
+#' @param funktionsparametrar En namngiven lista med parametrar till
+#'   diagramfunktionen, för de som har samma namn som parametrar till
+#'   `ppt_lagg_till_slide()` själv - framför allt när funktionens egen
+#'   `region_vekt` ska ha ett fast värde medan `regionvariabel` styr vad
+#'   som körs per region, t.ex.
+#'   `funktionsparametrar = list(region_vekt = c("20", "2021", "2023"))`.
 #' @param fil,slide För `"befintlig"`: pptx-filen med färdiga slides
 #'   (standard: den som anges i `options(rdppt.slidebank = )`) och vilka
 #'   slides i den som ska läggas in, som nummer (t.ex. `2` eller `c(1, 3)`,
@@ -174,6 +180,7 @@ ppt_lagg_till_slide <- function(ppt,
                                 regionvariabel = "region_vekt",
                                 per_region = TRUE,
                                 stoppa_vid_fel = FALSE,
+                                funktionsparametrar = NULL,
                                 fil = NULL,
                                 slide = NULL,
                                 anteckningar = NULL,
@@ -221,6 +228,16 @@ ppt_lagg_till_slide <- function(ppt,
     stop("layout = \"", effektiv, "\" kräver ", paste(saknas, collapse = ", "), ".\nSe ppt_slidetyper().", call. = FALSE)
   }
   argument <- list(...)
+  if (!is.null(funktionsparametrar)) {
+    if (!is.list(funktionsparametrar) || is.null(names(funktionsparametrar)) || any(names(funktionsparametrar) == "")) {
+      stop("funktionsparametrar ska vara en namngiven lista, t.ex. list(region_vekt = c(\"20\", \"2021\")).", call. = FALSE)
+    }
+    dubbla <- intersect(names(argument), names(funktionsparametrar))
+    if (length(dubbla) > 0) {
+      stop("Parametern ", paste0("'", dubbla, "'", collapse = ", "), " anges både direkt och i funktionsparametrar.", call. = FALSE)
+    }
+    argument <- c(argument, funktionsparametrar)
+  }
   if (length(argument) > 0 && effektiv != "diagram") {
     stop("Parametrar utöver de som gäller för sliden kan bara anges för diagram (parametrar till diagramfunktionen). ",
          "Se ppt_slidetyper().", call. = FALSE)

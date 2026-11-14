@@ -16,6 +16,7 @@ ppt_lagg_till_slide(
   regionvariabel = "region_vekt",
   per_region = TRUE,
   stoppa_vid_fel = FALSE,
+  funktionsparametrar = NULL,
   fil = NULL,
   slide = NULL,
   anteckningar = NULL,
@@ -59,6 +60,13 @@ diagram som jämför regionerna).}
 
 \item{stoppa_vid_fel}{\code{FALSE} (standard) = om diagramfunktionen ger fel
 för en region hoppas den över med en varning. \code{TRUE} = stoppa.}
+
+\item{funktionsparametrar}{En namngiven lista med parametrar till
+diagramfunktionen, för de som har samma namn som parametrar till
+\code{ppt_lagg_till_slide()} själv - framför allt när funktionens egen
+\code{region_vekt} ska ha ett fast värde medan \code{regionvariabel} styr vad
+som körs per region, t.ex.
+\code{funktionsparametrar = list(region_vekt = c("20", "2021", "2023"))}.}
 
 \item{fil, slide}{För \code{"befintlig"}: pptx-filen med färdiga slides
 (standard: den som anges i \code{options(rdppt.slidebank = )}) och vilka
