@@ -77,9 +77,13 @@ ordningen där du anropar funktionen.}
 
 \item{anteckningar}{Text i slidens anteckningsfält (under sliden i
 PowerPoint): en textsträng, eller en vektor med ett stycke per
-element. För diagram kan det också vara en funktion av regionen,
-t.ex. \verb{\\(region) mina_anteckningar(region)}, som körs en gång per
-region och ger anteckningar som passar just den regionens diagram.}
+element. För diagram kan det också vara en vektor eller lista med
+ett namn per region (namnen är regionkoderna, t.ex.
+\code{c("20" = "Text för Dalarna", "2080" = "Text för Falun")}), där varje
+regions diagram får sin egen text. Elementet för en region kan
+i sin tur ha flera stycken (en lista med textvektorer). Går också
+med en funktion av regionen, \verb{\\(region) mina_anteckningar(region)},
+som körs en gång per region.}
 
 \item{txt_size}{Textstorlek. \code{NA} (standard) = mallens egen.}
 }
@@ -105,7 +109,7 @@ sorter och deras parametrar med \code{\link[=ppt_slidetyper]{ppt_slidetyper()}}:
 }
 
 
-Alla utom \code{"rapporter"} och \code{"befintlig"} kan också ha \code{anteckningar}.
+Alla utom \code{"befintlig"} kan också ha \code{anteckningar}.
 
 \strong{Diagram.} Diagramfunktionen körs en gång per region i \code{region_vekt}
 och bilderna sparas och hittas automatiskt - du behöver inte ange någon

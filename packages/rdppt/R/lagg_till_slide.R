@@ -83,7 +83,7 @@ ppt_slidetyper <- function() {
 #' | `"avslut"` | avslutsbild | `rubrik`, `text` |
 #' | `"befintlig"` | färdiga slides från en pptx-fil | `fil`, `slide` |
 #'
-#' Alla utom `"rapporter"` och `"befintlig"` kan också ha `anteckningar`.
+#' Alla utom `"befintlig"` kan också ha `anteckningar`.
 #'
 #' **Diagram.** Diagramfunktionen körs en gång per region i `region_vekt`
 #' och bilderna sparas och hittas automatiskt - du behöver inte ange någon
@@ -148,9 +148,13 @@ ppt_slidetyper <- function() {
 #'   ordningen där du anropar funktionen.
 #' @param anteckningar Text i slidens anteckningsfält (under sliden i
 #'   PowerPoint): en textsträng, eller en vektor med ett stycke per
-#'   element. För diagram kan det också vara en funktion av regionen,
-#'   t.ex. `\(region) mina_anteckningar(region)`, som körs en gång per
-#'   region och ger anteckningar som passar just den regionens diagram.
+#'   element. För diagram kan det också vara en vektor eller lista med
+#'   ett namn per region (namnen är regionkoderna, t.ex.
+#'   `c("20" = "Text för Dalarna", "2080" = "Text för Falun")`), där varje
+#'   regions diagram får sin egen text. Elementet för en region kan
+#'   i sin tur ha flera stycken (en lista med textvektorer). Går också
+#'   med en funktion av regionen, `\(region) mina_anteckningar(region)`,
+#'   som körs en gång per region.
 #' @param txt_size Textstorlek. `NA` (standard) = mallens egen.
 #'
 #' @return Presentationen, med nya slides tillagda.
@@ -244,6 +248,9 @@ ppt_lagg_till_slide <- function(ppt,
   }
   if (is.function(anteckningar) && effektiv != "diagram") {
     stop("anteckningar som funktion (en funktion av regionen) går bara för diagram.", call. = FALSE)
+  }
+  if (!is.function(anteckningar) && intern_anteckningar_per_region(anteckningar) && effektiv != "diagram") {
+    stop("anteckningar med ett namn per region går bara för diagram. Ange en text utan namn.", call. = FALSE)
   }
   if (!is.null(txt_size) && !is.na(txt_size) && !"txt_size" %in% tillatna) {
     stop("txt_size gäller inte för den här sortens slide.", call. = FALSE)

@@ -1,3 +1,12 @@
+# rdppt 0.0.0.9008
+
+* `anteckningar` kan för diagram vara en namngiven vektor eller lista med en post per region
+  (`c("20" = "Text för länet", "2080" = "Text för Falun")`). Texten beräknas då i skriptet,
+  före sliden, i stället för i en funktion. Funktionsvarianten finns kvar.
+
+* Dokumentationen av `ppt_lagg_till_slide()` angav felaktigt att `"rapporter"` inte kan ha
+  `anteckningar`.
+
 # rdppt 0.0.0.9007
 
 * `ppt_lagg_till_slide(funktionsparametrar = list(...))`: parametrar till diagramfunktionen

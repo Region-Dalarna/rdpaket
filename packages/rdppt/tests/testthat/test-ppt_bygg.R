@@ -237,6 +237,32 @@ test_that("anteckningar kan vara en funktion av regionen", {
   expect_error(ppt_lagg_till_slide(ny_testppt(), "text", rubrik = "R", anteckningar = \(region) "x"), "bara för diagram")
 })
 
+test_that("anteckningar kan vara en namngiven vektor eller lista med en post per region", {
+  ppt <- suppressMessages(ppt_lagg_till_slide(
+    ny_testppt(), "diagram", funktion = testdiagram, region_vekt = c("20", "2080"),
+    anteckningar = c("20" = "Text för länet", "2080" = "Text för Falun")))
+  expect_equal(ppt$slides$anteckningar[[1]], "Text för länet")
+  expect_equal(ppt$slides$anteckningar[[2]], "Text för Falun")
+
+  # flera stycken per region
+  ppt <- suppressMessages(ppt_lagg_till_slide(
+    ny_testppt(), "diagram", funktion = testdiagram, region_vekt = c("20", "2080"),
+    anteckningar = list("20" = c("a", "b"), "2080" = "c")))
+  expect_equal(ppt$slides$anteckningar[[1]], c("a", "b"))
+  expect_equal(ppt$slides$anteckningar[[2]], "c")
+
+  # en region som saknas ger varning och inga anteckningar, men diagrammet kommer med
+  expect_warning(
+    ppt <- suppressMessages(ppt_lagg_till_slide(ny_testppt(), "diagram", funktion = testdiagram,
+                                                region_vekt = "2080", anteckningar = c("20" = "Bara länet"))),
+    "saknar en post för region 2080")
+  expect_equal(nrow(ppt$slides), 1)
+  expect_null(ppt$slides$anteckningar[[1]])
+
+  # namngivna anteckningar går bara för diagram
+  expect_error(ppt_lagg_till_slide(ny_testppt(), "text", rubrik = "R", anteckningar = c("20" = "x")), "bara för diagram")
+})
+
 test_that("en tom regionvektor hoppar över diagrammet", {
   ppt <- suppressMessages(ppt_lagg_till_slide(ny_testppt(), "diagram", funktion = testdiagram, region_vekt = character(0)))
   expect_equal(nrow(ppt$slides), 0)

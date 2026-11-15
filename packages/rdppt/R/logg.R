@@ -25,10 +25,25 @@ intern_logga <- function(ppt, steg, region, status, meddelande) {
   ppt
 }
 
-# Anteckningar kan vara en text eller en funktion av regionen (anteckningar = \(region) ...)
+# Anteckningar kan vara en text (eller flera stycken), en namngiven vektor/lista med en post per region
+# (namnen är regionkoder) eller en funktion av regionen (anteckningar = \(region) ...)
 intern_anteckningar_for <- function(anteckningar, region) {
-  if (!is.function(anteckningar)) return(anteckningar)
-  if (length(formals(anteckningar)) == 0) anteckningar() else anteckningar(region)
+  if (is.function(anteckningar)) {
+    return(if (length(formals(anteckningar)) == 0) anteckningar() else anteckningar(region))
+  }
+  if (!intern_anteckningar_per_region(anteckningar)) return(anteckningar)
+  if (length(region) != 1) {
+    stop("anteckningar med ett namn per region går bara när diagrammet körs en gång per region.", call. = FALSE)
+  }
+  if (!as.character(region) %in% names(anteckningar)) {
+    stop("anteckningar saknar en post för region ", region, " (finns för: ", paste(names(anteckningar), collapse = ", "), ").", call. = FALSE)
+  }
+  unlist(anteckningar[[as.character(region)]], use.names = FALSE)
+}
+
+# TRUE om anteckningarna har ett namn på varje post, dvs. är avsedda att väljas ut per region
+intern_anteckningar_per_region <- function(anteckningar) {
+  !is.null(names(anteckningar)) && all(nzchar(names(anteckningar)))
 }
 
 # Berättar vid sparandet vad som hoppats över
