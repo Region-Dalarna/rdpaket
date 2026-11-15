@@ -75,7 +75,7 @@ anges):
 | `"avslut"` | "Tack för mig!" med ditt namn och din e-post | `rubrik`, `text` |
 | `"befintlig"` | Färdiga slides från en pptx-fil | `fil`, `slide` |
 
-Alla utom `"rapporter"` och `"befintlig"` tar också `anteckningar`. Anger
+Alla utom `"befintlig"` tar också `anteckningar`. Anger
 du en parameter som sliden inte har får du ett felmeddelande som listar
 dem som gäller. Dessutom går varje layout i mallen att använda med sitt
 eget namn, t.ex. `layout = "Två innehållsdelar"` (se längre ned).
@@ -150,16 +150,27 @@ ppt <- ppt |>
                       anteckningar = "Kom ihåg att nämna källan.")
 ```
 
-För diagram kan `anteckningar` vara en funktion av regionen. Den körs en
-gång per region, så varje diagram får anteckningar som passar just den
-regionen:
+För diagram kan `anteckningar` ha **en text per region**: en namngiven
+vektor där namnen är regionkoderna. Varje regions diagram får då sin egen
+text. Beräkna texterna i skriptet, före sliden:
 
 ```r
+anteckn <- c("20"   = "Dalarna har ...",
+             "2080" = "Falun har ...")
+
 ppt <- ppt |>
   ppt_lagg_till_slide("diagram", funktion = rddiagramkatalog::diag_befutv_per_komponent_ar_scb,
                       region_vekt = c("20", "2080"),
-                      anteckningar = \(region) mina_anteckningar(region))
+                      anteckningar = anteckn)
 ```
+
+Ska en region ha flera stycken använder du en lista:
+`list("20" = c("Första stycket", "Andra stycket"), "2080" = "...")`.
+Saknas en regions kod i `anteckningar` får du en varning och sliden läggs
+till utan anteckningar. En vanlig text utan namn används för alla
+regioner. Går det bra att låta en funktion räkna fram texten när
+diagrammet körs kan `anteckningar` också vara en funktion av regionen:
+`anteckningar = \(region) mina_anteckningar(region)`.
 
 ### Färdiga slides som du gjort för hand
 
