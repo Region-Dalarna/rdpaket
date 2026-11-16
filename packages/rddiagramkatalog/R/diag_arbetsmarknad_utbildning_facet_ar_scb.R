@@ -1,11 +1,14 @@
-#' Diagram: arbetslöshet i procent, facet per utbildningsnivå eller -inriktning
+#' Diagram: arbetslöshet eller sysselsättningsgrad, facet per utbildningsnivå eller -inriktning
 #'
-#' Facetdiagram över arbetslöshet i procent (inskrivna arbetslösa på
-#' Arbetsförmedlingen / arbetskraften, dvs. förvärvsarbetande plus
-#' arbetslösa) per utbildningsnivå eller utbildningsinriktning, över tid
-#' (år). Från SCB:s
-#' tabell TAB6367 (Arbetsmarknadsställning (U1a) i befolkningen 20-64 år,
-#' nattbefolkning).
+#' Facetdiagram över arbetslöshet eller sysselsättningsgrad i procent per utbildningsnivå eller
+#' utbildningsinriktning, över tid (år). Från SCB:s tabell TAB6367 (Arbetsmarknadsställning (U1a) i
+#' befolkningen 20-64 år, nattbefolkning).
+#'
+#' Måttet väljs med `matt`:
+#' * `"arbetsloshet"` (standard): inskrivna arbetslösa på Arbetsförmedlingen i procent av arbetskraften,
+#'   dvs. förvärvsarbetande plus arbetslösa.
+#' * `"sysselsattningsgrad"`: förvärvsarbetande i procent av alla i åldern 20-64 år (förvärvsarbetande,
+#'   inskrivna arbetslösa och de som inte är i arbetskraften).
 #'
 #' TAB6367 har en enda utbildningsdimension (Utbildngrupp) som blandar
 #' utbildningsnivå, utbildningsinriktning OCH ca 120 detaljerade
@@ -25,9 +28,13 @@
 #' slås ihop till en sammanhängande tidsserie 2006-2024
 #' (`ta_med_tidigare_data = FALSE` hämtar bara TAB6367, dvs. 2019-2024).
 #'
-#' \if{html}{\figure{diag_arbloshet_procent_utbildning_facet_ar_scb.png}{options: width="100%" alt="Exempel: diag_arbloshet_procent_utbildning_facet_ar_scb() med standardinställningar"}}
+#' Funktionen hette tidigare `diag_arbloshet_procent_utbildning_facet_ar_scb()`, som finns kvar som ett
+#' föråldrat alias.
+#'
+#' \if{html}{\figure{diag_arbetsmarknad_utbildning_facet_ar_scb.png}{options: width="100%" alt="Exempel: diag_arbetsmarknad_utbildning_facet_ar_scb() med standardinställningar"}}
 #'
 #' @param region_vekt En eller flera regioner, t.ex. `c("20", "17", "21")`. Flera regioner jämförs då som linjer inom varje facet.
+#' @param matt Vilket mått som visas: `"arbetsloshet"` (standard) eller `"sysselsattningsgrad"`.
 #' @param utb_typ Vilken utbildningsindelning som ska facet:as på: `"niva"` eller `"inriktning"`.
 #' @param utb_vekt NA = default-koder för `utb_typ`, annars egna Utbildngrupp-koder.
 #' @param ta_med_tidigare_data TRUE = slå ihop med TAB5400 (2006-2018) till en tidsserie 2006-2024.
@@ -37,7 +44,7 @@
 #'   eller `"2015:9999"` för "från 2015 till och med senaste tillgängliga år".
 #'   Om intervallet inte täcker TAB5400 (2006-2018) hoppas den tabellen
 #'   automatiskt över, även om `ta_med_tidigare_data = TRUE`.
-#' @param diagram_capt Diagrammets källtext.
+#' @param diagram_capt Diagrammets källtext. `NA` (standard) = källa och bearbetning, samt en rad som förklarar måttet.
 #' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param diag_fargvekt Valfri färgvektor, standard: `rddiagram::diagramfarger("rus_sex")`.
 #' @param logga_sokvag NA om man vill köra med standardloggan, bra att sätta en lokal om man är på resande fot.
@@ -48,15 +55,16 @@
 #'
 #' @return En namngiven lista med ett `ggplot`-objekt.
 #' @export
-diag_arbloshet_procent_utbildning_facet_ar_scb <- function(
+diag_arbetsmarknad_utbildning_facet_ar_scb <- function(
     region_vekt = "20",
+    matt = c("arbetsloshet", "sysselsattningsgrad"),
     utb_typ = c("niva", "inriktning"),
     utb_vekt = NA,
     ta_med_tidigare_data = TRUE,
     lagga_till_punkter = FALSE,
     titel_bredd = 80,
     tid_koder = "*",
-    diagram_capt = "Källa: SCB:s öppna statistikdatabas, Arbetsmarknadsställning (U1a)\nBearbetning: Samhällsanalys, Region Dalarna",
+    diagram_capt = NA,
     utmapp = rdverktyg::utskriftsmapp(),
     diag_fargvekt = NA,
     logga_sokvag = NA,
@@ -67,6 +75,7 @@ diag_arbloshet_procent_utbildning_facet_ar_scb <- function(
     ) {
 
   utb_typ <- match.arg(utb_typ)
+  matt <- match.arg(matt)
 
   # om parametern demo är satt till TRUE: inga exempelbilder är uppladdade för det här skriptet ännu.
   if (demo){
@@ -101,14 +110,16 @@ diag_arbloshet_procent_utbildning_facet_ar_scb <- function(
 
   # Länk till tabell: https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__AM__AM0208__AM0208C/ArbStallnU1Ar/
   # ContentsCode hämtas som text (inte kod) - A = förvärvsarbetande, B = inskrivna arbetslösa på
-  # Arbetsförmedlingen. Arbetskraften = A + B (C, "inte i arbetskraften", räknas INTE in i nämnaren).
+  # Arbetsförmedlingen, A+B+C = alla i åldern 20-64 år. Arbetslöshet = B / (A + B) (C, "inte i arbetskraften",
+  # räknas INTE in i nämnaren); sysselsättningsgrad = A / (A + B + C).
   hamta_tabell <- function(tabell, tid) {
     pxweb2r::pxweb2_get_data(
       table = tabell,
       query = list(
         Region = region_vekt,
         Utbildngrupp = utb_vekt,
-        ContentsCode = c("Förvärvsarbetande (A)", "Inskrivna arbetslösa på Arbetsförmedlingen (B)"),
+        ContentsCode = c("Förvärvsarbetande (A)", "Inskrivna arbetslösa på Arbetsförmedlingen (B)",
+                         "Totalt antal personer (A+B+C)"),
         Tid = tid
       ), quiet = TRUE)
   }
@@ -130,8 +141,13 @@ diag_arbloshet_procent_utbildning_facet_ar_scb <- function(
     dplyr::rename(regionkod = region_kod) |>
     tidyr::pivot_wider(names_from = tabellinnehåll, values_from = value) |>
     dplyr::rename(forvarvsarbetande = `Förvärvsarbetande (A)`,
-                  arbetslosa = `Inskrivna arbetslösa på Arbetsförmedlingen (B)`) |>
-    dplyr::mutate(andel_arbetslosa = round(arbetslosa / (forvarvsarbetande + arbetslosa) * 100, 1),
+                  arbetslosa = `Inskrivna arbetslösa på Arbetsförmedlingen (B)`,
+                  totalt = `Totalt antal personer (A+B+C)`) |>
+    dplyr::mutate(andel = if (matt == "arbetsloshet") {
+                    round(arbetslosa / (forvarvsarbetande + arbetslosa) * 100, 1)
+                  } else {
+                    round(forvarvsarbetande / totalt * 100, 1)
+                  },
                   utbildning = wrap_kat(utbildning),
                   # Facet-panelerna ska komma i kodordning (samma ordning som utb_vekt), inte
                   # bokstavsordning på klartexten - utbildning görs om till en factor vars nivåer
@@ -142,15 +158,25 @@ diag_arbloshet_procent_utbildning_facet_ar_scb <- function(
   vald_region <- rdverktyg::list_komma_och(rdverktyg::skapa_kortnamn_lan(rdverktyg::hamtaregion_kod_namn(region_vekt)$region, byt_ut_riket_mot_sverige = TRUE))
 
   utb_typ_titel <- if (utb_typ == "niva") "utbildningsnivå" else "utbildningsinriktning"
-  diagram_titel <- stringr::str_wrap(paste0("Arbetslöshet efter ", utb_typ_titel, " i ", vald_region, ", nattbefolkning 20-64 år"), titel_bredd)
-  diagramfil <- paste0("arbloshet_procent_utb_", utb_typ, "_facet_", paste0(region_vekt, collapse = "_"), ".png")
+  matt_titel <- if (matt == "arbetsloshet") "Arbetslöshet" else "Sysselsättningsgrad"
+  if (all(is.na(diagram_capt))) {
+    diagram_capt <- paste0(
+      "Källa: SCB:s öppna statistikdatabas, Arbetsmarknadsställning (U1a)\nBearbetning: Samhällsanalys, Region Dalarna",
+      if (matt == "arbetsloshet") {
+        "\nArbetslöshet = inskrivna arbetslösa på Arbetsförmedlingen i procent av arbetskraften"
+      } else {
+        "\nSysselsättningsgrad = förvärvsarbetande i procent av alla i åldern 20-64 år"
+      })
+  }
+  diagram_titel <- stringr::str_wrap(paste0(matt_titel, " efter ", utb_typ_titel, " i ", vald_region, ", nattbefolkning 20-64 år"), titel_bredd)
+  diagramfil <- paste0(if (matt == "arbetsloshet") "arbloshet" else "sysselsattningsgrad", "_procent_utb_", utb_typ, "_facet_", paste0(region_vekt, collapse = "_"), ".png")
 
   flera_regioner <- length(unique(arbl_df$regionkod)) > 1
 
   gg_obj <- rddiagram::SkapaLinjeDiagram(
     skickad_df = arbl_df,
     skickad_x_var = "år",
-    skickad_y_var = "andel_arbetslosa",
+    skickad_y_var = "andel",
     skickad_x_grupp = if (flera_regioner) "region" else NULL,
     lagga_till_punkter = lagga_till_punkter,
     diagram_titel = diagram_titel,
@@ -175,3 +201,13 @@ diag_arbloshet_procent_utbildning_facet_ar_scb <- function(
 
   return(retur_list)
 } # slut funktion
+
+#' @rdname diag_arbetsmarknad_utbildning_facet_ar_scb
+#' @description `diag_arbloshet_procent_utbildning_facet_ar_scb()` är det gamla namnet och ger samma diagram som
+#'   `diag_arbetsmarknad_utbildning_facet_ar_scb(matt = "arbetsloshet")`.
+#' @param ... Skickas vidare till `diag_arbetsmarknad_utbildning_facet_ar_scb()`.
+#' @export
+diag_arbloshet_procent_utbildning_facet_ar_scb <- function(...) {
+  .Deprecated("diag_arbetsmarknad_utbildning_facet_ar_scb")
+  diag_arbetsmarknad_utbildning_facet_ar_scb(..., matt = "arbetsloshet")
+}

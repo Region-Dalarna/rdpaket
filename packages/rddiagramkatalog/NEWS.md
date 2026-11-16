@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9086
+
+* `diag_arbloshet_procent_utbildning_facet_ar_scb()` heter nu `diag_arbetsmarknad_utbildning_facet_ar_scb()` och har en ny parameter
+  `matt`: `"arbetsloshet"` (standard, som tidigare) eller `"sysselsattningsgrad"` (förvärvsarbetande i procent av alla 20-64 år, ur SCB:s TAB6367/TAB5400).
+  Titel, källtext och filnamn följer måttet. Det gamla namnet finns kvar som föråldrat alias som ger samma diagram som `matt = "arbetsloshet"`.
+
 # rddiagramkatalog 0.0.0.9085
 
 * `karta_gg_kraftfalt_scb()`: textrutan och teckenförklaringen sluter tätare kring innehållet: rutans höjd räknas med uppmätt radavstånd
