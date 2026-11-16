@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9080
+
+* `karta_gg_bakgrund_topografi()`: ny parameter `marginal` (standard 3 %) som lägger en marginal runt länet, så att ytor utanför
+  länsgränsen ritas ut och källhänvisningen inte skärs av. Källhänvisningen är två rader och anger bakgrundskartans källa
+  (Lantmäteriet, Topografi 10).
+
 # rddiagramkatalog 0.0.0.9079
 
 * `karta_gg_bakgrund_topografi()`: källhänvisning nere till höger i kartan (parametern `kalla_text`, kan stängas av med `NULL`).

@@ -7,7 +7,9 @@
 karta_gg_bakgrund_topografi(
   region_vekt = "20",
   vagar = c("stora", "mellan"),
-  kalla_text = "Källa: Lantmäteriet. Bearbetning: Samhällsanalys, Region Dalarna",
+  kalla_text =
+    "Bakgrundskarta: Lantmäteriet, Topografi 10\\nBearbetning: Samhällsanalys, Region Dalarna",
+  marginal = 0.03,
   lansgrans = TRUE,
   etiketter = NULL,
   namn_storlek = 1,
@@ -28,7 +30,11 @@ kommunkod ger länet kommunen ligger i.}
 \code{NULL} ritar inga vägar.}
 
 \item{kalla_text}{Källhänvisning som skrivs nere till höger i kartan, i liten ljusgrå text. Standard
-\code{"Källa: Lantmäteriet. Bearbetning: Samhällsanalys, Region Dalarna"}; \code{NULL}, \code{NA} eller \code{""} ger ingen text.}
+två rader: bakgrundskartans källa (Lantmäteriet, Topografi 10) och "Bearbetning: Samhällsanalys, Region
+Dalarna". Radbrytning görs med \verb{\\n}. \code{NULL}, \code{NA} eller \code{""} ger ingen text.}
+
+\item{marginal}{Marginal runt länet som andel av kartans bredd och höjd. Standard 0,03 (3 \%). Ytor utanför
+länsgränsen som finns i topografin ritas ut, och källhänvisningen får plats utan att skäras av.}
 
 \item{lansgrans}{\code{TRUE} (standard) ritar länsgränsen som en streckad grå linje, \code{FALSE} utan. Gränsen och
 kartans utsnitt kommer från Lantmäteriets länsgränser (\code{lan_lm}).}

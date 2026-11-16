@@ -16,7 +16,10 @@
 #'   (små landsvägar, huvudgator) och `"sma"` (lokalgator, småvägar). Standard `c("stora", "mellan")`;
 #'   `NULL` ritar inga vägar.
 #' @param kalla_text Källhänvisning som skrivs nere till höger i kartan, i liten ljusgrå text. Standard
-#'   `"Källa: Lantmäteriet. Bearbetning: Samhällsanalys, Region Dalarna"`; `NULL`, `NA` eller `""` ger ingen text.
+#'   två rader: bakgrundskartans källa (Lantmäteriet, Topografi 10) och "Bearbetning: Samhällsanalys, Region
+#'   Dalarna". Radbrytning görs med `\n`. `NULL`, `NA` eller `""` ger ingen text.
+#' @param marginal Marginal runt länet som andel av kartans bredd och höjd. Standard 0,03 (3 %). Ytor utanför
+#'   länsgränsen som finns i topografin ritas ut, och källhänvisningen får plats utan att skäras av.
 #' @param lansgrans `TRUE` (standard) ritar länsgränsen som en streckad grå linje, `FALSE` utan. Gränsen och
 #'   kartans utsnitt kommer från Lantmäteriets länsgränser (`lan_lm`).
 #' @param etiketter Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket". Standard
@@ -42,7 +45,8 @@
 karta_gg_bakgrund_topografi <- function(
     region_vekt = "20",
     vagar = c("stora", "mellan"),
-    kalla_text = "Källa: Lantmäteriet. Bearbetning: Samhällsanalys, Region Dalarna",
+    kalla_text = "Bakgrundskarta: Lantmäteriet, Topografi 10\nBearbetning: Samhällsanalys, Region Dalarna",
+    marginal = 0.03,
     lansgrans = TRUE,
     etiketter = NULL,
     namn_storlek = 1,
@@ -80,7 +84,11 @@ karta_gg_bakgrund_topografi <- function(
   t0 <- Sys.time()
   lan_gis <- sf::st_transform(rdgis::hamta_karta("lan_lm", unique(substr(region_vekt, 1, 2))), 3006)
   bbox <- sf::st_bbox(lan_gis)
-  lager <- rdgis::hamta_bakgrundskarta(lager = lager_namn, bbox = bbox, marginal = 0.02, con = con)
+  bredd <- bbox[["xmax"]] - bbox[["xmin"]]; hojd <- bbox[["ymax"]] - bbox[["ymin"]]
+  bbox <- sf::st_bbox(c(xmin = bbox[["xmin"]] - marginal * bredd, ymin = bbox[["ymin"]] - marginal * hojd,
+                        xmax = bbox[["xmax"]] + marginal * bredd, ymax = bbox[["ymax"]] + marginal * hojd),
+                      crs = sf::st_crs(3006))
+  lager <- rdgis::hamta_bakgrundskarta(lager = lager_namn, bbox = bbox, marginal = 0, con = con)
   if ("storre_tatorter" %in% etiketter) {
     lager$storre_tatorter <- intern_storsta_tatort_per_kommun(unique(substr(region_vekt, 1, 2)))
   }
@@ -237,7 +245,8 @@ intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan")
   if (!is.null(kalla_text) && length(kalla_text) == 1 && !is.na(kalla_text) && nzchar(kalla_text)) {
     gg <- gg + ggplot2::annotate("text", x = bbox[["xmax"]] - 0.008 * (bbox[["xmax"]] - bbox[["xmin"]]),
                                  y = bbox[["ymin"]] + 0.006 * (bbox[["ymax"]] - bbox[["ymin"]]),
-                                 label = kalla_text, hjust = 1, vjust = 0, size = 2.1, colour = f[["ortnamn"]])
+                                 label = kalla_text, hjust = 1, vjust = 0, size = 2.1, lineheight = 1.1,
+                                 colour = f[["ortnamn"]])
   }
 
   gg +
