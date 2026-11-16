@@ -9,6 +9,8 @@
 #'   dvs. förvärvsarbetande plus arbetslösa.
 #' * `"sysselsattningsgrad"`: förvärvsarbetande i procent av alla i åldern 20-64 år (förvärvsarbetande,
 #'   inskrivna arbetslösa och de som inte är i arbetskraften).
+#' * `"antal_sysselsatta"`: antalet förvärvsarbetande (sysselsatta) i åldern 20-64 år. Grupperna skiljer sig
+#'   mycket i storlek, så `facet_scale = "free_y"` ger ofta ett mer läsbart diagram.
 #'
 #' TAB6367 har en enda utbildningsdimension (Utbildngrupp) som blandar
 #' utbildningsnivå, utbildningsinriktning OCH ca 120 detaljerade
@@ -31,17 +33,18 @@
 #' Funktionen hette tidigare `diag_arbloshet_procent_utbildning_facet_ar_scb()`, som finns kvar som ett
 #' föråldrat alias.
 #'
-#' \if{html}{\figure{diag_arbetsmarknad_utbildning_facet_ar_scb.png}{options: width="100%" alt="Exempel: diag_arbetsmarknad_utbildning_facet_ar_scb() med standardinställningar"}}
+#' \if{html}{\figure{diag_arbloshet_syss_utbildning_facet_ar_scb.png}{options: width="100%" alt="Exempel: diag_arbloshet_syss_utbildning_facet_ar_scb() med standardinställningar"}}
 #'
 #' @param region_vekt En eller flera regioner, t.ex. `c("20", "17", "21")`. Flera regioner jämförs då som linjer inom varje facet.
-#' @param matt Vilket mått som visas: `"arbetsloshet"` (standard) eller `"sysselsattningsgrad"`.
+#' @param matt Vilket mått som visas: `"arbetsloshet"` (standard), `"sysselsattningsgrad"` eller `"antal_sysselsatta"`.
 #' @param utb_typ Vilken utbildningsindelning som ska facet:as på: `"niva"` eller `"inriktning"`.
 #' @param utb_vekt NA = default-koder för `utb_typ`, annars egna Utbildngrupp-koder.
 #' @param ta_med_tidigare_data TRUE = slå ihop med TAB5400 (2006-2018) till en tidsserie 2006-2024.
 #' @param lagga_till_punkter TRUE lägger till punkter vid varje observation.
 #' @param titel_bredd Radbrytningsbredd för diagramtiteln.
 #' @param tid_koder Vilka år som ska hämtas, per tabell. `"*"` = alla, `"9999"` = senaste,
-#'   eller `"2015:9999"` för "från 2015 till och med senaste tillgängliga år".
+#'   `"2015:9999"` för "från 2015 till och med senaste tillgängliga år" eller enskilda år (t.ex. `"2024"`
+#'   eller `c("2010", "2020")`; de år som saknas i en tabell hoppas över).
 #'   Om intervallet inte täcker TAB5400 (2006-2018) hoppas den tabellen
 #'   automatiskt över, även om `ta_med_tidigare_data = TRUE`.
 #' @param diagram_capt Diagrammets källtext. `NA` (standard) = källa och bearbetning, samt en rad som förklarar måttet.
@@ -55,9 +58,9 @@
 #'
 #' @return En namngiven lista med ett `ggplot`-objekt.
 #' @export
-diag_arbetsmarknad_utbildning_facet_ar_scb <- function(
+diag_arbloshet_syss_utbildning_facet_ar_scb <- function(
     region_vekt = "20",
-    matt = c("arbetsloshet", "sysselsattningsgrad"),
+    matt = c("arbetsloshet", "sysselsattningsgrad", "antal_sysselsatta"),
     utb_typ = c("niva", "inriktning"),
     utb_vekt = NA,
     ta_med_tidigare_data = TRUE,
@@ -124,18 +127,30 @@ diag_arbetsmarknad_utbildning_facet_ar_scb <- function(
       ), quiet = TRUE)
   }
 
+  # Vilka år som ska hämtas från respektive tabell. Intervall ("2015:9999") och "*" tolkas av
+  # intern_tolka_tidskoder(); enskilda år (t.ex. "2024" eller c("2010", "2020")) skärs mot de år som
+  # finns i tabellen, så att en tabell som inte har året hoppas över i stället för att ge fel.
+  # "9999" (senaste året) finns alltid i TAB6367 och hämtas inte från TAB5400.
+  tid_for_tabell <- function(tabell) {
+    tid <- intern_tolka_tidskoder(tabell, tid_koder)
+    if (!any(tid_koder %in% c("*", "9999")) && length(tid_koder) > 0) {
+      tid <- intersect(tid, pxweb2r::pxweb2_get_values(tabell, "Tid", quiet = TRUE)$code)
+    }
+    tid
+  }
+  tid_6367 <- tid_for_tabell("TAB6367")
+  tid_5400 <- if (ta_med_tidigare_data && !identical(tid_koder, "9999")) tid_for_tabell("TAB5400") else character(0)
+  if (length(tid_6367) == 0 && length(tid_5400) == 0) {
+    stop("Inga av de begärda åren (tid_koder) finns i SCB:s tabeller för arbetsmarknadsställning efter utbildning.",
+         call. = FALSE)
+  }
+
   # TAB6367 (2019-2024) och - om ta_med_tidigare_data - TAB5400 (2006-2018, fryst historisk data)
   # har identiska dimensioner/kolumnnamn och överlappar inte i tid, så de kan radbindas direkt.
-  arbl_raw <- hamta_tabell("TAB6367", intern_tolka_tidskoder("TAB6367", tid_koder))
-  if (ta_med_tidigare_data) {
-    # Om det begärda intervallet inte täcker TAB5400 alls (t.ex. tid_koder = "2020:9999")
-    # blir tid_5400 en tom vektor - hoppa då över tabellen i stället för att skicka en
-    # tom Tid-fråga till API:et.
-    tid_5400 <- intern_tolka_tidskoder("TAB5400", tid_koder)
-    if (length(tid_5400) > 0) {
-      arbl_raw <- dplyr::bind_rows(arbl_raw, hamta_tabell("TAB5400", tid_5400))
-    }
-  }
+  # En tabell utan år i det begärda urvalet hoppas över i stället för att skicka en tom Tid-fråga.
+  arbl_raw <- dplyr::bind_rows(
+    if (length(tid_6367) > 0) hamta_tabell("TAB6367", tid_6367),
+    if (length(tid_5400) > 0) hamta_tabell("TAB5400", tid_5400))
 
   arbl_df <- arbl_raw |>
     dplyr::rename(regionkod = region_kod) |>
@@ -143,11 +158,10 @@ diag_arbetsmarknad_utbildning_facet_ar_scb <- function(
     dplyr::rename(forvarvsarbetande = `Förvärvsarbetande (A)`,
                   arbetslosa = `Inskrivna arbetslösa på Arbetsförmedlingen (B)`,
                   totalt = `Totalt antal personer (A+B+C)`) |>
-    dplyr::mutate(andel = if (matt == "arbetsloshet") {
-                    round(arbetslosa / (forvarvsarbetande + arbetslosa) * 100, 1)
-                  } else {
-                    round(forvarvsarbetande / totalt * 100, 1)
-                  },
+    dplyr::mutate(andel = switch(matt,
+                    arbetsloshet = round(arbetslosa / (forvarvsarbetande + arbetslosa) * 100, 1),
+                    sysselsattningsgrad = round(forvarvsarbetande / totalt * 100, 1),
+                    antal_sysselsatta = forvarvsarbetande),
                   utbildning = wrap_kat(utbildning),
                   # Facet-panelerna ska komma i kodordning (samma ordning som utb_vekt), inte
                   # bokstavsordning på klartexten - utbildning görs om till en factor vars nivåer
@@ -158,18 +172,19 @@ diag_arbetsmarknad_utbildning_facet_ar_scb <- function(
   vald_region <- rdverktyg::list_komma_och(rdverktyg::skapa_kortnamn_lan(rdverktyg::hamtaregion_kod_namn(region_vekt)$region, byt_ut_riket_mot_sverige = TRUE))
 
   utb_typ_titel <- if (utb_typ == "niva") "utbildningsnivå" else "utbildningsinriktning"
-  matt_titel <- if (matt == "arbetsloshet") "Arbetslöshet" else "Sysselsättningsgrad"
+  matt_titel <- switch(matt, arbetsloshet = "Arbetslöshet", sysselsattningsgrad = "Sysselsättningsgrad",
+                       antal_sysselsatta = "Antal sysselsatta")
   if (all(is.na(diagram_capt))) {
     diagram_capt <- paste0(
       "Källa: SCB:s öppna statistikdatabas, Arbetsmarknadsställning (U1a)\nBearbetning: Samhällsanalys, Region Dalarna",
-      if (matt == "arbetsloshet") {
-        "\nArbetslöshet = inskrivna arbetslösa på Arbetsförmedlingen i procent av arbetskraften"
-      } else {
-        "\nSysselsättningsgrad = förvärvsarbetande i procent av alla i åldern 20-64 år"
-      })
+      switch(matt,
+        arbetsloshet = "\nArbetslöshet = inskrivna arbetslösa på Arbetsförmedlingen i procent av arbetskraften",
+        sysselsattningsgrad = "\nSysselsättningsgrad = förvärvsarbetande i procent av alla i åldern 20-64 år",
+        antal_sysselsatta = "\nSysselsatta = förvärvsarbetande i åldern 20-64 år"))
   }
   diagram_titel <- stringr::str_wrap(paste0(matt_titel, " efter ", utb_typ_titel, " i ", vald_region, ", nattbefolkning 20-64 år"), titel_bredd)
-  diagramfil <- paste0(if (matt == "arbetsloshet") "arbloshet" else "sysselsattningsgrad", "_procent_utb_", utb_typ, "_facet_", paste0(region_vekt, collapse = "_"), ".png")
+  diagramfil <- paste0(switch(matt, arbetsloshet = "arbloshet_procent", sysselsattningsgrad = "sysselsattningsgrad_procent",
+                       antal_sysselsatta = "antal_sysselsatta"), "_utb_", utb_typ, "_facet_", paste0(region_vekt, collapse = "_"), ".png")
 
   flera_regioner <- length(unique(arbl_df$regionkod)) > 1
 
@@ -181,7 +196,7 @@ diag_arbetsmarknad_utbildning_facet_ar_scb <- function(
     lagga_till_punkter = lagga_till_punkter,
     diagram_titel = diagram_titel,
     diagram_capt = diagram_capt,
-    manual_y_axis_title = "procent",
+    manual_y_axis_title = if (matt == "antal_sysselsatta") "antal" else "procent",
     manual_color = if (flera_regioner) diag_fargvekt else diag_fargvekt[1],
     legend_vand_ordning = TRUE,
     legend_byrow = TRUE,
@@ -202,12 +217,12 @@ diag_arbetsmarknad_utbildning_facet_ar_scb <- function(
   return(retur_list)
 } # slut funktion
 
-#' @rdname diag_arbetsmarknad_utbildning_facet_ar_scb
+#' @rdname diag_arbloshet_syss_utbildning_facet_ar_scb
 #' @description `diag_arbloshet_procent_utbildning_facet_ar_scb()` är det gamla namnet och ger samma diagram som
-#'   `diag_arbetsmarknad_utbildning_facet_ar_scb(matt = "arbetsloshet")`.
-#' @param ... Skickas vidare till `diag_arbetsmarknad_utbildning_facet_ar_scb()`.
+#'   `diag_arbloshet_syss_utbildning_facet_ar_scb(matt = "arbetsloshet")`.
+#' @param ... Skickas vidare till `diag_arbloshet_syss_utbildning_facet_ar_scb()`.
 #' @export
 diag_arbloshet_procent_utbildning_facet_ar_scb <- function(...) {
-  .Deprecated("diag_arbetsmarknad_utbildning_facet_ar_scb")
-  diag_arbetsmarknad_utbildning_facet_ar_scb(..., matt = "arbetsloshet")
+  .Deprecated("diag_arbloshet_syss_utbildning_facet_ar_scb")
+  diag_arbloshet_syss_utbildning_facet_ar_scb(..., matt = "arbetsloshet")
 }

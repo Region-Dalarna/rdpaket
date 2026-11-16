@@ -109,7 +109,7 @@ Fanns redan i paketet innan migreringsprojektet startade. Tas med för fullstän
 
 | Källfil | Funktion (rddiagramkatalog) |
 |---|---|
-| diag_arbloshet_procent_utbildning_facet_ar_scb.R | diag_arbetsmarknad_utbildning_facet_ar_scb.R (omdöpt, med mått arbetslöshet eller sysselsättningsgrad) |
+| diag_arbloshet_procent_utbildning_facet_ar_scb.R | diag_arbloshet_syss_utbildning_facet_ar_scb.R (omdöpt, med mått arbetslöshet eller sysselsättningsgrad) |
 | diag_aterstaende_medellivslangd_utbniva_lan_scb.R | diag_aterstaende_medellivslangd_utbniva_lan_scb.R |
 | diag_bas_arbloshet_jmfr_manad_1ar_tillbaka_region_scb.R | diag_bas_arbloshet_manad_jmfr_1ar_tillbaka_scb.R |
 | diag_bas_syss_arbloshet_aldersgrupp_kon_scb.R | diag_bas_syss_arbloshet_aldersgrupp_kon_scb.R |

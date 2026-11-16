@@ -1,6 +1,14 @@
+# rddiagramkatalog 0.0.0.9087
+
+* `diag_arbloshet_syss_utbildning_facet_ar_scb()` (0.0.0.9086) heter nu `diag_arbloshet_syss_utbildning_facet_ar_scb()`. Det ursprungliga namnet
+  `diag_arbloshet_procent_utbildning_facet_ar_scb()` finns kvar som föråldrat alias.
+* Nytt mått `matt = "antal_sysselsatta"` (antal förvärvsarbetande 20-64 år) vid sidan av `"arbetsloshet"` (standard) och `"sysselsattningsgrad"`.
+* `tid_koder` med enskilda år (t.ex. `"2024"` eller `c("2010", "2020")`) ger inte längre fel när året saknas i en av SCB:s två tabeller (TAB6367 2019-2024,
+  TAB5400 2006-2018): de år som saknas i en tabell hoppas över, `"9999"` hämtas bara ur den nyare tabellen och inga år alls ger ett tydligt felmeddelande.
+
 # rddiagramkatalog 0.0.0.9086
 
-* `diag_arbloshet_procent_utbildning_facet_ar_scb()` heter nu `diag_arbetsmarknad_utbildning_facet_ar_scb()` och har en ny parameter
+* `diag_arbloshet_procent_utbildning_facet_ar_scb()` heter nu `diag_arbloshet_syss_utbildning_facet_ar_scb()` och har en ny parameter
   `matt`: `"arbetsloshet"` (standard, som tidigare) eller `"sysselsattningsgrad"` (förvärvsarbetande i procent av alla 20-64 år, ur SCB:s TAB6367/TAB5400).
   Titel, källtext och filnamn följer måttet. Det gamla namnet finns kvar som föråldrat alias som ger samma diagram som `matt = "arbetsloshet"`.
 
