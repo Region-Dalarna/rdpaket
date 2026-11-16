@@ -1,3 +1,8 @@
+# rddiagramkatalog 0.0.0.9085
+
+* `karta_gg_kraftfalt_scb()`: textrutan och teckenförklaringen sluter tätare kring innehållet: rutans höjd räknas med uppmätt radavstånd
+  och teckenförklaringens bredd följer längsta texten i stället för en fast bredd.
+
 # rddiagramkatalog 0.0.0.9084
 
 * `karta_gg_kraftfalt_scb()`: textrutan är lägre och ligger inte längre över länsgränsen: den är bredare, texten något mindre och höjden räknas

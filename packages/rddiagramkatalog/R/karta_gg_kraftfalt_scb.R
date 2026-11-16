@@ -190,9 +190,9 @@ intern_lagg_kraftfalt_pa_karta <- function(gg, kraftfalt, bbox, lan_gis, kartrub
   stycken <- vapply(forklaringstext, function(x) paste(strwrap(x, width = tecken_per_rad), collapse = "\n"), "")
   brodtext <- paste(stycken, collapse = "\n\n")
   rader <- length(strsplit(brodtext, "\n", fixed = TRUE)[[1]])  # blankraderna mellan stycken räknas med
-  rad_mm <- textstorlek * 1.33 * 1.1  # radavstånd (lineheight 1.1)
+  rad_mm <- textstorlek * 1.33  # uppmätt radavstånd (lineheight 1.1) i mm
   rubrik_mm <- 10
-  ruta_hojd <- (rubrik_mm + rader * rad_mm + 3) * upm
+  ruta_hojd <- (rubrik_mm + rader * rad_mm + 1) * upm
   x1 <- bbox[["xmax"]]; x0 <- x1 - ruta_mm * upm
   y1 <- bbox[["ymax"]]; y0 <- y1 - ruta_hojd
   gg <- gg +
@@ -210,8 +210,9 @@ intern_lagg_kraftfalt_pa_karta <- function(gg, kraftfalt, bbox, lan_gis, kartrub
     list("Kraftfält", "ruta", f[["falt"]], NA, NA),
     list("Sekundärt kraftfält", "ruta", f[["sekundart_falt"]], NA, NA),
     list("Länsgräns", "linje", "white", f[["lansgrans"]], NA))
-  legend_mm <- 0.34 * bredd_cm * 10
   rh <- 5.5; pad <- 3
+  # bredd efter längsta texten (ca 1,45 mm per tecken vid textstorlek 2,9), plus text- och högermarginal
+  legend_mm <- (pad + 9) + max(nchar(vapply(poster, `[[`, "", 1))) * 1.45 + 6
   lx0 <- bbox[["xmin"]]; ly0 <- bbox[["ymin"]]
   gg <- gg + ggplot2::annotate("rect", xmin = lx0, xmax = lx0 + legend_mm * upm,
                                ymin = ly0, ymax = ly0 + (length(poster) * rh + 2 * pad) * upm,
