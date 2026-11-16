@@ -7,7 +7,7 @@
 karta_gg_bakgrund_topografi(
   region_vekt = "20",
   vagar = c("stora", "mellan"),
-  namn = NULL,
+  etiketter = NULL,
   namn_storlek = 1,
   bredd_cm = 20,
   dpi = 300,
@@ -25,8 +25,8 @@ kommunkod ger länet kommunen ligger i.}
 (små landsvägar, huvudgator) och \code{"sma"} (lokalgator, småvägar). Standard \code{c("stora", "mellan")};
 \code{NULL} ritar inga vägar.}
 
-\item{namn}{Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket":
-\code{"tatorter"} (städer och större tätorter), \code{"orter"} (även större byar), \code{"sjoar"} (större sjöar)
+\item{etiketter}{Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket":
+\code{"tatorter"} (städer och större tätorter, ett hundratal namn i länet) och \code{"orter"} (tätorterna plus större byar och bebyggelsenamn utanför tätort, t.ex. Arvet och Dalbyn), \code{"sjoar"} (större sjöar)
 och \code{"vattendrag"} (större vattendrag, ett namn per vattendrag). Standard \code{NULL} = inga etiketter,
 så att kartan fungerar som neutral bakgrund. Etiketterna är små och ljusgrå.}
 

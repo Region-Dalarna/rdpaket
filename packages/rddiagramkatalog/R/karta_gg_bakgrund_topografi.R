@@ -15,8 +15,8 @@
 #' @param vagar Vilka vägnivåer som ritas: `"stora"` (motortrafikleder, landsvägar), `"mellan"`
 #'   (små landsvägar, huvudgator) och `"sma"` (lokalgator, småvägar). Standard `c("stora", "mellan")`;
 #'   `NULL` ritar inga vägar.
-#' @param namn Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket":
-#'   `"tatorter"` (städer och större tätorter), `"orter"` (även större byar), `"sjoar"` (större sjöar)
+#' @param etiketter Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket":
+#'   `"tatorter"` (städer och större tätorter, ett hundratal namn i länet) och `"orter"` (tätorterna plus större byar och bebyggelsenamn utanför tätort, t.ex. Arvet och Dalbyn), `"sjoar"` (större sjöar)
 #'   och `"vattendrag"` (större vattendrag, ett namn per vattendrag). Standard `NULL` = inga etiketter,
 #'   så att kartan fungerar som neutral bakgrund. Etiketterna är små och ljusgrå.
 #' @param namn_storlek Faktor för etikettstorleken. Standard 1; 1,5 ger 50 % större text.
@@ -34,7 +34,7 @@
 karta_gg_bakgrund_topografi <- function(
     region_vekt = "20",
     vagar = c("stora", "mellan"),
-    namn = NULL,
+    etiketter = NULL,
     namn_storlek = 1,
     bredd_cm = 20,
     dpi = 300,
@@ -52,12 +52,12 @@ karta_gg_bakgrund_topografi <- function(
   intern_kontrollera_utdata(skriv_diagramfil, returnera_figur, "skriv_diagramfil")
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
   vagar <- intern_valj_vagar(vagar)
-  namn <- intern_valj_namn(namn)
+  etiketter <- intern_valj_etiketter(etiketter)
   tid <- function(text, t0) message(text, " (", round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1), " s)")
 
   lager_namn <- c("vatten", "skog", "bebyggelse", paste0("vagar_", vagar), "jarnvag",
-                  if (any(namn %in% c("tatorter", "orter"))) "ortnamn",
-                  if (any(namn %in% c("sjoar", "vattendrag"))) "vattennamn")
+                  if (any(etiketter %in% c("tatorter", "orter"))) "ortnamn",
+                  if (any(etiketter %in% c("sjoar", "vattendrag"))) "vattennamn")
 
   con <- rdpostgres::uppkoppling_db(db_name = "geodata", service_name = "rd_geodata")
   if (!is.null(con)) on.exit(DBI::dbDisconnect(con), add = TRUE)
@@ -73,7 +73,7 @@ karta_gg_bakgrund_topografi <- function(
   tid("Hämtade lagren ur databasen", t0)
 
   t0 <- Sys.time()
-  gg <- intern_rita_bakgrundskarta(lager, bbox, vagar = vagar, namn = namn,
+  gg <- intern_rita_bakgrundskarta(lager, bbox, vagar = vagar, etiketter = etiketter,
                                    namn_storlek = namn_storlek, lan_gis = lan_gis)
   tid("Byggde kartan", t0)
 
@@ -103,16 +103,16 @@ intern_valj_vagar <- function(vagar) {
   intersect(c("stora", "mellan", "sma"), vagar)
 }
 
-# Kontrollerar namnpaketen.
+# Kontrollerar etikettpaketen.
 #' @noRd
-intern_valj_namn <- function(namn) {
-  if (is.null(namn)) return(character(0))
-  okanda <- setdiff(namn, c("tatorter", "orter", "sjoar", "vattendrag"))
+intern_valj_etiketter <- function(etiketter) {
+  if (is.null(etiketter)) return(character(0))
+  okanda <- setdiff(etiketter, c("tatorter", "orter", "sjoar", "vattendrag"))
   if (length(okanda) > 0) {
-    stop("namn ska vara \"tatorter\", \"orter\", \"sjoar\" och/eller \"vattendrag\", inte: ",
+    stop("etiketter ska vara \"tatorter\", \"orter\", \"sjoar\" och/eller \"vattendrag\", inte: ",
          paste(okanda, collapse = ", "), call. = FALSE)
   }
-  unique(namn)
+  unique(etiketter)
 }
 
 # Tar bort hål i polygoner (t.ex. en stor sjö som är utklippt ur länet), så att bara ytterkanten ritas.
@@ -131,7 +131,7 @@ intern_utan_hal <- function(sf_obj) {
 # databashämtningen så att den går att testa och återanvända. Färger ur diagramfarger("rd_bakgrundskarta").
 # Vägarna ritas med en ljusgrå kant under en vit linje, som i Positron.
 #' @noRd
-intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan"), namn = character(0),
+intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan"), etiketter = character(0),
                                        namn_storlek = 1, lan_gis = NULL) {
   f <- rddiagram::diagramfarger("rd_bakgrundskarta")
   gg <- ggplot2::ggplot()
@@ -184,22 +184,22 @@ intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan")
                             colour = farg, fontface = if (kursiv) "italic" else "plain",
                             check_overlap = TRUE, show.legend = FALSE)
   }
-  if ("sjoar" %in% namn) {
+  if ("sjoar" %in% etiketter) {
     gg <- text_lager(gg, "vattennamn", function(d) d$detaljtyp == "VATTTX" & d$thojd >= 20,
                      f[["vattennamn"]], TRUE, c(1.5, 1.9), TRUE)
   }
-  if ("vattendrag" %in% namn) {
+  if ("vattendrag" %in% etiketter) {
     gg <- text_lager(gg, "vattennamn", function(d) d$detaljtyp == "VATTDRTX" & d$thojd >= 20,
                      f[["vattennamn"]], TRUE, c(1.4, 1.4), TRUE)
   }
-  if ("orter" %in% namn) {
+  if ("orter" %in% etiketter) {
     gg <- text_lager(gg, "ortnamn", function(d) d$detaljtyp %in% c("BEBTÄTTX", "BEBTX") & d$thojd >= 20,
                      f[["ortnamn"]], FALSE, c(1.5, 2.1), FALSE)
-  } else if ("tatorter" %in% namn) {
+  } else if ("tatorter" %in% etiketter) {
     gg <- text_lager(gg, "ortnamn", function(d) d$detaljtyp == "BEBTÄTTX" & d$thojd >= 20,
                      f[["ortnamn"]], FALSE, c(1.5, 2.1), FALSE)
   }
-  if (length(namn) > 0) gg <- gg + ggplot2::scale_size_identity()
+  if (length(etiketter) > 0) gg <- gg + ggplot2::scale_size_identity()
 
   gg +
     ggplot2::coord_sf(xlim = bbox[c("xmin", "xmax")], ylim = bbox[c("ymin", "ymax")], crs = 3006, expand = FALSE) +

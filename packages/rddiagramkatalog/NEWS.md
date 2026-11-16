@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9074
+
+* `karta_gg_bakgrund_topografi()`: parametern `namn` heter nu `etiketter`.
+
 # rddiagramkatalog 0.0.0.9073
 
 * `karta_gg_bakgrund_topografi()`: etiketter är avstängda som standard. Ny parameter `namn` väljer paket av etiketter
