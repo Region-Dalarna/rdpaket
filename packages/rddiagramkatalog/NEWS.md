@@ -1,3 +1,8 @@
+# rddiagramkatalog 0.0.0.9077
+
+* `karta_gg_bakgrund_topografi()`: länsgränsen och kartans utsnitt kommer från Lantmäteriets länsgränser (`lan_lm`)
+  i stället för SCB:s, och den streckade gränsen kan stängas av med `lansgrans = FALSE` (standard `TRUE`).
+
 # rddiagramkatalog 0.0.0.9076
 
 * `karta_gg_bakgrund_topografi()`: när ett sjönamn har flera ytor väljs den största för etiketten.

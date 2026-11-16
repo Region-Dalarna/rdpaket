@@ -15,6 +15,8 @@
 #' @param vagar Vilka vägnivåer som ritas: `"stora"` (motortrafikleder, landsvägar), `"mellan"`
 #'   (små landsvägar, huvudgator) och `"sma"` (lokalgator, småvägar). Standard `c("stora", "mellan")`;
 #'   `NULL` ritar inga vägar.
+#' @param lansgrans `TRUE` (standard) ritar länsgränsen som en streckad grå linje, `FALSE` utan. Gränsen och
+#'   kartans utsnitt kommer från Lantmäteriets länsgränser (`lan_lm`).
 #' @param etiketter Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket". Standard
 #'   `NULL` = inga etiketter, så att kartan fungerar som neutral bakgrund. Etiketterna är små och ljusgrå.
 #'   * `"storre_tatorter"`: den största tätorten (efter folkmängd) i varje kommun.
@@ -38,6 +40,7 @@
 karta_gg_bakgrund_topografi <- function(
     region_vekt = "20",
     vagar = c("stora", "mellan"),
+    lansgrans = TRUE,
     etiketter = NULL,
     namn_storlek = 1,
     bredd_cm = 20,
@@ -72,7 +75,7 @@ karta_gg_bakgrund_topografi <- function(
   }
 
   t0 <- Sys.time()
-  lan_gis <- sf::st_transform(rdgis::hamta_karta("lan", unique(substr(region_vekt, 1, 2))), 3006)
+  lan_gis <- sf::st_transform(rdgis::hamta_karta("lan_lm", unique(substr(region_vekt, 1, 2))), 3006)
   bbox <- sf::st_bbox(lan_gis)
   lager <- rdgis::hamta_bakgrundskarta(lager = lager_namn, bbox = bbox, marginal = 0.02, con = con)
   if ("storre_tatorter" %in% etiketter) {
@@ -82,7 +85,8 @@ karta_gg_bakgrund_topografi <- function(
 
   t0 <- Sys.time()
   gg <- intern_rita_bakgrundskarta(lager, bbox, vagar = vagar, etiketter = etiketter,
-                                   namn_storlek = namn_storlek, lan_gis = lan_gis)
+                                   namn_storlek = namn_storlek,
+                                   lan_gis = if (lansgrans) lan_gis)
   tid("Byggde kartan", t0)
 
   lan_namn <- paste(unique(rdverktyg::hamtaregion_kod_namn(unique(substr(region_vekt, 1, 2)))$region), collapse = "_")

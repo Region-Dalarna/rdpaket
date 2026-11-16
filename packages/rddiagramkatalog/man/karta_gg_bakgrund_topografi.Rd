@@ -7,6 +7,7 @@
 karta_gg_bakgrund_topografi(
   region_vekt = "20",
   vagar = c("stora", "mellan"),
+  lansgrans = TRUE,
   etiketter = NULL,
   namn_storlek = 1,
   bredd_cm = 20,
@@ -24,6 +25,9 @@ kommunkod ger länet kommunen ligger i.}
 \item{vagar}{Vilka vägnivåer som ritas: \code{"stora"} (motortrafikleder, landsvägar), \code{"mellan"}
 (små landsvägar, huvudgator) och \code{"sma"} (lokalgator, småvägar). Standard \code{c("stora", "mellan")};
 \code{NULL} ritar inga vägar.}
+
+\item{lansgrans}{\code{TRUE} (standard) ritar länsgränsen som en streckad grå linje, \code{FALSE} utan. Gränsen och
+kartans utsnitt kommer från Lantmäteriets länsgränser (\code{lan_lm}).}
 
 \item{etiketter}{Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket". Standard
 \code{NULL} = inga etiketter, så att kartan fungerar som neutral bakgrund. Etiketterna är små och ljusgrå.
