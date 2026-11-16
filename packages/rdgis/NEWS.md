@@ -1,3 +1,10 @@
+# rdgis 0.0.0.9003
+
+* Ny bakgrundskarta ur geodatabasen: `skapa_bakgrundskarta_topografi()` bygger schemat
+  `bakgrundskarta_dalarna` (generaliserade och filtrerade topografilager i länsskala med rumsliga index)
+  ur `topografi_10`, `hamta_bakgrundskarta()` läser lagren för ett utsnitt som `sf`-objekt och
+  `bakgrundskarta_finns()` kontrollerar databasåtkomst och att lagren finns.
+
 # rdgis 0.0.0.9002
 
 ## PostGIS-funktioner

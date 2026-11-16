@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9071
+
+* Ny `karta_gg_bakgrund_topografi()`: diskret grå bakgrundskarta (som CartoDB Positron) över Dalarna i hög
+  upplösning, ritad ur de förberedda topografilagren i geodatabasen (`rdgis::hamta_bakgrundskarta()`).
+  Kontrollerar att databasen går att nå och att lagren finns innan något ritas.
+
 # rddiagramkatalog 0.0.0.9070
 
 * `karta_lf_kraftfalt_scb()`: standardvärdet för `totalt_troskelvarde` är nu 45 (tidigare 35), så att

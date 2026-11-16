@@ -6,7 +6,7 @@
 \alias{rdgis-package}
 \title{rdgis: GIS-verktyg för Region Dalarnas Analysarbete}
 \description{
-Hämta kartdata ur geodatabasen, skapa sf-objekt av ruttabeller och koordinatpar, geometriska hjälpfunktioner (centroider inuti polygoner, linjer längs punkter), läsa GIS-filer ur zip-arkiv och extrahera kolumnnamn ur ESRI-geodatabaser. Utbrutet ur geometri-avsnitten i func_GIS.R i Region-Dalarna/funktioner.
+Hämta kartdata ur geodatabasen, läsa och skriva sf-data i PostGIS, hantera områdesnycklar och metadata, skapa sf-objekt av ruttabeller och koordinatpar, geometriska hjälpfunktioner (centroider inuti polygoner, linjer längs punkter), läsa GIS-filer ur zip-arkiv och extrahera kolumnnamn ur ESRI-geodatabaser. Utbrutet ur geometri-avsnitten i func_GIS.R i Region-Dalarna/funktioner.
 }
 \seealso{
 Useful links:

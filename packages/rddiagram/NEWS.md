@@ -1,3 +1,8 @@
+# rddiagram 0.0.0.9040
+
+* Ny färgskala `diagramfarger("rd_bakgrundskarta")`: namngivna färger (land, vatten, skog, bebyggelse, vag, vag_kant,
+  jarnvag, ortnamn, vattennamn) för en diskret grå bakgrundskarta.
+
 # rddiagram 0.0.0.9039
 
 * `SkapaStapelDiagram()`: ny parameter `stapel_overlapp` (standard `FALSE`) som lägger
