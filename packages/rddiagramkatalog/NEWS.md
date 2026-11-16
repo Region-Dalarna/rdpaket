@@ -1,3 +1,8 @@
+# rddiagramkatalog 0.0.0.9084
+
+* `karta_gg_kraftfalt_scb()`: textrutan är lägre och ligger inte längre över länsgränsen: den är bredare, texten något mindre och höjden räknas
+  rätt (blankraderna mellan styckena räknades dubbelt och radavståndet var för stort, vilket gav tom yta längst ner).
+
 # rddiagramkatalog 0.0.0.9083
 
 * `karta_gg_kraftfalt_scb()`: tätortsnamn vid lokala arbetsmarknadscentrum och solitära (`tatortsnamn = TRUE`, storlek med

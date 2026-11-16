@@ -184,20 +184,20 @@ intern_lagg_kraftfalt_pa_karta <- function(gg, kraftfalt, bbox, lan_gis, kartrub
   upm <- w / (bredd_cm * 10)
 
   # ===== textruta uppe till höger =====
-  textstorlek <- 2.7
-  ruta_mm <- 0.37 * bredd_cm * 10
+  textstorlek <- 2.4
+  ruta_mm <- 0.40 * bredd_cm * 10
   tecken_per_rad <- floor((ruta_mm - 10) / (textstorlek * 2.845 * 0.3528 * 0.48))
   stycken <- vapply(forklaringstext, function(x) paste(strwrap(x, width = tecken_per_rad), collapse = "\n"), "")
   brodtext <- paste(stycken, collapse = "\n\n")
-  rader <- length(strsplit(brodtext, "\n", fixed = TRUE)[[1]]) + length(stycken) - 1
-  rad_mm <- textstorlek * 1.25
-  rubrik_mm <- 13
-  ruta_hojd <- (rubrik_mm + rader * rad_mm + 5) * upm
+  rader <- length(strsplit(brodtext, "\n", fixed = TRUE)[[1]])  # blankraderna mellan stycken räknas med
+  rad_mm <- textstorlek * 1.33 * 1.1  # radavstånd (lineheight 1.1)
+  rubrik_mm <- 10
+  ruta_hojd <- (rubrik_mm + rader * rad_mm + 3) * upm
   x1 <- bbox[["xmax"]]; x0 <- x1 - ruta_mm * upm
   y1 <- bbox[["ymax"]]; y0 <- y1 - ruta_hojd
   gg <- gg +
     ggplot2::annotate("rect", xmin = x0, xmax = x1, ymin = y0, ymax = y1, fill = "white", colour = NA) +
-    ggplot2::annotate("text", x = (x0 + x1) / 2, y = y1 - 4 * upm, label = kartrubrik, family = "serif",
+    ggplot2::annotate("text", x = (x0 + x1) / 2, y = y1 - 3 * upm, label = kartrubrik, family = "serif",
                       fontface = "bold", size = 5, vjust = 1, hjust = 0.5) +
     ggplot2::annotate("text", x = x0 + 4 * upm, y = y1 - rubrik_mm * upm, label = brodtext, family = "serif",
                       size = textstorlek, lineheight = 1.1, vjust = 1, hjust = 0)
