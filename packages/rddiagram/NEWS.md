@@ -1,3 +1,8 @@
+# rddiagram 0.0.0.9043
+
+* Ny färgskala `diagramfarger("rd_kraftfaltskarta")`: namngivna färger för kraftfältskartan (centrum, solitar, satellit,
+  falt, sekundart_falt, lansgrans, och kantfärger).
+
 # rddiagram 0.0.0.9042
 
 * `diagramfarger("rd_bakgrundskarta")`: ljusare textfärger.

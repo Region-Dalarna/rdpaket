@@ -1,3 +1,10 @@
+# rddiagramkatalog 0.0.0.9081
+
+* Ny `karta_gg_kraftfalt_scb()`: statisk (ggplot) version av kraftfältskartan i hög upplösning med den grå topografiska
+  bakgrundskartan (med namn på de största sjöarna), fält och tätortspunkter stilsatta som i QGIS-kartan, textruta uppe till
+  höger, teckenförklaring nere till vänster och källhänvisning nere till höger. Standardtexten har tröskelvärdena inskrivna.
+* Bakgrundskartans hämtning och ritning ligger i en gemensam intern funktion som även andra kartor kan bygga på.
+
 # rddiagramkatalog 0.0.0.9080
 
 * `karta_gg_bakgrund_topografi()`: ny parameter `marginal` (standard 3 %) som lägger en marginal runt länet, så att ytor utanför

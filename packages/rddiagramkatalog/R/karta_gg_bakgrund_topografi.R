@@ -65,6 +65,32 @@ karta_gg_bakgrund_topografi <- function(
 
   intern_kontrollera_utdata(skriv_diagramfil, returnera_figur, "skriv_diagramfil")
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
+
+  b <- intern_bygg_bakgrundskarta(region_vekt, vagar = vagar, etiketter = etiketter, namn_storlek = namn_storlek,
+                                  kalla_text = kalla_text, marginal = marginal, lansgrans = lansgrans)
+  gg <- b$gg
+  bbox <- b$bbox
+  tid <- function(text, t0) message(text, " (", round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1), " s)")
+
+  lan_namn <- paste(unique(rdverktyg::hamtaregion_kod_namn(unique(substr(region_vekt, 1, 2)))$region), collapse = "_")
+  filnamn_bas <- paste0("bakgrundskarta_", lan_namn)
+
+  if (skriv_diagramfil) {
+    hojd_cm <- bredd_cm * as.numeric(diff(bbox[c("ymin", "ymax")]) / diff(bbox[c("xmin", "xmax")]))
+    t0 <- Sys.time()
+    fil <- file.path(utmapp, paste0(filnamn_bas, ".", filformat))
+    ggplot2::ggsave(fil, gg, width = bredd_cm, height = hojd_cm, units = "cm", dpi = dpi)
+    tid(paste0("Skrev kartan till ", fil), t0)
+  }
+
+  if (returnera_figur) invisible(stats::setNames(list(gg), filnamn_bas))
+}
+
+# Hämtar lagren ur databasen och ritar bakgrundskartan. Delas av karta_gg_bakgrund_topografi() och kartor som
+# lägger sitt innehåll ovanpå bakgrunden. Returnerar ggplot-objektet, kartans utsnitt (bbox i SWEREF 99 TM) och
+# länsgränsen (lan_lm).
+#' @noRd
+intern_bygg_bakgrundskarta <- function(region_vekt, vagar, etiketter, namn_storlek, kalla_text, marginal, lansgrans) {
   vagar <- intern_valj_vagar(vagar)
   etiketter <- intern_valj_etiketter(etiketter)
   tid <- function(text, t0) message(text, " (", round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1), " s)")
@@ -99,19 +125,7 @@ karta_gg_bakgrund_topografi <- function(
                                    namn_storlek = namn_storlek, kalla_text = kalla_text,
                                    lan_gis = if (lansgrans) sf::st_simplify(lan_gis, preserveTopology = TRUE, dTolerance = 50))
   tid("Byggde kartan", t0)
-
-  lan_namn <- paste(unique(rdverktyg::hamtaregion_kod_namn(unique(substr(region_vekt, 1, 2)))$region), collapse = "_")
-  filnamn_bas <- paste0("bakgrundskarta_", lan_namn)
-
-  if (skriv_diagramfil) {
-    hojd_cm <- bredd_cm * as.numeric(diff(bbox[c("ymin", "ymax")]) / diff(bbox[c("xmin", "xmax")]))
-    t0 <- Sys.time()
-    fil <- file.path(utmapp, paste0(filnamn_bas, ".", filformat))
-    ggplot2::ggsave(fil, gg, width = bredd_cm, height = hojd_cm, units = "cm", dpi = dpi)
-    tid(paste0("Skrev kartan till ", fil), t0)
-  }
-
-  if (returnera_figur) invisible(stats::setNames(list(gg), filnamn_bas))
+  list(gg = gg, bbox = bbox, lan_gis = lan_gis)
 }
 
 # Kontrollerar och tolkar vagar-parametern till de lagernamn-suffix som finns.
