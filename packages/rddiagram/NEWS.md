@@ -1,3 +1,7 @@
+# rddiagram 0.0.0.9042
+
+* `diagramfarger("rd_bakgrundskarta")`: ljusare textfärger.
+
 # rddiagram 0.0.0.9041
 
 * `diagramfarger("rd_bakgrundskarta")`: gråare färger.

@@ -360,7 +360,7 @@ diagramfarger <- function(farg = "rus_sex") {
     rd_gra = c("#969696", "#e6e6e6", "#f1f1f1", "#424242"),
     rd_bakgrundskarta = c(land = "#EEEEEC", vatten = "#D3D8DA", skog = "#E3E5E2", bebyggelse = "#D7D6D3",
                           vag = "#FFFFFF", vag_kant = "#D0D0CC", jarnvag = "#B5B5B5",
-                          ortnamn = "#4A4A4A", vattennamn = "#8F9AA0"),
+                          ortnamn = "#6B6B6B", vattennamn = "#9AA5AA"),
     rd_karta_gron = c("#459079", "#54B798", "#93CEC1", "#D5EAE6"),
     rd_karta_rod_gron = c("#AE2D3A", "#F15060", "#F8AAB6", "#FFFFFF", "#93CEC1", "#54B798", "#3C7C69"),
     rd_karta_gron_sex = c("#3C7C69", "#459079", "#54B798", "#7FCAB5", "#BFE2DC", "#E3F3F1"),

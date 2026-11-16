@@ -15,10 +15,11 @@
 #' @param vagar Vilka vägnivåer som ritas: `"stora"` (motortrafikleder, landsvägar), `"mellan"`
 #'   (små landsvägar, huvudgator) och `"sma"` (lokalgator, småvägar). Standard `c("stora", "mellan")`;
 #'   `NULL` ritar inga vägar.
-#' @param visa_namn `TRUE` (standard) för ort- och vattennamn.
-#' @param ortnamn Vilka ortnamn som visas: `"tatorter"` (standard, bara tätorterna: städer och större
-#'   samhällen), `"orter"` (även större byar) eller `"inga"`. Vattennamn visas bara för större sjöar och
-#'   vattendrag, ett namn per sjö eller vattendrag.
+#' @param namn Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket":
+#'   `"tatorter"` (städer och större tätorter), `"orter"` (även större byar), `"sjoar"` (större sjöar)
+#'   och `"vattendrag"` (större vattendrag, ett namn per vattendrag). Standard `NULL` = inga etiketter,
+#'   så att kartan fungerar som neutral bakgrund. Etiketterna är små och ljusgrå.
+#' @param namn_storlek Faktor för etikettstorleken. Standard 1; 1,5 ger 50 % större text.
 #' @param bredd_cm Bildens bredd i centimeter när kartan skrivs till fil. Höjden följer kartans form.
 #' @param dpi Upplösning när kartan skrivs till fil. Standard 300.
 #' @param utmapp Mapp där kartfilen sparas. Måste finnas om `skriv_diagramfil` är `TRUE`.
@@ -33,8 +34,8 @@
 karta_gg_bakgrund_topografi <- function(
     region_vekt = "20",
     vagar = c("stora", "mellan"),
-    visa_namn = TRUE,
-    ortnamn = "tatorter",
+    namn = NULL,
+    namn_storlek = 1,
     bredd_cm = 20,
     dpi = 300,
     utmapp = rdverktyg::utskriftsmapp(),
@@ -51,11 +52,12 @@ karta_gg_bakgrund_topografi <- function(
   intern_kontrollera_utdata(skriv_diagramfil, returnera_figur, "skriv_diagramfil")
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
   vagar <- intern_valj_vagar(vagar)
-  ortnamn <- match.arg(ortnamn, c("tatorter", "orter", "inga"))
+  namn <- intern_valj_namn(namn)
   tid <- function(text, t0) message(text, " (", round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1), " s)")
 
   lager_namn <- c("vatten", "skog", "bebyggelse", paste0("vagar_", vagar), "jarnvag",
-                  if (visa_namn) c(if (ortnamn != "inga") "ortnamn", "vattennamn"))
+                  if (any(namn %in% c("tatorter", "orter"))) "ortnamn",
+                  if (any(namn %in% c("sjoar", "vattendrag"))) "vattennamn")
 
   con <- rdpostgres::uppkoppling_db(db_name = "geodata", service_name = "rd_geodata")
   if (!is.null(con)) on.exit(DBI::dbDisconnect(con), add = TRUE)
@@ -71,8 +73,8 @@ karta_gg_bakgrund_topografi <- function(
   tid("Hämtade lagren ur databasen", t0)
 
   t0 <- Sys.time()
-  gg <- intern_rita_bakgrundskarta(lager, bbox, vagar = vagar, visa_namn = visa_namn,
-                                   ortnamn = ortnamn, lan_gis = lan_gis)
+  gg <- intern_rita_bakgrundskarta(lager, bbox, vagar = vagar, namn = namn,
+                                   namn_storlek = namn_storlek, lan_gis = lan_gis)
   tid("Byggde kartan", t0)
 
   lan_namn <- paste(unique(rdverktyg::hamtaregion_kod_namn(unique(substr(region_vekt, 1, 2)))$region), collapse = "_")
@@ -101,12 +103,36 @@ intern_valj_vagar <- function(vagar) {
   intersect(c("stora", "mellan", "sma"), vagar)
 }
 
+# Kontrollerar namnpaketen.
+#' @noRd
+intern_valj_namn <- function(namn) {
+  if (is.null(namn)) return(character(0))
+  okanda <- setdiff(namn, c("tatorter", "orter", "sjoar", "vattendrag"))
+  if (length(okanda) > 0) {
+    stop("namn ska vara \"tatorter\", \"orter\", \"sjoar\" och/eller \"vattendrag\", inte: ",
+         paste(okanda, collapse = ", "), call. = FALSE)
+  }
+  unique(namn)
+}
+
+# Tar bort hål i polygoner (t.ex. en stor sjö som är utklippt ur länet), så att bara ytterkanten ritas.
+#' @noRd
+intern_utan_hal <- function(sf_obj) {
+  g <- sf::st_geometry(sf::st_union(sf_obj))[[1]]
+  g <- if (inherits(g, "MULTIPOLYGON")) {
+    sf::st_multipolygon(lapply(g, function(p) list(p[[1]])))
+  } else {
+    sf::st_polygon(list(g[[1]]))
+  }
+  sf::st_sfc(g, crs = sf::st_crs(sf_obj))
+}
+
 # Ritar bakgrundskartan ur en lista med sf-lager (som rdgis::hamta_bakgrundskarta() ger). Skild från
 # databashämtningen så att den går att testa och återanvända. Färger ur diagramfarger("rd_bakgrundskarta").
 # Vägarna ritas med en ljusgrå kant under en vit linje, som i Positron.
 #' @noRd
-intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan"), visa_namn = TRUE,
-                                       ortnamn = "tatorter", lan_gis = NULL) {
+intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan"), namn = character(0),
+                                       namn_storlek = 1, lan_gis = NULL) {
   f <- rddiagram::diagramfarger("rd_bakgrundskarta")
   gg <- ggplot2::ggplot()
 
@@ -137,34 +163,43 @@ intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan")
   gg <- linje(gg, "jarnvag", f[["jarnvag"]], 0.3)
 
   if (!is.null(lan_gis)) {
-    gg <- gg + ggplot2::geom_sf(data = lan_gis, fill = NA, colour = "#9A9A9A", linewidth = 0.3, linetype = "22")
+    gg <- gg + ggplot2::geom_sf(data = intern_utan_hal(lan_gis), fill = NA, colour = "#9A9A9A",
+                                linewidth = 0.3, linetype = "22")
   }
 
-  if (visa_namn) {
-    # urval: en rad per vatten (samma namn skrivs ut flera gånger längs älvar), störst först
-    text_lager <- function(gg, namn, farg, kursiv, filter_fn, unika) {
-      d <- lager[[namn]]
-      if (is.null(d) || nrow(d) == 0) return(gg)
-      d <- d[filter_fn(d), ]
-      d <- d[order(-d$thojd), ]
-      if (unika) d <- d[!duplicated(d$namn), ]
-      if (nrow(d) == 0) return(gg)
-      xy <- sf::st_coordinates(d)
-      d$x <- xy[, 1]; d$y <- xy[, 2]
-      gg + ggplot2::geom_text(data = sf::st_drop_geometry(d),
-                              ggplot2::aes(x = x, y = y, label = namn, size = thojd),
-                              colour = farg, fontface = if (kursiv) "italic" else "plain",
-                              check_overlap = TRUE, show.legend = FALSE)
-    }
-    gg <- text_lager(gg, "vattennamn", f[["vattennamn"]], TRUE, function(d) d$thojd >= 20, TRUE)
-    if (ortnamn != "inga") {
-      gg <- text_lager(gg, "ortnamn", f[["ortnamn"]], FALSE, unika = FALSE,
-                       filter_fn = function(d) if (ortnamn == "tatorter") {
-                         d$detaljtyp == "BEBTÄTTX" & d$thojd >= 20
-                       } else d$thojd >= 20)
-    }
-    gg <- gg + ggplot2::scale_size_continuous(range = c(1.8, 3.6))
+  # Etikettpaket. Storleken (mm) följer textens rang (thojd i topografin: 20 eller 30); ett namn per
+  # vatten eftersom samma namn skrivs ut flera gånger längs älvar.
+  text_lager <- function(gg, lagernamn, urval, farg, kursiv, storlek, unika) {
+    d <- lager[[lagernamn]]
+    if (is.null(d) || nrow(d) == 0) return(gg)
+    d <- d[urval(d), ]
+    d <- d[order(-d$thojd), ]
+    if (unika) d <- d[!duplicated(d$namn), ]
+    if (nrow(d) == 0) return(gg)
+    xy <- sf::st_coordinates(d)
+    d$x <- xy[, 1]; d$y <- xy[, 2]
+    d$storlek <- namn_storlek * ifelse(d$thojd >= 30, storlek[2], storlek[1])
+    gg + ggplot2::geom_text(data = sf::st_drop_geometry(d),
+                            ggplot2::aes(x = x, y = y, label = namn, size = storlek),
+                            colour = farg, fontface = if (kursiv) "italic" else "plain",
+                            check_overlap = TRUE, show.legend = FALSE)
   }
+  if ("sjoar" %in% namn) {
+    gg <- text_lager(gg, "vattennamn", function(d) d$detaljtyp == "VATTTX" & d$thojd >= 20,
+                     f[["vattennamn"]], TRUE, c(1.5, 1.9), TRUE)
+  }
+  if ("vattendrag" %in% namn) {
+    gg <- text_lager(gg, "vattennamn", function(d) d$detaljtyp == "VATTDRTX" & d$thojd >= 20,
+                     f[["vattennamn"]], TRUE, c(1.4, 1.4), TRUE)
+  }
+  if ("orter" %in% namn) {
+    gg <- text_lager(gg, "ortnamn", function(d) d$detaljtyp %in% c("BEBTÄTTX", "BEBTX") & d$thojd >= 20,
+                     f[["ortnamn"]], FALSE, c(1.5, 2.1), FALSE)
+  } else if ("tatorter" %in% namn) {
+    gg <- text_lager(gg, "ortnamn", function(d) d$detaljtyp == "BEBTÄTTX" & d$thojd >= 20,
+                     f[["ortnamn"]], FALSE, c(1.5, 2.1), FALSE)
+  }
+  if (length(namn) > 0) gg <- gg + ggplot2::scale_size_identity()
 
   gg +
     ggplot2::coord_sf(xlim = bbox[c("xmin", "xmax")], ylim = bbox[c("ymin", "ymax")], crs = 3006, expand = FALSE) +

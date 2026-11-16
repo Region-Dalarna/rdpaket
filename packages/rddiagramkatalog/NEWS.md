@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9073
+
+* `karta_gg_bakgrund_topografi()`: etiketter är avstängda som standard. Ny parameter `namn` väljer paket av etiketter
+  (`"tatorter"`, `"orter"`, `"sjoar"`, `"vattendrag"`) och `namn_storlek` skalar texten; parametrarna `visa_namn` och
+  `ortnamn` utgår. Etiketterna är mindre och ljusare. Länsgränsen ritas utan hål (ingen streckad linje runt Siljan).
+
 # rddiagramkatalog 0.0.0.9072
 
 * `karta_gg_bakgrund_topografi()`: färre etiketter (ny parameter `ortnamn`: bara tätorter som standard; vattennamn

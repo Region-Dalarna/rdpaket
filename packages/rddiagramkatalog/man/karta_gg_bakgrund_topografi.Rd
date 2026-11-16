@@ -7,8 +7,8 @@
 karta_gg_bakgrund_topografi(
   region_vekt = "20",
   vagar = c("stora", "mellan"),
-  visa_namn = TRUE,
-  ortnamn = "tatorter",
+  namn = NULL,
+  namn_storlek = 1,
   bredd_cm = 20,
   dpi = 300,
   utmapp = rdverktyg::utskriftsmapp(),
@@ -25,11 +25,12 @@ kommunkod ger länet kommunen ligger i.}
 (små landsvägar, huvudgator) och \code{"sma"} (lokalgator, småvägar). Standard \code{c("stora", "mellan")};
 \code{NULL} ritar inga vägar.}
 
-\item{visa_namn}{\code{TRUE} (standard) för ort- och vattennamn.}
+\item{namn}{Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket":
+\code{"tatorter"} (städer och större tätorter), \code{"orter"} (även större byar), \code{"sjoar"} (större sjöar)
+och \code{"vattendrag"} (större vattendrag, ett namn per vattendrag). Standard \code{NULL} = inga etiketter,
+så att kartan fungerar som neutral bakgrund. Etiketterna är små och ljusgrå.}
 
-\item{ortnamn}{Vilka ortnamn som visas: \code{"tatorter"} (standard, bara tätorterna: städer och större
-samhällen), \code{"orter"} (även större byar) eller \code{"inga"}. Vattennamn visas bara för större sjöar och
-vattendrag, ett namn per sjö eller vattendrag.}
+\item{namn_storlek}{Faktor för etikettstorleken. Standard 1; 1,5 ger 50 \% större text.}
 
 \item{bredd_cm}{Bildens bredd i centimeter när kartan skrivs till fil. Höjden följer kartans form.}
 
