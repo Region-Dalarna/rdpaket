@@ -1,3 +1,10 @@
+# rdgeorouting 0.0.0.9009
+
+* `pendling_kraftfalt(skriv_till_gpkg = TRUE)` tar bort en gammal geopackage-fil med samma namn innan
+  lagren skrivs. Tidigare lades lagren till ovanpå den gamla filen vid varje körning, så varje tätort
+  dubblerades. Går filen inte att ta bort (t.ex. för att den är öppen i QGIS) stoppar funktionen med ett
+  tydligt felmeddelande.
+
 # rdgeorouting 0.0.0.9008
 
 * `pendling_kraftfalt()` och `pendling_natverk()` döljer även S4-notisen "Note:

@@ -84,6 +84,19 @@ intern_pendling_forbered <- function(tabell_pend_relation, con, schema_graf, kan
        nodgeom = nodgeom, tatort = paste0(schema_graf, ".pendling_tatort"))
 }
 
+# Tar bort en gammal geopackage-fil innan lager skrivs till samma namn. Lagren skrivs med append, så en gammal fil
+# som blir kvar (t.ex. för att den är öppen och låst i QGIS) ger dubblerade rader i varje lager. Därför stoppas
+# körningen med ett tydligt fel i stället för att fortsätta tyst.
+intern_ta_bort_gpkg <- function(sokvag) {
+  if (!file.exists(sokvag)) return(invisible(TRUE))
+  ok <- suppressWarnings(file.remove(sokvag))
+  if (!isTRUE(ok)) {
+    stop("Kunde inte ta bort den gamla filen ", sokvag, ". Är den öppen i QGIS? Stäng lagren eller projektet ",
+         "och kör igen, eller välj ett annat filnamn.", call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
 #' Bygg ett pendlingsnätverk och beräkna antal pendlare per vägsträcka
 #'
 #' @param tabell_pend_relation Data.frame med kolumnerna `from_id`, `to_id`,
@@ -344,6 +357,7 @@ pendling_kraftfalt <- function(tabell_pend_relation, ut_mapp = NA, gpkg_namn = N
 
   if (skriv_till_gpkg) {
     sokvag <- file.path(ut_mapp, gpkg_namn)
+    intern_ta_bort_gpkg(sokvag)
     purrr::walk(lager, function(namn) {
       lyr <- las_lager(namn)
       if (!is.null(lyr)) sf::st_write(lyr, sokvag, namn, append = TRUE, quiet = TRUE)

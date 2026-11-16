@@ -1,3 +1,10 @@
+# rddiagramkatalog 0.0.0.9069
+
+* `karta_lf_kraftfalt_scb(skriv_gpkg_fil = TRUE)`: kontrollerar att den gamla geopackage-filen verkligen
+  gick att ta bort. Tidigare ignorerades ett misslyckat `file.remove()` (på Windows när filen är öppen i
+  QGIS), och lagren lades då till ovanpå de gamla, så varje tätort dubblerades (dubbla prickar och
+  etiketter). Nu stoppar funktionen med ett tydligt fel som säger att filen kan vara öppen i QGIS.
+
 # rddiagramkatalog 0.0.0.9068
 
 * Regionparametern heter nu `region_vekt` i alla funktioner där den bara hette något annat,

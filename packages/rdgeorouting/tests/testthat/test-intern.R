@@ -35,3 +35,20 @@ test_that("intern_tyst_notiser() döljer bara databasens notiser", {
 test_that("intern_tyst_notiser() döljer även S4-notisen från sf", {
   expect_silent(intern_tyst_notiser(message("Note: method with signature 'DBIObject#sf' chosen for function 'dbDataType'")))
 })
+
+test_that("intern_ta_bort_gpkg() tar bort en gammal fil och stoppar om det inte går", {
+  # ingen fil: inget händer
+  expect_true(intern_ta_bort_gpkg(file.path(tempdir(), "finns_inte.gpkg")))
+
+  # en gammal fil tas bort, så att nya lager inte läggs ovanpå (dubbla rader)
+  f <- tempfile(fileext = ".gpkg")
+  writeLines("gammal", f)
+  expect_true(intern_ta_bort_gpkg(f))
+  expect_false(file.exists(f))
+
+  # går filen inte att ta bort (här: en katalog med innehåll i stället för en fil) stoppar den med ett tydligt fel
+  d <- file.path(tempdir(), "inte_en_fil.gpkg")
+  dir.create(d)
+  writeLines("x", file.path(d, "innehall.txt"))
+  expect_error(intern_ta_bort_gpkg(d), "Är den öppen i QGIS")
+})

@@ -175,7 +175,12 @@ karta_lf_kraftfalt_scb <- function(
 
   if (skriv_gpkg_fil) {
     gpkg <- paste0(utmapp, filnamn_bas, ".gpkg")
-    if (file.exists(gpkg)) file.remove(gpkg)
+    # lagren skrivs med append: blir en gammal fil kvar (t.ex. för att den är öppen och låst i QGIS) dubbleras
+    # varje tätort i lagren, så stoppa hellre med ett tydligt fel
+    if (file.exists(gpkg) && !isTRUE(suppressWarnings(file.remove(gpkg)))) {
+      stop("Kunde inte ta bort den gamla filen ", gpkg, ". Är den öppen i QGIS? Stäng lagren eller projektet ",
+           "och kör igen, eller välj ett annat filnamn.", call. = FALSE)
+    }
     skriv_lager <- function(lager, namn) {
       if (!is.null(lager) && nrow(lager) > 0) sf::st_write(lager, gpkg, layer = namn, append = TRUE, quiet = TRUE)
     }
