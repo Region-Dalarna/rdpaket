@@ -29,7 +29,8 @@
 #' @param region_vekt Länskod, för länsgränsen och för kartans utsnitt. Standard
 #'   `"20"` (Dalarna). Vilka tätorter som finns med bestäms av underlaget.
 #' @param enskilt_troskelvarde,totalt_troskelvarde Tröskelvärden (procent) för
-#'   klassificeringen, se [rdgeorouting::pendling_kraftfalt()].
+#'   klassificeringen, se [rdgeorouting::pendling_kraftfalt()]. Standard är 20 respektive 45
+#'   (i `pendling_kraftfalt()` är standard för det totala värdet 35).
 #' @param primar_la_buffer,sekundar_la_buffer,gemensam_la_buffer Bredd (meter)
 #'   på kraftfälten runt pendlingsvägarna.
 #' @param con_sekretess En `DBIConnection` mot sekretessdatabasen, eller `NA`
@@ -99,7 +100,7 @@ karta_lf_kraftfalt_scb <- function(
     pendlingsar = 2022,
     region_vekt = "20",
     enskilt_troskelvarde = 20,
-    totalt_troskelvarde = 35,
+    totalt_troskelvarde = 45,
     primar_la_buffer = 2000,
     sekundar_la_buffer = 1000,
     gemensam_la_buffer = 5000,

@@ -1,3 +1,8 @@
+# rddiagramkatalog 0.0.0.9070
+
+* `karta_lf_kraftfalt_scb()`: standardvärdet för `totalt_troskelvarde` är nu 45 (tidigare 35), så att
+  t.ex. Leksand, Rättvik och Hedemora får kraftfält. Funktionen `rdgeorouting::pendling_kraftfalt()` behåller 35.
+
 # rddiagramkatalog 0.0.0.9069
 
 * `karta_lf_kraftfalt_scb(skriv_gpkg_fil = TRUE)`: kontrollerar att den gamla geopackage-filen verkligen

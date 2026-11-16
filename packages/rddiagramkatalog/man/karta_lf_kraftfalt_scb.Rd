@@ -10,7 +10,7 @@ karta_lf_kraftfalt_scb(
   pendlingsar = 2022,
   region_vekt = "20",
   enskilt_troskelvarde = 20,
-  totalt_troskelvarde = 35,
+  totalt_troskelvarde = 45,
   primar_la_buffer = 2000,
   sekundar_la_buffer = 1000,
   gemensam_la_buffer = 5000,
@@ -52,7 +52,8 @@ och i filnamnet. Standard är \code{2022}.}
 \code{"20"} (Dalarna). Vilka tätorter som finns med bestäms av underlaget.}
 
 \item{enskilt_troskelvarde, totalt_troskelvarde}{Tröskelvärden (procent) för
-klassificeringen, se \code{\link[rdgeorouting:pendling_kraftfalt]{rdgeorouting::pendling_kraftfalt()}}.}
+klassificeringen, se \code{\link[rdgeorouting:pendling_kraftfalt]{rdgeorouting::pendling_kraftfalt()}}. Standard är 20 respektive 45
+(i \code{pendling_kraftfalt()} är standard för det totala värdet 35).}
 
 \item{primar_la_buffer, sekundar_la_buffer, gemensam_la_buffer}{Bredd (meter)
 på kraftfälten runt pendlingsvägarna.}
