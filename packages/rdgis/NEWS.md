@@ -1,3 +1,9 @@
+# rdgis 0.0.0.9005
+
+* Lagret `sjoar` i bakgrundskartan: sjöpolygoner med samma namn slås ihop innan etikettpunkten beräknas, så att en stor
+  sjö som består av flera polygoner (t.ex. Siljan) får en etikett i mitten av den största sammanhängande vattenytan i
+  stället för en per polygon. Bygg om lagret med `skapa_bakgrundskarta_topografi(lager = "sjoar")`.
+
 # rdgis 0.0.0.9004
 
 * Bakgrundskartan får ett nytt lager `sjoar`: en etikettpunkt per sjö, placerad i mitten av sjöns största öppna

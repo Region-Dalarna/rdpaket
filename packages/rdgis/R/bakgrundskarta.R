@@ -8,7 +8,7 @@ intern_bakgrund_lager <- function() {
 
 # SQL-sats (CREATE TABLE ... AS <sats>) per lager för länsskala.
 #' @noRd
-intern_bakgrund_sql <- function(src = "topografi_10", mitt = "(ST_MaximumInscribedCircle(k.geom)).center") {
+intern_bakgrund_sql <- function(src = "topografi_10", mitt = "(ST_MaximumInscribedCircle(d.geom)).center") {
   # Slår ihop polygoner per klass, förenklar och tar bort små ytor. Ingen kantmatchning mellan klasser
   # behövs eftersom öppen mark och åker är bakgrund och ritas inte.
   yta <- function(villkor, tol, minyta) glue::glue("
@@ -44,16 +44,20 @@ intern_bakgrund_sql <- function(src = "topografi_10", mitt = "(ST_MaximumInscrib
                           FROM {src}.ralstrafik WHERE status = 'Öppen'"),
     ortnamn = text("'BEBTÄTTX', 'BEBTX'", 14),
     vattennamn = text("'VATTTX', 'VATTDRTX', 'VATTDELTX'", 16),
-    # En etikett per sjö, i mitten av sjöns största öppna vattenyta: sjöpolygoner över 0,25 km2 som
-    # innehåller en sjötext. Namnet och rangen kommer från texten, arean (km2) från sjön.
+    # En etikett per sjö, i mitten av sjöns största sammanhängande vattenyta. Sjöpolygoner över 0,25 km2 som
+    # innehåller en sjötext slås ihop per namn (en stor sjö kan bestå av flera polygoner) och delas sedan i
+    # sammanhängande delar. Namn och rang kommer från texten, arean (km2) från den sammanhängande ytan.
     sjoar = glue::glue("
-      SELECT k.regtext AS namn, k.thojd, round((ST_Area(k.geom) / 1e6)::numeric, 2) AS area_km2,
+      SELECT d.namn, d.thojd, round((ST_Area(d.geom) / 1e6)::numeric, 2) AS area_km2,
              ST_Force2D({mitt})::geometry(Point, 3006) AS geom
-      FROM (SELECT DISTINCT ON (s.objektidentitet, t.regtext) s.objektidentitet, s.geom, t.regtext, t.thojd
-            FROM {src}.mark s JOIN {src}.textobjekt t ON ST_Intersects(s.geom, t.geom)
-            WHERE s.objekttyp = 'Sjö' AND ST_Area(s.geom) >= 250000
-              AND t.detaljtyp = 'VATTTX' AND t.thojd >= 16
-            ORDER BY s.objektidentitet, t.regtext, t.thojd DESC) k")
+      FROM (SELECT u.regtext AS namn, u.thojd, (ST_Dump(u.geom)).geom AS geom
+            FROM (SELECT k.regtext, max(k.thojd) AS thojd, ST_UnaryUnion(ST_Collect(k.geom)) AS geom
+                  FROM (SELECT DISTINCT ON (s.objektidentitet, t.regtext) s.geom, t.regtext, t.thojd
+                        FROM {src}.mark s JOIN {src}.textobjekt t ON ST_Intersects(s.geom, t.geom)
+                        WHERE s.objekttyp = 'Sjö' AND ST_Area(s.geom) >= 250000
+                          AND t.detaljtyp = 'VATTTX' AND t.thojd >= 16
+                        ORDER BY s.objektidentitet, t.regtext, t.thojd DESC) k
+                  GROUP BY k.regtext) u) d")
   )
 }
 
@@ -91,9 +95,9 @@ skapa_bakgrundskarta_topografi <- function(con = NULL, schema = "bakgrundskarta_
   # ST_MaximumInscribedCircle finns från PostGIS 3.1; annars används en punkt inuti sjön
   postgis_ver <- DBI::dbGetQuery(con, "SELECT PostGIS_Lib_Version() AS v")$v
   mitt <- if (numeric_version(sub("^([0-9]+\\.[0-9]+).*", "\\1", postgis_ver)) >= "3.1") {
-    "(ST_MaximumInscribedCircle(k.geom)).center"
+    "(ST_MaximumInscribedCircle(d.geom)).center"
   } else {
-    "ST_PointOnSurface(k.geom)"
+    "ST_PointOnSurface(d.geom)"
   }
   sql <- intern_bakgrund_sql(kalla_schema, mitt)
   if (!is.null(lager)) sql <- sql[lager]

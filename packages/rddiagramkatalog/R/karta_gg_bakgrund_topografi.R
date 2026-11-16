@@ -194,7 +194,8 @@ intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan")
     d <- lager[[lagernamn]]
     if (is.null(d) || nrow(d) == 0) return(gg)
     d <- d[urval(d), ]
-    d <- d[order(-d$thojd), ]
+    # störst rang först och, för vatten som består av flera ytor, störst yta först
+    d <- d[if ("area_km2" %in% names(d)) order(-d$thojd, -d$area_km2) else order(-d$thojd), ]
     if (unika) d <- d[!duplicated(d$namn), ]
     if (nrow(d) == 0) return(gg)
     xy <- sf::st_coordinates(d)

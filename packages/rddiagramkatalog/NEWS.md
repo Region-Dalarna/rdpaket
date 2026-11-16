@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9076
+
+* `karta_gg_bakgrund_topografi()`: när ett sjönamn har flera ytor väljs den största för etiketten.
+
 # rddiagramkatalog 0.0.0.9075
 
 * `karta_gg_bakgrund_topografi()`: nya etikettpaket `"storre_tatorter"` (största tätorten per kommun) och
