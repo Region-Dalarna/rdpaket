@@ -266,6 +266,7 @@ intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan")
   gg +
     ggplot2::coord_sf(xlim = bbox[c("xmin", "xmax")], ylim = bbox[c("ymin", "ymax")], crs = 3006, expand = FALSE) +
     ggplot2::theme_void() +
-    ggplot2::theme(panel.background = ggplot2::element_rect(fill = f[["land"]], colour = NA),
+    ggplot2::theme(plot.margin = ggplot2::margin(0, 0, 0, 0),
+                   panel.background = ggplot2::element_rect(fill = f[["land"]], colour = NA),
                    plot.background = ggplot2::element_rect(fill = f[["land"]], colour = NA))
 }

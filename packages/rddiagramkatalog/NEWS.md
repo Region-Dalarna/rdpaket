@@ -1,3 +1,10 @@
+# rddiagramkatalog 0.0.0.9082
+
+* `karta_gg_kraftfalt_scb()`: mindre punkter för lokala arbetsmarknadscentrum (och solitära). Textrutan och teckenförklaringen ligger nu helt i
+  hörnen: kartans utsnitt sätts om efter att kraftfältslagren lagts på (geom_sf ersatte det tidigare och gav extra luft runt kartan).
+* Bakgrundskartan har ingen marginal runt bilden (`plot.margin` noll).
+
+
 # rddiagramkatalog 0.0.0.9081
 
 * Ny `karta_gg_kraftfalt_scb()`: statisk (ggplot) version av kraftfältskartan i hög upplösning med den grå topografiska

@@ -152,8 +152,12 @@ intern_lagg_kraftfalt_pa_karta <- function(gg, kraftfalt, bbox, lan_gis, kartrub
     gg + ggplot2::geom_sf(data = x, shape = 21, fill = fyllning, colour = kant, size = storlek, stroke = 0.4)
   }
   gg <- punkter(gg, kraftfalt$satellites, f[["satellit"]], f[["satellit_kant"]], 1.6)
-  gg <- punkter(gg, kraftfalt$solitary, f[["solitar"]], f[["solitar_kant"]], 2.2)
-  gg <- punkter(gg, rbind_sf_kolumner(kraftfalt$la), f[["centrum"]], f[["centrum_kant"]], 3.2)
+  gg <- punkter(gg, kraftfalt$solitary, f[["solitar"]], f[["solitar_kant"]], 1.9)
+  gg <- punkter(gg, rbind_sf_kolumner(kraftfalt$la), f[["centrum"]], f[["centrum_kant"]], 2.4)
+
+  # geom_sf-lagren ovan ersätter bakgrundens utsnitt med ett nytt (med extra luft runt kartan), så sätt det igen
+  gg <- suppressMessages(gg + ggplot2::coord_sf(xlim = bbox[c("xmin", "xmax")], ylim = bbox[c("ymin", "ymax")],
+                                                crs = 3006, expand = FALSE))
 
   # ===== mått: 1 mm i bilden = upm kartenheter (meter) =====
   w <- bbox[["xmax"]] - bbox[["xmin"]]
@@ -162,7 +166,7 @@ intern_lagg_kraftfalt_pa_karta <- function(gg, kraftfalt, bbox, lan_gis, kartrub
   # ===== textruta uppe till höger =====
   textstorlek <- 2.7
   ruta_mm <- 0.37 * bredd_cm * 10
-  tecken_per_rad <- floor((ruta_mm - 8) / (textstorlek * 2.845 * 0.3528 * 0.48))
+  tecken_per_rad <- floor((ruta_mm - 10) / (textstorlek * 2.845 * 0.3528 * 0.48))
   stycken <- vapply(forklaringstext, function(x) paste(strwrap(x, width = tecken_per_rad), collapse = "\n"), "")
   brodtext <- paste(stycken, collapse = "\n\n")
   rader <- length(strsplit(brodtext, "\n", fixed = TRUE)[[1]]) + length(stycken) - 1
@@ -180,8 +184,8 @@ intern_lagg_kraftfalt_pa_karta <- function(gg, kraftfalt, bbox, lan_gis, kartrub
 
   # ===== teckenförklaring nere till vänster =====
   poster <- list(
-    list("Lokalt arbetsmarknadscentrum", "punkt", f[["centrum"]], f[["centrum_kant"]], 3.2),
-    list("Solitär", "punkt", f[["solitar"]], f[["solitar_kant"]], 2.2),
+    list("Lokalt arbetsmarknadscentrum", "punkt", f[["centrum"]], f[["centrum_kant"]], 2.4),
+    list("Solitär", "punkt", f[["solitar"]], f[["solitar_kant"]], 1.9),
     list("Lokal arbetsmarknadssatellit", "punkt", f[["satellit"]], f[["satellit_kant"]], 1.6),
     list("Kraftfält", "ruta", f[["falt"]], NA, NA),
     list("Sekundärt kraftfält", "ruta", f[["sekundart_falt"]], NA, NA),
