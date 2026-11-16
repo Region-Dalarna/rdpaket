@@ -8,7 +8,7 @@ karta_gg_bakgrund_topografi(
   region_vekt = "20",
   vagar = c("stora", "mellan"),
   visa_namn = TRUE,
-  minsta_namnstorlek = 20,
+  ortnamn = "tatorter",
   bredd_cm = 20,
   dpi = 300,
   utmapp = rdverktyg::utskriftsmapp(),
@@ -27,8 +27,9 @@ kommunkod ger länet kommunen ligger i.}
 
 \item{visa_namn}{\code{TRUE} (standard) för ort- och vattennamn.}
 
-\item{minsta_namnstorlek}{Minsta rang (\code{thojd} i topografin: 14, 16, 20 eller 30) på ortnamn som
-visas. Standard 20 (städer och större orter); 14 ger många fler namn.}
+\item{ortnamn}{Vilka ortnamn som visas: \code{"tatorter"} (standard, bara tätorterna: städer och större
+samhällen), \code{"orter"} (även större byar) eller \code{"inga"}. Vattennamn visas bara för större sjöar och
+vattendrag, ett namn per sjö eller vattendrag.}
 
 \item{bredd_cm}{Bildens bredd i centimeter när kartan skrivs till fil. Höjden följer kartans form.}
 

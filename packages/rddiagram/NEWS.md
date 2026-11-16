@@ -1,3 +1,7 @@
+# rddiagram 0.0.0.9041
+
+* `diagramfarger("rd_bakgrundskarta")`: gråare färger.
+
 # rddiagram 0.0.0.9040
 
 * Ny färgskala `diagramfarger("rd_bakgrundskarta")`: namngivna färger (land, vatten, skog, bebyggelse, vag, vag_kant,

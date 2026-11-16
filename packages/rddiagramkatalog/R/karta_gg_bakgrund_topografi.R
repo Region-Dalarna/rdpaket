@@ -16,8 +16,9 @@
 #'   (små landsvägar, huvudgator) och `"sma"` (lokalgator, småvägar). Standard `c("stora", "mellan")`;
 #'   `NULL` ritar inga vägar.
 #' @param visa_namn `TRUE` (standard) för ort- och vattennamn.
-#' @param minsta_namnstorlek Minsta rang (`thojd` i topografin: 14, 16, 20 eller 30) på ortnamn som
-#'   visas. Standard 20 (städer och större orter); 14 ger många fler namn.
+#' @param ortnamn Vilka ortnamn som visas: `"tatorter"` (standard, bara tätorterna: städer och större
+#'   samhällen), `"orter"` (även större byar) eller `"inga"`. Vattennamn visas bara för större sjöar och
+#'   vattendrag, ett namn per sjö eller vattendrag.
 #' @param bredd_cm Bildens bredd i centimeter när kartan skrivs till fil. Höjden följer kartans form.
 #' @param dpi Upplösning när kartan skrivs till fil. Standard 300.
 #' @param utmapp Mapp där kartfilen sparas. Måste finnas om `skriv_diagramfil` är `TRUE`.
@@ -33,7 +34,7 @@ karta_gg_bakgrund_topografi <- function(
     region_vekt = "20",
     vagar = c("stora", "mellan"),
     visa_namn = TRUE,
-    minsta_namnstorlek = 20,
+    ortnamn = "tatorter",
     bredd_cm = 20,
     dpi = 300,
     utmapp = rdverktyg::utskriftsmapp(),
@@ -50,29 +51,39 @@ karta_gg_bakgrund_topografi <- function(
   intern_kontrollera_utdata(skriv_diagramfil, returnera_figur, "skriv_diagramfil")
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
   vagar <- intern_valj_vagar(vagar)
+  ortnamn <- match.arg(ortnamn, c("tatorter", "orter", "inga"))
+  tid <- function(text, t0) message(text, " (", round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1), " s)")
 
   lager_namn <- c("vatten", "skog", "bebyggelse", paste0("vagar_", vagar), "jarnvag",
-                  if (visa_namn) c("ortnamn", "vattennamn"))
-  if (!rdgis::bakgrundskarta_finns(lager = lager_namn)) {
+                  if (visa_namn) c(if (ortnamn != "inga") "ortnamn", "vattennamn"))
+
+  con <- rdpostgres::uppkoppling_db(db_name = "geodata", service_name = "rd_geodata")
+  if (!is.null(con)) on.exit(DBI::dbDisconnect(con), add = TRUE)
+  if (is.null(con) || !rdgis::bakgrundskarta_finns(lager = lager_namn, con = con)) {
     stop("Bakgrundskartan går inte att hämta. Den kräver åtkomst till geodatabasen och att lagren byggts ",
          "med rdgis::skapa_bakgrundskarta_topografi().", call. = FALSE)
   }
 
+  t0 <- Sys.time()
   lan_gis <- sf::st_transform(rdgis::hamta_karta("lan", unique(substr(region_vekt, 1, 2))), 3006)
   bbox <- sf::st_bbox(lan_gis)
-  lager <- rdgis::hamta_bakgrundskarta(lager = lager_namn, bbox = bbox, marginal = 0.02)
+  lager <- rdgis::hamta_bakgrundskarta(lager = lager_namn, bbox = bbox, marginal = 0.02, con = con)
+  tid("Hämtade lagren ur databasen", t0)
 
+  t0 <- Sys.time()
   gg <- intern_rita_bakgrundskarta(lager, bbox, vagar = vagar, visa_namn = visa_namn,
-                                   minsta_namnstorlek = minsta_namnstorlek, lan_gis = lan_gis)
+                                   ortnamn = ortnamn, lan_gis = lan_gis)
+  tid("Byggde kartan", t0)
 
   lan_namn <- paste(unique(rdverktyg::hamtaregion_kod_namn(unique(substr(region_vekt, 1, 2)))$region), collapse = "_")
   filnamn_bas <- paste0("bakgrundskarta_", lan_namn)
 
   if (skriv_diagramfil) {
     hojd_cm <- bredd_cm * as.numeric(diff(bbox[c("ymin", "ymax")]) / diff(bbox[c("xmin", "xmax")]))
+    t0 <- Sys.time()
     fil <- file.path(utmapp, paste0(filnamn_bas, ".", filformat))
     ggplot2::ggsave(fil, gg, width = bredd_cm, height = hojd_cm, units = "cm", dpi = dpi)
-    message("Skrev kartan till ", fil)
+    tid(paste0("Skrev kartan till ", fil), t0)
   }
 
   if (returnera_figur) invisible(stats::setNames(list(gg), filnamn_bas))
@@ -95,7 +106,7 @@ intern_valj_vagar <- function(vagar) {
 # Vägarna ritas med en ljusgrå kant under en vit linje, som i Positron.
 #' @noRd
 intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan"), visa_namn = TRUE,
-                                       minsta_namnstorlek = 20, lan_gis = NULL) {
+                                       ortnamn = "tatorter", lan_gis = NULL) {
   f <- rddiagram::diagramfarger("rd_bakgrundskarta")
   gg <- ggplot2::ggplot()
 
@@ -130,11 +141,14 @@ intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan")
   }
 
   if (visa_namn) {
-    text_lager <- function(gg, namn, farg, storlek_fn, kursiv, minhojd) {
+    # urval: en rad per vatten (samma namn skrivs ut flera gånger längs älvar), störst först
+    text_lager <- function(gg, namn, farg, kursiv, filter_fn, unika) {
       d <- lager[[namn]]
       if (is.null(d) || nrow(d) == 0) return(gg)
-      d <- d[d$thojd >= minhojd, ]
+      d <- d[filter_fn(d), ]
       d <- d[order(-d$thojd), ]
+      if (unika) d <- d[!duplicated(d$namn), ]
+      if (nrow(d) == 0) return(gg)
       xy <- sf::st_coordinates(d)
       d$x <- xy[, 1]; d$y <- xy[, 2]
       gg + ggplot2::geom_text(data = sf::st_drop_geometry(d),
@@ -142,9 +156,14 @@ intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan")
                               colour = farg, fontface = if (kursiv) "italic" else "plain",
                               check_overlap = TRUE, show.legend = FALSE)
     }
-    gg <- text_lager(gg, "vattennamn", f[["vattennamn"]], NULL, TRUE, 16)
-    gg <- text_lager(gg, "ortnamn", f[["ortnamn"]], NULL, FALSE, minsta_namnstorlek)
-    gg <- gg + ggplot2::scale_size_continuous(range = c(1.6, 3.4))
+    gg <- text_lager(gg, "vattennamn", f[["vattennamn"]], TRUE, function(d) d$thojd >= 20, TRUE)
+    if (ortnamn != "inga") {
+      gg <- text_lager(gg, "ortnamn", f[["ortnamn"]], FALSE, unika = FALSE,
+                       filter_fn = function(d) if (ortnamn == "tatorter") {
+                         d$detaljtyp == "BEBTÄTTX" & d$thojd >= 20
+                       } else d$thojd >= 20)
+    }
+    gg <- gg + ggplot2::scale_size_continuous(range = c(1.8, 3.6))
   }
 
   gg +

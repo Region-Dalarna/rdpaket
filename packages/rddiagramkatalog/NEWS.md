@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9072
+
+* `karta_gg_bakgrund_topografi()`: färre etiketter (ny parameter `ortnamn`: bara tätorter som standard; vattennamn
+  bara för större sjöar/vattendrag och ett namn per vatten, parametern `minsta_namnstorlek` utgår), gråare färger,
+  en enda databasuppkoppling och tidsutskrifter för hämtning, ritning och filskrivning.
+
 # rddiagramkatalog 0.0.0.9071
 
 * Ny `karta_gg_bakgrund_topografi()`: diskret grå bakgrundskarta (som CartoDB Positron) över Dalarna i hög
