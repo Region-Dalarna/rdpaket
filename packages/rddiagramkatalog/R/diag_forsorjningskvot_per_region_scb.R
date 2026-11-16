@@ -27,6 +27,12 @@
 #'   befolkningsstatistiken). 0 är inte tillåtet.
 #' @param sortera_efter `"slut"` (standard) sorterar regionerna efter det
 #'   senare av de två åren, `"start"` efter det tidigare.
+#' @param overlappande_staplar `TRUE` (standard) lägger de två åren ovanpå varandra
+#'   med genomskinliga staplar: den del som sticker ut är förändringen, ljusgrön
+#'   där kvoten ökat och ljusgrå där den minskat. `FALSE` ger två staplar bredvid
+#'   varandra.
+#' @param genomskinlighet Staplarnas genomskinlighet (0-1) när
+#'   `overlappande_staplar` är `TRUE`.
 #' @param svart_linje_vid_ett TRUE om en svart linje ska markera kvoten 1
 #'   (lika många yngre och äldre som personer i arbetsför ålder).
 #' @param visa_logga_i_diagram TRUE om logga ska visas i diagrammet.
@@ -39,7 +45,8 @@
 #' @param utmapp Mapp där diagram och excelfil sparas. Måste finnas om
 #'   `skriv_diagramfil` eller `skriv_till_excelfil` är `TRUE`.
 #' @param diag_fargvekt Valfri färgvektor med två färger (tidigare år först),
-#'   `NA` = paketets standard.
+#'   `NA` = paketets standard (grått för det tidigare året och grönt för det senare
+#'   med överlappande staplar, annars två gröna nyanser).
 #' @param diagram_capt Diagrammets källtext. `"auto"` (standard) skapar texten
 #'   utifrån vilka tabeller som använts.
 #' @param filformat Bildformat, t.ex. `"png"` (standard).
@@ -51,6 +58,8 @@ diag_forsorjningskvot_per_region_scb <- function(
     arbetsfor_alder = "20-64 år",
     jmfrtid = 10,
     sortera_efter = "slut",
+    overlappande_staplar = TRUE,
+    genomskinlighet = 0.6,
     svart_linje_vid_ett = TRUE,
     visa_logga_i_diagram = TRUE,
     logga_sokvag = NA,
@@ -89,7 +98,23 @@ diag_forsorjningskvot_per_region_scb <- function(
 
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil || skriv_till_excelfil)
 
-  if (all(is.na(diag_fargvekt))) diag_fargvekt <- rev(rddiagram::diagramfarger("rus_sex")[c(1, 2)])
+  if (!is.logical(overlappande_staplar) || length(overlappande_staplar) != 1 || is.na(overlappande_staplar)) {
+    stop("overlappande_staplar måste vara TRUE eller FALSE.", call. = FALSE)
+  }
+  if (!is.numeric(genomskinlighet) || length(genomskinlighet) != 1 || is.na(genomskinlighet) ||
+      genomskinlighet <= 0 || genomskinlighet > 1) {
+    stop("genomskinlighet måste vara ett tal större än 0 och högst 1.", call. = FALSE)
+  }
+
+  if (all(is.na(diag_fargvekt))) {
+    diag_fargvekt <- if (overlappande_staplar) {
+      # grått underst (tidigare år) och grönt över (senare år): där det gröna sticker ut har kvoten ökat,
+      # där det gråa sticker ut har den minskat
+      c(rddiagram::diagramfarger("rd_gra")[1], rddiagram::diagramfarger("rd_gron")[1])
+    } else {
+      rev(rddiagram::diagramfarger("rus_sex")[c(1, 2)])
+    }
+  }
 
   scb_prognos_url <- "https://api.scb.se/OV0104/v1/doris/sv/ssd/BE/BE0401/BE0401A/BefProgOsiktRegN"
   ckm_fran_ar <- 2025
@@ -246,7 +271,10 @@ diag_forsorjningskvot_per_region_scb <- function(
     manual_color = diag_fargvekt,
     manual_y_axis_title = "försörjningskvot",
     sortera_x = if (sortera_efter == "slut") 2 else 1,
+    vand_sortering = TRUE,                   # högsta kvoten överst
     diagram_liggande = liggande,
+    stapel_overlapp = overlappande_staplar,
+    stapel_alpha = genomskinlighet,
     stodlinjer_avrunda_fem = FALSE,
     x_axis_lutning = if (liggande) 0 else 90,
     x_axis_storlek = if (liggande) 10.5 else 7,

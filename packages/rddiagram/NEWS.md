@@ -1,3 +1,11 @@
+# rddiagram 0.0.0.9039
+
+* `SkapaStapelDiagram()`: ny parameter `stapel_overlapp` (standard `FALSE`) som lägger
+  grupperna ovanpå varandra med genomskinliga staplar i stället för bredvid varandra, och
+  `stapel_alpha` (standard 0.6) för genomskinligheten. Passar två grupper som jämförs, t.ex.
+  samma mått två olika år: det som skiljer syns som den del av stapeln som sticker ut.
+  Går inte ihop med `geom_position_stack`.
+
 # rddiagram 0.0.0.9038
 
 * `skriv_leaflet_till_fil()` (png via webbläsaren): efter att bilden kopierats till

@@ -1,3 +1,17 @@
+# rddiagramkatalog 0.0.0.9067
+
+* `diag_forsorjningskvot_per_region_scb()`: ny parameter `overlappande_staplar` (standard
+  `TRUE`) som lägger de två åren ovanpå varandra med genomskinliga staplar i stället för
+  bredvid varandra. Den del som sticker ut är förändringen: grön där kvoten ökat, grå där den
+  minskat. `genomskinlighet` (standard 0.6) styr genomskinligheten. `overlappande_staplar =
+  FALSE` ger tidigare utseende med två staplar per region. Standardfärgerna med överlappning
+  är grått (tidigare år) och grönt (senare år) ur Region Dalarnas profil
+  (`rd_gra` och `rd_gron`).
+
+* Samma funktion sorterar nu med högsta kvoten överst (tidigare lägst överst).
+
+* Kräver `rddiagram` 0.0.0.9039 (`SkapaStapelDiagram(stapel_overlapp = )`).
+
 # rddiagramkatalog 0.0.0.9066
 
 * Ny funktion `diag_forsorjningskvot_per_region_scb()`: förändring av den demografiska

@@ -74,6 +74,13 @@ intern_sortera_stapel_x <- function(plot_df, x_var, x_grupp, sortera_x,
 #'   Styling för dataetiketter.
 #' @param diagram_liggande Vrид diagrammet liggande.
 #' @param geom_position_stack Staplade staplar i stället för grupperade.
+#' @param stapel_overlapp `TRUE` lägger grupperna ovanpå varandra i stället för
+#'   bredvid varandra, med genomskinliga staplar (se `stapel_alpha`), så att
+#'   skillnaden mellan grupperna syns som den del som sticker ut. Passar två
+#'   grupper som jämförs, t.ex. samma mått två olika år: gruppen som kommer
+#'   först i färgvektorn ritas underst. Går inte ihop med `geom_position_stack`.
+#' @param stapel_alpha Stapelns genomskinlighet (0-1) när `stapel_overlapp` är
+#'   `TRUE`.
 #' @param fokusera_varden Lista med annoteringar (`geom = "rect"` eller
 #'   `"text"`), eller `NULL`.
 #' @param legend_titel Titel på teckenförklaringen, eller `NULL`.
@@ -117,7 +124,8 @@ SkapaStapelDiagram <- function(
     dataetiketter = FALSE, dataetikett_storlek = 2.3, dataetiketter_antal_dec = 1,
     dataetikett_noll_visa_ej = FALSE, dataetiketter_justering_hojdled = 0,
     dataetiketter_farg = "#464d48",
-    diagram_liggande = FALSE, geom_position_stack = FALSE, fokusera_varden = NULL,
+    diagram_liggande = FALSE, geom_position_stack = FALSE,
+    stapel_overlapp = FALSE, stapel_alpha = 0.6, fokusera_varden = NULL,
     legend_titel = NULL, legend_storlek = 12, legend_tabort = FALSE,
     legend_vand_ordning = FALSE, legend_rader = NULL, legend_kolumner = NULL,
     legend_byrow = FALSE, legend_kategorier_tabort_xgrupp = FALSE,
@@ -212,7 +220,13 @@ SkapaStapelDiagram <- function(
   y_titel <- manual_y_axis_title %||% skickad_y_var
   if (identical(manual_y_axis_title, "procent")) y_titel <- NULL
 
-  geom_bar_position <- if (stacked) "stack" else "dodge"
+  if (isTRUE(stapel_overlapp) && stacked) {
+    stop("stapel_overlapp och geom_position_stack kan inte användas samtidigt.", call. = FALSE)
+  }
+  overlapp <- isTRUE(stapel_overlapp)
+  geom_bar_position <- if (stacked) "stack" else if (overlapp) "identity" else "dodge"
+  # genomskinligheten skickas bara med när staplarna ligger över varandra
+  bar_alpha <- if (overlapp) list(alpha = stapel_alpha) else list()
   if (har_facet) y_axis_storlek <- facet_y_axis_storlek
 
   # sortering av x
@@ -243,8 +257,8 @@ SkapaStapelDiagram <- function(
   if (har_fokus) {
     plot_df[[x_var_fokus]] <- factor(plot_df[[x_var_fokus]])
     p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = .data[[skickad_x_var]], y = .data$total)) +
-      ggplot2::geom_bar(stat = "identity", position = geom_bar_position,
-                        ggplot2::aes(fill = .data[[x_var_fokus]]))
+      do.call(ggplot2::geom_bar, c(list(stat = "identity", position = geom_bar_position,
+                                        mapping = ggplot2::aes(fill = .data[[x_var_fokus]])), bar_alpha))
   } else if (har_namngiven) {
     p <- ggplot2::ggplot(plot_df, ggplot2::aes(
       x = .data[[skickad_x_var]], y = .data$total,
@@ -263,13 +277,13 @@ SkapaStapelDiagram <- function(
 
   stapel_bredd <- if (antal_grupper > 3) 0.6 else 0.9
   if (!har_fokus) {
-    p <- p + ggplot2::geom_bar(stat = "identity", width = stapel_bredd,
-                               position = geom_bar_position)
+    p <- p + do.call(ggplot2::geom_bar, c(list(stat = "identity", width = stapel_bredd,
+                                               position = geom_bar_position), bar_alpha))
   }
 
   # dataetiketter
   if (dataetiketter) {
-    pos <- if (stacked) ggplot2::position_stack(vjust = 0.5) else ggplot2::position_dodge(width = stapel_bredd)
+    pos <- if (stacked) ggplot2::position_stack(vjust = 0.5) else if (overlapp) ggplot2::position_identity() else ggplot2::position_dodge(width = stapel_bredd)
     label_expr <- if (dataetikett_noll_visa_ej) {
       ggplot2::aes(y = .data$total + sign(.data$total), x = .data[[skickad_x_var]],
                    label = ifelse(.data$total == 0, "", round(.data$total, dataetiketter_antal_dec)))

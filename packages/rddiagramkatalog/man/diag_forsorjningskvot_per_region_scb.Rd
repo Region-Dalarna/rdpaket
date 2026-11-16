@@ -9,6 +9,8 @@ diag_forsorjningskvot_per_region_scb(
   arbetsfor_alder = "20-64 år",
   jmfrtid = 10,
   sortera_efter = "slut",
+  overlappande_staplar = TRUE,
+  genomskinlighet = 0.6,
   svart_linje_vid_ett = TRUE,
   visa_logga_i_diagram = TRUE,
   logga_sokvag = NA,
@@ -41,6 +43,14 @@ befolkningsstatistiken). 0 är inte tillåtet.}
 \item{sortera_efter}{\code{"slut"} (standard) sorterar regionerna efter det
 senare av de två åren, \code{"start"} efter det tidigare.}
 
+\item{overlappande_staplar}{\code{TRUE} (standard) lägger de två åren ovanpå varandra
+med genomskinliga staplar: den del som sticker ut är förändringen, ljusgrön
+där kvoten ökat och ljusgrå där den minskat. \code{FALSE} ger två staplar bredvid
+varandra.}
+
+\item{genomskinlighet}{Staplarnas genomskinlighet (0-1) när
+\code{overlappande_staplar} är \code{TRUE}.}
+
 \item{svart_linje_vid_ett}{TRUE om en svart linje ska markera kvoten 1
 (lika många yngre och äldre som personer i arbetsför ålder).}
 
@@ -60,7 +70,8 @@ senare av de två åren, \code{"start"} efter det tidigare.}
 \code{skriv_diagramfil} eller \code{skriv_till_excelfil} är \code{TRUE}.}
 
 \item{diag_fargvekt}{Valfri färgvektor med två färger (tidigare år först),
-\code{NA} = paketets standard.}
+\code{NA} = paketets standard (grått för det tidigare året och grönt för det senare
+med överlappande staplar, annars två gröna nyanser).}
 
 \item{diagram_capt}{Diagrammets källtext. \code{"auto"} (standard) skapar texten
 utifrån vilka tabeller som använts.}
