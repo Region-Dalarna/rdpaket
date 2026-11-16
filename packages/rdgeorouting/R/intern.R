@@ -11,6 +11,19 @@ intern_krav <- function(paket) {
   }
 }
 
+# Dölj databasens NOTICE-meddelanden ("NOTICE:" / "NOTIS:" beroende på språk), t.ex. "tabell ... finns
+# inte, hoppar över" från DROP TABLE IF EXISTS och "Ger rättigheter på table ..." från en event trigger.
+# Dölj också S4-notisen "Note: method with signature ... dbDataType" som sf ger första gången en
+# sf-tabell skrivs till databasen. Övriga meddelanden (och varningar) passerar oförändrade.
+intern_tyst_notiser <- function(expr) {
+  withCallingHandlers(expr, message = function(m) {
+    if (grepl("^\\s*(NOTIS|NOTICE)\\b|^Note: method with signature", conditionMessage(m))) invokeRestart("muffleMessage")
+  })
+}
+
+# dbExecute utan databasens NOTICE-meddelanden.
+intern_dbexec <- function(con, sql) intern_tyst_notiser(DBI::dbExecute(con, sql))
+
 # Dölj ett specifikt (ofarligt) varningsmeddelande.
 intern_tyst_varning <- function(expr, monster) {
   withCallingHandlers(expr, warning = function(w) {

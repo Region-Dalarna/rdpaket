@@ -1,6 +1,6 @@
 Package: rdgeorouting
 Title: PostGIS- och pgRouting-verktyg för Region Dalarnas Ruttanalyser
-Version: 0.0.0.9001
+Version: 0.0.0.9008
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
@@ -20,11 +20,10 @@ Imports:
     dplyr,
     glue,
     purrr,
-    rdpostgres,
+    rdgis (>= 0.0.0.9002),
+    rdpostgres (>= 0.0.0.9005),
     stringr
 Suggests:
-    clipr,
-    data.table,
     keyring,
     rdverktyg,
     sf,
@@ -37,5 +36,6 @@ BugReports: https://github.com/Region-Dalarna/rdpaket/issues
 Config/roxygen2/version: 8.1.0
 Remotes:
     FaluPeppe/pxweb2r,
+    Region-Dalarna/rdpaket/packages/rdgis,
     Region-Dalarna/rdpaket/packages/rdverktyg,
     Region-Dalarna/rdpaket/packages/rdpostgres

@@ -35,7 +35,7 @@ sökväg som attributet \code{oversikt}.
 \description{
 Gör en bild av varje slide i en pptx-fil och visar dem som en översikt
 med slidens nummer och rubrik, så att man kan se vad man har utan att
-öppna filen. Numret är det som \code{\link[=ppt_befintlig]{ppt_befintlig()}} använder i \code{slide}.
+öppna filen. Numret är det som \code{ppt_lagg_till_slide("befintlig", slide = )} använder.
 Översikten öppnas i RStudios Viewer-flik, eller i webbläsaren.
 }
 \details{

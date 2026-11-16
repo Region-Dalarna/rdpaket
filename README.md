@@ -14,9 +14,9 @@ Planen för uppdelningen finns i `funktioner/PLAN-paketuppdelning.md`.
 | `rdverktyg` | text, filer, SCB-/regionhämtning, allmänna verktyg, datakällor | **klart** |
 | `rdhamtadata` | datahämtning (befolkningsprognoser m.m.), ur `Region-Dalarna/hamta_data` | **pågående** |
 | `rddiagram` | diagram (ggplot), färg/skala, bubbeldiagram | **klart** |
-| `rdgis` | geometri, kartdata, rutor, GIS-filinläsning | **klart** |
-| `rdpostgres` | databasanslutningar, roller/rättigheter, metadata, grants | **klart** |
-| `rdgeorouting` | postgis, pgRouting, pendlingsnätverk (ur `func_GIS.R`) | **klart** (SQL-pipelines behöver verifieras mot riktig pgRouting-databas) |
+| `rdgis` | geometri, kartdata, sf till/från PostGIS, områdesnycklar, rutor, GIS-filinläsning | **klart** |
+| `rdpostgres` | databasanslutningar, roller/rättigheter, metadata, grants, PostGIS-tillägg, kopiera/flytta tabeller | **klart** |
+| `rdgeorouting` | pgRouting, isokroner, pendling (nätverk, kraftfält, ruta), ur `func_GIS.R` | **klart** (SQL-pipelines behöver verifieras mot riktig pgRouting-databas) |
 | `rdgtfs` | GTFS-hämtning, normalisering, geospatial filtrering och PostGIS-lagring | **klart** |
 | `rddeploy` | github/git, webbrapport/portal, shiny-app-scaffolding & -publicering | **klart** |
 | `rdppt` | bygg PowerPoint-presentationer från diagram, ur `G:/skript/ppt/` | **pågående** |

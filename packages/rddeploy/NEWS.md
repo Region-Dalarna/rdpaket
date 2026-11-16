@@ -1,3 +1,45 @@
+# rddeploy 0.0.0.9025
+
+- `analysrapport_publicera(html_fil = )` använder som standard beskrivningen i
+  repots `hero_image.html` (utan att du anger `beskrivning`). Versionen höjd så
+  att det går att se om den nya koden är installerad (`packageVersion("rddeploy")`).
+
+# rddeploy 0.0.0.9024
+
+## Webbrapporter heter nu analysrapporter
+
+- `webbrapport_publicera()`, `webbrapport_avpublicera()` och
+  `skapa_webbrapport_github()` heter nu `analysrapport_publicera()`,
+  `analysrapport_avpublicera()` och `skapa_analysrapport_github()` (utan
+  gamla namn, de hann aldrig användas). Mallmappen heter `inst/templates/analysrapport/`.
+
+## Analysrapporter: migrering från GitHub Pages till Shinyservern
+
+- **`analysrapport_gor_publicerbar(rapport_repo, deploynamn = NULL)`** (ny): lägger
+  `deploy.yml` och `avpublicera.yml` i ett befintligt rapportrepo och skriver
+  vid behov `.rapport_deploy_namn` (deploynamnet styr källfilen `<namn>.html`,
+  servermappen/adressen och namnet på landningssidan). Skriver inte över
+  workflow-filer som skiljer sig från mallen utan `skriv_over = TRUE`.
+- **`analysrapport_beskrivning_satt(rapport_repo, beskrivning)`** (ny): skriver en
+  `<meta name="description">` överst i rapportens `hero_image.html`.
+  Landningssidans generator läser den ur den publicerade htmlen och visar den
+  på rapportens kort. `NA`/`""` tar bort den.
+- **`analysrapport_publicera()`**: ny parameter `tillat_annan_branch` - publik
+  publicering från en annan branch än main/master kräver nu bekräftelse (intern
+  publicering för granskning från valfri branch är alltid tillåten). Ny
+  parameter `aven_om_html_aldre`: stoppar om htmlen är äldre än rapportens
+  Rmd/qmd (60 sekunders tolerans, eftersom git inte bevarar filtider). Kontrollerar
+  också att `deploy.yml` och `<deploynamn>.html` finns innan något pushas.
+- **`analysrapport_publicera(html_fil = )`**: publicerar en angiven html-fil
+  (t.ex. från `publicera_rapporter/docs` under migreringen) i stället för den
+  som ligger i repot. Filen kopieras till `<deploynamn>.html` och committas.
+- **`analysrapport_html_beskrivning_satt(html_fil, beskrivning)`** (ny): lägger
+  in (eller ersätter/tar bort) beskrivningen direkt i en färdigknittad html,
+  utan omknittning. `analysrapport_publicera(html_fil =, beskrivning = )` gör
+  det i samma steg; utan `beskrivning` används den i repots `hero_image.html`.
+- **Mall `deploy.yml`**: en mapp `underrapporter/` i repot följer med vid deploy
+  och hamnar under rapportens adress, utan eget kort på landningssidan.
+
 # rddeploy 0.0.0.9022
 
 ## Ny funktion: `landningssida_publicera()`

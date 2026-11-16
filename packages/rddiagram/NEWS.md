@@ -1,3 +1,44 @@
+# rddiagram 0.0.0.9038
+
+* `skriv_leaflet_till_fil()` (png via webbläsaren): efter att bilden kopierats till
+  målmappen kontrolleras att målfilen faktiskt uppdaterats; annars visas ett
+  meddelande med filens storlek och ändringstid, och ett fel om kopieringen
+  misslyckas (tidigare kunde meddelandet "Karta skapad" visas utan att filen
+  ändrats).
+
+# rddiagram 0.0.0.9037
+
+* `skriv_leaflet_till_fil()` (png utan webshot2): webbläsaren provas med flera
+  flaggsatser för WebGL (nyare Chrome/Edge kräver `--enable-unsafe-swiftshader`
+  för programvaru-WebGL i headless-läge) och den bild som ser ut att ha
+  bakgrundskarta behålls. Webbläsarens eventuella felutskrift visas om ingen
+  bild skapades. Chrome slås upp tyst (inget "Google Chrome was not found"
+  när Edge används).
+
+# rddiagram 0.0.0.9036
+
+* `skriv_leaflet_till_fil()` (png utan webshot2): Edge provas före Chrome, och
+  webbläsaren startas utan `--disable-gpu` men med programvaru-WebGL
+  (`--enable-unsafe-swiftshader`), så att bakgrundskartan ritas även i nyare Edge
+  där WebGL annars saknas i headless-läge. Väntar minst 8 sekunder på kartan.
+
+# rddiagram 0.0.0.9035
+
+* `skriv_leaflet_till_fil()`: standardfaviconen i html-kartor är nu Region Dalarnas
+  ikon (256x256 png ur `favicon.ico` i `Region-Dalarna/depot`, ligger i paketet) i
+  stället för en neutral kartikon.
+
+# rddiagram 0.0.0.9034
+
+* `skriv_leaflet_till_fil()` med `karta_filformat = "png"`: kan nu ta bilden
+  direkt med Chrome/Edge när webshot2 inte går att köra (t.ex. när en
+  grupprincip blockerar `processx/supervisor.exe`, "Det här programmet är
+  blockerat av en grupprincip"). Ny parameter `zoom` (pixeltäthet, `2` eller
+  `3` ger en skarpare bild i samma utsnitt).
+* `skriv_leaflet_till_fil()` med html: ny parameter `favicon` (standard `TRUE` =
+  en inbyggd kartikon på webbläsarens flik; `FALSE` = ingen; eller sökväg till
+  en png/svg/ico) och html-filens titel är nu filnamnet i stället för "leaflet".
+
 # rddiagram 0.0.0.9033
 
 * Nya standardvärden för `lagg_till_bakgrundskarta()`: `landsnamn = FALSE` (landsnamn

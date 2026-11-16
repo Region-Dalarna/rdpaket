@@ -1,3 +1,14 @@
+# rdpostgres 0.0.0.9005
+
+## PostGIS-tabelladministration
+
+Från `rdgeorouting` flyttas `postgis_aktivera_i_postgres_db()` (med alias
+`postgis_installera_i_postgres_db()`), `postgis_kopiera_tabell()` och
+`postgis_flytta_tabell()`. Gamla publika anrop finns kvar som
+kompatibilitetswrappers i `rdgeorouting`.
+
+---
+
 # rdpostgres 0.0.0.9004
 
 * `fil_dataset_uppdaterades()` använder `file.mtime()` i stället för

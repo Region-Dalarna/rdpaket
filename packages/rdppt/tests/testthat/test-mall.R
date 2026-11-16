@@ -75,20 +75,45 @@ test_that("en presentation går att bygga i Region Dalarnas mall, även med äld
   bild <- testbild(mapp)
 
   ppt <- ppt_ny("Rubrik", mall = "regiondalarna", anv_uppgifter = list(namn = "Test Testsson", epost = "test@example.org")) |>
-    ppt_bild(bild) |>
-    ppt_bild(bild, rubrik = "Bild med rubrik") |>
-    ppt_bild(bild, rubrik = "Bild med text", text = "Text") |>
-    ppt_text("Klimat", c("Punkt 1", "Punkt 2"), layout = "Klimatsmart Dalarna") |>
-    ppt_avsnitt("Avsnitt") |>
-    ppt_slutsatser(c("Ett", "Två")) |>
-    ppt_avslut()
+    ppt_lagg_till_slide("bild", bild = bild) |>
+    ppt_lagg_till_slide("bild", bild = bild, rubrik = "Bild med rubrik") |>
+    ppt_lagg_till_slide("bild", bild = bild, rubrik = "Bild med text", text = "Text") |>
+    ppt_lagg_till_slide("Klimatsmart Dalarna", rubrik = "Klimat", text = c("Punkt 1", "Punkt 2")) |>
+    ppt_lagg_till_slide("avsnitt", rubrik = "Avsnitt") |>
+    ppt_lagg_till_slide("slutsatser", text = c("Ett", "Två")) |>
+    ppt_lagg_till_slide("avslut")
   fil <- suppressMessages(ppt_spara(ppt, file.path(mapp, "rd.pptx")))
   expect_equal(pptx_ordning(fil), c("Rubrik", "", "Bild med rubrik", "Bild med text", "Klimat", "Avsnitt", "Slutsatser",
                                     "Tack för mig!"))
 
   # "Bild och text till höger" finns inte i mallen, men fungerade med äldre mallar
-  ppt_lista <- initiera_ppt_df() |>
+  ppt_lista <- intern_tom_ppt_lista() |>
     dplyr::add_row(dia_path = bild, titel = "Äldre layoutnamn", beskr = list("Text"), mall = "Bild och text till höger")
-  fil <- suppressMessages(skapa_ppt_fran_lista(ppt_lista, huvudrubrik = NULL, output_mapp = mapp, mall_fil = "regiondalarna"))
+  fil <- suppressMessages(intern_bygg_pptx(ppt_lista, huvudrubrik = NULL, output_mapp = mapp, mall_fil = "regiondalarna"))
   expect_equal(pptx_ordning(fil), "Äldre layoutnamn")
+})
+
+test_that("options(rdppt.mall) kan vara en enkel sökväg eller ett namn", {
+  withr::local_options(rdppt.mall = "inbyggd")
+  expect_null(intern_mall_aktuell()$mall_fil)
+
+  fil <- intern_rd_medfoljande_mall()
+  skip_if(!nzchar(fil))
+  withr::local_options(rdppt.mall = fil)
+  expect_identical(intern_mall_aktuell()$mall_fil, fil)
+  expect_s3_class(ppt_ny("Test"), "rdppt")
+})
+
+test_that("ppt_installningar() redovisar värde och källa", {
+  withr::local_options(rdppt.mall = "inbyggd", rdppt.slidebank = NULL)
+  res <- suppressWarnings(capture.output(inst <- ppt_installningar()))
+  expect_equal(inst$installning, c("mall", "slidebank", "stil", "loggfil", "spara-mapp"))
+  expect_equal(inst$kalla[1], "option rdppt.mall")
+  expect_equal(inst$varde[2], "(ingen)")
+
+  fil <- intern_rd_medfoljande_mall()
+  skip_if(!nzchar(fil))
+  withr::local_options(rdppt.slidebank = fil)
+  capture.output(inst <- ppt_installningar())
+  expect_equal(inst$varde[2], fil)
 })

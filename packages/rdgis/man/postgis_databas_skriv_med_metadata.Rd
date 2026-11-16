@@ -2,7 +2,7 @@
 % Please edit documentation in R/postgis.R
 \name{postgis_databas_skriv_med_metadata}
 \alias{postgis_databas_skriv_med_metadata}
-\title{Skriv ett sf-objekt (eller data.frame) till PostGIS och logga i metadata}
+\title{Skriv ett sf-objekt (eller data.frame) till PostGIS och logga metadata}
 \usage{
 postgis_databas_skriv_med_metadata(
   con,

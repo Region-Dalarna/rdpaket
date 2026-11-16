@@ -133,7 +133,7 @@ intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckninga
     officer::unordered_list(str_list = rader, level_list = rep(1, length(rader)),
                             style = officer::fp_text_lite(font.size = 16))
   }
-  innehall <- list(spaltrubrik("Webbrapporter"), spaltrubrik("PDF-rapporter"), punktlista("webb"), punktlista("pdf"))
+  innehall <- list(spaltrubrik("Analysrapporter"), spaltrubrik("Publicerade rapporter (pdf)"), punktlista("webb"), punktlista("pdf"))
 
   if (nrow(text_ph) >= 5) {
     innehall[[5]] <- officer::fpar(

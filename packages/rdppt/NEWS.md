@@ -1,3 +1,73 @@
+# rdppt 0.0.0.9008
+
+* `anteckningar` kan för diagram vara en namngiven vektor eller lista med en post per region
+  (`c("20" = "Text för länet", "2080" = "Text för Falun")`). Texten beräknas då i skriptet,
+  före sliden, i stället för i en funktion. Funktionsvarianten finns kvar.
+
+* Dokumentationen av `ppt_lagg_till_slide()` angav felaktigt att `"rapporter"` inte kan ha
+  `anteckningar`.
+
+# rdppt 0.0.0.9007
+
+* `ppt_lagg_till_slide(funktionsparametrar = list(...))`: parametrar till diagramfunktionen
+  som har samma namn som parametrar till `ppt_lagg_till_slide()` själv, framför allt när
+  funktionens egen `region_vekt` ska ha ett fast värde medan `regionvariabel` styr vad som
+  körs per region.
+
+# rdppt 0.0.0.9006
+
+* `ppt_spara(anv_uppgifter = )` tar flera namn (`c("peter", "jon")`) och sparar en fil per
+  person (`utmaningar_peter.pptx`, ...) utan att diagrammen körs om. Namn och e-post kan
+  alltså anges vid sparandet i stället för i `ppt_ny()`.
+
+* `anteckningar` kan för diagram vara en funktion av regionen
+  (`anteckningar = \(region) ...`), som körs en gång per region.
+
+* En tom `region_vekt` (`character(0)`) hoppar över diagrammet. `NULL` är som förut: körs
+  en gång utan region.
+
+* Diagram som hoppas över (fel, eller inga diagram) loggas i presentationen, i en loggfil om
+  `ppt_ny(loggfil = )` eller `options(rdppt.loggfil)` anges, och sammanfattas när
+  presentationen sparas.
+
+* Rubrikformateringen (titelsida, avsnitt) kan ändras för en presentation med
+  `ppt_ny(stil = list(titel_stlk = 54))` och för alla med `options(rdppt.stil = list(...))`.
+  `ppt_installningar()` visar också `stil` och `loggfil`.
+
+* Rapportsidan har rubrikerna "Analysrapporter" och "Publicerade rapporter (pdf)" (förut
+  "Webbrapporter" och "PDF-rapporter").
+
+* Borttaget: `initiera_ppt_df()`, `ppt_lista_fyll_pa()`, `skapa_ppt_fran_lista()`,
+  `ppt_diagram()` och `ppt_befintlig()`. Presentationer byggs med `ppt_ny()`,
+  `ppt_lagg_till_slide()` och `ppt_spara()`; `ppt_lagg_till_slide("diagram", funktion = , ...)`
+  och `ppt_lagg_till_slide("befintlig", fil = , slide = )` ersätter de två sista.
+  Beroendet till `glue` är borttaget.
+
+# rdppt 0.0.0.9005
+
+* Nytt: `ppt_lagg_till_slide(ppt, layout, ...)` lägger till en slide av den sort `layout`
+  anger: `"diagram"`, `"bild"`, `"text"`, `"slutsatser"`, `"avsnitt"`, `"rapporter"`,
+  `"avslut"` eller `"befintlig"`. Namnet på en layout i mallen, t.ex. `"Två
+  innehållsdelar"`, fungerar också - sliden får då den layouten och det innehåll som
+  anges (`funktion`, `bild` eller `rubrik` och `text`). Vilka parametrar som gäller
+  beror på sliden; en parameter som inte gäller ger ett fel som listar dem som gör det.
+  `anteckningar` (slidens anteckningsfält) kan anges för alla utom `"rapporter"` och
+  `"befintlig"`. `ppt_slidetyper()` skriver ut sorterna och deras parametrar.
+
+* Borttaget (ersatta av `ppt_lagg_till_slide()`): `ppt_bild()`, `ppt_text()`,
+  `ppt_avsnitt()`, `ppt_slutsatser()`, `ppt_rapporter()` och `ppt_avslut()`.
+  Byt t.ex. `ppt_slutsatser(c("a", "b"))` mot `ppt_lagg_till_slide("slutsatser", text = c("a", "b"))`.
+  `ppt_diagram()` och `ppt_befintlig()` finns kvar.
+
+# rdppt 0.0.0.9004
+
+* Nytt: `ppt_installningar()` visar vilka inställningar som gäller (mall, slides-bank,
+  spara-mapp) och var varje värde kommer ifrån. Inställningarna kan sättas med
+  `options()` (t.ex. i `.Rprofile`): `rdppt.mall` (sökväg, `"regiondalarna"`, `"inbyggd"`
+  eller mallprofil) och `rdppt.slidebank` (pptx-fil med färdiga slides, som
+  `ppt_befintlig()` hämtar från när ingen fil anges). En parameter går före en
+  option, och en option före standardvärdet.
+
 # rdppt 0.0.0.9003
 
 * Nytt: `ppt_befintlig_visa()` listar sliderna i en pptx-fil med färdiga

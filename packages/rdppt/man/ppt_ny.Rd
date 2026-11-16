@@ -10,7 +10,9 @@ ppt_ny(
   mall = NULL,
   bildmapp = NULL,
   anv_uppgifter = NULL,
-  rubrik_namn = TRUE
+  rubrik_namn = TRUE,
+  stil = NULL,
+  loggfil = NULL
 )
 }
 \arguments{
@@ -27,7 +29,7 @@ pptx-fil, \code{"regiondalarna"}, \code{"inbyggd"} eller en mallprofil från
 \code{\link[=ppt_mall_ange]{ppt_mall_ange()}}, annars Region Dalarnas standardmall (från G: om
 den går att nå, annars den kopia som följer med paketet).}
 
-\item{bildmapp}{Mapp där diagrambilderna från \code{\link[=ppt_diagram]{ppt_diagram()}} sparas.
+\item{bildmapp}{Mapp där diagrambilderna från \code{ppt_lagg_till_slide("diagram", ...)} sparas.
 \code{NULL} (standard) = en temporär mapp som du inte behöver bry dig om.}
 
 \item{anv_uppgifter}{Vems namn/e-post som ska stå på titel- och
@@ -37,25 +39,35 @@ lista \code{list(namn = "...", epost = "...")}.}
 
 \item{rubrik_namn}{TRUE om presentatörens namn ska skrivas ut på
 titelsidan.}
+
+\item{stil}{Formatering av titelsidans och avsnittens rubriker för just
+den här presentationen, t.ex. \code{list(titel_stlk = 54)}. Det som inte
+anges får mallens stil (se \code{\link[=ppt_mallprofil]{ppt_mallprofil()}}) och det som anges med
+\code{options(rdppt.stil = list(...))}.}
+
+\item{loggfil}{Sökväg till en textfil där det som går fel när
+presentationen byggs (ett diagram som hoppas över, och varför) loggas
+fortlöpande. \code{NULL} (standard) = \code{options(rdppt.loggfil)}, annars ingen
+loggfil. Problemen sammanfattas också när presentationen sparas.}
 }
 \value{
 En presentation (klassen \code{rdppt}) att bygga vidare på.
 }
 \description{
 Första steget när en presentation byggs steg för steg: skapa den med
-\code{ppt_ny()}, lägg till slides med \code{\link[=ppt_diagram]{ppt_diagram()}}, \code{\link[=ppt_bild]{ppt_bild()}},
-\code{\link[=ppt_text]{ppt_text()}}, \code{\link[=ppt_avsnitt]{ppt_avsnitt()}}, \code{\link[=ppt_slutsatser]{ppt_slutsatser()}}, \code{\link[=ppt_rapporter]{ppt_rapporter()}},
-\code{\link[=ppt_befintlig]{ppt_befintlig()}} och \code{\link[=ppt_avslut]{ppt_avslut()}}, och spara med \code{\link[=ppt_spara]{ppt_spara()}}.
+\code{ppt_ny()}, lägg till slides med \code{\link[=ppt_lagg_till_slide]{ppt_lagg_till_slide()}} (diagram, bild,
+text, slutsatser, avsnitt, rapporter, avslut och färdiga slides) och
+spara med \code{\link[=ppt_spara]{ppt_spara()}}.
 Slides hamnar i den ordning de läggs till.
 }
 \examples{
 \dontrun{
 ppt_ny("Arbetsmarknad och befolkning i Dalarna") |>
-  ppt_diagram(rddiagramkatalog::diag_arbetsmarknadsstatus_tidsserie_scb,
-              region_vekt = c("20", "2080", "2081")) |>
-  ppt_slutsatser(c("Första slutsatsen", "Andra slutsatsen")) |>
-  ppt_rapporter() |>
-  ppt_avslut() |>
+  ppt_lagg_till_slide("diagram", funktion = rddiagramkatalog::diag_arbetsmarknadsstatus_tidsserie_scb,
+                      region_vekt = c("20", "2080", "2081")) |>
+  ppt_lagg_till_slide("slutsatser", text = c("Första slutsatsen", "Andra slutsatsen")) |>
+  ppt_lagg_till_slide("rapporter") |>
+  ppt_lagg_till_slide("avslut") |>
   ppt_spara("arbetsmarknad_befolkning.pptx")
 }
 }

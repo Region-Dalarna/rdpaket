@@ -1,68 +1,23 @@
-#' Bygg en PowerPoint-presentation från en ppt-lista
-#'
-#' Tar en "ppt-lista" (se [initiera_ppt_df()] och [ppt_lista_fyll_pa()]) -
-#' en rad per slide - och bygger en komplett `.pptx`-presentation utifrån
-#' en pptx-mall. Vill du bygga en presentation steg för steg i stället för
-#' att fylla en lista, se [ppt_ny()].
-#'
-#' @section Vilken layout en rad får (kolumnen `mall`):
-#' * `NA` - layouten väljs automatiskt efter vad raden innehåller: bild,
-#'   bild med rubrik, bild med text, eller rubrik och punktlista.
-#' * Namnet på en layout i mallen, t.ex. `"Två innehållsdelar"`. Alla
-#'   layouter i mallen går att använda - rubrik, text och bild läggs i de
-#'   platshållare layouten har. Se vilka som finns med [ppt_mall_visa()].
-#' * `"roll:<roll>"`, t.ex. `"roll:bild_rubrik"` - den layout som mallen
-#'   använder för den rollen, se [ppt_mallprofil()].
-#' * `"Rapporter_Samhallsanalys"` - en sida med aktuella rapporter från
-#'   regiondalarna.se, `"Slutsatser_Samhallsanalys"` - rubrik (`titel`) och
-#'   punktlista (`beskr`), `"Avslutsbild_Samhallsanalys"` - "Tack för mig!"
-#'   med ditt namn och din e-post.
-#' * `"befintlig:<nr>"`, t.ex. `"befintlig:2"` - en färdig slide som redan
-#'   ligger i mallfilen hamnar här i presentationen, se [ppt_befintlig()].
-#'
-#' Äldre layoutnamn som inte finns i mallen (`"Bild och text till höger"`,
-#' `"Bild utan text och rubrik"` m.fl.) översätts till den layout i mallen
-#' som har motsvarande roll.
-#'
-#' @param pptlista En ppt-lista, se [initiera_ppt_df()].
-#' @param huvudrubrik Presentationens huvudrubrik (på titelsidan). `NULL`
-#'   = ingen titelsida.
-#' @param farg_huvudrubrik Hexfärg på huvudrubriken och avsnittsrubriker.
-#'   `NULL` (standard) = mallprofilens, se [ppt_mallprofil()].
-#' @param underrubrik Underrubrik på titelsidan, eller `NA` för ingen.
-#'   Standard: "Skapad <dagens datum> av Samhällsanalys\\nRegionala
-#'   utvecklingsförvaltningen, Region Dalarna".
-#' @param output_mapp Mapp där presentationen sparas.
-#' @param spara_backup_om_fil_redan_finns TRUE om en befintlig fil med
-#'   samma namn ska säkerhetskopieras i stället för att skrivas över.
-#' @param filnamn Filnamn på den sparade presentationen.
-#' @param mall_fil Mallen presentationen byggs utifrån: en sökväg till en
-#'   pptx-fil, `"regiondalarna"`, `"inbyggd"` eller en mallprofil från
-#'   [ppt_mallprofil()]. `NULL` (standard) = den mall som är vald med
-#'   [ppt_mall_ange()], annars Region Dalarnas standardmall (från G: om
-#'   den går att nå, annars den kopia som följer med paketet).
-#' @param titelmaster Namnet på den master titelsidan ska använda. `NULL`
-#'   (standard) = mallprofilens.
-#' @param titel_text_stlk,undertitel_text_stlk Textstorlek på huvud-
-#'   respektive underrubrik. `NULL` (standard) = mallprofilens.
-#' @param rubrik_namn TRUE om presentatörens namn ska skrivas ut på
-#'   titelsidan (om titelsidans layout har en platshållare för det).
-#' @param rubrik_namn_stlk Textstorlek på presentatörens namn. `NULL`
-#'   (standard) = mallprofilens.
-#' @param utan_rubriker,utan_text TRUE om rubriker respektive brödtext ska
-#'   utelämnas på de slides där layouten väljs automatiskt.
-#' @param slides_flytta En lista med `list(fran =, till =)`-par för att
-#'   flytta enskilda slides i den färdiga presentationen, eller `NULL`.
-#'   För färdiga slides som ligger i mallfilen är `"befintlig:<nr>"` i
-#'   kolumnen `mall` (eller [ppt_befintlig()]) enklare.
-#' @param anv_uppgifter Vems namn/e-post som ska användas på titel- och
-#'   avslutssidan: `NULL` (standard) = inloggad användare, ett namn som
-#'   slås upp med [rddeploy::anv_hamta_namn_epost_fran_lista()], eller en
-#'   lista `list(namn = "...", epost = "...")`.
-#'
-#' @return Sökvägen till den sparade presentationen, osynligt.
-#' @export
-skapa_ppt_fran_lista <- function(pptlista,
+# Bygger själva pptx-filen utifrån en ppt-lista (en rad per slide, se intern_tom_ppt_lista()) och en mall.
+# Användaren når den via ppt_spara(); listan fylls på av ppt_lagg_till_slide().
+#
+# Vilken layout en rad får (kolumnen `mall`):
+# * NA - väljs automatiskt efter vad raden innehåller: bild, bild med rubrik, bild med text, eller
+#   rubrik och punktlista.
+# * Namnet på en layout i mallen, t.ex. "Två innehållsdelar". Rubrik, text och bild läggs i de
+#   platshållare layouten har.
+# * "roll:<roll>", t.ex. "roll:bild_rubrik" - den layout som mallen använder för den rollen
+#   (se ppt_mallprofil()).
+# * "Rapporter_Samhallsanalys" (sida med aktuella rapporter från regiondalarna.se),
+#   "Slutsatser_Samhallsanalys" (rubrik och punktlista) och "Avslutsbild_Samhallsanalys"
+#   ("Tack för mig!" med namn och e-post).
+# * "befintlig:<nr>" - en färdig slide som redan ligger i mallfilen hamnar här i presentationen.
+# Äldre layoutnamn som inte finns i mallen ("Bild och text till höger", "Bild utan text och rubrik" m.fl.)
+# översätts till den layout i mallen som har motsvarande roll.
+#
+# Parametrar: se ppt_spara() och ppt_ny(). farg_huvudrubrik, titelmaster, titel_text_stlk,
+# undertitel_text_stlk och rubrik_namn_stlk går före mallprofilens värden; NULL = mallprofilens.
+intern_bygg_pptx <- function(pptlista,
                                  huvudrubrik,
                                  farg_huvudrubrik = NULL,
                                  underrubrik = intern_standard_underrubrik(),
@@ -170,22 +125,8 @@ skapa_ppt_fran_lista <- function(pptlista,
   invisible(fullpath)
 }
 
-#' Skapa en tom ppt-lista
-#'
-#' En ppt-lista är en `data.frame` med en rad per slide i presentationen,
-#' som sedan byggs med [skapa_ppt_fran_lista()]. Fyll på den med
-#' [ppt_lista_fyll_pa()], eller lägg till rader för hand (t.ex. med
-#' `dplyr::add_row()`). Vilken layout en rad får styrs av kolumnen `mall`,
-#' se [skapa_ppt_fran_lista()].
-#'
-#' Vill du slippa hantera listan själv, se [ppt_ny()].
-#'
-#' @return En tom `data.frame` med kolumnerna `dia_path` (sökväg till en
-#'   png-bild), `titel`, `master`, `mall`, `txt_size`, samt list-kolumnerna
-#'   `beskr` (text), `gg_obj` (ett ggplot-objekt, i stället för `dia_path`)
-#'   och `anteckningar`.
-#' @export
-initiera_ppt_df <- function() {
+# En tom ppt-lista: en data.frame med en rad per slide i presentationen.
+intern_tom_ppt_lista <- function() {
   retur_df <- data.frame(
     dia_path = as.character(),
     titel = character(),
@@ -198,7 +139,7 @@ initiera_ppt_df <- function() {
   return(retur_df)
 }
 
-# Äldre layoutnamn (från den mall skapa_ppt_fran_lista() ursprungligen skrevs för) och vilken roll
+# Äldre layoutnamn (från den mall intern_bygg_pptx() ursprungligen skrevs för) och vilken roll
 # de motsvarar - används när layouten inte finns under det namnet i mallen.
 intern_aldre_layoutnamn <- c(
   "Bild och text till höger"             = "bild_text",

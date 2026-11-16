@@ -214,7 +214,7 @@ postgis_kopiera_punkttabell_koppla_till_pgr_graf <- function(con_fran_databas = 
   ct <- intern_rutt_con(con_till_databas, adm = TRUE, standard_db = "ruttanalyser")
   on.exit({ intern_stang(cf); intern_stang(ct) }, add = TRUE)
 
-  postgis_kopiera_tabell_mellan_databaser(
+  rdgis::postgis_kopiera_tabell_mellan_databaser(
     con_fran_databas = cf$con, con_till_databas = ct$con,
     schema_fran = schema_fran, tabell_fran = tabell_fran,
     schema_till = schema_till, tabell_till = tabell_till)
@@ -265,7 +265,7 @@ pgrouting_skapa_ny_graf_nvdb_koppla_till_punkter <- function(con_geodb = "geodat
     regionkoder = "20", region_geokol = "geom", output_schema = "grafer",
     output_tabell = glue::glue("nvdb_{natverkstyp}"), urval_fran_natverk = natverk_urval)
 
-  postgis_kopiera_tabell_mellan_databaser(
+  rdgis::postgis_kopiera_tabell_mellan_databaser(
     con_fran_databas = con_geodb, con_till_databas = con_rutt,
     schema_fran = punkter_fran_schema, tabell_fran = punkter_fran_tabell,
     schema_till = punkter_till_schema, tabell_till = punkter_till_tabell)
@@ -292,7 +292,7 @@ pgrouting_skapa_ny_graf_nvdb_koppla_till_punkter <- function(con_geodb = "geodat
     glue::glue("nvdb_{natverkstyp}_{punkter_till_tabell}_narmaste_punkt"),
     glue::glue("nvdb_{natverkstyp}_{punkter_till_tabell}_klusterpunkt"))
   purrr::walk(tabeller_flytt, function(tb) {
-    postgis_kopiera_tabell(con = con_rutt, schema_fran = "grafer", tabell_fran = tb,
+    rdpostgres::postgis_kopiera_tabell(con = con_rutt, schema_fran = "grafer", tabell_fran = tb,
                            schema_till = "underlag_grafer", tabell_till = tb, skriv_over = TRUE)
     rdpostgres::postgres_tabell_ta_bort(con = con_rutt, schema = "grafer", tabell = tb)
     DBI::dbExecute(con_rutt, glue::glue("

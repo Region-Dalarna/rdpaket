@@ -1,12 +1,12 @@
 Package: rddeploy
-Title: Deploy-verktyg för Region Dalarnas GitHub, webbrapporter och Shiny-appar
-Version: 0.0.0.9023
+Title: Deploy-verktyg för Region Dalarnas GitHub, analysrapporter och Shiny-appar
+Version: 0.0.0.9025
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
   )
 Description: Samlar Region Dalarnas arbetsflöden för git och GitHub, publicering
-    av webbrapporter och portaler samt scaffolding och publicering av
+    av analysrapporter och portaler samt scaffolding och publicering av
     Shiny-appar. Bygger på gert, gh och gitcreds i stället för handrullade
     git-anrop. Utbrutet ur func_API.R och func_landningssida_adminportal.R i
     Region-Dalarna/funktioner.

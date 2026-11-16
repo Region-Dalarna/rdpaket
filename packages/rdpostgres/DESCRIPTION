@@ -1,14 +1,15 @@
 Package: rdpostgres
 Title: PostgreSQL-verktyg för Region Dalarnas Databaser
-Version: 0.0.0.9004
+Version: 0.0.0.9005
 Authors@R: c(
     person("Peter", "Möller", , "larspetermoller@gmail.com", role = c("aut", "cre")),
     person("Region Dalarna", role = "cph")
   )
 Description: Anslutningar och administration mot Region Dalarnas
     PostgreSQL-servrar: lista och skapa databaser, scheman, roller och
-    rättigheter, läsa och skriva tabeller, hantera metadata om när tabeller
-    senast uppdaterades, samt automatiska grants via event triggers.
+    rättigheter, läsa och skriva tabeller, hantera PostGIS-tillägg, kopiera
+    och flytta tabeller, metadata om när tabeller senast uppdaterades samt
+    automatiska grants via event triggers.
     Utbrutet ur postgres-avsnittet i func_GIS.R i Region-Dalarna/funktioner.
 License: MIT + file LICENSE
 Encoding: UTF-8

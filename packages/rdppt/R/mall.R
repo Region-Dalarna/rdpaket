@@ -31,7 +31,7 @@ intern_roll_beskrivning <- c(
   jamforelse  = "tvåspaltig sida (rapportlistan)"
 )
 
-# Region Dalarnas formatering av rubriker - den som tidigare var hårdkodad i skapa_ppt_fran_lista().
+# Region Dalarnas formatering av rubriker - den som tidigare var hårdkodad i intern_bygg_pptx().
 intern_rd_stil <- list(
   farg_rubrik     = "#2286AC",
   titel_stlk      = 40,
@@ -65,8 +65,9 @@ intern_rd_stil <- list(
 #' @param stil Formatering av rubriker (titelsida och avsnittsrubriker).
 #'   En lista med något av `farg_rubrik`, `titel_stlk`, `undertitel_stlk`,
 #'   `namn_stlk` och `avsnitt_stlk` - det som inte anges får Region
-#'   Dalarnas standardvärden. `NULL` = ingen egen formatering, mallens
-#'   egna typsnitt, storlekar och färger används.
+#'   Dalarnas standardvärden, eller de som anges med
+#'   `options(rdppt.stil = list(...))`. `NULL` = ingen egen formatering,
+#'   mallens egna typsnitt, storlekar och färger används.
 #'
 #' @return En mallprofil (klassen `rdppt_mallprofil`).
 #' @seealso [ppt_mall_ange()], [ppt_mall_visa()]
@@ -108,7 +109,8 @@ ppt_mallprofil <- function(mall_fil = NULL,
     roller[names(layouter)] <- layouter
   }
 
-  if (!is.null(stil)) stil <- utils::modifyList(intern_rd_stil, as.list(stil))
+  # Region Dalarnas standardvärden, därefter options(rdppt.stil), därefter det som angetts här
+  if (!is.null(stil)) stil <- utils::modifyList(utils::modifyList(intern_rd_stil, as.list(getOption("rdppt.stil"))), as.list(stil))
 
   structure(
     list(
@@ -185,7 +187,7 @@ ppt_mall_ange <- function(mall = NULL, ...) {
 #' Skriver ut en tabell över mallens layouter: vilka platshållare (rubrik,
 #' text, bild) varje layout har, och vilka som används för vad. Alla
 #' layouter i tabellen går att använda genom att ange deras namn, t.ex.
-#' `ppt_bild(..., layout = "Två innehållsdelar")`.
+#' `ppt_lagg_till_slide("Två innehållsdelar", ...)`.
 #'
 #' @param mall Mallen som ska visas, se [ppt_mall_ange()]. `NULL`
 #'   (standard) = den mall som är vald just nu.

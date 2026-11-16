@@ -1,3 +1,18 @@
+# rdgis 0.0.0.9002
+
+## PostGIS-funktioner
+
+Från `rdgeorouting` flyttas `postgis_tabell()` med print-metod,
+`postgis_sf_till_postgistabell()`, `postgis_databas_skriv_med_metadata()`,
+`postgis_kopiera_tabell_mellan_databaser()`,
+`postgis_skapa_omradesnyckel_tabell_vy()` och
+`postgis_omradesnyckel_exportera_till_mikrodb()`. Gamla publika anrop finns
+kvar som kompatibilitetswrappers i `rdgeorouting`.
+
+Kräver `rdpostgres >= 0.0.0.9005` för den samordnade funktionsflytten.
+
+---
+
 # rdgis 0.0.0.9001
 
 Versionsbump utan innehållsändring (för att `remotes`/`pak`

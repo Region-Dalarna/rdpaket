@@ -1,8 +1,8 @@
 #' Hämta Region Dalarnas webb-/pdf-rapporter för en "Rapporter"-slide
 #'
 #' Skrapar Samhällsanalys webbplats (regiondalarna.se) efter länkar till
-#' publicerade webbrapporter och pdf-rapporter, för
-#' `"Rapporter_Samhallsanalys"`-mallen i [skapa_ppt_fran_lista()].
+#' publicerade analysrapporter (typ `"webb"`) och pdf-rapporter, för
+#' `ppt_lagg_till_slide("rapporter")`.
 #'
 #' @return En `tibble` med kolumnerna `text`, `url` och `typ` (`"webb"`
 #'   eller `"pdf"`).

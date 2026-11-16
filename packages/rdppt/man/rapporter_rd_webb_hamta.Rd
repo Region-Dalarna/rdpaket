@@ -12,6 +12,6 @@ eller \code{"pdf"}).
 }
 \description{
 Skrapar Samhällsanalys webbplats (regiondalarna.se) efter länkar till
-publicerade webbrapporter och pdf-rapporter, för
-\code{"Rapporter_Samhallsanalys"}-mallen i \code{\link[=skapa_ppt_fran_lista]{skapa_ppt_fran_lista()}}.
+publicerade analysrapporter (typ \code{"webb"}) och pdf-rapporter, för
+\code{ppt_lagg_till_slide("rapporter")}.
 }

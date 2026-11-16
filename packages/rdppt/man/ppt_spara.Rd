@@ -9,14 +9,16 @@ ppt_spara(
   filnamn = NULL,
   mapp = rdverktyg::utskriftsmapp(),
   oppna = FALSE,
-  spara_backup_om_fil_redan_finns = FALSE
+  spara_backup_om_fil_redan_finns = FALSE,
+  anv_uppgifter = NULL
 )
 }
 \arguments{
 \item{ppt}{En presentation från \code{\link[=ppt_ny]{ppt_ny()}}.}
 
 \item{filnamn}{Filnamn, eller en hel sökväg, på pptx-filen. \code{NULL}
-(standard) = ett filnamn som bildas av huvudrubriken.}
+(standard) = ett filnamn som bildas av huvudrubriken. Med flera
+personer läggs personens namn till filnamnet (\code{utmaningar_peter.pptx}).}
 
 \item{mapp}{Mapp att spara i, om \code{filnamn} inte är en hel sökväg.}
 
@@ -24,10 +26,25 @@ ppt_spara(
 
 \item{spara_backup_om_fil_redan_finns}{\code{TRUE} om en befintlig fil med
 samma namn ska säkerhetskopieras i stället för att skrivas över.}
+
+\item{anv_uppgifter}{Vems namn/e-post som ska stå på titel- och
+avslutssidan. \code{NULL} (standard) = det som angavs i \code{\link[=ppt_ny]{ppt_ny()}}, annars
+inloggad användare. Ett namn som slås upp med
+\code{\link[rddeploy:anv_hamta_namn_epost_fran_lista]{rddeploy::anv_hamta_namn_epost_fran_lista()}} (t.ex. \code{"peter"}),
+flera sådana namn (\code{c("peter", "jon")}, en fil per person), eller en
+lista \code{list(namn = "...", epost = "...")}.}
 }
 \value{
-Sökvägen till den sparade presentationen, osynligt.
+Sökvägen (en per fil) till den eller de sparade
+presentationerna, osynligt.
 }
 \description{
-Sista steget: bygger presentationen och skriver den till fil.
+Sista steget: bygger presentationen och skriver den till fil. Har
+något gått fel när presentationen byggdes (ett diagram som hoppades
+över) sammanfattas det här.
+}
+\details{
+Med flera personer i \code{anv_uppgifter} sparas en fil per person - samma
+slides, men med personens namn och e-post på titel- och avslutssidan.
+Diagrammen körs bara en gång, så det går snabbt.
 }
