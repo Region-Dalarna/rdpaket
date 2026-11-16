@@ -7,6 +7,7 @@
 karta_gg_bakgrund_topografi(
   region_vekt = "20",
   vagar = c("stora", "mellan"),
+  kalla_text = "Källa: Lantmäteriet. Bearbetning: Samhällsanalys, Region Dalarna",
   lansgrans = TRUE,
   etiketter = NULL,
   namn_storlek = 1,
@@ -25,6 +26,9 @@ kommunkod ger länet kommunen ligger i.}
 \item{vagar}{Vilka vägnivåer som ritas: \code{"stora"} (motortrafikleder, landsvägar), \code{"mellan"}
 (små landsvägar, huvudgator) och \code{"sma"} (lokalgator, småvägar). Standard \code{c("stora", "mellan")};
 \code{NULL} ritar inga vägar.}
+
+\item{kalla_text}{Källhänvisning som skrivs nere till höger i kartan, i liten ljusgrå text. Standard
+\code{"Källa: Lantmäteriet. Bearbetning: Samhällsanalys, Region Dalarna"}; \code{NULL}, \code{NA} eller \code{""} ger ingen text.}
 
 \item{lansgrans}{\code{TRUE} (standard) ritar länsgränsen som en streckad grå linje, \code{FALSE} utan. Gränsen och
 kartans utsnitt kommer från Lantmäteriets länsgränser (\code{lan_lm}).}
@@ -68,7 +72,7 @@ saknas eller om bakgrundskartan inte byggts. Går kartan att rita ovanpå (som \
 den användas som underlag för andra kartor.
 }
 \details{
-Källa: Lantmäteriet, Topografi 10 (CC BY 4.0).
+Källa: Lantmäteriet (Topografi 10).
 }
 \seealso{
 \code{\link[rdgis:hamta_bakgrundskarta]{rdgis::hamta_bakgrundskarta()}}, \code{\link[rdgis:skapa_bakgrundskarta_topografi]{rdgis::skapa_bakgrundskarta_topografi()}}

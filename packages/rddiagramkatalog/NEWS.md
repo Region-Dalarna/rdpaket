@@ -1,3 +1,8 @@
+# rddiagramkatalog 0.0.0.9079
+
+* `karta_gg_bakgrund_topografi()`: källhänvisning nere till höger i kartan (parametern `kalla_text`, kan stängas av med `NULL`).
+  Dokumentationen anger inte längre någon licens för topografin.
+
 # rddiagramkatalog 0.0.0.9078
 
 * `karta_gg_bakgrund_topografi()`: länsgränsen förenklas (50 m) före ritning, vilket går snabbare och inte syns i kartan.

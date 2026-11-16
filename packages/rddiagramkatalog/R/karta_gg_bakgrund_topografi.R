@@ -8,13 +8,15 @@
 #' saknas eller om bakgrundskartan inte byggts. Går kartan att rita ovanpå (som `ggplot`-objekt) kan
 #' den användas som underlag för andra kartor.
 #'
-#' Källa: Lantmäteriet, Topografi 10 (CC BY 4.0).
+#' Källa: Lantmäteriet (Topografi 10).
 #'
 #' @param region_vekt Ett eller flera län, som länskod. Standard `"20"` (Dalarnas län). En
 #'   kommunkod ger länet kommunen ligger i.
 #' @param vagar Vilka vägnivåer som ritas: `"stora"` (motortrafikleder, landsvägar), `"mellan"`
 #'   (små landsvägar, huvudgator) och `"sma"` (lokalgator, småvägar). Standard `c("stora", "mellan")`;
 #'   `NULL` ritar inga vägar.
+#' @param kalla_text Källhänvisning som skrivs nere till höger i kartan, i liten ljusgrå text. Standard
+#'   `"Källa: Lantmäteriet. Bearbetning: Samhällsanalys, Region Dalarna"`; `NULL`, `NA` eller `""` ger ingen text.
 #' @param lansgrans `TRUE` (standard) ritar länsgränsen som en streckad grå linje, `FALSE` utan. Gränsen och
 #'   kartans utsnitt kommer från Lantmäteriets länsgränser (`lan_lm`).
 #' @param etiketter Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket". Standard
@@ -40,6 +42,7 @@
 karta_gg_bakgrund_topografi <- function(
     region_vekt = "20",
     vagar = c("stora", "mellan"),
+    kalla_text = "Källa: Lantmäteriet. Bearbetning: Samhällsanalys, Region Dalarna",
     lansgrans = TRUE,
     etiketter = NULL,
     namn_storlek = 1,
@@ -85,7 +88,7 @@ karta_gg_bakgrund_topografi <- function(
 
   t0 <- Sys.time()
   gg <- intern_rita_bakgrundskarta(lager, bbox, vagar = vagar, etiketter = etiketter,
-                                   namn_storlek = namn_storlek,
+                                   namn_storlek = namn_storlek, kalla_text = kalla_text,
                                    lan_gis = if (lansgrans) sf::st_simplify(lan_gis, preserveTopology = TRUE, dTolerance = 50))
   tid("Byggde kartan", t0)
 
@@ -157,7 +160,7 @@ intern_utan_hal <- function(sf_obj) {
 # Vägarna ritas med en ljusgrå kant under en vit linje, som i Positron.
 #' @noRd
 intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan"), etiketter = character(0),
-                                       namn_storlek = 1, lan_gis = NULL) {
+                                       namn_storlek = 1, kalla_text = NULL, lan_gis = NULL) {
   f <- rddiagram::diagramfarger("rd_bakgrundskarta")
   gg <- ggplot2::ggplot()
 
@@ -229,6 +232,13 @@ intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan")
     gg <- text_lager(gg, "storre_tatorter", function(d) rep(TRUE, nrow(d)), f[["ortnamn"]], FALSE, c(2.1, 2.1), FALSE)
   }
   if (length(etiketter) > 0) gg <- gg + ggplot2::scale_size_identity()
+
+  # källhänvisning nere till höger, strax innanför kartkanten
+  if (!is.null(kalla_text) && length(kalla_text) == 1 && !is.na(kalla_text) && nzchar(kalla_text)) {
+    gg <- gg + ggplot2::annotate("text", x = bbox[["xmax"]] - 0.008 * (bbox[["xmax"]] - bbox[["xmin"]]),
+                                 y = bbox[["ymin"]] + 0.006 * (bbox[["ymax"]] - bbox[["ymin"]]),
+                                 label = kalla_text, hjust = 1, vjust = 0, size = 2.1, colour = f[["ortnamn"]])
+  }
 
   gg +
     ggplot2::coord_sf(xlim = bbox[c("xmin", "xmax")], ylim = bbox[c("ymin", "ymax")], crs = 3006, expand = FALSE) +
