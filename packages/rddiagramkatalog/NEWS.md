@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9078
+
+* `karta_gg_bakgrund_topografi()`: länsgränsen förenklas (50 m) före ritning, vilket går snabbare och inte syns i kartan.
+
 # rddiagramkatalog 0.0.0.9077
 
 * `karta_gg_bakgrund_topografi()`: länsgränsen och kartans utsnitt kommer från Lantmäteriets länsgränser (`lan_lm`)

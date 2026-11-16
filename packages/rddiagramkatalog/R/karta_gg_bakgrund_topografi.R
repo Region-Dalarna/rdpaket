@@ -86,7 +86,7 @@ karta_gg_bakgrund_topografi <- function(
   t0 <- Sys.time()
   gg <- intern_rita_bakgrundskarta(lager, bbox, vagar = vagar, etiketter = etiketter,
                                    namn_storlek = namn_storlek,
-                                   lan_gis = if (lansgrans) lan_gis)
+                                   lan_gis = if (lansgrans) sf::st_simplify(lan_gis, preserveTopology = TRUE, dTolerance = 50))
   tid("Byggde kartan", t0)
 
   lan_namn <- paste(unique(rdverktyg::hamtaregion_kod_namn(unique(substr(region_vekt, 1, 2)))$region), collapse = "_")
