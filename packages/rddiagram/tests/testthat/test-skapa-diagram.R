@@ -253,3 +253,23 @@ test_that("SkapaLinjeDiagram: berakna_index normaliserar till 100", {
   expect_equal(p$data$total[p$data$ar == 2019], 100)
   expect_equal(p$data$total[p$data$ar == 2022], 150)
 })
+
+test_that("SkapaStapelDiagram: stapel_overlapp lägger grupperna över varandra med genomskinliga staplar", {
+  skip_if_not_installed("ggplot2")
+  df <- data.frame(region = rep(c("A", "B"), 2), ar = rep(c("2024", "2034"), each = 2),
+                   varde = c(0.8, 0.7, 0.9, 0.65))
+  bygg <- function(...) SkapaStapelDiagram(
+    df, "region", "varde", skickad_x_grupp = "ar", output_mapp = tempdir(), filnamn_diagram = "test.png",
+    skriv_till_diagramfil = FALSE, ...)
+
+  lager <- bygg(stapel_overlapp = TRUE, stapel_alpha = 0.5)$layers[[1]]
+  expect_s3_class(lager$position, "PositionIdentity")
+  expect_equal(lager$aes_params$alpha, 0.5)
+
+  # utan stapel_overlapp som förut: grupperade staplar utan genomskinlighet
+  lager <- bygg()$layers[[1]]
+  expect_s3_class(lager$position, "PositionDodge")
+  expect_null(lager$aes_params$alpha)
+
+  expect_error(bygg(stapel_overlapp = TRUE, geom_position_stack = TRUE), "samtidigt")
+})

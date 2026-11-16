@@ -47,6 +47,8 @@ SkapaStapelDiagram(
   dataetiketter_farg = "#464d48",
   diagram_liggande = FALSE,
   geom_position_stack = FALSE,
+  stapel_overlapp = FALSE,
+  stapel_alpha = 0.6,
   fokusera_varden = NULL,
   legend_titel = NULL,
   legend_storlek = 12,
@@ -141,6 +143,15 @@ de variabler som styr färgvalet, eller \code{NULL}.}
 \item{diagram_liggande}{Vrид diagrammet liggande.}
 
 \item{geom_position_stack}{Staplade staplar i stället för grupperade.}
+
+\item{stapel_overlapp}{\code{TRUE} lägger grupperna ovanpå varandra i stället för
+bredvid varandra, med genomskinliga staplar (se \code{stapel_alpha}), så att
+skillnaden mellan grupperna syns som den del som sticker ut. Passar två
+grupper som jämförs, t.ex. samma mått två olika år: gruppen som kommer
+först i färgvektorn ritas underst. Går inte ihop med \code{geom_position_stack}.}
+
+\item{stapel_alpha}{Stapelns genomskinlighet (0-1) när \code{stapel_overlapp} är
+\code{TRUE}.}
 
 \item{fokusera_varden}{Lista med annoteringar (\code{geom = "rect"} eller
 \code{"text"}), eller \code{NULL}.}
