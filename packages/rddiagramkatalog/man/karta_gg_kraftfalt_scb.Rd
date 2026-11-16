@@ -17,6 +17,8 @@ karta_gg_kraftfalt_scb(
   con_sekretess = NA,
   kartrubrik = "Kraftfält",
   forklaringstext = NULL,
+  tatortsnamn = TRUE,
+  namn_storlek = 1,
   kalla_text = NULL,
   vagar = c("stora", "mellan"),
   marginal = 0.03,
@@ -59,6 +61,11 @@ på kraftfälten runt pendlingsvägarna.}
 
 \item{forklaringstext}{Texten i textrutan som ett eller flera stycken (en teckenvektor). \code{NULL} (standard) = en
 standardtext som anger tröskelvärdena.}
+
+\item{tatortsnamn}{\code{TRUE} (standard) skriver tätortens namn vid lokala arbetsmarknadscentrum och solitära, i liten
+mörkgrå text som undviker att hamna ovanpå punkterna och varandra. \code{FALSE} ger inga namn.}
+
+\item{namn_storlek}{Faktor för namnens textstorlek. Standard 1; 1,3 ger 30 \% större text.}
 
 \item{kalla_text}{Källhänvisning nere till höger. \code{NULL} (standard) = bakgrundskartans källa, pendlingsdatats
 år och "Bearbetning: Samhällsanalys, Region Dalarna" på två rader. \code{NA} eller \code{""} ger ingen text.}

@@ -1,3 +1,8 @@
+# rddiagramkatalog 0.0.0.9083
+
+* `karta_gg_kraftfalt_scb()`: tätortsnamn vid lokala arbetsmarknadscentrum och solitära (`tatortsnamn = TRUE`, storlek med
+  `namn_storlek`). Namnen är små och mörkgrå med vit kontur och placeras med ggrepel så att de inte hamnar ovanpå punkter eller varandra.
+
 # rddiagramkatalog 0.0.0.9082
 
 * `karta_gg_kraftfalt_scb()`: mindre punkter för lokala arbetsmarknadscentrum (och solitära). Textrutan och teckenförklaringen ligger nu helt i

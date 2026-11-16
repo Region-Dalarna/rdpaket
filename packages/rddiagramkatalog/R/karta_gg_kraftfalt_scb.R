@@ -22,6 +22,9 @@
 #' @param kartrubrik Rubriken i textrutan. Standard `"Kraftfält"`.
 #' @param forklaringstext Texten i textrutan som ett eller flera stycken (en teckenvektor). `NULL` (standard) = en
 #'   standardtext som anger tröskelvärdena.
+#' @param tatortsnamn `TRUE` (standard) skriver tätortens namn vid lokala arbetsmarknadscentrum och solitära, i liten
+#'   mörkgrå text som undviker att hamna ovanpå punkterna och varandra. `FALSE` ger inga namn.
+#' @param namn_storlek Faktor för namnens textstorlek. Standard 1; 1,3 ger 30 % större text.
 #' @param kalla_text Källhänvisning nere till höger. `NULL` (standard) = bakgrundskartans källa, pendlingsdatats
 #'   år och "Bearbetning: Samhällsanalys, Region Dalarna" på två rader. `NA` eller `""` ger ingen text.
 #' @param bredd_cm Bildens bredd i centimeter. Textrutan och teckenförklaringen dimensioneras efter den, så ändra
@@ -43,6 +46,8 @@ karta_gg_kraftfalt_scb <- function(
     con_sekretess = NA,
     kartrubrik = "Kraftfält",
     forklaringstext = NULL,
+    tatortsnamn = TRUE,
+    namn_storlek = 1,
     kalla_text = NULL,
     vagar = c("stora", "mellan"),
     marginal = 0.03,
@@ -87,7 +92,7 @@ karta_gg_kraftfalt_scb <- function(
     forklaringstext = if (is.null(forklaringstext)) {
       intern_kraftfalt_forklaringstext(enskilt_troskelvarde, totalt_troskelvarde)
     } else forklaringstext,
-    bredd_cm = bredd_cm)
+    bredd_cm = bredd_cm, tatortsnamn = tatortsnamn, namn_storlek = namn_storlek)
 
   lansnamn <- rdverktyg::hamtaregion_kod_namn(region_vekt)$region[1]
   filnamn_bas <- paste0("kraftfalt_", gsub("[^a-z0-9]+", "_", tolower(stringi::stri_trans_general(lansnamn, "Latin-ASCII"))),
@@ -124,7 +129,8 @@ intern_kraftfalt_forklaringstext <- function(enskilt_troskelvarde, totalt_troske
 # Skild från databashämtningen så att den går att köra och testa utan databas. Mått i mm (textstorlek,
 # ruta och teckenförklaring) räknas om till kartans enheter utifrån bildens bredd (bredd_cm).
 #' @noRd
-intern_lagg_kraftfalt_pa_karta <- function(gg, kraftfalt, bbox, lan_gis, kartrubrik, forklaringstext, bredd_cm = 20) {
+intern_lagg_kraftfalt_pa_karta <- function(gg, kraftfalt, bbox, lan_gis, kartrubrik, forklaringstext, bredd_cm = 20,
+                                            tatortsnamn = TRUE, namn_storlek = 1) {
   f <- rddiagram::diagramfarger("rd_kraftfaltskarta")
   till_3006 <- function(x) if (is.null(x) || nrow(x) == 0) NULL else sf::st_transform(x, 3006)
   # tätorternas geometri kan vara polygoner - punkterna ritas i en punkt innanför
@@ -154,6 +160,20 @@ intern_lagg_kraftfalt_pa_karta <- function(gg, kraftfalt, bbox, lan_gis, kartrub
   gg <- punkter(gg, kraftfalt$satellites, f[["satellit"]], f[["satellit_kant"]], 1.6)
   gg <- punkter(gg, kraftfalt$solitary, f[["solitar"]], f[["solitar_kant"]], 1.9)
   gg <- punkter(gg, rbind_sf_kolumner(kraftfalt$la), f[["centrum"]], f[["centrum_kant"]], 2.4)
+
+  # tätortsnamn vid centrum och solitärer: små, mörkgrå, med en vit kontur, och med ggrepel så att de inte
+  # hamnar ovanpå punkterna eller varandra
+  if (tatortsnamn) {
+    nam <- till_punkter(rbind_sf_kolumner(kraftfalt$la, kraftfalt$solitary))
+    if (!is.null(nam) && "tobeteckn" %in% names(nam)) {
+      xy <- sf::st_coordinates(nam)
+      nam <- data.frame(x = xy[, 1], y = xy[, 2], namn = as.character(nam$tobeteckn))
+      gg <- gg + ggrepel::geom_text_repel(
+        data = nam, ggplot2::aes(x = x, y = y, label = namn), size = 2.3 * namn_storlek, colour = "#4A4A4A",
+        bg.color = "white", bg.r = 0.12, box.padding = 0.25, point.padding = 0.3, min.segment.length = Inf,
+        max.overlaps = Inf, seed = 1)
+    }
+  }
 
   # geom_sf-lagren ovan ersätter bakgrundens utsnitt med ett nytt (med extra luft runt kartan), så sätt det igen
   gg <- suppressMessages(gg + ggplot2::coord_sf(xlim = bbox[c("xmin", "xmax")], ylim = bbox[c("ymin", "ymax")],
