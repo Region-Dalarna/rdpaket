@@ -26,7 +26,7 @@
 #'   räkna om kraftfälten. `NULL` (standard) = beräkna.
 #' @param pendlingsar Vilket år pendlingsdata gäller. Visas i kartans källtext
 #'   och i filnamnet. Standard är `2022`.
-#' @param vald_lan Länskod, för länsgränsen och för kartans utsnitt. Standard
+#' @param region_vekt Länskod, för länsgränsen och för kartans utsnitt. Standard
 #'   `"20"` (Dalarna). Vilka tätorter som finns med bestäms av underlaget.
 #' @param enskilt_troskelvarde,totalt_troskelvarde Tröskelvärden (procent) för
 #'   klassificeringen, se [rdgeorouting::pendling_kraftfalt()].
@@ -97,7 +97,7 @@ karta_lf_kraftfalt_scb <- function(
     tabell_pend_relation = NULL,
     kraftfalt = NULL,
     pendlingsar = 2022,
-    vald_lan = "20",
+    region_vekt = "20",
     enskilt_troskelvarde = 20,
     totalt_troskelvarde = 35,
     primar_la_buffer = 2000,
@@ -134,6 +134,12 @@ karta_lf_kraftfalt_scb <- function(
       bakgrund_dimning < 0 || bakgrund_dimning > 1) {
     stop("bakgrund_dimning ska vara ett tal mellan 0 och 1.", call. = FALSE)
   }
+  # ... går vidare till rdgeorouting::pendling_kraftfalt() och skulle annars tyst svälja det gamla namnet,
+  # så att kartan ritas för standardlänet i stället för det som angavs
+  if ("vald_lan" %in% names(list(...))) {
+    stop("Parametern vald_lan heter numera region_vekt.", call. = FALSE)
+  }
+
   intern_kontrollera_utdata(c(skriv_leaflet_fil, skriv_gpkg_fil), returnera_figur, c("skriv_leaflet_fil", "skriv_gpkg_fil"))
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_leaflet_fil || skriv_gpkg_fil)
 
@@ -150,8 +156,8 @@ karta_lf_kraftfalt_scb <- function(
       gemensam_la_buffer = gemensam_la_buffer, ...)
   }
 
-  lan_gis <- rdgis::hamta_karta("lan", regionkoder = vald_lan)
-  lansnamn <- rdverktyg::hamtaregion_kod_namn(vald_lan)$region[1]
+  lan_gis <- rdgis::hamta_karta("lan", regionkoder = region_vekt)
+  lansnamn <- rdverktyg::hamtaregion_kod_namn(region_vekt)$region[1]
 
   bygg_karta <- function(interaktiv) {
     intern_bygg_kraftfaltskarta(

@@ -6,7 +6,7 @@
 #' Linjebredden visar antal pendlare och färgen pendlingstyp (för
 #' nettopendling positivt eller negativt tecken). Klicka på en linje för att se
 #' antalet pendlare. Funktionen kan göra FLERA kartor i ett anrop: en per
-#' kombination av `vald_kommun_kod` och `vald_pendlingstyp`.
+#' kombination av `region_vekt` och `vald_pendlingstyp`.
 #'
 #' Pendlingsdata finns för åren 1993 och framåt (se
 #' [rdhamtadata::hamta_pendling_rams_bas_scb()]), men kartan visar alltid
@@ -16,7 +16,7 @@
 #' Kartan som koropletkarta över nettopendling per kommun i hela länet finns i
 #' [karta_gg_nettopendling_kommun_scb()].
 #'
-#' @param vald_kommun_kod En eller flera kommunkoder. Standard `"2080"` (Falun).
+#' @param region_vekt En eller flera kommunkoder. Standard `"2080"` (Falun).
 #' @param valt_ar År, 1993 eller senare. `"9999"` (standard) = senaste
 #'   tillgängliga.
 #' @param vald_pendlingstyp En eller flera av `"Bruttopendling"`,
@@ -57,7 +57,7 @@
 #' @seealso [karta_gg_nettopendling_kommun_scb()]
 #' @export
 karta_lf_pendlingsfloden_scb <- function(
-    vald_kommun_kod = "2080",
+    region_vekt = "2080",
     valt_ar = "9999",
     vald_pendlingstyp = "alla",
     grans_for_antal_pendlare = 10,
@@ -99,7 +99,7 @@ karta_lf_pendlingsfloden_scb <- function(
 
   regionnyckel <- rdverktyg::hamtaregtab()
 
-  pendling_df <- intern_hamta_pendling(vald_kommun_kod, valt_ar)
+  pendling_df <- intern_hamta_pendling(region_vekt, valt_ar)
 
   pendling_enkelriktad <- pendling_df |>
     dplyr::mutate(pendl_id = ifelse(regionkod_bo < regionkod_arb, paste0(regionkod_bo, regionkod_arb), paste0(regionkod_arb, regionkod_bo))) |>
@@ -493,7 +493,7 @@ karta_lf_pendlingsfloden_scb <- function(
 
   # ==================================== bygg alla kombinationer ========================================
 
-  kombinationer <- expand.grid(kommun = vald_kommun_kod, typ = vald_pendlingstyp, stringsAsFactors = FALSE)
+  kombinationer <- expand.grid(kommun = region_vekt, typ = vald_pendlingstyp, stringsAsFactors = FALSE)
 
   resultat_lista <- purrr::list_flatten(purrr::map2(kombinationer$kommun, kombinationer$typ, skapa_karta))
 

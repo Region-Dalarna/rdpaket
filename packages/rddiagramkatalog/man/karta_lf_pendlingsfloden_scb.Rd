@@ -5,7 +5,7 @@
 \title{Leaflet-karta: pendlingsflöden mellan kommuner}
 \usage{
 karta_lf_pendlingsfloden_scb(
-  vald_kommun_kod = "2080",
+  region_vekt = "2080",
   valt_ar = "9999",
   vald_pendlingstyp = "alla",
   grans_for_antal_pendlare = 10,
@@ -25,7 +25,7 @@ karta_lf_pendlingsfloden_scb(
 )
 }
 \arguments{
-\item{vald_kommun_kod}{En eller flera kommunkoder. Standard \code{"2080"} (Falun).}
+\item{region_vekt}{En eller flera kommunkoder. Standard \code{"2080"} (Falun).}
 
 \item{valt_ar}{År, 1993 eller senare. \code{"9999"} (standard) = senaste
 tillgängliga.}
@@ -85,7 +85,7 @@ pendlingstyper (bruttopendling, nettopendling, in- eller utpendling).
 Linjebredden visar antal pendlare och färgen pendlingstyp (för
 nettopendling positivt eller negativt tecken). Klicka på en linje för att se
 antalet pendlare. Funktionen kan göra FLERA kartor i ett anrop: en per
-kombination av \code{vald_kommun_kod} och \code{vald_pendlingstyp}.
+kombination av \code{region_vekt} och \code{vald_pendlingstyp}.
 }
 \details{
 Pendlingsdata finns för åren 1993 och framåt (se

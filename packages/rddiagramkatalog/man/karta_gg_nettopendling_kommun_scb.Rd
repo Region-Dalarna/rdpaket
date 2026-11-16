@@ -5,7 +5,7 @@
 \title{Karta: nettopendling per kommun}
 \usage{
 karta_gg_nettopendling_kommun_scb(
-  vald_lan_kod = "20",
+  region_vekt = "20",
   valt_ar = "9999",
   karta_fargvektor = NULL,
   legend_position = "auto",
@@ -15,7 +15,7 @@ karta_gg_nettopendling_kommun_scb(
 )
 }
 \arguments{
-\item{vald_lan_kod}{Ett eller flera län, som länskod. Standard \code{"20"}
+\item{region_vekt}{Ett eller flera län, som länskod. Standard \code{"20"}
 (Dalarnas län). En kommunkod fungerar också och ger länet kommunen
 ligger i.}
 

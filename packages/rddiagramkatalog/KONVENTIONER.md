@@ -48,7 +48,7 @@ kräver en kommun använder `"2080"` (Falun). Det är också vad
 
 | Parameter | Betydelse |
 |---|---|
-| `region_vekt` | Region(er): kommun-, läns- eller landskoder. |
+| `region_vekt` | Region(er): kommun-, läns- eller landskoder. Heter alltid så - även för en funktion som bara tar en region eller ett län (`karta_lf_kraftfalt_scb(region_vekt = "20")`). Undantag: en parameter som pekar ut en region att *markera* (`fokus_region`, `fokus_lan`), ordna (`region_lagg_forst`) eller en separat uppsättning regioner (`region_vekt_linje`) har ett eget, beskrivande namn och kommer i tillägg till `region_vekt`. |
 | `tid_koder`/`tid_vekt` | Vilka år/perioder som ska hämtas. `"*"` = alla, `"9999"` = senaste. |
 | `kon_klartext` | Könsuppdelning, klartext (`"män"`, `"kvinnor"`), `NA` = ingen uppdelning. |
 | `diagram_capt` | Källtext under diagrammet. |

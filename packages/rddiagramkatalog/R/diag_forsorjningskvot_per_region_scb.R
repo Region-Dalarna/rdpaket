@@ -12,8 +12,9 @@
 #' TAB698. Åldrarna summeras själva ihop - totalkoderna används inte, eftersom
 #' CKM-tabellens totaler inte alltid är lika med summan av delarna.
 #'
-#' @param region_vekt Regioner (läns-/kommunkoder). Standard är Dalarnas län
-#'   och dess kommuner. Riket (`"00"`) kan bara användas när jämförelseåret är
+#' @param region_vekt Regioner (läns-/kommunkoder). Standard är alla län (utan
+#'   Riket). För ett läns kommuner: `rdverktyg::hamtakommuner("20", tamedlan =
+#'   TRUE, tamedriket = FALSE)`. Riket (`"00"`) kan bara användas när jämförelseåret är
 #'   ett år med faktisk befolkningsstatistik (negativt `jmfrtid`), eftersom
 #'   prognostabellen saknar riket.
 #' @param arbetsfor_alder Vilken åldersgrupp som räknas som arbetsför ålder
@@ -54,7 +55,7 @@
 #' @return En namngiven lista med ett `ggplot`-objekt.
 #' @export
 diag_forsorjningskvot_per_region_scb <- function(
-    region_vekt = rdverktyg::hamtakommuner("20", tamedlan = TRUE, tamedriket = FALSE),
+    region_vekt = rdverktyg::hamtaAllaLan(tamedriket = FALSE),
     arbetsfor_alder = "20-64 år",
     jmfrtid = 10,
     sortera_efter = "slut",
@@ -275,7 +276,7 @@ diag_forsorjningskvot_per_region_scb <- function(
     diagram_liggande = liggande,
     stapel_overlapp = overlappande_staplar,
     stapel_alpha = genomskinlighet,
-    stodlinjer_avrunda_fem = FALSE,
+    stodlinjer_avrunda_fem = TRUE,           # FALSE-varianten avrundar kvoter strax över 1 upp till 2
     x_axis_lutning = if (liggande) 0 else 90,
     x_axis_storlek = if (liggande) 10.5 else 7,
     manual_x_axis_text_hjust = 1,

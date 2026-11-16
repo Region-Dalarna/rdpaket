@@ -8,7 +8,7 @@ karta_lf_kraftfalt_scb(
   tabell_pend_relation = NULL,
   kraftfalt = NULL,
   pendlingsar = 2022,
-  vald_lan = "20",
+  region_vekt = "20",
   enskilt_troskelvarde = 20,
   totalt_troskelvarde = 35,
   primar_la_buffer = 2000,
@@ -48,7 +48,7 @@ räkna om kraftfälten. \code{NULL} (standard) = beräkna.}
 \item{pendlingsar}{Vilket år pendlingsdata gäller. Visas i kartans källtext
 och i filnamnet. Standard är \code{2022}.}
 
-\item{vald_lan}{Länskod, för länsgränsen och för kartans utsnitt. Standard
+\item{region_vekt}{Länskod, för länsgränsen och för kartans utsnitt. Standard
 \code{"20"} (Dalarna). Vilka tätorter som finns med bestäms av underlaget.}
 
 \item{enskilt_troskelvarde, totalt_troskelvarde}{Tröskelvärden (procent) för

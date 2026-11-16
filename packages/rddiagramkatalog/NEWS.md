@@ -1,3 +1,23 @@
+# rddiagramkatalog 0.0.0.9068
+
+* Regionparametern heter nu `region_vekt` i alla funktioner där den bara hette något annat,
+  enligt konventionen i KONVENTIONER.md: `karta_gg_nettopendling_kommun_scb()`
+  (`vald_lan_kod`), `karta_lf_kraftfalt_scb()` (`vald_lan`) och
+  `karta_lf_pendlingsfloden_scb()` (`vald_kommun_kod`). Anrop med de gamla namnen ger felet
+  "unused argument" (i `karta_lf_kraftfalt_scb()` ett eget felmeddelande, eftersom `...` annars
+  hade svalt det gamla namnet och ritat standardlänet) - byt namn på argumentet. Parametrar som pekar ut en region att markera
+  (`fokus_lan`, `fokus_region`, `fokus_regionkod`, `region_fokus`), ordning
+  (`region_lagg_forst`) eller en separat uppsättning regioner (`region_vekt_linje`,
+  `lan_kommun`) behåller sina namn.
+
+* `diag_forsorjningskvot_per_region_scb()`: standard för `region_vekt` är nu alla län (utan
+  Riket), `rdverktyg::hamtaAllaLan(tamedriket = FALSE)`, i stället för Dalarnas kommuner.
+
+* `diag_forsorjningskvot_per_region_scb()`: skalan på kvotaxeln gick till 2 när någon kvot
+  var strax över 1 (den äldre stödlinjeberäkningen avrundar värden mellan 1 och 10 uppåt till
+  en jämn tvåa). Funktionen använder nu `stodlinjer_avrunda_fem = TRUE`, så axeln slutar vid
+  nästa jämna steg över största värdet (t.ex. 1,2).
+
 # rddiagramkatalog 0.0.0.9067
 
 * `diag_forsorjningskvot_per_region_scb()`: ny parameter `overlappande_staplar` (standard

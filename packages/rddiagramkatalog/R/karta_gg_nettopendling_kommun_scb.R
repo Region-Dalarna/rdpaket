@@ -16,7 +16,7 @@
 #' Flödeslinjer från en enskild kommun, som interaktiv karta, finns i
 #' [karta_lf_pendlingsfloden_scb()].
 #'
-#' @param vald_lan_kod Ett eller flera län, som länskod. Standard `"20"`
+#' @param region_vekt Ett eller flera län, som länskod. Standard `"20"`
 #'   (Dalarnas län). En kommunkod fungerar också och ger länet kommunen
 #'   ligger i.
 #' @param valt_ar År, 1993 eller senare. `"9999"` (standard) = senaste
@@ -45,7 +45,7 @@
 #' @seealso [karta_lf_pendlingsfloden_scb()]
 #' @export
 karta_gg_nettopendling_kommun_scb <- function(
-    vald_lan_kod = "20",
+    region_vekt = "20",
     valt_ar = "9999",
     karta_fargvektor = NULL,
     legend_position = "auto",
@@ -66,7 +66,7 @@ karta_gg_nettopendling_kommun_scb <- function(
     karta_fargvektor <- rddiagram::diagramfarger("rd_karta_rod_gron")
   }
 
-  lanskoder <- unique(stringr::str_sub(vald_lan_kod, 1, 2))
+  lanskoder <- unique(stringr::str_sub(region_vekt, 1, 2))
   kommuner_gis <- rdgis::hamta_karta("kommuner")
 
   bygg_karta <- function(lanskod) {

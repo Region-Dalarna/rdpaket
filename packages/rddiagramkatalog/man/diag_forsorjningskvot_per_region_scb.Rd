@@ -5,7 +5,7 @@
 \title{Diagram: förändring av den demografiska försörjningskvoten per region}
 \usage{
 diag_forsorjningskvot_per_region_scb(
-  region_vekt = rdverktyg::hamtakommuner("20", tamedlan = TRUE, tamedriket = FALSE),
+  region_vekt = rdverktyg::hamtaAllaLan(tamedriket = FALSE),
   arbetsfor_alder = "20-64 år",
   jmfrtid = 10,
   sortera_efter = "slut",
@@ -24,8 +24,8 @@ diag_forsorjningskvot_per_region_scb(
 )
 }
 \arguments{
-\item{region_vekt}{Regioner (läns-/kommunkoder). Standard är Dalarnas län
-och dess kommuner. Riket (\code{"00"}) kan bara användas när jämförelseåret är
+\item{region_vekt}{Regioner (läns-/kommunkoder). Standard är alla län (utan
+Riket). För ett läns kommuner: \code{rdverktyg::hamtakommuner("20", tamedlan = TRUE, tamedriket = FALSE)}. Riket (\code{"00"}) kan bara användas när jämförelseåret är
 ett år med faktisk befolkningsstatistik (negativt \code{jmfrtid}), eftersom
 prognostabellen saknar riket.}
 
