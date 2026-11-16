@@ -1,3 +1,9 @@
+# rdgis 0.0.0.9004
+
+* Bakgrundskartan får ett nytt lager `sjoar`: en etikettpunkt per sjö, placerad i mitten av sjöns största öppna
+  vattenyta (PostGIS `ST_MaximumInscribedCircle`, annars en punkt inuti sjön) med namn, textrang och area i km2.
+  Bygg det med `skapa_bakgrundskarta_topografi(lager = "sjoar")`.
+
 # rdgis 0.0.0.9003
 
 * Ny bakgrundskarta ur geodatabasen: `skapa_bakgrundskarta_topografi()` bygger schemat

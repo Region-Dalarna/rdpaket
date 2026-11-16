@@ -21,7 +21,7 @@ skapa_bakgrundskarta_topografi(
 
 \item{lager}{Vilka lager som ska byggas, \code{NULL} (standard) = alla.
 Möjliga namn: \code{vatten}, \code{skog}, \code{bebyggelse}, \code{vagar_stora},
-\code{vagar_mellan}, \code{vagar_sma}, \code{jarnvag}, \code{ortnamn}, \code{vattennamn}.}
+\code{vagar_mellan}, \code{vagar_sma}, \code{jarnvag}, \code{ortnamn}, \code{vattennamn}, \code{sjoar}.}
 }
 \value{
 En \code{data.frame} med lager, antal rader och storlek. Osynligt.
@@ -29,7 +29,7 @@ En \code{data.frame} med lager, antal rader och storlek. Osynligt.
 \description{
 Skapar schemat \code{bakgrundskarta_dalarna} (länsskala) ur Lantmäteriets topografi i schemat
 \code{topografi_10}: vatten, skog och bebyggelse som sammanslagna och förenklade ytor, vägar i tre
-nivåer, järnväg samt ortnamn och vattennamn. Öppen mark och åker ritas inte, de är bakgrunden.
+nivåer, järnväg samt ortnamn, vattennamn och sjönamn (en etikett per sjö, i sjöns mitt). Öppen mark och åker ritas inte, de är bakgrunden.
 Lagren får rumsliga index och läses sedan med \code{\link[=hamta_bakgrundskarta]{hamta_bakgrundskarta()}}. Funktionen ska köras
 efter varje inläsning av \code{topografi_10}; den tar bort och bygger om varje lager.
 }

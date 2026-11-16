@@ -25,10 +25,16 @@ kommunkod ger länet kommunen ligger i.}
 (små landsvägar, huvudgator) och \code{"sma"} (lokalgator, småvägar). Standard \code{c("stora", "mellan")};
 \code{NULL} ritar inga vägar.}
 
-\item{etiketter}{Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket":
-\code{"tatorter"} (städer och större tätorter, ett hundratal namn i länet) och \code{"orter"} (tätorterna plus större byar och bebyggelsenamn utanför tätort, t.ex. Arvet och Dalbyn), \code{"sjoar"} (större sjöar)
-och \code{"vattendrag"} (större vattendrag, ett namn per vattendrag). Standard \code{NULL} = inga etiketter,
-så att kartan fungerar som neutral bakgrund. Etiketterna är små och ljusgrå.}
+\item{etiketter}{Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket". Standard
+\code{NULL} = inga etiketter, så att kartan fungerar som neutral bakgrund. Etiketterna är små och ljusgrå.
+\itemize{
+\item \code{"storre_tatorter"}: den största tätorten (efter folkmängd) i varje kommun.
+\item \code{"tatorter"}: städer och större tätorter (ett hundratal namn i länet).
+\item \code{"orter"}: tätorterna plus större byar och bebyggelsenamn utanför tätort, t.ex. Arvet och Dalbyn.
+\item \code{"storre_sjoar"}: de största sjöarna (högsta textrang hos Lantmäteriet), t.ex. Siljan, Runn och Amungen.
+\item \code{"sjoar"}: större sjöar. Etiketten sitter i mitten av sjöns största öppna vattenyta, en per sjö.
+\item \code{"vattendrag"}: större vattendrag, ett namn per vattendrag.
+}}
 
 \item{namn_storlek}{Faktor för etikettstorleken. Standard 1; 1,5 ger 50 \% större text.}
 

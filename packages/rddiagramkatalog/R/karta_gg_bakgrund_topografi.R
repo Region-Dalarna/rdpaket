@@ -15,10 +15,14 @@
 #' @param vagar Vilka vägnivåer som ritas: `"stora"` (motortrafikleder, landsvägar), `"mellan"`
 #'   (små landsvägar, huvudgator) och `"sma"` (lokalgator, småvägar). Standard `c("stora", "mellan")`;
 #'   `NULL` ritar inga vägar.
-#' @param etiketter Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket":
-#'   `"tatorter"` (städer och större tätorter, ett hundratal namn i länet) och `"orter"` (tätorterna plus större byar och bebyggelsenamn utanför tätort, t.ex. Arvet och Dalbyn), `"sjoar"` (större sjöar)
-#'   och `"vattendrag"` (större vattendrag, ett namn per vattendrag). Standard `NULL` = inga etiketter,
-#'   så att kartan fungerar som neutral bakgrund. Etiketterna är små och ljusgrå.
+#' @param etiketter Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket". Standard
+#'   `NULL` = inga etiketter, så att kartan fungerar som neutral bakgrund. Etiketterna är små och ljusgrå.
+#'   * `"storre_tatorter"`: den största tätorten (efter folkmängd) i varje kommun.
+#'   * `"tatorter"`: städer och större tätorter (ett hundratal namn i länet).
+#'   * `"orter"`: tätorterna plus större byar och bebyggelsenamn utanför tätort, t.ex. Arvet och Dalbyn.
+#'   * `"storre_sjoar"`: de största sjöarna (högsta textrang hos Lantmäteriet), t.ex. Siljan, Runn och Amungen.
+#'   * `"sjoar"`: större sjöar. Etiketten sitter i mitten av sjöns största öppna vattenyta, en per sjö.
+#'   * `"vattendrag"`: större vattendrag, ett namn per vattendrag.
 #' @param namn_storlek Faktor för etikettstorleken. Standard 1; 1,5 ger 50 % större text.
 #' @param bredd_cm Bildens bredd i centimeter när kartan skrivs till fil. Höjden följer kartans form.
 #' @param dpi Upplösning när kartan skrivs till fil. Standard 300.
@@ -57,7 +61,8 @@ karta_gg_bakgrund_topografi <- function(
 
   lager_namn <- c("vatten", "skog", "bebyggelse", paste0("vagar_", vagar), "jarnvag",
                   if (any(etiketter %in% c("tatorter", "orter"))) "ortnamn",
-                  if (any(etiketter %in% c("sjoar", "vattendrag"))) "vattennamn")
+                  if ("vattendrag" %in% etiketter) "vattennamn",
+                  if (any(etiketter %in% c("sjoar", "storre_sjoar"))) "sjoar")
 
   con <- rdpostgres::uppkoppling_db(db_name = "geodata", service_name = "rd_geodata")
   if (!is.null(con)) on.exit(DBI::dbDisconnect(con), add = TRUE)
@@ -70,6 +75,9 @@ karta_gg_bakgrund_topografi <- function(
   lan_gis <- sf::st_transform(rdgis::hamta_karta("lan", unique(substr(region_vekt, 1, 2))), 3006)
   bbox <- sf::st_bbox(lan_gis)
   lager <- rdgis::hamta_bakgrundskarta(lager = lager_namn, bbox = bbox, marginal = 0.02, con = con)
+  if ("storre_tatorter" %in% etiketter) {
+    lager$storre_tatorter <- intern_storsta_tatort_per_kommun(unique(substr(region_vekt, 1, 2)))
+  }
   tid("Hämtade lagren ur databasen", t0)
 
   t0 <- Sys.time()
@@ -103,13 +111,26 @@ intern_valj_vagar <- function(vagar) {
   intersect(c("stora", "mellan", "sma"), vagar)
 }
 
+# Största tätorten (efter folkmängd, bef) i varje kommun i länen, som punkter med namn och rang.
+#' @noRd
+intern_storsta_tatort_per_kommun <- function(lanskoder) {
+  t <- rdgis::hamta_karta("tatortspunkter", lanskoder)
+  if (is.null(t) || nrow(t) == 0) return(NULL)
+  t <- t[t$ar == max(t$ar), ]
+  t <- t[order(-t$bef), ]
+  t <- t[!duplicated(t$kommun), ]
+  t <- sf::st_transform(t, 3006)
+  sf::st_sf(namn = t$tatort, thojd = 30, geometry = sf::st_geometry(t))
+}
+
 # Kontrollerar etikettpaketen.
 #' @noRd
 intern_valj_etiketter <- function(etiketter) {
   if (is.null(etiketter)) return(character(0))
-  okanda <- setdiff(etiketter, c("tatorter", "orter", "sjoar", "vattendrag"))
+  giltiga <- c("storre_tatorter", "tatorter", "orter", "storre_sjoar", "sjoar", "vattendrag")
+  okanda <- setdiff(etiketter, giltiga)
   if (length(okanda) > 0) {
-    stop("etiketter ska vara \"tatorter\", \"orter\", \"sjoar\" och/eller \"vattendrag\", inte: ",
+    stop("etiketter ska vara ", paste0("\"", giltiga, "\"", collapse = ", "), ", inte: ",
          paste(okanda, collapse = ", "), call. = FALSE)
   }
   unique(etiketter)
@@ -185,8 +206,9 @@ intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan")
                             check_overlap = TRUE, show.legend = FALSE)
   }
   if ("sjoar" %in% etiketter) {
-    gg <- text_lager(gg, "vattennamn", function(d) d$detaljtyp == "VATTTX" & d$thojd >= 20,
-                     f[["vattennamn"]], TRUE, c(1.5, 1.9), TRUE)
+    gg <- text_lager(gg, "sjoar", function(d) d$thojd >= 20, f[["vattennamn"]], TRUE, c(1.5, 1.9), TRUE)
+  } else if ("storre_sjoar" %in% etiketter) {
+    gg <- text_lager(gg, "sjoar", function(d) d$thojd >= 30, f[["vattennamn"]], TRUE, c(1.5, 1.9), TRUE)
   }
   if ("vattendrag" %in% etiketter) {
     gg <- text_lager(gg, "vattennamn", function(d) d$detaljtyp == "VATTDRTX" & d$thojd >= 20,
@@ -198,6 +220,8 @@ intern_rita_bakgrundskarta <- function(lager, bbox, vagar = c("stora", "mellan")
   } else if ("tatorter" %in% etiketter) {
     gg <- text_lager(gg, "ortnamn", function(d) d$detaljtyp == "BEBTÄTTX" & d$thojd >= 20,
                      f[["ortnamn"]], FALSE, c(1.5, 2.1), FALSE)
+  } else if ("storre_tatorter" %in% etiketter) {
+    gg <- text_lager(gg, "storre_tatorter", function(d) rep(TRUE, nrow(d)), f[["ortnamn"]], FALSE, c(2.1, 2.1), FALSE)
   }
   if (length(etiketter) > 0) gg <- gg + ggplot2::scale_size_identity()
 

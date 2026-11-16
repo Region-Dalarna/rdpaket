@@ -3,12 +3,12 @@
 # Lagren och deras källor/generalisering. Namnen är tabellnamn i schemat.
 intern_bakgrund_lager <- function() {
   c("vatten", "skog", "bebyggelse", "vagar_stora", "vagar_mellan", "vagar_sma", "jarnvag",
-    "ortnamn", "vattennamn")
+    "ortnamn", "vattennamn", "sjoar")
 }
 
 # SQL-sats (CREATE TABLE ... AS <sats>) per lager för länsskala.
 #' @noRd
-intern_bakgrund_sql <- function(src = "topografi_10") {
+intern_bakgrund_sql <- function(src = "topografi_10", mitt = "(ST_MaximumInscribedCircle(k.geom)).center") {
   # Slår ihop polygoner per klass, förenklar och tar bort små ytor. Ingen kantmatchning mellan klasser
   # behövs eftersom öppen mark och åker är bakgrund och ritas inte.
   yta <- function(villkor, tol, minyta) glue::glue("
@@ -43,7 +43,17 @@ intern_bakgrund_sql <- function(src = "topografi_10") {
     jarnvag = glue::glue("SELECT ST_SimplifyPreserveTopology(ST_Force2D(geom), 10)::geometry(LineString, 3006) AS geom
                           FROM {src}.ralstrafik WHERE status = 'Öppen'"),
     ortnamn = text("'BEBTÄTTX', 'BEBTX'", 14),
-    vattennamn = text("'VATTTX', 'VATTDRTX', 'VATTDELTX'", 16)
+    vattennamn = text("'VATTTX', 'VATTDRTX', 'VATTDELTX'", 16),
+    # En etikett per sjö, i mitten av sjöns största öppna vattenyta: sjöpolygoner över 0,25 km2 som
+    # innehåller en sjötext. Namnet och rangen kommer från texten, arean (km2) från sjön.
+    sjoar = glue::glue("
+      SELECT k.regtext AS namn, k.thojd, round((ST_Area(k.geom) / 1e6)::numeric, 2) AS area_km2,
+             ST_Force2D({mitt})::geometry(Point, 3006) AS geom
+      FROM (SELECT DISTINCT ON (s.objektidentitet, t.regtext) s.objektidentitet, s.geom, t.regtext, t.thojd
+            FROM {src}.mark s JOIN {src}.textobjekt t ON ST_Intersects(s.geom, t.geom)
+            WHERE s.objekttyp = 'Sjö' AND ST_Area(s.geom) >= 250000
+              AND t.detaljtyp = 'VATTTX' AND t.thojd >= 16
+            ORDER BY s.objektidentitet, t.regtext, t.thojd DESC) k")
   )
 }
 
@@ -51,7 +61,7 @@ intern_bakgrund_sql <- function(src = "topografi_10") {
 #'
 #' Skapar schemat `bakgrundskarta_dalarna` (länsskala) ur Lantmäteriets topografi i schemat
 #' `topografi_10`: vatten, skog och bebyggelse som sammanslagna och förenklade ytor, vägar i tre
-#' nivåer, järnväg samt ortnamn och vattennamn. Öppen mark och åker ritas inte, de är bakgrunden.
+#' nivåer, järnväg samt ortnamn, vattennamn och sjönamn (en etikett per sjö, i sjöns mitt). Öppen mark och åker ritas inte, de är bakgrunden.
 #' Lagren får rumsliga index och läses sedan med [hamta_bakgrundskarta()]. Funktionen ska köras
 #' efter varje inläsning av `topografi_10`; den tar bort och bygger om varje lager.
 #'
@@ -63,25 +73,30 @@ intern_bakgrund_sql <- function(src = "topografi_10") {
 #' @param kalla_schema Schemat med topografin. Standard `"topografi_10"`.
 #' @param lager Vilka lager som ska byggas, `NULL` (standard) = alla.
 #'   Möjliga namn: `vatten`, `skog`, `bebyggelse`, `vagar_stora`,
-#'   `vagar_mellan`, `vagar_sma`, `jarnvag`, `ortnamn`, `vattennamn`.
+#'   `vagar_mellan`, `vagar_sma`, `jarnvag`, `ortnamn`, `vattennamn`, `sjoar`.
 #'
 #' @return En `data.frame` med lager, antal rader och storlek. Osynligt.
 #' @seealso [hamta_bakgrundskarta()]
 #' @export
 skapa_bakgrundskarta_topografi <- function(con = NULL, schema = "bakgrundskarta_dalarna",
                                            kalla_schema = "topografi_10", lager = NULL) {
+  okanda <- setdiff(lager, intern_bakgrund_lager())
+  if (length(okanda) > 0) stop("Okända lager: ", paste(okanda, collapse = ", "), call. = FALSE)
   egen <- is.null(con)
   if (egen) {
     con <- rdpostgres::uppkoppling_adm("geodata")
     if (is.null(con)) stop("Kunde inte ansluta till geodatabasen.", call. = FALSE)
     on.exit(DBI::dbDisconnect(con), add = TRUE)
   }
-  sql <- intern_bakgrund_sql(kalla_schema)
-  if (!is.null(lager)) {
-    okanda <- setdiff(lager, names(sql))
-    if (length(okanda) > 0) stop("Okända lager: ", paste(okanda, collapse = ", "), call. = FALSE)
-    sql <- sql[lager]
+  # ST_MaximumInscribedCircle finns från PostGIS 3.1; annars används en punkt inuti sjön
+  postgis_ver <- DBI::dbGetQuery(con, "SELECT PostGIS_Lib_Version() AS v")$v
+  mitt <- if (numeric_version(sub("^([0-9]+\\.[0-9]+).*", "\\1", postgis_ver)) >= "3.1") {
+    "(ST_MaximumInscribedCircle(k.geom)).center"
+  } else {
+    "ST_PointOnSurface(k.geom)"
   }
+  sql <- intern_bakgrund_sql(kalla_schema, mitt)
+  if (!is.null(lager)) sql <- sql[lager]
 
   DBI::dbExecute(con, glue::glue("CREATE SCHEMA IF NOT EXISTS {schema}"))
   DBI::dbExecute(con, "SET client_min_messages TO warning")

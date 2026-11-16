@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9075
+
+* `karta_gg_bakgrund_topografi()`: nya etikettpaket `"storre_tatorter"` (största tätorten per kommun) och
+  `"storre_sjoar"` (sjöarna med högsta textrang). Sjöetiketterna (`"sjoar"`, `"storre_sjoar"`) placeras i mitten av
+  sjön, en per sjö. Kräver att lagret `sjoar` byggs med `rdgis::skapa_bakgrundskarta_topografi(lager = "sjoar")`.
+
 # rddiagramkatalog 0.0.0.9074
 
 * `karta_gg_bakgrund_topografi()`: parametern `namn` heter nu `etiketter`.
