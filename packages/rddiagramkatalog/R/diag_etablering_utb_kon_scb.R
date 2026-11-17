@@ -139,7 +139,7 @@ diag_etablering_utb_kon_scb <- function(region_vekt = "20",
   }
 
   if (length(resultat) == 0) {
-    stop("Inga av de begärda åren (tid_koder) finns i SCB:s tabeller för etablering.", call. = FALSE)
+    stop("Inga av de begärda perioderna (tid_koder) finns i SCB:s tabeller för etablering.", call. = FALSE)
   }
 
   # If you want a single combined data frame afterwards (assuming same column structure):

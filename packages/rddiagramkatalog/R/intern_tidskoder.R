@@ -79,7 +79,7 @@ intern_tid_for_tabell <- function(tabell, tid_koder, ger_senaste = FALSE) {
 #' @noRd
 intern_stoppa_om_ingen_tid <- function(tid_lista, amne = "uttaget") {
   if (all(lengths(tid_lista) == 0)) {
-    stop("Inga av de begärda åren (tid_koder) finns i SCB:s tabeller för ", amne, ".", call. = FALSE)
+    stop("Inga av de begärda perioderna (tid_koder) finns i SCB:s tabeller för ", amne, ".", call. = FALSE)
   }
   invisible(NULL)
 }

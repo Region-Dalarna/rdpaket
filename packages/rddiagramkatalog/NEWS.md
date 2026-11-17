@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9090
+
+* Felmeddelandet när inga av de begärda tidskoderna finns i SCB:s tabeller säger nu "perioderna" i stället för "åren", eftersom det även gäller månadsskripten.
+
 # rddiagramkatalog 0.0.0.9089
 
 * Tidsserier som delas mellan en historiktabell och en CKM-tabell hämtar nu rätt år ur respektive tabell (`intern_tid_for_tabell()`) i `diag_befolkningsforandring_region_kon_ar_scb()`,

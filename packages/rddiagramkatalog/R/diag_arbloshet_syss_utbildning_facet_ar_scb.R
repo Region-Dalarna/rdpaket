@@ -132,7 +132,7 @@ diag_arbloshet_syss_utbildning_facet_ar_scb <- function(
   tid_6367 <- intern_tid_for_tabell("TAB6367", tid_koder, ger_senaste = TRUE)
   tid_5400 <- if (ta_med_tidigare_data) intern_tid_for_tabell("TAB5400", tid_koder) else character(0)
   if (length(tid_6367) == 0 && length(tid_5400) == 0) {
-    stop("Inga av de begärda åren (tid_koder) finns i SCB:s tabeller för arbetsmarknadsställning efter utbildning.",
+    stop("Inga av de begärda perioderna (tid_koder) finns i SCB:s tabeller för arbetsmarknadsställning efter utbildning.",
          call. = FALSE)
   }
 
