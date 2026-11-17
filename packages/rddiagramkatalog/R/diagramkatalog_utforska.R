@@ -15,6 +15,16 @@
 #' in rakt av i det genererade funktionsanropet. Booleska parametrar (`TRUE`/
 #' `FALSE`) får en kryssruta i stället.
 #'
+#' Där de valbara värdena är kända får parametern en sökbar listruta i stället för
+#' en textruta (man kan också skriva ett eget värde):
+#' * parametrar som valideras med `match.arg()` (t.ex. `diagramtyp`) får en listruta med de giltiga valen,
+#' * `region_vekt` och `jmfr_region` får en lista med riket, län och kommuner (namnet visas, koden skickas),
+#' * parametrar som funktionen skickar direkt till ett SCB-uttag (`pxweb2r::pxweb2_get_data()`) - t.ex.
+#'   `kon_klartext`, `alder_klartext`, `cont_klartext` och `tid_koder` - får SCB:s giltiga värden för just den
+#'   tabellen och variabeln. Värdena slås upp när funktionen väljs och cachas under sessionen.
+#'
+#' Allt annat är en textruta som tidigare. En tom listruta betyder funktionens standardvärde.
+#'
 #' "Visa hjälp" visar funktionens hjälptext (samma innehåll som
 #' `?funktionsnamn`) i en egen ruta ovanpå gadgeten, i stället för i RStudios
 #' Hjälp-ruta - annars hamnar den bakom gadgetens eget dialogfönster och syns
@@ -176,22 +186,23 @@ diagramkatalog_utforska <- function() {
       )
     })
 
+    # Listrutornas värden (match.arg, regioner och SCB-värden). Slås upp när funktionen väljs; ett fel här
+    # ger bara textrutor som tidigare.
+    listrutor <- shiny::reactive({
+      fn <- vald_fn()
+      shiny::withProgress(
+        message = "Hämtar värden till listrutorna...", value = 0.5,
+        tryCatch(intern_utforska_listrutor(fn), error = function(e) list())
+      )
+    })
+
     output$parameterformular <- shiny::renderUI({
       args <- vald_args()
+      spec <- listrutor()
 
       shiny::tagList(
         shiny::h4(vald_fn()),
-        lapply(names(args), function(namn) {
-          standard <- args[[namn]]
-          input_id <- paste0("param_", namn)
-          ar_boolesk <- identical(standard, TRUE) || identical(standard, FALSE)
-
-          if (ar_boolesk) {
-            shiny::checkboxInput(input_id, namn, value = isTRUE(standard))
-          } else {
-            shiny::textInput(input_id, namn, value = paste(deparse(standard), collapse = " "))
-          }
-        })
+        lapply(names(args), function(namn) intern_utforska_inputfalt(namn, args[[namn]], spec[[namn]]))
       )
     })
 
@@ -200,19 +211,12 @@ diagramkatalog_utforska <- function() {
     # parameterlös reactive() inte stöder.
     bygg_anrop <- function(overrides = list()) {
       args <- vald_args()
+      spec <- listrutor()
 
       argument_text <- vapply(names(args), function(namn) {
         if (namn %in% names(overrides)) return(paste0(namn, " = ", overrides[[namn]]))
-        input_id <- paste0("param_", namn)
-        standard <- args[[namn]]
-        ar_boolesk <- identical(standard, TRUE) || identical(standard, FALSE)
-        varde <- input[[input_id]]
-        if (is.null(varde)) return(paste0(namn, " = ", paste(deparse(standard), collapse = " ")))
-        if (ar_boolesk) {
-          paste0(namn, " = ", if (isTRUE(varde)) "TRUE" else "FALSE")
-        } else {
-          paste0(namn, " = ", varde)
-        }
+        varde <- input[[paste0("param_", namn)]]
+        paste0(namn, " = ", intern_utforska_kodtext(args[[namn]], varde, spec[[namn]]))
       }, character(1))
 
       paste0(vald_fn(), "(\n  ", paste(argument_text, collapse = ",\n  "), "\n)")

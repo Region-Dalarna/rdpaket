@@ -1,3 +1,11 @@
+# rddiagramkatalog 0.0.0.9111
+
+* `diagramkatalog_utforska()` har fått sökbara listrutor (som också tillåter eget värde) där de valbara värdena är kända, i stället för bara textrutor:
+  * parametrar som valideras med `match.arg()` (t.ex. `diagramtyp`, `matt`) får en listruta med de giltiga valen,
+  * `region_vekt` (flerval) och `jmfr_region` får en lista med riket, län och kommuner (namnet visas, koden skickas),
+  * parametrar som en funktion skickar direkt till ett SCB-uttag (`pxweb2r::pxweb2_get_data()`), t.ex. `kon_klartext`, `alder_klartext`, `cont_klartext` och `tid_koder`, får SCB:s giltiga värden för just den tabellen och variabeln. Kopplingen mellan parameter och tabellvariabel läses automatiskt ur funktionens kod (inklusive enkla mellansteg som `tid_vekt <- tid_koder`) och godkänns bara om parameterns standardvärde finns bland SCB:s värden. Värdena slås upp när funktionen väljs och cachas under sessionen, så ingenting sparas i någon databas och listorna är alltid aktuella.
+  Parametrar där värdena inte är kända är textrutor som tidigare, och en tom listruta betyder funktionens standardvärde. I katalogen får 97 av 111 funktioner minst en listruta (197 listrutor).
+
 # rddiagramkatalog 0.0.0.9110
 
 * `diag_storsta_yrke_per_geografi_scb()`: diagrammet anger nu att statistiken är dagbefolkningen (anställda med arbetsplats i regionen, inte bosatta). Undertiteln lyder "Anställda 16–64 år med arbetsplats i regionen (dagbefolkning)" (16–69 år från 2023, då SCB breddade åldersintervallet), och y-axeln heter "Antal anställda (dagbefolkning)" i stället för "Antal sysselsatta", som var missvisande. Gäller alla tre tabellerna (TAB4396, TAB3119 och TAB4434), som alla redovisar dagbefolkning.
