@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9104
+
+* `diag_etablering_vistelsetid_kon_ar_scb()`: rubriken följer det lokala originalet ("Sysselsatta utrikes respektive inrikes födda i arbetsför ålder i Dalarna år 1997-2024", utan kolon, med måttets ord för övriga mått), `startar = NA` (standard) tar alla år från 1997, färgskalorna börjar på originalets ljusa nyanser, och källtexten är nu "Registerdata för integration" (SCB:s statistik AA0003, som tabellerna TAB389/TAB4881/TAB6383/TAB6384 tillhör) i stället för BAS.
+
 # rddiagramkatalog 0.0.0.9103
 
 * Nytt diagram `diag_etablering_vistelsetid_kon_ar_scb()`: etablering på arbetsmarknaden för utrikes födda efter vistelsetid (och inrikes födda som jämförelse), en panel per kön och en stapel per år. Migrerat från det lokala skriptet `diag_etablering_vistelsetid_lan_kommun()`.

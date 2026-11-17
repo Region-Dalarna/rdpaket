@@ -7,12 +7,12 @@
 diag_etablering_vistelsetid_kon_ar_scb(
   region_vekt = "20",
   cont_klartext = "sysselsättningsgrad",
-  startar = 2012,
+  startar = NA,
   slutar = NA,
   visa_teckenforklaring = FALSE,
   visa_logga_i_diagram = TRUE,
   diagram_capt =
-    "Källa: SCB:s öppna statistikdatabas, Befolkningens arbetsmarknadsstatus (BAS)\\nBearbetning: Samhällsanalys, Region Dalarna",
+    "Källa: SCB:s öppna statistikdatabas, Registerdata för integration\\nBearbetning: Samhällsanalys, Region Dalarna",
   utmapp = rdverktyg::utskriftsmapp(),
   skriv_diagramfil = TRUE,
   filformat = "png",
@@ -28,7 +28,7 @@ diag_etablering_vistelsetid_kon_ar_scb(
 \code{"kvar i sysselsättning efter ett år"}, \code{"kvar som företagare efter ett år"}, \code{"chefsposition"},
 \code{"eftergymnasial i yrkesområde 2-3"} eller \code{"eftergymnasial på kvalifikationsnivå 3-4"}.}
 
-\item{startar}{Första år som visas. Standard 2012.}
+\item{startar}{Första år som visas. \code{NA} (standard) tar alla år i tabellerna (från 1997).}
 
 \item{slutar}{Sista år som visas. \code{NA} (standard) tar senaste året med data.}
 
@@ -56,10 +56,11 @@ Stapeldiagram över utrikes födda efter vistelsetid i Sverige (0–1, 2–3, 4�
 inrikes födda. Diagrammet delas upp i en panel för kvinnor och en för män, och staplarna för varje grupp är ett
 år vardera: äldsta året är ljusast och senaste året mörkast. Kvinnor är gula och män gröna (färgerna i
 \code{rddiagram::diagramfarger("kon")}). Startår och slutår står i rubriken, och teckenförklaringen är avstängd som
-standard eftersom nyanserna följer årsordningen.
+standard eftersom nyanserna följer årsordningen. Rubriken är t.ex. "Sysselsatta utrikes respektive inrikes födda
+i arbetsför ålder i Dalarna år 1997-2024".
 }
 \details{
-Data hämtas direkt med \code{pxweb2r}: länstabellerna TAB389 (till och med 2021) och TAB6384 (från 2022), och
+Data kommer från SCB:s statistik "Registerdata för integration" (AA0003) i statistikdatabasen och hämtas direkt med \code{pxweb2r}: länstabellerna TAB389 (till och med 2021) och TAB6384 (från 2022), och
 kommuntabellerna TAB4881 (till och med 2021) och TAB6383 (från 2022). Före 2022 heter måtten
 "förvärvsarbetande" i stället för "sysselsatta" (ny definition från 2019). Serierna sätts ihop som en serie.
 

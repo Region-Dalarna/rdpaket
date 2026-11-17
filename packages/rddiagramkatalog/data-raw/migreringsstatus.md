@@ -153,7 +153,7 @@ ursprungliga namn.
 | diag_inflyttare_kommuner_dalarna_kvar_efter_5ar.R | diag_inflyttare_kvarboende_5_ar_kommun_mikrodata_scb | 0.0.0.9098 | Excelfil från G:, mikrodatabasen (vy RTB) |
 | diag_uppfoljning_kvarboende_flytt_gymnavg_ej_kon_bakgr.R | diag_uppfoljning_gymnavg_kvarboende_flytt_mikrodata_scb | 0.0.0.9099 | Excelfil från G:, mikrodatabasen (vy Gymnasiet – avgångna och RTB) |
 | diag_bas_syss_arblosa_inr_utr_fodda_manad.R | diag_bas_arblos_syss_inr_utr_fodda_manad_scb | 0.0.0.9102 | Hämtar direkt med pxweb2r (TAB6260); ett diagram per anrop, `diagramtyp` = jamforelse/tidsserie |
-| diag_etablering_vistelsetid_test.R (funktionen `diag_etablering_vistelsetid_lan_kommun`) | diag_etablering_vistelsetid_kon_ar_scb | 0.0.0.9103 | Hämtar direkt med pxweb2r; kön som facet i gul/grön nyansskala per år, `cont_klartext` väljer mått |
+| diag_etablering_vistelsetid_test.R (funktionen `diag_etablering_vistelsetid_lan_kommun`) | diag_etablering_vistelsetid_kon_ar_scb | 0.0.0.9104 | Hämtar direkt med pxweb2r; kön som facet i gul/grön nyansskala per år, `cont_klartext` väljer mått |
 
 ## Avsiktligt inte migrerade (avvecklade eller ersatta källskript)
 
