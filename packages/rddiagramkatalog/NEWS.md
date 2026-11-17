@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9100
+
+* Källtext för mikrodatabasen enhetlig: "Källa: Regionala utvecklingsdatabasen (SCB), <vy>". Ändrat i `diag_uppfoljning_gymnavg_kvarboende_flytt_mikrodata_scb()` (vy: Gymnasiet – avgångna och RAKS/BAS) och `diag_inflyttare_kvarboende_5_ar_kommun_mikrodata_scb()` (vy saknas än). Regeln finns i KONVENTIONER.md.
+
 # rddiagramkatalog 0.0.0.9099
 
 * Nytt diagram `diag_uppfoljning_gymnavg_kvarboende_flytt_mikrodata_scb()`: var gymnasiets avgångselever bor tio år senare (kvarboende, återflyttad, utflyttad, utvandrad, avliden), utan uppdelning på kön och bakgrund, över kommungräns, länsgräns eller båda.
