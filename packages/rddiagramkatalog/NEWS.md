@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9098
+
+* Nytt diagram `diag_inflyttare_kvarboende_5_ar_kommun_mikrodata_scb()`: andel som bor kvar i kommunen fem år efter inflyttning, ett stapeldiagram per kommun i Dalarna. Migrerat från `diag_inflyttare_kommuner_dalarna_kvar_efter_5ar()`.
+  Läser en manuellt underhållen Excel-fil på G: (Dalarnas mikrodatabas, därav `mikrodata` i namnet) med `rdverktyg::sakerstall_indatafil()`, som ger tydligt fel om filen saknas, och kontrollerar att kolumnerna `Ar`, `andel` och `Kommun_namn` finns.
+  Ändrat jämfört med originalet: inga `library()`/`source()` (paketberoenden i stället), `output_mapp`/`skriv_bildfil` heter `utmapp`/`skriv_diagramfil`, nya `returnera_data` och `returnera_figur`, och funktionen har nytt namn enligt namnkonventionen.
+
 # rddiagramkatalog 0.0.0.9097
 
 * `karta_gg_kraftfalt_scb()`: meddelandet "Coordinate system already present" skrivs inte längre i konsolen.
