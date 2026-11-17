@@ -1,3 +1,7 @@
+# rddiagram 0.0.0.9044
+
+* `SkapaStapelDiagram()`: en namngiven färgvektor (`skickad_namngiven_fargvektor` + `farg_variabler`) tillsammans med `facet_grp` sorterade tidigare om x-axeln inom varje panel efter värdet (`tidytext::reorder_within()`), vilket gav dubbla och felplacerade x-kategorier och ignorerade x-variabelns faktornivåer. Nu görs den omsorteringen bara när `facet_sort = TRUE`.
+
 # rddiagram 0.0.0.9043
 
 * Ny färgskala `diagramfarger("rd_kraftfaltskarta")`: namngivna färger för kraftfältskartan (centrum, solitar, satellit,

@@ -241,9 +241,9 @@ SkapaStapelDiagram <- function(
   }
 
   # facet-sortering (kräver tidytext)
-  if (har_facet && (facet_sort || har_namngiven)) {
+  if (har_facet && facet_sort) {
     if (!requireNamespace("tidytext", quietly = TRUE)) {
-      stop("Paketet 'tidytext' krävs för facet_sort / namngiven färgvektor i facet.", call. = FALSE)
+      stop("Paketet 'tidytext' krävs för facet_sort.", call. = FALSE)
     }
     plot_df[[facet_grp]] <- factor(plot_df[[facet_grp]])
     plot_df[[skickad_x_var]] <- tidytext::reorder_within(
@@ -371,7 +371,7 @@ SkapaStapelDiagram <- function(
   if (har_facet) {
     p <- p + ggplot2::facet_wrap(stats::as.formula(paste("~", facet_grp)),
                                  scales = facet_scale, ncol = facet_kolumner, nrow = facet_rader)
-    if (facet_sort || har_namngiven) p <- p + tidytext::scale_x_reordered()
+    if (facet_sort) p <- p + tidytext::scale_x_reordered()
     p <- p + ggplot2::theme(
       strip.text = ggplot2::element_text(color = "black", size = facet_rubrik_storlek),
       strip.background = ggplot2::element_blank()
