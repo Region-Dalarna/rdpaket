@@ -154,6 +154,7 @@ ursprungliga namn.
 | diag_uppfoljning_kvarboende_flytt_gymnavg_ej_kon_bakgr.R | diag_uppfoljning_gymnavg_kvarboende_flytt_mikrodata_scb | 0.0.0.9099 | Excelfil från G:, mikrodatabasen (vy Gymnasiet – avgångna och RTB) |
 | diag_bas_syss_arblosa_inr_utr_fodda_manad.R | diag_bas_arblos_syss_inr_utr_fodda_manad_scb | 0.0.0.9102 | Hämtar direkt med pxweb2r (TAB6260); ett diagram per anrop, `diagramtyp` = jamforelse/tidsserie |
 | diag_etablering_vistelsetid_test.R (funktionen `diag_etablering_vistelsetid_lan_kommun`) | diag_etablering_vistelsetid_kon_ar_scb | 0.0.0.9104 | Hämtar direkt med pxweb2r; kön som facet i gul/grön nyansskala per år, `cont_klartext` väljer mått |
+| diag_hogst_andel_SSYK_utr_fodda_inv_sen_10_aren.R (funktionen `diag_hogst_andel_utr_fodda_som_inv_sen_10_aren_per_SSYK3`) | diag_hogst_andel_utr_fodda_inv_sen_10_aren_ssyk3_mikrodata_scb | 0.0.0.9105 | Excelfil från G: (mikrodatabasen, vy NMS); `antal_storsta_yrken` fungerade inte i originalet |
 
 ## Avsiktligt inte migrerade (avvecklade eller ersatta källskript)
 

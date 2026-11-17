@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9105
+
+* Nytt diagram `diag_hogst_andel_utr_fodda_inv_sen_10_aren_ssyk3_mikrodata_scb()`: yrkena (SSYK3) med högst andel utrikes födda som invandrat de senaste tio åren, för en eller flera regioner (facetdiagram eller ett diagram per region). Migrerat från det lokala skriptet `diag_hogst_andel_utr_fodda_som_inv_sen_10_aren_per_SSYK3()`.
+  Data är en Excel-fil på G: ur mikrodatabasen (kontrolleras med `rdverktyg::sakerstall_indatafil()`). Källtexten följer mikrodatakonventionen: "Regionala utvecklingsdatabasen (SCB), NMS".
+  Ändrat: inga `library()`/`source()`, `output_mapp`/`skapa_fil` heter `utmapp`/`skriv_diagramfil`, `skapa_facetdiagram` heter `diag_facet`, `lagg_till_logga` heter `visa_logga_i_diagram`, nya `returnera_data`/`returnera_figur`, kolumnerna kontrolleras med tydligt fel, och `antal_storsta_yrken` används nu (originalet visade alltid 15 oavsett värde). Stavfel i källtexten rättat (förvärvsarbetande).
+
 # rddiagramkatalog 0.0.0.9104
 
 * `diag_etablering_vistelsetid_kon_ar_scb()`: rubriken följer det lokala originalet ("Sysselsatta utrikes respektive inrikes födda i arbetsför ålder i Dalarna år 1997-2024", utan kolon, med måttets ord för övriga mått), `startar = NA` (standard) tar alla år från 1997, färgskalorna börjar på originalets ljusa nyanser, och källtexten är nu "Registerdata för integration" (SCB:s statistik AA0003, som tabellerna TAB389/TAB4881/TAB6383/TAB6384 tillhör) i stället för BAS.
