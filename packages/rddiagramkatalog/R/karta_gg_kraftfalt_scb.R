@@ -174,19 +174,21 @@ intern_lagg_kraftfalt_pa_karta <- function(gg, kraftfalt, bbox, lan_gis, kartrub
   falt <- function(gg, lager, farg) {
     x <- till_3006(lager)
     if (is.null(x)) return(gg)
-    gg + ggplot2::geom_sf(data = x, fill = farg, colour = NA, alpha = 0.7)
+    # varje geom_sf-lager meddelar att det ersätter bakgrundens koordinatsystem; utsnittet sätts om längre ned
+    suppressMessages(gg + ggplot2::geom_sf(data = x, fill = farg, colour = NA, alpha = 0.7))
   }
   gg <- falt(gg, kraftfalt$primla_areas, f[["falt"]])
   gg <- falt(gg, kraftfalt$secla_areas, f[["sekundart_falt"]])
   gg <- falt(gg, kraftfalt$commonla_areas, f[["sekundart_falt"]])
 
-  gg <- gg + ggplot2::geom_sf(data = intern_utan_hal(sf::st_simplify(lan_gis, preserveTopology = TRUE, dTolerance = 50)),
-                              fill = NA, colour = f[["lansgrans"]], linewidth = 0.5)
+  gg <- suppressMessages(gg + ggplot2::geom_sf(
+    data = intern_utan_hal(sf::st_simplify(lan_gis, preserveTopology = TRUE, dTolerance = 50)),
+    fill = NA, colour = f[["lansgrans"]], linewidth = 0.5))
 
   punkter <- function(gg, lager, fyllning, kant, storlek) {
     x <- till_punkter(lager)
     if (is.null(x)) return(gg)
-    gg + ggplot2::geom_sf(data = x, shape = 21, fill = fyllning, colour = kant, size = storlek, stroke = 0.4)
+    suppressMessages(gg + ggplot2::geom_sf(data = x, shape = 21, fill = fyllning, colour = kant, size = storlek, stroke = 0.4))
   }
   gg <- punkter(gg, kraftfalt$satellites, f[["satellit"]], f[["satellit_kant"]], 1.6)
   gg <- punkter(gg, kraftfalt$solitary, f[["solitar"]], f[["solitar_kant"]], 1.9)

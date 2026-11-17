@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9097
+
+* `karta_gg_kraftfalt_scb()`: meddelandet "Coordinate system already present" skrivs inte längre i konsolen.
+
 # rddiagramkatalog 0.0.0.9096
 
 * `karta_gg_kraftfalt_scb()`: texten i textrutan görs så stor som får plats i rutan, som behåller sin storlek. Raderna bryts efter textens verkliga bredd (via `systemfonts`), så att utrymmet till höger om texten används.
