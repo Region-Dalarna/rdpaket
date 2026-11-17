@@ -12,6 +12,7 @@
 \alias{hamta_agency_id}
 \alias{hamta_gtfs_data}
 \alias{ladda_upp_till_databas}
+\alias{lagg_till_alternativa_id_dalatrafik}
 \alias{mapview_gtfs}
 \alias{radera_gamla_versioner}
 \alias{skapa_tabell_linjeklassificering}
@@ -57,6 +58,9 @@ hamta_gtfs_data(gtfs_dataset = "20", spara_filmap = NA,
 
 ladda_upp_till_databas(con, gtfs_data, schema = "gtfs",
   gtfs_dataset = "regional", transaktion = FALSE)
+
+lagg_till_alternativa_id_dalatrafik(gtfs_data_dalarna,
+  agency_namn = "Dalatrafik", decimaler = 5)
 
 mapview_gtfs(gtfs_data)
 
@@ -116,6 +120,10 @@ are built after a version transition.}
 \item{buffert_km}{Optional buffer around the polygon, in kilometres.}
 \item{fullstandiga_operatorer}{Optional agency-name substrings whose complete
 networks should be retained.}
+\item{gtfs_data_dalarna}{A Sweden 3 GTFS data list filtered to Dalarna.
+\code{lagg_till_alternativa_id_dalatrafik()} adds the character columns
+\code{dt_hpl_id} and \code{dt_stop_id} to its \code{stops} table.}
+\item{decimaler}{Number of decimals used when rounding coordinates for matching.}
 }
 \value{
 GTFS tables, filtered GTFS objects, map widgets, agency identifiers, or

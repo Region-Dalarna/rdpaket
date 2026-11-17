@@ -86,6 +86,8 @@ skapa_vyer_hallplats <- function(con, schema = "gtfs", agency_id = NULL,
         SELECT
             st.stop_id,
             st.hpl_id,
+            st.dt_hpl_id,
+            st.dt_stop_id,
             st.stop_name,
             st.platform_code,
             st.parent_station,
@@ -114,6 +116,8 @@ skapa_vyer_hallplats <- function(con, schema = "gtfs", agency_id = NULL,
         SELECT
             COALESCE(h.stop_id, nva.stop_id) AS stop_id,
             COALESCE(h.hpl_id, nva.hpl_id) AS hpl_id,
+            COALESCE(h.dt_hpl_id, nva.dt_hpl_id) AS dt_hpl_id,
+            COALESCE(h.dt_stop_id, nva.dt_stop_id) AS dt_stop_id,
             COALESCE(h.stop_name, nva.stop_name) AS stop_name,
             SUM(nva.genomsnitt_veckodag_avgangar) AS genomsnitt_veckodag_avgangar,
             SUM(nva.antal_lordag_avgangar) AS antal_lordag_avgangar,
@@ -129,6 +133,7 @@ skapa_vyer_hallplats <- function(con, schema = "gtfs", agency_id = NULL,
         LEFT JOIN {schema}.stops h ON nva.parent_station = h.stop_id
         GROUP BY
             COALESCE(h.stop_id, nva.stop_id), COALESCE(h.hpl_id, nva.hpl_id),
+            COALESCE(h.dt_hpl_id, nva.dt_hpl_id), COALESCE(h.dt_stop_id, nva.dt_stop_id),
             COALESCE(h.stop_name, nva.stop_name), COALESCE(h.geometry, nva.geometry);
       "))
       gtfs_skapa_geomindex(con, schema, vy_hallplats)
@@ -230,6 +235,8 @@ skapa_vyer_historisk_hallplats <- function(con, schema = "gtfs", agency_id = NUL
             CONCAT(st.stop_id, '_', nv.version) AS unique_id,
             st.stop_id,
             st.hpl_id,
+            st.dt_hpl_id,
+            st.dt_stop_id,
             st.stop_name,
             st.platform_code,
             st.parent_station,
@@ -260,6 +267,8 @@ skapa_vyer_historisk_hallplats <- function(con, schema = "gtfs", agency_id = NUL
             CONCAT(COALESCE(h.stop_id, nva.stop_id), '_', nva.version) AS unique_id,
             COALESCE(h.stop_id, nva.stop_id) AS stop_id,
             COALESCE(h.hpl_id, nva.hpl_id) AS hpl_id,
+            COALESCE(h.dt_hpl_id, nva.dt_hpl_id) AS dt_hpl_id,
+            COALESCE(h.dt_stop_id, nva.dt_stop_id) AS dt_stop_id,
             COALESCE(h.stop_name, nva.stop_name) AS stop_name,
             nva.startdatum,
             nva.slutdatum,
@@ -278,6 +287,7 @@ skapa_vyer_historisk_hallplats <- function(con, schema = "gtfs", agency_id = NUL
         LEFT JOIN {s}.stops h ON nva.parent_station = h.stop_id AND nva.version = h.version
         GROUP BY
             COALESCE(h.stop_id, nva.stop_id), COALESCE(h.hpl_id, nva.hpl_id),
+            COALESCE(h.dt_hpl_id, nva.dt_hpl_id), COALESCE(h.dt_stop_id, nva.dt_stop_id),
             COALESCE(h.stop_name, nva.stop_name), nva.startdatum, nva.slutdatum,
             COALESCE(ST_SetSRID(h.geometry, 3006), nva.geometry), nva.version;
       "))
