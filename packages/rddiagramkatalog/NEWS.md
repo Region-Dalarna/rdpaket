@@ -1,3 +1,10 @@
+# rddiagramkatalog 0.0.0.9107
+
+* Två nya diagram ur SCB:s regionala matchningsindikatorer, för riket, län och FA-regioner (inte kommuner), 2019–2024, med utbildningsgrupp som uppdelning:
+  * `diag_matchning_u1a_arbmarknadsstallning_utbgrp_scb()` (U1a, TAB6367): förvärvsfrekvens, arbetslöshet, arbetskraftsdeltagande eller andel studerande per utbildningsgrupp. Diagramtyper: `"utbildningsgrupper"` (ett år, med markering av valda grupper), `"tidsserie"`, `"fordelning"` (förvärvsarbetande, arbetslösa och utanför arbetskraften) och `"jamforelse"` (regioner jämförda för en utbildningsgrupp).
+  * `diag_matchning_u2_pendling_utbgrp_scb()` (U2, TAB6369): andel utpendlare, andel inpendlare eller nettopendling per utbildningsgrupp, totalt eller uppdelat på kvinnor och män. Diagramtyper: `"utbildningsgrupper"`, `"tidsserie"` och `"jamforelse"`.
+  Utbildningsgrupper med färre än `minsta_antal` (30) personer tas inte med i jämförelserna. Tidsseriebrott 2019 och 2022 (SCB:s noter) är beskrivna i hjälpsidorna. Gemensam ritning i `intern_matchning_stapel()`.
+
 # rddiagramkatalog 0.0.0.9106
 
 * Nya diagram ur SCB:s regionala matchningsindikatorer, migrerade från det lokala skriptet `diag_matchningsindikatorerna.R` och delade i tre funktioner (en per tabell), hämtade direkt med `pxweb2r`:
