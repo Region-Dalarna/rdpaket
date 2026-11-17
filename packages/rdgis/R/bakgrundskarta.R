@@ -290,6 +290,9 @@ hamta_bakgrundskarta <- function(region_vekt = "20", lager = NULL, bbox = NULL,
             bbox[3] + marginal * bredd, bbox[4] + marginal * hojd)
 
   stats::setNames(lapply(lager, function(l) {
-    sf::st_read(con, query = intern_bakgrund_urval_sql(schema, l, bbox), quiet = TRUE)
+    x <- sf::st_read(con, query = intern_bakgrund_urval_sql(schema, l, bbox), quiet = TRUE)
+    # ett tomt utsnitt (t.ex. glaciärer i Dalarna) kommer utan koordinatreferens
+    if (is.na(sf::st_crs(x))) sf::st_crs(x) <- 3006
+    x
   }), lager)
 }

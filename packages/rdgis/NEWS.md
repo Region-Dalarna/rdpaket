@@ -1,3 +1,8 @@
+# rdgis 0.0.0.9008
+
+* `hamta_bakgrundskarta()`: lager utan objekt i utsnittet (t.ex. `glaciar` för Dalarna) får nu EPSG:3006. Förut saknade de koordinatreferens, vilket gav felet
+  "cannot transform sfc object with missing crs" när de ritades med `geom_sf()`.
+
 # rdgis 0.0.0.9007
 
 * `skapa_bakgrundskarta_topografi(kalla_schema = "topografi_1m")` bygger bakgrundskartan för hela Sverige ur Lantmäteriets Topografi 1M, som standard i schemat
