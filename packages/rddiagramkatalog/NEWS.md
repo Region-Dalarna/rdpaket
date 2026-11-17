@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9096
+
+* `karta_gg_kraftfalt_scb()`: texten i textrutan görs så stor som får plats i rutan, som behåller sin storlek. Raderna bryts efter textens verkliga bredd (via `systemfonts`), så att utrymmet till höger om texten används.
+
 # rddiagramkatalog 0.0.0.9095
 
 * `karta_gg_kraftfalt_scb()` använder nu bakgrundskartan över Sverige (Topografi 1M, med grannländer) i stället för Dalarna-kartan ur Topografi 10, med sjö- och havsnamn (`etiketter = "vatten"`).

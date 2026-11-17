@@ -109,6 +109,36 @@ karta_gg_kraftfalt_scb <- function(
   if (returnera_figur) invisible(stats::setNames(list(gg), filnamn_bas))
 }
 
+# Största textstorlek (ggplot-storlek, mm) där forklaringstext får plats i en ruta som är bredd_mm bred och hojd_mm
+# hög (raderna 1,33 x storleken höga). Texten bryts efter verklig bredd i serifteckensnittet. NULL om
+# systemfonts saknas eller texten inte får plats ens med storleken `minsta`; då gäller den ursprungliga brytningen.
+#' @noRd
+intern_anpassa_text_till_ruta <- function(forklaringstext, bredd_mm, hojd_mm, minsta = 2.4, storsta = 4, steg = 0.05) {
+  if (!requireNamespace("systemfonts", quietly = TRUE)) return(NULL)
+  pt <- ggplot2::.pt
+  bredd_pt <- function(x, storlek) {
+    vapply(x, function(t) systemfonts::shape_string(t, family = "serif", size = storlek * pt)$metrics$width, 0)
+  }
+  bryt <- function(stycke, storlek) {
+    ord <- strsplit(trimws(stycke), "[[:space:]]+")[[1]]
+    max_pt <- 0.97 * bredd_mm / 0.3528  # 3 % marginal; 1 pt = 0,3528 mm; shape_string mäter i punkter vid 72 dpi
+    rader <- character(0); rad <- ""
+    for (o in ord) {
+      kand <- if (nchar(rad) == 0) o else paste(rad, o)
+      if (nchar(rad) > 0 && bredd_pt(kand, storlek) > max_pt) { rader <- c(rader, rad); rad <- o } else rad <- kand
+    }
+    c(rader, rad)
+  }
+  for (s in seq(storsta, minsta, by = -steg)) {
+    stycken <- lapply(forklaringstext, bryt, storlek = s)
+    antal <- sum(lengths(stycken)) + (length(stycken) - 1)  # en blankrad mellan stycken
+    if (antal * s * 1.33 <= hojd_mm) {
+      return(list(storlek = s, text = paste(vapply(stycken, paste, "", collapse = "\n"), collapse = "\n\n")))
+    }
+  }
+  NULL
+}
+
 # Standardtexten i textrutan, med tröskelvärdena inskrivna.
 #' @noRd
 intern_kraftfalt_forklaringstext <- function(enskilt_troskelvarde, totalt_troskelvarde) {
@@ -194,6 +224,14 @@ intern_lagg_kraftfalt_pa_karta <- function(gg, kraftfalt, bbox, lan_gis, kartrub
   rad_mm <- textstorlek * 1.33  # uppmätt radavstånd (lineheight 1.1) i mm
   rubrik_mm <- 10
   ruta_hojd <- (rubrik_mm + rader * rad_mm + 1) * upm
+  # Rutans mått är fasta (se ovan). Texten görs så stor som får plats i dem, med radbrytning efter textens
+  # verkliga bredd i serifteckensnittet, så att utrymmet till höger används.
+  anpassad <- intern_anpassa_text_till_ruta(forklaringstext, ruta_mm - 8, (ruta_hojd / upm) - rubrik_mm - 1,
+                                            minsta = textstorlek)
+  if (!is.null(anpassad)) {
+    textstorlek <- anpassad$storlek
+    brodtext <- anpassad$text
+  }
   x1 <- bbox[["xmax"]]; x0 <- x1 - ruta_mm * upm
   y1 <- bbox[["ymax"]]; y0 <- y1 - ruta_hojd
   gg <- gg +
