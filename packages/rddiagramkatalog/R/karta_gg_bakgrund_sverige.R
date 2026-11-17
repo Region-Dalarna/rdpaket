@@ -17,9 +17,10 @@
 #'   landsvägar), `"mellan"` (små landsvägar) och `"sma"`. Standard `"stora"`, eftersom de mindre vägarna
 #'   gör en riksöversikt stökig. `NULL` ritar inga vägar.
 #' @param vattendrag `TRUE` (standard) ritar vattendrag som tunna linjer.
-#' @param utland Hur områden utanför Sverige ritas: `"grann"` (standard) en något mörkare grå ton, så
-#'   att Sverige syns, `"vatten"` i vattenfärg (grannländerna blir då som hav) eller `"inget"` i samma
-#'   färg som Sverige.
+#' @param utland Hur områden utanför Sverige ritas: `"grann"` (standard) grannländerna som en något mörkare grå
+#'   ton, så att Sverige syns, `"vatten"` i vattenfärg (grannländerna blir då som hav) eller `"inget"` i samma
+#'   färg som Sverige. Har lagret `grannlander` byggts (`rdgis::skapa_grannlander()`) ritas grannländerna
+#'   grå och havet utanför Sverige i vattenfärg; annars ritas hela utlandet som en grå yta.
 #' @param kalla_text Källhänvisning nere till höger. Standard två rader: bakgrundskartans källa
 #'   (Lantmäteriet, Topografi 1M) och "Bearbetning: Samhällsanalys, Region Dalarna". `NULL`, `NA` eller
 #'   `""` ger ingen text.
@@ -146,6 +147,12 @@ intern_bygg_bakgrund_sverige <- function(region_vekt, vagar, vattendrag, utland,
                       crs = sf::st_crs(3006))
   lager <- rdgis::hamta_bakgrundskarta(lager = lager_namn, bbox = bbox, marginal = 0,
                                        schema = "bakgrundskarta_sverige", con = con)
+  # grannländer (Natural Earth) är frivilligt; utan lagret ritas utlandet som en enda yta
+  if (utland == "grann" && rdgis::bakgrundskarta_finns(schema = "bakgrundskarta_sverige", lager = "grannlander",
+                                                       con = con, tyst = TRUE)) {
+    lager$grannlander <- rdgis::hamta_bakgrundskarta(lager = "grannlander", bbox = bbox, marginal = 0,
+                                                     schema = "bakgrundskarta_sverige", con = con)$grannlander
+  }
   if ("storsta_per_lan" %in% etiketter) lager$storsta_per_lan <- intern_storsta_tatort_per_lan(lan_gis)
   if (!is.null(max_orter_per_lan) && !is.null(lager$ortnamn)) lager$ortnamn <- intern_lagg_pa_folkmangd(lager$ortnamn)
   tid("Hämtade lagren ur databasen", t0)
@@ -247,7 +254,13 @@ intern_rita_bakgrund_sverige <- function(lager, bbox, vagar = "stora", utland = 
     gg
   }
 
-  gg <- yta(gg, "utland", farg_utland)
+  if (utland == "grann" && !is.null(lager$grannlander)) {
+    # utland är då havet utanför Sverige och grannländerna läggs ovanpå
+    gg <- yta(gg, "utland", f[["vatten"]])
+    gg <- yta(gg, "grannlander", farg_utland)
+  } else {
+    gg <- yta(gg, "utland", farg_utland)
+  }
   gg <- yta(gg, "fjall", "#F4F4F2")
   gg <- yta(gg, "skog", f[["skog"]])
   gg <- yta(gg, "glaciar", "#FFFFFF")

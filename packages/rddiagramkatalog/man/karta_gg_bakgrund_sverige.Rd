@@ -35,9 +35,10 @@ gör en riksöversikt stökig. \code{NULL} ritar inga vägar.}
 
 \item{vattendrag}{\code{TRUE} (standard) ritar vattendrag som tunna linjer.}
 
-\item{utland}{Hur områden utanför Sverige ritas: \code{"grann"} (standard) en något mörkare grå ton, så
-att Sverige syns, \code{"vatten"} i vattenfärg (grannländerna blir då som hav) eller \code{"inget"} i samma
-färg som Sverige.}
+\item{utland}{Hur områden utanför Sverige ritas: \code{"grann"} (standard) grannländerna som en något mörkare grå
+ton, så att Sverige syns, \code{"vatten"} i vattenfärg (grannländerna blir då som hav) eller \code{"inget"} i samma
+färg som Sverige. Har lagret \code{grannlander} byggts (\code{rdgis::skapa_grannlander()}) ritas grannländerna
+grå och havet utanför Sverige i vattenfärg; annars ritas hela utlandet som en grå yta.}
 
 \item{kalla_text}{Källhänvisning nere till höger. Standard två rader: bakgrundskartans källa
 (Lantmäteriet, Topografi 1M) och "Bearbetning: Samhällsanalys, Region Dalarna". \code{NULL}, \code{NA} eller

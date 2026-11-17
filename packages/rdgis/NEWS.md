@@ -1,3 +1,8 @@
+# rdgis 0.0.0.9010
+
+* Ny funktion `skapa_grannlander()` bygger lagret `grannlander` (landytor för grannländerna, ur Natural Earth 10 m, public domain) i `bakgrundskarta_sverige`.
+  Topografi 1M har inga landytor utanför Sverige. Lagret beskärs mot lagret `utland`, så det inte överlappar svenskt land. Lagret är frivilligt och ingår inte i "alla lager" för `hamta_bakgrundskarta()` och `bakgrundskarta_finns()`.
+
 # rdgis 0.0.0.9009
 
 * Nytt lager `hav` för Topografi 1M (enbart havsytorna, svenskt territorialvatten), som används för att klippa länsgränser mot kusten. Bygg det med

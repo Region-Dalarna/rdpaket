@@ -264,6 +264,8 @@ hamta_bakgrundskarta <- function(region_vekt = "20", lager = NULL, bbox = NULL,
   intern_krav("sf")
   alla_lager <- intern_bakgrund_lager(intern_bakgrund_kalla(schema))
   if (is.null(lager)) lager <- alla_lager
+  # grannlander är ett frivilligt lager (skapa_grannlander()) och ingår därför inte i "alla lager"
+  if (intern_bakgrund_kalla(schema) == "topografi_1m") alla_lager <- c(alla_lager, "grannlander")
   okanda <- setdiff(lager, alla_lager)
   if (length(okanda) > 0) stop("Okända lager: ", paste(okanda, collapse = ", "), call. = FALSE)
 

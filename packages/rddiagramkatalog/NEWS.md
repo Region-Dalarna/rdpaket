@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9094
+
+* `karta_gg_bakgrund_sverige()`: har lagret `grannlander` byggts (`rdgis::skapa_grannlander()`, kräver rdgis 0.0.0.9010) ritas grannländerna grå och havet utanför Sverige i vattenfärg. Utan lagret ritas utlandet som förut.
+
 # rddiagramkatalog 0.0.0.9093
 
 * `karta_gg_bakgrund_sverige()`: länsgränserna klipps nu mot kusten och ritas bara över land och sjöar. `lansgrans_i_havet = TRUE` ritar dem även i territorialvattnet. Kräver lagret `hav`
