@@ -1,3 +1,8 @@
+# rddiagramkatalog 0.0.0.9108
+
+* `diag_matchning_u1a_arbmarknadsstallning_utbgrp_scb()` och `diag_matchning_u2_pendling_utbgrp_scb()` sätter nu ihop de nya tabellerna (TAB6367/TAB6369, 2019–) med SCB:s äldre U1a (TAB5400) och U2 (TAB5279), 2006–2018, till tidsserier 2006–2024 (`inkludera_aldre_tabell = TRUE`, standard). Tabellerna har samma regioner, och 117 av de 119 äldre utbildningsgrupperna finns med samma kod och namn i de nya; grupper som bara finns i en av tabellerna får bara den delen. De äldre tabellerna är inte CKM-behandlade, och serien har tidsseriebrott 2019 och 2022. Ett enskilt år till och med 2018 i `ar` hämtas ur den äldre tabellen.
+* Fördelningsdiagrammet i U1a klippte bort en stapeldel när andelarna summerade till 100,00000000000001 (flyttalsfel); andelarna avrundas nu nedåt. Årsetiketterna i tidsserier med många år ritas lodrätt.
+
 # rddiagramkatalog 0.0.0.9107
 
 * Två nya diagram ur SCB:s regionala matchningsindikatorer, för riket, län och FA-regioner (inte kommuner), 2019–2024, med utbildningsgrupp som uppdelning:

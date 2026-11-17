@@ -12,6 +12,7 @@ diag_matchning_u1a_arbmarknadsstallning_utbgrp_scb(
     "andel studerande"),
   utb_klartext = NA,
   ar = NA,
+  inkludera_aldre_tabell = TRUE,
   minsta_antal = 30,
   visa_logga_i_diagram = TRUE,
   logga_sokvag = NA,
@@ -40,6 +41,11 @@ ger \code{"samtliga utbildningsgrupper"}; \code{"jamforelse"} använder den för
 
 \item{ar}{Vilket år som visas för \code{"utbildningsgrupper"} och \code{"jamforelse"}. \code{NA} (standard) tar senaste året.}
 
+\item{inkludera_aldre_tabell}{\code{TRUE} (standard) sätter ihop den nya tabellen (2019–) med SCB:s äldre U1a (TAB5400,
+2006–2018, uppdateras inte längre) till en tidsserie 2006–2024. Utbildningsgrupper som bara finns i en av
+tabellerna får bara den delen. Ett år till och med 2018 i \code{ar} hämtas ur den äldre tabellen. \code{FALSE} använder
+bara den nya.}
+
 \item{minsta_antal}{Utbildningsgrupper med färre personer än så (i nämnaren för måttet) tas inte med i
 \code{"utbildningsgrupper"} och \code{"jamforelse"}. Standard 30.}
 
@@ -61,7 +67,7 @@ ger \code{"samtliga utbildningsgrupper"}; \code{"jamforelse"} använder den för
 En namngiven lista med ett \code{ggplot}-objekt.
 }
 \description{
-Stapeldiagram ur SCB:s regionala matchningsindikatorer, tabellen Arbetsmarknadsställning (U1a, TAB6367):
+Stapeldiagram ur SCB:s regionala matchningsindikatorer, tabellen Arbetsmarknadsställning (U1a, TAB6367 och äldre TAB5400):
 befolkningen 20–64 år (nattbefolkning) uppdelad på förvärvsarbetande, inskrivna arbetslösa och inte i
 arbetskraften, per utbildningsgrupp. Funktionen ger ett diagram per anrop, av fyra slag (\code{diagramtyp}):
 \itemize{
@@ -75,7 +81,9 @@ riket till som jämförelse. Den första regionen markeras.
 }
 }
 \details{
-Tabellen finns för riket, län och FA-regioner (\code{"FA01"} ... \code{"FA60"}, men inte för kommuner) och gäller 2019–2024. Det finns ingen nyare
-version, och inga äldre versioner finns kvar i SCB:s API. Observera tidsseriebrott 2019 (ny datakälla och
-metod) och 2022 (BAS används för förvärvsarbetande).
+Tabellen finns för riket, län och FA-regioner (\code{"FA01"} ... \code{"FA60"}, men inte för kommuner) och gäller 2019–2024.
+Den äldre versionen (TAB5400, 2006–2018, uppdateras inte och är inte CKM-behandlad) kan sättas ihop med den
+(\code{inkludera_aldre_tabell}). Observera tidsseriebrott 2019 (ny datakälla och metod, AGI i stället för KU) och 2022
+(BAS används för förvärvsarbetande), och att utbildningsgrupperna är något färre i den äldre tabellen (117 av de
+130 nuvarande finns med).
 }

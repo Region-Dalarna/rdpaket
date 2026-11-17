@@ -1,6 +1,6 @@
 #' Diagram: arbetsmarknadsställning per utbildningsgrupp (U1a)
 #'
-#' Stapeldiagram ur SCB:s regionala matchningsindikatorer, tabellen Arbetsmarknadsställning (U1a, TAB6367):
+#' Stapeldiagram ur SCB:s regionala matchningsindikatorer, tabellen Arbetsmarknadsställning (U1a, TAB6367 och äldre TAB5400):
 #' befolkningen 20–64 år (nattbefolkning) uppdelad på förvärvsarbetande, inskrivna arbetslösa och inte i
 #' arbetskraften, per utbildningsgrupp. Funktionen ger ett diagram per anrop, av fyra slag (`diagramtyp`):
 #' * `"utbildningsgrupper"` (standard): alla utbildningsgrupper jämförda ett år, sorterade efter värdet. Med
@@ -11,9 +11,11 @@
 #' * `"jamforelse"`: regionerna i `region_vekt` jämförda för en utbildningsgrupp ett år. Anges bara en region läggs
 #'   riket till som jämförelse. Den första regionen markeras.
 #'
-#' Tabellen finns för riket, län och FA-regioner (`"FA01"` ... `"FA60"`, men inte för kommuner) och gäller 2019–2024. Det finns ingen nyare
-#' version, och inga äldre versioner finns kvar i SCB:s API. Observera tidsseriebrott 2019 (ny datakälla och
-#' metod) och 2022 (BAS används för förvärvsarbetande).
+#' Tabellen finns för riket, län och FA-regioner (`"FA01"` ... `"FA60"`, men inte för kommuner) och gäller 2019–2024.
+#' Den äldre versionen (TAB5400, 2006–2018, uppdateras inte och är inte CKM-behandlad) kan sättas ihop med den
+#' (`inkludera_aldre_tabell`). Observera tidsseriebrott 2019 (ny datakälla och metod, AGI i stället för KU) och 2022
+#' (BAS används för förvärvsarbetande), och att utbildningsgrupperna är något färre i den äldre tabellen (117 av de
+#' 130 nuvarande finns med).
 #'
 #' @param region_vekt Region(er): läns-, FA-regions- eller rikskod (`"00"`). Kommuner finns inte i tabellen. Bara en region för alla
 #'   diagramtyper utom `"jamforelse"`.
@@ -26,6 +28,10 @@
 #'   `NA` markerar ingen). För `"tidsserie"`, `"fordelning"` och `"jamforelse"` är det de som visas (standard `NA`
 #'   ger `"samtliga utbildningsgrupper"`; `"jamforelse"` använder den första).
 #' @param ar Vilket år som visas för `"utbildningsgrupper"` och `"jamforelse"`. `NA` (standard) tar senaste året.
+#' @param inkludera_aldre_tabell `TRUE` (standard) sätter ihop den nya tabellen (2019–) med SCB:s äldre U1a (TAB5400,
+#'   2006–2018, uppdateras inte längre) till en tidsserie 2006–2024. Utbildningsgrupper som bara finns i en av
+#'   tabellerna får bara den delen. Ett år till och med 2018 i `ar` hämtas ur den äldre tabellen. `FALSE` använder
+#'   bara den nya.
 #' @param minsta_antal Utbildningsgrupper med färre personer än så (i nämnaren för måttet) tas inte med i
 #'   `"utbildningsgrupper"` och `"jamforelse"`. Standard 30.
 #' @param visa_logga_i_diagram `TRUE` om logga ska visas i diagrammet.
@@ -44,6 +50,7 @@ diag_matchning_u1a_arbmarknadsstallning_utbgrp_scb <- function(
     matt = c("förvärvsfrekvens", "arbetslöshet", "arbetskraftsdeltagande", "andel studerande"),
     utb_klartext = NA,
     ar = NA,
+    inkludera_aldre_tabell = TRUE,
     minsta_antal = 30,
     visa_logga_i_diagram = TRUE,
     logga_sokvag = NA,
@@ -65,33 +72,30 @@ diag_matchning_u1a_arbmarknadsstallning_utbgrp_scb <- function(
     stop("region_vekt ska vara en region för diagramtypen \"", diagramtyp, "\".", call. = FALSE)
   }
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
-  intern_matchning_kontrollera_regioner("TAB6367", region_vekt)
+  intern_matchning_kontrollera_regioner("TAB6367", region_vekt)   # samma regioner i den äldre tabellen
 
   # ========================================== Hämta data ===============================================
   # Länk till tabell: https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__AM__AM9906__AM9906A/RegionInd19U1aN/
   # (motsvarande tabell TAB6367)
 
-  utb_koder <- if (diagramtyp == "utbildningsgrupper") "*" else {
-    intern_matchning_kod("TAB6367", "Utbildngrupp",
-                         if (all(is.na(utb_klartext))) "samtliga utbildningsgrupper" else utb_klartext)
+  koder <- list(
+    ny = c(A = "000007I4", B = "000007I8", C = "000007I9", studerande = "000007IA", totalt = "000007IC"),
+    gammal = c(A = "000003KU", B = "000003KY", C = "000003KZ", studerande = "000003L0", totalt = "000003L2"))
+
+  # ett enskilt år (jämförelser mellan utbildningsgrupper eller regioner) hämtas ur den tabell som har året,
+  # tidsserier och fördelningar sätter ihop båda tabellerna
+  enskilt_ar <- diagramtyp %in% c("utbildningsgrupper", "jamforelse")
+  if (enskilt_ar && is.na(ar)) {
+    ar <- max(pxweb2r::pxweb2_get_values("TAB6367", "Tid", quiet = TRUE)$code)
   }
-  if (diagramtyp == "jamforelse") utb_koder <- utb_koder[1]
+  utb_val <- if (diagramtyp == "utbildningsgrupper") NULL else {
+    if (all(is.na(utb_klartext))) "samtliga utbildningsgrupper" else if (diagramtyp == "jamforelse") utb_klartext[1] else utb_klartext
+  }
 
-  innehall <- c(A = "Förvärvsarbetande (A)", B = "Inskrivna arbetslösa på Arbetsförmedlingen (B)",
-                C = "Inte i arbetskraften (C)", studerande = "- Varav studerande",
-                totalt = "Totalt antal personer (A+B+C)")
-  koder <- c(A = "000007I4", B = "000007I8", C = "000007I9", studerande = "000007IA", totalt = "000007IC")
-
-  u1a_df <- pxweb2r::pxweb2_get_data(
-    table = "TAB6367",
-    query = list(Region = region_vekt, Utbildngrupp = utb_koder, ContentsCode = unname(koder), Tid = "*"),
-    quiet = TRUE) |>
-    dplyr::rename(regionkod = region_kod, ar = år) |>
-    dplyr::select(regionkod, region, utbildning_kod, utbildning, ar, tabellinnehåll, value) |>
-    dplyr::mutate(tabellinnehåll = names(innehall)[match(tabellinnehåll, innehall)])
-  u1a_df <- u1a_df |>
-    dplyr::filter(!is.na(tabellinnehåll)) |>
-    tidyr::pivot_wider(names_from = tabellinnehåll, values_from = value) |>
+  u1a_df <- intern_matchning_hamta_tabellpar(
+    c(ny = "TAB6367", gammal = "TAB5400"), koder, region_vekt, utb_val,
+    ar = if (enskilt_ar) ar else NULL, med_gammal = inkludera_aldre_tabell) |>
+    tidyr::pivot_wider(names_from = post, values_from = value) |>
     dplyr::mutate(region_txt = intern_matchning_regiontext(regionkod, region))
 
   if (returnera_data) assign("matchning_u1a", u1a_df, envir = .GlobalEnv)
@@ -106,7 +110,8 @@ diag_matchning_u1a_arbmarknadsstallning_utbgrp_scb <- function(
       dplyr::mutate(
         kategori = factor(c(A = "förvärvsarbetande", B = "inskrivna arbetslösa", C = "inte i arbetskraften")[kategori],
                           levels = c("förvärvsarbetande", "inskrivna arbetslösa", "inte i arbetskraften")),
-        andel = antal / totalt * 100)
+        # avrundat nedåt så att de staplade andelarna aldrig summerar till mer än 100 (flyttalsfel klipper annars bort staplar)
+        andel = floor(antal / totalt * 1e8) / 1e6)
     flera <- length(valda_utb) > 1
     if (flera) chart_df$utbildning <- stringr::str_wrap(chart_df$utbildning, 35)
     region_txt <- unique(chart_df$region_txt)
@@ -119,7 +124,10 @@ diag_matchning_u1a_arbmarknadsstallning_utbgrp_scb <- function(
                                                if (flera) "per utbildningsgrupp" else paste0("med ", unique(chart_df$utbildning)),
                                                " i ", region_txt), 80),
       diagram_capt = diagram_capt, manual_y_axis_title = "procent", procent_0_100_10intervaller = TRUE,
-      x_axis_lutning = 0, facet_grp = if (flera) "utbildning" else NULL, facet_scale = "fixed",
+      x_axis_lutning = if (length(unique(chart_df$ar)) > 8) 90 else 0,
+      manual_x_axis_text_vjust = if (length(unique(chart_df$ar)) > 8) 0.5 else NULL,
+      manual_x_axis_text_hjust = if (length(unique(chart_df$ar)) > 8) 1 else NULL,
+      facet_grp = if (flera) "utbildning" else NULL, facet_scale = "fixed",
       facet_legend_bottom = TRUE, lagg_pa_logga = visa_logga_i_diagram, logga_path = logga_sokvag,
       output_mapp = utmapp, filnamn_diagram = diagramfil, skriv_till_diagramfil = skriv_diagramfil)
     gg_list <- stats::setNames(list(gg_obj), stringr::str_remove(diagramfil, "\\.[^.]+$"))
