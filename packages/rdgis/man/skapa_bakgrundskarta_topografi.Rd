@@ -6,7 +6,7 @@
 \usage{
 skapa_bakgrundskarta_topografi(
   con = NULL,
-  schema = "bakgrundskarta_dalarna",
+  schema = NULL,
   kalla_schema = "topografi_10",
   lager = NULL
 )
@@ -15,13 +15,15 @@ skapa_bakgrundskarta_topografi(
 \item{con}{En \code{DBIConnection} med skrivrättigheter mot geodatabasen, eller \code{NULL} (standard) för
 \code{rdpostgres::uppkoppling_adm("geodata")}.}
 
-\item{schema}{Schemat som skapas. Standard \code{"bakgrundskarta_dalarna"}.}
+\item{schema}{Schemat som skapas. \code{NULL} (standard) ger \code{"bakgrundskarta_dalarna"} för \code{topografi_10} och
+\code{"bakgrundskarta_sverige"} för \code{topografi_1m}.}
 
-\item{kalla_schema}{Schemat med topografin. Standard \code{"topografi_10"}.}
+\item{kalla_schema}{Schemat med topografin: \code{"topografi_10"} (standard, länsskala) eller \code{"topografi_1m"} (hela Sverige).}
 
 \item{lager}{Vilka lager som ska byggas, \code{NULL} (standard) = alla.
-Möjliga namn: \code{vatten}, \code{skog}, \code{bebyggelse}, \code{vagar_stora},
-\code{vagar_mellan}, \code{vagar_sma}, \code{jarnvag}, \code{ortnamn}, \code{vattennamn}, \code{sjoar}.}
+Ur \code{topografi_10}: \code{vatten}, \code{skog}, \code{bebyggelse}, \code{vagar_stora}, \code{vagar_mellan}, \code{vagar_sma}, \code{jarnvag},
+\code{ortnamn}, \code{vattennamn}, \code{sjoar}. Ur \code{topografi_1m}: \code{utland}, \code{vatten} (sjöar och hav), \code{skog}, \code{fjall},
+\code{glaciar}, \code{bebyggelse}, \code{vattendrag}, \code{vagar_stora}, \code{vagar_mellan}, \code{vagar_sma}, \code{jarnvag}.}
 }
 \value{
 En \code{data.frame} med lager, antal rader och storlek. Osynligt.

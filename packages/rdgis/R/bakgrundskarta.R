@@ -1,14 +1,57 @@
 # Bakgrundskarta (topografi) ur geodatabasen: bygg schemat bakgrundskarta_dalarna ur topografi_10 och hämta lagren.
 
 # Lagren och deras källor/generalisering. Namnen är tabellnamn i schemat.
-intern_bakgrund_lager <- function() {
+intern_bakgrund_lager <- function(kalla = "topografi_10") {
+  if (kalla == "topografi_1m") {
+    return(c("utland", "vatten", "skog", "fjall", "glaciar", "bebyggelse", "vattendrag",
+             "vagar_stora", "vagar_mellan", "vagar_sma", "jarnvag"))
+  }
   c("vatten", "skog", "bebyggelse", "vagar_stora", "vagar_mellan", "vagar_sma", "jarnvag",
     "ortnamn", "vattennamn", "sjoar")
+}
+
+# Vilken topografikälla ett bakgrundsschema är byggt ur (utifrån schemats namn) och tvärtom
+#' @noRd
+intern_bakgrund_kalla <- function(schema) {
+  if (grepl("sverige", schema, fixed = TRUE)) "topografi_1m" else "topografi_10"
+}
+#' @noRd
+intern_bakgrund_standardschema <- function(kalla_schema) {
+  if (grepl("1m", kalla_schema, fixed = TRUE)) "bakgrundskarta_sverige" else "bakgrundskarta_dalarna"
+}
+
+# SQL per lager för hela Sverige ur Topografi 1M (SWEREF 99 TM). Underlaget är redan generaliserat och litet
+# (några tiotal MB), så ytorna tas rakt av; MULTI-geometrier delas i enkla geometrier.
+#' @noRd
+intern_bakgrund_sql_1m <- function(src = "topografi_1m") {
+  yta <- function(villkor) glue::glue("
+    SELECT (d).geom::geometry(Polygon, 3006) AS geom
+    FROM (SELECT ST_Dump(ST_Force2D(ST_CollectionExtract(ST_MakeValid(geom), 3))) AS d
+          FROM {src}.mark WHERE {villkor}) x")
+  linje <- function(tabell, villkor = "true", extra = "") glue::glue("
+    SELECT {extra}(ST_Dump(ST_Force2D(geom))).geom::geometry(LineString, 3006) AS geom
+    FROM {src}.{tabell} WHERE {villkor}")
+  vag <- function(typer) linje("vaglinje", glue::glue("objekttyp IN ({typer})"),
+                               "objekttyp, gastvag1nummer AS vagnummer, ")
+  list(
+    utland = yta("objekttyp = 'Ej karterat område'"),
+    vatten = yta("objekttyp IN ('Vattenyta', 'Hav')"),
+    skog = yta("objekttyp = 'Skog'"),
+    fjall = yta("objekttyp = 'Kalfjäll'"),
+    glaciar = yta("objekttyp = 'Glaciär'"),
+    bebyggelse = yta("objekttyp = 'Bebyggelse'"),
+    vattendrag = linje("hydrolinje"),
+    vagar_stora = vag("'Motorväg', 'Motortrafikled', 'Mötesfri väg', 'Landsväg'"),
+    vagar_mellan = vag("'Landsväg liten'"),
+    vagar_sma = vag("'Småväg'"),
+    jarnvag = linje("ralstrafik")
+  )
 }
 
 # SQL-sats (CREATE TABLE ... AS <sats>) per lager för länsskala.
 #' @noRd
 intern_bakgrund_sql <- function(src = "topografi_10", mitt = "(ST_MaximumInscribedCircle(d.geom)).center") {
+  if (grepl("1m", src, fixed = TRUE)) return(intern_bakgrund_sql_1m(src))
   # Slår ihop polygoner per klass, förenklar och tar bort små ytor. Ingen kantmatchning mellan klasser
   # behövs eftersom öppen mark och åker är bakgrund och ritas inte.
   yta <- function(villkor, tol, minyta) glue::glue("
@@ -73,18 +116,21 @@ intern_bakgrund_sql <- function(src = "topografi_10", mitt = "(ST_MaximumInscrib
 #'
 #' @param con En `DBIConnection` med skrivrättigheter mot geodatabasen, eller `NULL` (standard) för
 #'   `rdpostgres::uppkoppling_adm("geodata")`.
-#' @param schema Schemat som skapas. Standard `"bakgrundskarta_dalarna"`.
-#' @param kalla_schema Schemat med topografin. Standard `"topografi_10"`.
+#' @param schema Schemat som skapas. `NULL` (standard) ger `"bakgrundskarta_dalarna"` för `topografi_10` och
+#'   `"bakgrundskarta_sverige"` för `topografi_1m`.
+#' @param kalla_schema Schemat med topografin: `"topografi_10"` (standard, länsskala) eller `"topografi_1m"` (hela Sverige).
 #' @param lager Vilka lager som ska byggas, `NULL` (standard) = alla.
-#'   Möjliga namn: `vatten`, `skog`, `bebyggelse`, `vagar_stora`,
-#'   `vagar_mellan`, `vagar_sma`, `jarnvag`, `ortnamn`, `vattennamn`, `sjoar`.
+#'   Ur `topografi_10`: `vatten`, `skog`, `bebyggelse`, `vagar_stora`, `vagar_mellan`, `vagar_sma`, `jarnvag`,
+#'   `ortnamn`, `vattennamn`, `sjoar`. Ur `topografi_1m`: `utland`, `vatten` (sjöar och hav), `skog`, `fjall`,
+#'   `glaciar`, `bebyggelse`, `vattendrag`, `vagar_stora`, `vagar_mellan`, `vagar_sma`, `jarnvag`.
 #'
 #' @return En `data.frame` med lager, antal rader och storlek. Osynligt.
 #' @seealso [hamta_bakgrundskarta()]
 #' @export
-skapa_bakgrundskarta_topografi <- function(con = NULL, schema = "bakgrundskarta_dalarna",
+skapa_bakgrundskarta_topografi <- function(con = NULL, schema = NULL,
                                            kalla_schema = "topografi_10", lager = NULL) {
-  okanda <- setdiff(lager, intern_bakgrund_lager())
+  if (is.null(schema)) schema <- intern_bakgrund_standardschema(kalla_schema)
+  okanda <- setdiff(lager, intern_bakgrund_lager(intern_bakgrund_kalla(schema)))
   if (length(okanda) > 0) stop("Okända lager: ", paste(okanda, collapse = ", "), call. = FALSE)
   egen <- is.null(con)
   if (egen) {
@@ -139,15 +185,16 @@ intern_bakgrund_urval_sql <- function(schema, tabell, bbox) {
 #' Ger ett meddelande om vad som saknas, och är avsedd som förkontroll i funktioner som ritar kartor
 #' med bakgrund ur databasen.
 #'
-#' @param schema Schemat med bakgrundskartan. Standard `"bakgrundskarta_dalarna"`.
-#' @param lager Vilka lager som måste finnas. Standard alla.
+#' @param schema Schemat med bakgrundskartan. Standard `"bakgrundskarta_dalarna"`; `"bakgrundskarta_sverige"` för hela Sverige.
+#' @param lager Vilka lager som måste finnas. `NULL` (standard) = alla lager för schemat.
 #' @param con En `DBIConnection`, eller `NULL` (standard) för en tillfällig uppkoppling.
 #' @param tyst `TRUE` ger bara `TRUE`/`FALSE`, utan meddelande om vad som saknas.
 #'
 #' @return `TRUE` eller `FALSE`.
 #' @export
-bakgrundskarta_finns <- function(schema = "bakgrundskarta_dalarna", lager = intern_bakgrund_lager(),
+bakgrundskarta_finns <- function(schema = "bakgrundskarta_dalarna", lager = NULL,
                                  con = NULL, tyst = FALSE) {
+  if (is.null(lager)) lager <- intern_bakgrund_lager(intern_bakgrund_kalla(schema))
   meddelande <- function(...) if (!tyst) message(...)
   egen <- is.null(con)
   if (egen) {
@@ -181,20 +228,22 @@ bakgrundskarta_finns <- function(schema = "bakgrundskarta_dalarna", lager = inte
 #'
 #' @param region_vekt Länskod(er) eller kommunkod(er); utsnittet är omslutande rektangel för länet
 #'   (kommunkoder ger länet kommunen ligger i). Standard `"20"` (Dalarna). Används inte om `bbox` anges.
-#' @param lager Vilka lager som ska hämtas. Standard alla.
+#' @param lager Vilka lager som ska hämtas. `NULL` (standard) = alla lager för schemat.
 #' @param bbox Ett eget utsnitt: ett `sf::st_bbox()`-objekt eller en numerisk vektor
 #'   `c(xmin, ymin, xmax, ymax)` i EPSG:3006. `NULL` (standard) = utifrån `region_vekt`.
 #' @param marginal Andel av utsnittets storlek som läggs till på alla sidor. Standard 0,05.
-#' @param schema Schemat med bakgrundskartan. Standard `"bakgrundskarta_dalarna"`.
+#' @param schema Schemat med bakgrundskartan. Standard `"bakgrundskarta_dalarna"`; `"bakgrundskarta_sverige"` för hela Sverige.
 #' @param con En `DBIConnection`, eller `NULL` (standard) för en tillfällig uppkoppling.
 #'
 #' @return En namngiven lista med `sf`-objekt, ett per lager.
 #' @seealso [skapa_bakgrundskarta_topografi()], [bakgrundskarta_finns()]
 #' @export
-hamta_bakgrundskarta <- function(region_vekt = "20", lager = intern_bakgrund_lager(), bbox = NULL,
+hamta_bakgrundskarta <- function(region_vekt = "20", lager = NULL, bbox = NULL,
                                  marginal = 0.05, schema = "bakgrundskarta_dalarna", con = NULL) {
   intern_krav("sf")
-  okanda <- setdiff(lager, intern_bakgrund_lager())
+  alla_lager <- intern_bakgrund_lager(intern_bakgrund_kalla(schema))
+  if (is.null(lager)) lager <- alla_lager
+  okanda <- setdiff(lager, alla_lager)
   if (length(okanda) > 0) stop("Okända lager: ", paste(okanda, collapse = ", "), call. = FALSE)
 
   egen <- is.null(con)

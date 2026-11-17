@@ -6,7 +6,7 @@
 \usage{
 hamta_bakgrundskarta(
   region_vekt = "20",
-  lager = intern_bakgrund_lager(),
+  lager = NULL,
   bbox = NULL,
   marginal = 0.05,
   schema = "bakgrundskarta_dalarna",
@@ -17,14 +17,14 @@ hamta_bakgrundskarta(
 \item{region_vekt}{Länskod(er) eller kommunkod(er); utsnittet är omslutande rektangel för länet
 (kommunkoder ger länet kommunen ligger i). Standard \code{"20"} (Dalarna). Används inte om \code{bbox} anges.}
 
-\item{lager}{Vilka lager som ska hämtas. Standard alla.}
+\item{lager}{Vilka lager som ska hämtas. \code{NULL} (standard) = alla lager för schemat.}
 
 \item{bbox}{Ett eget utsnitt: ett \code{sf::st_bbox()}-objekt eller en numerisk vektor
 \code{c(xmin, ymin, xmax, ymax)} i EPSG:3006. \code{NULL} (standard) = utifrån \code{region_vekt}.}
 
 \item{marginal}{Andel av utsnittets storlek som läggs till på alla sidor. Standard 0,05.}
 
-\item{schema}{Schemat med bakgrundskartan. Standard \code{"bakgrundskarta_dalarna"}.}
+\item{schema}{Schemat med bakgrundskartan. Standard \code{"bakgrundskarta_dalarna"}; \code{"bakgrundskarta_sverige"} för hela Sverige.}
 
 \item{con}{En \code{DBIConnection}, eller \code{NULL} (standard) för en tillfällig uppkoppling.}
 }

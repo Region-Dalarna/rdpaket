@@ -6,15 +6,15 @@
 \usage{
 bakgrundskarta_finns(
   schema = "bakgrundskarta_dalarna",
-  lager = intern_bakgrund_lager(),
+  lager = NULL,
   con = NULL,
   tyst = FALSE
 )
 }
 \arguments{
-\item{schema}{Schemat med bakgrundskartan. Standard \code{"bakgrundskarta_dalarna"}.}
+\item{schema}{Schemat med bakgrundskartan. Standard \code{"bakgrundskarta_dalarna"}; \code{"bakgrundskarta_sverige"} för hela Sverige.}
 
-\item{lager}{Vilka lager som måste finnas. Standard alla.}
+\item{lager}{Vilka lager som måste finnas. \code{NULL} (standard) = alla lager för schemat.}
 
 \item{con}{En \code{DBIConnection}, eller \code{NULL} (standard) för en tillfällig uppkoppling.}
 
