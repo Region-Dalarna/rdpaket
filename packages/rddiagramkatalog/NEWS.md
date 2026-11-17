@@ -1,3 +1,13 @@
+# rddiagramkatalog 0.0.0.9106
+
+* Nya diagram ur SCB:s regionala matchningsindikatorer, migrerade från det lokala skriptet `diag_matchningsindikatorerna.R` och delade i tre funktioner (en per tabell), hämtade direkt med `pxweb2r`:
+  * `diag_matchning_e3_utbgrp_scb()` (E3, TAB6929): andel i matchade yrken per utbildningsgrupp, ett år (`diagramtyp = "utbildningsgrupper"`) eller över tid (`"tidsserie"`).
+  * `diag_matchning_u3_utbildningsfloden_scb()` (U3, TAB6928): inflöden och utflöden per utbildningsgrupp, med nettoförändringen markerad.
+  * `diag_matchning_e2_jobbfloden_utbgrp_scb()` (E2, TAB6927): nya förvärvsarbetande och jobbytare, som andel eller antal.
+  Alla använder de nya tabellerna (med CKM, 20–69 respektive 18–69 år). SCB:s äldre tabeller (utan CKM) uppdateras inte längre och har samma tidsperiod som de nya (E2: en period mer, men inte jämförbar), så de används inte. FA-regioner finns inte i de nya tabellerna.
+  Ändrat jämfört med originalet: `Andel i matchade yrken` räknas nu som A/(A+B+C), alltså helt matchade av de förvärvsarbetande med tillräckliga uppgifter. Originalet räknade 100 minus skillnaden mellan förvärvsgrad och matchad förvärvsgrad, vilket också räknar de icke förvärvsarbetande som matchade. SCB:s eget mått A/E finns som `matt = "matchad förvärvsgrad"`. Tabellernas näringsgrensvariabel sätts till samtliga (A-U). Funktionen returnerar nu alla diagram (originalets `diag_jobbinfloden_utbgrp()` returnerade bara det sista), och inga proxy-inställningar eller `library()`/`source()` behövs.
+* Källtexten i `diag_hogst_andel_utr_fodda_inv_sen_10_aren_ssyk3_mikrodata_scb()` är "Källa: Regionala utvecklingsdatabasen (SCB)" utan vy tills vyn är bestämd.
+
 # rddiagramkatalog 0.0.0.9105
 
 * Nytt diagram `diag_hogst_andel_utr_fodda_inv_sen_10_aren_ssyk3_mikrodata_scb()`: yrkena (SSYK3) med högst andel utrikes födda som invandrat de senaste tio åren, för en eller flera regioner (facetdiagram eller ett diagram per region). Migrerat från det lokala skriptet `diag_hogst_andel_utr_fodda_som_inv_sen_10_aren_per_SSYK3()`.

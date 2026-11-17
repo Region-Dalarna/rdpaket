@@ -13,7 +13,7 @@ diag_hogst_andel_utr_fodda_inv_sen_10_aren_ssyk3_mikrodata_scb(
   visa_logga_i_diagram = TRUE,
   logga_sokvag = NA,
   diagram_capt =
-    "Källa: Regionala utvecklingsdatabasen (SCB), NMS\\nBearbetning: Samhällsanalys, Region Dalarna\\nEndast yrken med minst 20 förvärvsarbetande har tagits med i diagrammet.",
+    "Källa: Regionala utvecklingsdatabasen (SCB)\\nBearbetning: Samhällsanalys, Region Dalarna\\nEndast yrken med minst 20 förvärvsarbetande har tagits med i diagrammet.",
   utmapp = rdverktyg::utskriftsmapp(),
   skriv_diagramfil = TRUE,
   returnera_data = FALSE,
@@ -51,7 +51,7 @@ En namngiven lista med \code{ggplot}-objekt, ett eller ett per region.
 Liggande stapeldiagram över de yrken (SSYK3) som har högst andel utrikes födda som invandrat under de senaste
 tio åren, för en eller flera regioner. Med flera regioner kan diagrammet göras som ett facetdiagram (en panel
 per region) eller som ett diagram per region. Data är en manuellt underhållen ögonblicksbild ur Regionala
-utvecklingsdatabasen (SCB), vyn NMS, en Excel-fil på G:, och hämtas alltså inte live från SCB. Filen innehåller
+utvecklingsdatabasen (SCB), en Excel-fil på G:, och hämtas alltså inte live från SCB. Filen innehåller
 alla kommuner i Sverige.
 }
 \details{
