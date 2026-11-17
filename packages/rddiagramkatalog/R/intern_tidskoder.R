@@ -44,3 +44,25 @@ intern_tolka_ar_intervall <- function(tid_koder, ar_till_om_9999 = 2100) {
   slut <- if (delar[2] == "9999") ar_till_om_9999 else as.integer(delar[2])
   start:slut
 }
+
+# Vilka tidskoder ur tid_koder som ska skickas till EN av flera tabeller som delar
+# på tidsserien (t.ex. historiktabell + ny tabell). SCB ger fel om en Tid-kod saknas i
+# tabellen, så enskilda år skärs mot tabellens egna koder. Returnerar character(0) om
+# tabellen inte har något av åren - anroparen ska då hoppa över tabellen.
+# - "*" skickas vidare som det är.
+# - "9999" (senaste) hämtas bara från tabellen med ger_senaste = TRUE (den nyaste).
+# - Intervall ("2015:9999") tolkas av intern_tolka_tidskoder().
+#' @noRd
+intern_tid_for_tabell <- function(tabell, tid_koder, ger_senaste = FALSE) {
+  tid_koder <- as.character(tid_koder)
+  if ("*" %in% tid_koder) return("*")
+
+  tid <- intern_tolka_tidskoder(tabell, tid_koder)
+  vill_ha_senaste <- "9999" %in% tid
+  tid <- setdiff(tid, "9999")
+  if (length(tid) > 0) {
+    tid <- intersect(tid, pxweb2r::pxweb2_get_values(tabell, "Tid", quiet = TRUE)$code)
+  }
+  if (vill_ha_senaste && ger_senaste) tid <- c(tid, "9999")
+  tid
+}

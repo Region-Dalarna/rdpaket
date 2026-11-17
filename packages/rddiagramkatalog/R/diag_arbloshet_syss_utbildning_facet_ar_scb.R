@@ -127,19 +127,10 @@ diag_arbloshet_syss_utbildning_facet_ar_scb <- function(
       ), quiet = TRUE)
   }
 
-  # Vilka år som ska hämtas från respektive tabell. Intervall ("2015:9999") och "*" tolkas av
-  # intern_tolka_tidskoder(); enskilda år (t.ex. "2024" eller c("2010", "2020")) skärs mot de år som
-  # finns i tabellen, så att en tabell som inte har året hoppas över i stället för att ge fel.
-  # "9999" (senaste året) finns alltid i TAB6367 och hämtas inte från TAB5400.
-  tid_for_tabell <- function(tabell) {
-    tid <- intern_tolka_tidskoder(tabell, tid_koder)
-    if (!any(tid_koder %in% c("*", "9999")) && length(tid_koder) > 0) {
-      tid <- intersect(tid, pxweb2r::pxweb2_get_values(tabell, "Tid", quiet = TRUE)$code)
-    }
-    tid
-  }
-  tid_6367 <- tid_for_tabell("TAB6367")
-  tid_5400 <- if (ta_med_tidigare_data && !identical(tid_koder, "9999")) tid_for_tabell("TAB5400") else character(0)
+  # Vilka år som ska hämtas från respektive tabell (se intern_tid_for_tabell()): enskilda år skärs mot
+  # tabellens egna år och "9999" (senaste) hämtas bara ur TAB6367.
+  tid_6367 <- intern_tid_for_tabell("TAB6367", tid_koder, ger_senaste = TRUE)
+  tid_5400 <- if (ta_med_tidigare_data) intern_tid_for_tabell("TAB5400", tid_koder) else character(0)
   if (length(tid_6367) == 0 && length(tid_5400) == 0) {
     stop("Inga av de begärda åren (tid_koder) finns i SCB:s tabeller för arbetsmarknadsställning efter utbildning.",
          call. = FALSE)

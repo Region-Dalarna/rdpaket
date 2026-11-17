@@ -228,6 +228,14 @@ diagram spänner över brytpunkten:
 
 - Hämta från BÅDA tabellerna (historik + CKM) och slå ihop med
   `dplyr::bind_rows()`.
+- Skicka aldrig `tid_koder` rakt av till varje tabell: SCB ger fel om en
+  Tid-kod (t.ex. `"2024"`) saknas i tabellen, och `"9999"` (senaste) ger
+  annars sista året i *varje* tabell. Använd `intern_tid_for_tabell(tabell,
+  tid_koder, ger_senaste = ...)` (`ger_senaste = TRUE` för den nyaste
+  tabellen), hoppa över tabeller som returnerar `character(0)` och stoppa
+  med ett tydligt felmeddelande om ingen tabell har något av åren. Det
+  gäller alla skript som delar en tidsserie mellan flera tabeller, inte
+  bara CKM-fallet.
 - CKM-tabeller saknar ofta en egen "totalt"-kod för en eller flera
   variabler (ålder, kön) som historiktabellen HAR - kontrollera det
   specifikt i stället för att anta att elimination (utelämna variabeln

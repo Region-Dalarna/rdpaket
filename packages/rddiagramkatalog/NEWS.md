@@ -1,3 +1,11 @@
+# rddiagramkatalog 0.0.0.9088
+
+* Ny intern hjälpfunktion `intern_tid_for_tabell()` som väljer vilka `tid_koder` som ska skickas till varje tabell när en tidsserie delas mellan flera SCB-tabeller
+  (enskilda år skärs mot tabellens år, `"9999"` hämtas bara ur den nyaste tabellen). Regeln finns i KONVENTIONER.md (avsnittet CKM).
+* `diag_etablering_utb_kon_scb()` gav fel för enskilda år (t.ex. `tid_koder = "2024"`) och fel år för `"9999"`, eftersom samma koder skickades till både
+  historiktabellerna (till och med 2021) och de nya (från 2022). Nu hoppas tabeller utan de begärda åren över, och inga år alls ger ett tydligt felmeddelande.
+* `diag_arbloshet_syss_utbildning_facet_ar_scb()` använder den nya hjälpfunktionen i stället för en lokal kopia.
+
 # rddiagramkatalog 0.0.0.9087
 
 * `diag_arbloshet_syss_utbildning_facet_ar_scb()` (0.0.0.9086) heter nu `diag_arbloshet_syss_utbildning_facet_ar_scb()`. Det ursprungliga namnet

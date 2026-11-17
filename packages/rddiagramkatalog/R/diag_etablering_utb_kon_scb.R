@@ -65,13 +65,20 @@ diag_etablering_utb_kon_scb <- function(region_vekt = "20",
   bakgrundsvariabler <- c("vistelsetid 0–1 år", "vistelsetid 2–3 år", "vistelsetid 4–9 år",
                           "vistelsetid 10– år", "födelseregion: Sverige")
 
+  # Tid-koder per tabell: TAB389/TAB4881 har bara år till och med 2021, TAB6384/TAB6383 från 2022.
+  # En tabell utan något av de begärda åren hoppas över ("9999" hämtas bara ur de nyare tabellerna).
+  tid_tab389  <- intern_tid_for_tabell("TAB389",  tid_koder)
+  tid_tab4881 <- intern_tid_for_tabell("TAB4881", tid_koder)
+  tid_tab6384 <- intern_tid_for_tabell("TAB6384", tid_koder, ger_senaste = TRUE)
+  tid_tab6383 <- intern_tid_for_tabell("TAB6383", tid_koder, ger_senaste = TRUE)
+
   # Container for results
   resultat <- list()
 
   # Före 2022
 
   # Call region API once, only if there are region codes
-  if (length(lan_koder) > 0) {
+  if (length(lan_koder) > 0 && length(tid_tab389) > 0) {
     resultat$lan <- pxweb2r::pxweb2_get_data(
       table = "TAB389",
       query = list(
@@ -80,13 +87,13 @@ diag_etablering_utb_kon_scb <- function(region_vekt = "20",
         UtbNiv = "*",
         BakgrVar = bakgrundsvariabler,
         ContentsCode = "Andel förvärvsarbetande (ny definition från och med 2019)",
-        Tid = intern_tolka_tidskoder("TAB389", tid_koder)
+        Tid = tid_tab389
       ),
     quiet = TRUE)
   }
 
   # Call municipality API once, only if there are municipality codes
-  if (length(kommun_koder) > 0) {
+  if (length(kommun_koder) > 0 && length(tid_tab4881) > 0) {
     resultat$kommun <- pxweb2r::pxweb2_get_data(
       table = "TAB4881",
       query = list(
@@ -95,14 +102,14 @@ diag_etablering_utb_kon_scb <- function(region_vekt = "20",
         UtbNiv = "*",
         BakgrVar = bakgrundsvariabler,
         ContentsCode = "Andel förvärvsarbetande (ny definition från och med 2019)",
-        Tid = intern_tolka_tidskoder("TAB4881", tid_koder)
+        Tid = tid_tab4881
       ),
     quiet = TRUE)
   }
 
   # 2022 och senare
   # Call region API once, only if there are region codes
-  if (length(lan_koder) > 0) {
+  if (length(lan_koder) > 0 && length(tid_tab6384) > 0) {
     resultat$lan_22 <- pxweb2r::pxweb2_get_data(
       table = "TAB6384",
       query = list(
@@ -111,13 +118,13 @@ diag_etablering_utb_kon_scb <- function(region_vekt = "20",
         UtbNiv = "*",
         BakgrVar = bakgrundsvariabler,
         ContentsCode = "Andel sysselsatta",
-        Tid = intern_tolka_tidskoder("TAB6384", tid_koder)
+        Tid = tid_tab6384
       ),
     quiet = TRUE)
   }
 
   # Call municipality API once, only if there are municipality codes
-  if (length(kommun_koder) > 0) {
+  if (length(kommun_koder) > 0 && length(tid_tab6383) > 0) {
     resultat$kommun_22 <- pxweb2r::pxweb2_get_data(
       table = "TAB6383",
       query = list(
@@ -126,9 +133,13 @@ diag_etablering_utb_kon_scb <- function(region_vekt = "20",
         UtbNiv = "*",
         BakgrVar = bakgrundsvariabler,
         ContentsCode = "Andel sysselsatta",
-        Tid = intern_tolka_tidskoder("TAB6383", tid_koder)
+        Tid = tid_tab6383
       ),
     quiet = TRUE)
+  }
+
+  if (length(resultat) == 0) {
+    stop("Inga av de begärda åren (tid_koder) finns i SCB:s tabeller för etablering.", call. = FALSE)
   }
 
   # If you want a single combined data frame afterwards (assuming same column structure):
