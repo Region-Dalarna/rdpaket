@@ -4,7 +4,7 @@
 intern_bakgrund_lager <- function(kalla = "topografi_10") {
   if (kalla == "topografi_1m") {
     return(c("utland", "vatten", "skog", "fjall", "glaciar", "bebyggelse", "vattendrag",
-             "vagar_stora", "vagar_mellan", "vagar_sma", "jarnvag", "ortnamn", "vattennamn", "terrangnamn"))
+             "vagar_stora", "vagar_mellan", "vagar_sma", "jarnvag", "ortnamn", "vattennamn", "terrangnamn", "hav"))
   }
   c("vatten", "skog", "bebyggelse", "vagar_stora", "vagar_mellan", "vagar_sma", "jarnvag",
     "ortnamn", "vattennamn", "sjoar")
@@ -47,6 +47,8 @@ intern_bakgrund_sql_1m <- function(src = "topografi_1m") {
   list(
     utland = yta("objekttyp = 'Ej karterat område'"),
     vatten = yta("objekttyp IN ('Vattenyta', 'Hav')"),
+    # Bara havsytorna (svenskt territorialvatten); används för att klippa länsgränserna mot kusten
+    hav = yta("objekttyp = 'Hav'"),
     skog = yta("objekttyp = 'Skog'"),
     fjall = yta("objekttyp = 'Kalfjäll'"),
     glaciar = yta("objekttyp = 'Glaciär'"),
@@ -137,7 +139,7 @@ intern_bakgrund_sql <- function(src = "topografi_10", mitt = "(ST_MaximumInscrib
 #'   Ur `topografi_10`: `vatten`, `skog`, `bebyggelse`, `vagar_stora`, `vagar_mellan`, `vagar_sma`, `jarnvag`,
 #'   `ortnamn`, `vattennamn`, `sjoar`. Ur `topografi_1m`: `utland`, `vatten` (sjöar och hav), `skog`, `fjall`,
 #'   `glaciar`, `bebyggelse`, `vattendrag`, `vagar_stora`, `vagar_mellan`, `vagar_sma`, `jarnvag`, `ortnamn`,
-#'   `vattennamn`, `terrangnamn`.
+#'   `vattennamn`, `terrangnamn`, `hav` (enbart havsytor, för att klippa gränser mot kusten).
 #'
 #' @return En `data.frame` med lager, antal rader och storlek. Osynligt.
 #' @seealso [hamta_bakgrundskarta()]

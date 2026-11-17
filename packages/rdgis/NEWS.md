@@ -1,3 +1,8 @@
+# rdgis 0.0.0.9009
+
+* Nytt lager `hav` för Topografi 1M (enbart havsytorna, svenskt territorialvatten), som används för att klippa länsgränser mot kusten. Bygg det med
+  `skapa_bakgrundskarta_topografi(kalla_schema = "topografi_1m", lager = "hav")`.
+
 # rdgis 0.0.0.9008
 
 * `hamta_bakgrundskarta()`: lager utan objekt i utsnittet (t.ex. `glaciar` för Dalarna) får nu EPSG:3006. Förut saknade de koordinatreferens, vilket gav felet

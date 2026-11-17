@@ -24,7 +24,7 @@ skapa_bakgrundskarta_topografi(
 Ur \code{topografi_10}: \code{vatten}, \code{skog}, \code{bebyggelse}, \code{vagar_stora}, \code{vagar_mellan}, \code{vagar_sma}, \code{jarnvag},
 \code{ortnamn}, \code{vattennamn}, \code{sjoar}. Ur \code{topografi_1m}: \code{utland}, \code{vatten} (sjöar och hav), \code{skog}, \code{fjall},
 \code{glaciar}, \code{bebyggelse}, \code{vattendrag}, \code{vagar_stora}, \code{vagar_mellan}, \code{vagar_sma}, \code{jarnvag}, \code{ortnamn},
-\code{vattennamn}, \code{terrangnamn}.}
+\code{vattennamn}, \code{terrangnamn}, \code{hav} (enbart havsytor, för att klippa gränser mot kusten).}
 }
 \value{
 En \code{data.frame} med lager, antal rader och storlek. Osynligt.
