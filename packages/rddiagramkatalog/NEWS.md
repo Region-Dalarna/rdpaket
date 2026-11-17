@@ -1,3 +1,10 @@
+# rddiagramkatalog 0.0.0.9099
+
+* Nytt diagram `diag_uppfoljning_gymnavg_kvarboende_flytt_mikrodata_scb()`: var gymnasiets avgångselever bor tio år senare (kvarboende, återflyttad, utflyttad, utvandrad, avliden), utan uppdelning på kön och bakgrund, över kommungräns, länsgräns eller båda.
+  Migrerat från `diag_uppfoljning_kvarboende_flytt_gymnavg_ej_kon_bakgr()`; namnet följer namnkonventionen och anger att datan kommer från mikrodatabasen (manuell Excel-fil på G:, kontrolleras med `rdverktyg::sakerstall_indatafil()`).
+  Ändrat: inga `library()`/`pacman`/`source()`, `output_mapp`/`skriv_bildfil` heter `utmapp`/`skriv_diagramfil`, nya `returnera_data`/`returnera_figur`, och flikarna kontrolleras med tydligt fel. Originalets filter `!flytt_kat %in% "Andel återflyttare"` och `andel - 0.00` gjorde ingenting och är borttagna (inga tal ändras).
+  Originalets enkla diagram (kommun- respektive länsgräns) skrev aldrig bildfil eftersom `skriv_till_diagramfil` inte skickades med; nu styr `skriv_diagramfil` alla tre.
+
 # rddiagramkatalog 0.0.0.9098
 
 * Nytt diagram `diag_inflyttare_kvarboende_5_ar_kommun_mikrodata_scb()`: andel som bor kvar i kommunen fem år efter inflyttning, ett stapeldiagram per kommun i Dalarna. Migrerat från `diag_inflyttare_kommuner_dalarna_kvar_efter_5ar()`.
