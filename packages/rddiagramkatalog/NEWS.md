@@ -1,3 +1,10 @@
+# rddiagramkatalog 0.0.0.9103
+
+* Nytt diagram `diag_etablering_vistelsetid_kon_ar_scb()`: etablering på arbetsmarknaden för utrikes födda efter vistelsetid (och inrikes födda som jämförelse), en panel per kön och en stapel per år. Migrerat från det lokala skriptet `diag_etablering_vistelsetid_lan_kommun()`.
+  Hämtar direkt med `pxweb2r` (TAB389/TAB6384 för län, TAB4881/TAB6383 för kommun), utan hämta-skript. Kvinnor är gula och män gröna (`diagramfarger("kon")`), med ljusast nyans för äldsta året. Startår och slutår står i rubriken (`startar`, `slutar`), och teckenförklaringen är avstängd som standard (`visa_teckenforklaring = TRUE` slår på den).
+  Nytt: `cont_klartext` väljer mått, standard `"sysselsättningsgrad"`; även företagare, arbetslöshetsmått, kvar efter ett år, chefsposition och eftergymnasialt med kvalificerat arbete. Före 2022 är måttet "förvärvsarbetande" (ny definition från 2019) i SCB:s äldre tabeller.
+  Kräver `rddiagram` ≥ 0.0.0.9044.
+
 # rddiagramkatalog 0.0.0.9102
 
 * Nytt diagram `diag_bas_arblos_syss_inr_utr_fodda_manad_scb()`: arbetslöshet (eller annat BAS-mått) per månad för inrikes och utrikes födda. Migrerat från `diag_bas_arblosa_inr_utr_fodda_manad()`.
