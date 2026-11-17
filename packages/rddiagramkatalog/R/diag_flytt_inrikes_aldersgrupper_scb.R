@@ -94,11 +94,17 @@ diag_flytt_inrikes_aldersgrupper_scb <- function(region_vekt = "20",
       dplyr::pull(code)
   }
 
+  # Vilka år som hämtas ur respektive tabell, se intern_tid_for_tabell().
+  tid_per_tabell <- list(TAB1212 = intern_tid_for_tabell("TAB1212", tid_koder, ger_senaste = TRUE),
+                         TAB6640 = intern_tid_for_tabell("TAB6640", tid_koder, ger_senaste = TRUE))
+  intern_stoppa_om_ingen_tid(tid_per_tabell, "inrikes flyttningar")
+
   hamta_flytt <- function(table_id) {
+    if (length(tid_per_tabell[[table_id]]) == 0) return(NULL)
     pxweb2r::pxweb2_get_data(
       table_id,
       query = list(Region = region_vekt, Kon = NA, Alder = hamta_giltiga_aldrar(table_id),
-                   ContentsCode = c("Inrikes flyttningsöverskott", "Invandringsöverskott"), Tid = tid_koder),
+                   ContentsCode = c("Inrikes flyttningsöverskott", "Invandringsöverskott"), Tid = tid_per_tabell[[table_id]]),
       on_all_values_invalid = "null",
     quiet = TRUE)
   }
@@ -111,6 +117,7 @@ diag_flytt_inrikes_aldersgrupper_scb <- function(region_vekt = "20",
   diagram_capt <- rddiagram::lagg_till_ckm_notering(diagram_capt_bas, har_ckm_data, fran_ar = ckm_fran_ar)
 
   flytt_df <- dplyr::bind_rows(flytt_hist, flytt_ckm) |>
+    intern_behall_senaste_tid(tid_koder) |>
     dplyr::rename(regionkod = region_kod, variabel = tabellinnehåll, varde = value) |>
     dplyr::mutate(alder_grupper = rdverktyg::skapa_aldersgrupper(ålder, alder_grp))
 

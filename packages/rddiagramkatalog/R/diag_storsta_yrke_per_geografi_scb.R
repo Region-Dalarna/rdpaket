@@ -72,7 +72,7 @@ diag_storsta_yrke_per_geografi_scb <- function(
   # får då både 2018 och 2024 i utdata i stället för bara det verkliga senaste året.
   alla_tabeller <- c("TAB4396", "TAB3119", "TAB4434")
   alla_giltiga_ar <- unlist(purrr::map(alla_tabeller, ~ pxweb2r::pxweb2_get_values(.x, "Tid", quiet = TRUE)$code))
-  tid_koder <- if (identical(tid_koder, "9999")) max(alla_giltiga_ar) else tid_koder
+  if ("9999" %in% tid_koder) tid_koder <- unique(c(setdiff(tid_koder, "9999"), max(alla_giltiga_ar)))
 
   hamta_en_yrkestabell <- function(tabell_id, region_vekt, kon_klartext, tid_koder) {
 
@@ -106,6 +106,10 @@ diag_storsta_yrke_per_geografi_scb <- function(
     ~ hamta_en_yrkestabell(.x, region_vekt, if (konsuppdelat) c("män", "kvinnor") else NA, tid_koder)
   ) |>
     purrr::list_rbind()
+
+  if (nrow(px_df) == 0) {
+    stop("Inga av de begärda perioderna (tid_koder) finns i SCB:s tabeller för yrken.", call. = FALSE)
+  }
 
   if (kortnamn_lan) px_df <- dplyr::mutate(px_df, region = rdverktyg::skapa_kortnamn_lan(region))
 

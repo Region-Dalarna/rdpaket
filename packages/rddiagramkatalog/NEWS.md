@@ -1,3 +1,11 @@
+# rddiagramkatalog 0.0.0.9091
+
+* `tid_koder` hanteras nu rätt när tidsserien delas mellan flera SCB-tabeller, eller när "9999" kombineras med andra år, i `diag_flytt_inrikes_aldersgrupper_scb()`,
+  `diag_flytt_inrikes_utrikes_netto_scb()`, `diag_inflyttlan_utflyttlan_scb()`, `diag_fruktsamhet_scb()` (`"9999"` gav två år), `diag_storsta_fodelseland_scb()` (`"2024"` kraschade,
+  `c("2020","9999")` tappade 2020), `diag_syss_rams_bas_tidsserie_fran_ar1993_scb()` (`"9999"` kraschade), `diag_syss_vistelsetid_inr_utr_fodda_ett_per_ar_scb()`,
+  `diag_storsta_yrke_per_geografi_scb()` och `diag_utbniva_inr_utr_fodda_kon_lan_scb()` (`"9999"` tillsammans med andra år tappades eller kraschade).
+  Tidskoder som inte finns i någon tabell ger ett tydligt felmeddelande i stället för "Can't rename columns that don't exist".
+
 # rddiagramkatalog 0.0.0.9090
 
 * Felmeddelandet när inga av de begärda tidskoderna finns i SCB:s tabeller säger nu "perioderna" i stället för "åren", eftersom det även gäller månadsskripten.

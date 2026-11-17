@@ -46,15 +46,24 @@ diag_storsta_fodelseland_scb <- function(region_vekt = "20",
   # Hämta data - TAB6030 (historik) + TAB6646 (CKM, senaste året). Kon = NA (inte "*") utelämnar
   # Kon-variabeln ur frågan, vilket - eftersom Kon har elimination = TRUE i båda tabellerna - gör att
   # SCB summerar ihop män och kvinnor åt oss.
-  antal_fodelseland_df <- pxweb2r::pxweb2_get_data(
-    table = c("TAB6030", "TAB6646"),
-    query = list(
-      Region = region_vekt,
-      Fodelseregion = "*",
-      Kon = NA,
-      ContentsCode = "*",
-      Tid = intern_tolka_tidskoder("TAB6030", tid_koder)
-    ), quiet = TRUE) |>
+  # Vilka år som hämtas ur respektive tabell, se intern_tid_for_tabell().
+  tid_per_tabell <- list(TAB6030 = intern_tid_for_tabell("TAB6030", tid_koder, ger_senaste = TRUE),
+                         TAB6646 = intern_tid_for_tabell("TAB6646", tid_koder, ger_senaste = TRUE))
+  intern_stoppa_om_ingen_tid(tid_per_tabell, "födelseland")
+
+  antal_fodelseland_df <- purrr::imap(tid_per_tabell[lengths(tid_per_tabell) > 0], \(tid, tabell) {
+    pxweb2r::pxweb2_get_data(
+      table = tabell,
+      query = list(
+        Region = region_vekt,
+        Fodelseregion = "*",
+        Kon = NA,
+        ContentsCode = "*",
+        Tid = tid
+      ), on_all_values_invalid = "null", quiet = TRUE)
+  }) |>
+    dplyr::bind_rows() |>
+    intern_behall_senaste_tid(tid_koder) |>
     dplyr::mutate(region = rdverktyg::skapa_kortnamn_lan(region)) |>
       dplyr::rename(regionkod = region_kod,
              Antal = value)

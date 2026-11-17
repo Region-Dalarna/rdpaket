@@ -55,8 +55,10 @@ diag_syss_rams_bas_tidsserie_fran_ar1993_scb <- function(
 
   hamta_en_syss_tabell <- function(tabell_id, ar_bas_tabell) {
 
-    giltiga_ar <- pxweb2r::pxweb2_get_values(tabell_id, "Tid", quiet = TRUE)$code
-    tid_vekt <- if (identical(tid_koder, "*")) giltiga_ar else as.character(tid_koder)[as.character(tid_koder) %in% giltiga_ar]
+    # Vilka år som hämtas ur tabellen, se intern_tid_for_tabell() ("9999" hanteras efteråt av
+    # intern_behall_senaste_tid()).
+    tid_vekt <- intern_tid_for_tabell(tabell_id, tid_koder, ger_senaste = TRUE)
+    if ("*" %in% tid_vekt) tid_vekt <- pxweb2r::pxweb2_get_values(tabell_id, "Tid", quiet = TRUE)$code
 
     # RAMS ny tidsserie (2019-2021) och BAS (2020-) delar åren 2020-2021 - dessa tas alltid bort ur
     # RAMS-tabellen för att inte räknas dubbelt (samma hantering som i originalskriptet).
@@ -128,6 +130,11 @@ diag_syss_rams_bas_tidsserie_fran_ar1993_scb <- function(
     hamta_en_syss_tabell
   ) |>
     purrr::list_rbind()
+
+  if (nrow(rams_df) == 0) {
+    stop("Inga av de begärda perioderna (tid_koder) finns i SCB:s tabeller för sysselsättning (RAMS/BAS).", call. = FALSE)
+  }
+  rams_df <- intern_behall_senaste_tid(rams_df, tid_koder, varde = "sysselsättningsgrad")
 
   if (!is.na(output_mapp_data) & !is.na(filnamn_data)) {
     openxlsx::write.xlsx(rams_df, paste0(output_mapp_data, filnamn_data))

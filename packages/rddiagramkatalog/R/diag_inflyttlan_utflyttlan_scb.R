@@ -79,10 +79,16 @@ diag_inflyttlan_utflyttlan_scb <- function(utmapp = rdverktyg::utskriftsmapp(),
   objektnamn <- c()
   objektnamn_map <- c()
 
+  # Vilka år som hämtas ur respektive tabell, se intern_tid_for_tabell().
+  tid_per_tabell <- list(TAB4409 = intern_tid_for_tabell("TAB4409", tid_koder, ger_senaste = TRUE),
+                         TAB6672 = intern_tid_for_tabell("TAB6672", tid_koder, ger_senaste = TRUE))
+  intern_stoppa_om_ingen_tid(tid_per_tabell, "flyttningar mellan län")
+
   hamta_flytt <- function(table_id) {
+    if (length(tid_per_tabell[[table_id]]) == 0) return(NULL)
     pxweb2r::pxweb2_get_data(
       table_id,
-      query = list(InflyttningsL = inflyttningsl_klartext, UtflyttningsL = utflyttningsl_klartext, Kon = NA, Tid = tid_koder),
+      query = list(InflyttningsL = inflyttningsl_klartext, UtflyttningsL = utflyttningsl_klartext, Kon = NA, Tid = tid_per_tabell[[table_id]]),
       on_all_values_invalid = "null",
     quiet = TRUE)
   }
@@ -94,6 +100,7 @@ diag_inflyttlan_utflyttlan_scb <- function(utmapp = rdverktyg::utskriftsmapp(),
   diagram_capt <- rddiagram::lagg_till_ckm_notering(diagram_capt, har_ckm_data, fran_ar = ckm_fran_ar)
 
   inflytt_utflytt_df <- dplyr::bind_rows(flytt_hist, flytt_ckm) |>
+    intern_behall_senaste_tid(tid_koder) |>
     dplyr::rename(Antal_flyttar = value) |>
     dplyr::select(-dplyr::any_of(c("tabellinnehåll", "inflyttningslän_kod", "utflyttningslän_kod"))) |>
     dplyr::filter(Inflyttningslän != "Totalt, samtliga inflyttningslän",

@@ -90,22 +90,30 @@ diag_fruktsamhet_scb <- function(region_vekt = rdverktyg::hamtakommuner("20"),
   tid_str <- as.character(tid_koder)
   tid_str <- unique(tid_str[tid_str %in% c("*", "9999") | (suppressWarnings(as.integer(tid_str)) <= ar_nu + 1)])
 
-  fodda_hist <- pxweb2r::pxweb2_get_data("TAB1264", query = list(Region = region_vekt, Kon = NA, AlderModer = alder_str, Tid = tid_str), on_all_values_invalid = "null", quiet = TRUE)
-  fodda_ckm  <- pxweb2r::pxweb2_get_data("TAB6401", query = list(Region = region_vekt, Kon = NA, AlderModer = alder_str, Tid = tid_str), on_all_values_invalid = "null", quiet = TRUE)
+  # Vilka år som hämtas ur respektive tabell, se intern_tid_for_tabell().
+  tid_per_tabell <- list(TAB1264 = intern_tid_for_tabell("TAB1264", tid_str, ger_senaste = TRUE),
+                         TAB6401 = intern_tid_for_tabell("TAB6401", tid_str, ger_senaste = TRUE),
+                         TAB638  = intern_tid_for_tabell("TAB638",  tid_str, ger_senaste = TRUE),
+                         TAB5557 = intern_tid_for_tabell("TAB5557", tid_str, ger_senaste = TRUE))
+  intern_stoppa_om_ingen_tid(tid_per_tabell, "fruktsamhet")
+
+  fodda_hist <- if (length(tid_per_tabell$TAB1264) > 0) pxweb2r::pxweb2_get_data("TAB1264", query = list(Region = region_vekt, Kon = NA, AlderModer = alder_str, Tid = tid_per_tabell$TAB1264), on_all_values_invalid = "null", quiet = TRUE)
+  fodda_ckm  <- if (length(tid_per_tabell$TAB6401) > 0) pxweb2r::pxweb2_get_data("TAB6401", query = list(Region = region_vekt, Kon = NA, AlderModer = alder_str, Tid = tid_per_tabell$TAB6401), on_all_values_invalid = "null", quiet = TRUE)
 
   fodda_df <- dplyr::bind_rows(fodda_hist, fodda_ckm) |>
+    intern_behall_senaste_tid(tid_str) |>
     dplyr::rename(regionkod = region_kod, födda = value) |>
     dplyr::select(-dplyr::any_of("tabellinnehåll"))
 
-  bef_hist <- pxweb2r::pxweb2_get_data("TAB638", query = list(Region = region_vekt, Kon = "kvinnor", Civilstand = NA, Alder = alder_str,
-                                                                ContentsCode = "Folkmängd", Tid = tid_str), on_all_values_invalid = "null", quiet = TRUE)
+  bef_hist <- if (length(tid_per_tabell$TAB638) > 0) pxweb2r::pxweb2_get_data("TAB638", query = list(Region = region_vekt, Kon = "kvinnor", Civilstand = NA, Alder = alder_str,
+                                                                ContentsCode = "Folkmängd", Tid = tid_per_tabell$TAB638), on_all_values_invalid = "null", quiet = TRUE)
   # Civilstånd är inte elimineringsbart i TAB5557 (CKM) - måste anges
   # explicit som totalkoden "SC", vilket också gör den till en egen kolumn
   # som plockas bort igen innan bind_rows().
-  bef_ckm <- pxweb2r::pxweb2_get_data(
+  bef_ckm <- if (length(tid_per_tabell$TAB5557) > 0) pxweb2r::pxweb2_get_data(
     "TAB5557",
     query = list(Region = region_vekt, Kon = "kvinnor", Civilstand = "SC", Alder = alder_str,
-                 ContentsCode = "Folkmängd", Tid = tid_str),
+                 ContentsCode = "Folkmängd", Tid = tid_per_tabell$TAB5557),
     on_all_values_invalid = "null",
   quiet = TRUE)
   if (!is.null(bef_ckm)) bef_ckm <- dplyr::select(bef_ckm, -dplyr::any_of("civilstånd"))
@@ -115,6 +123,7 @@ diag_fruktsamhet_scb <- function(region_vekt = rdverktyg::hamtakommuner("20"),
   diagram_capt <- rddiagram::lagg_till_ckm_notering(diagram_capt, har_ckm_data, fran_ar = ckm_fran_ar)
 
   bef_df <- dplyr::bind_rows(bef_hist, bef_ckm) |>
+    intern_behall_senaste_tid(tid_str) |>
     dplyr::rename(regionkod = region_kod, Folkmängd = value) |>
     dplyr::select(-dplyr::any_of("tabellinnehåll"))
 

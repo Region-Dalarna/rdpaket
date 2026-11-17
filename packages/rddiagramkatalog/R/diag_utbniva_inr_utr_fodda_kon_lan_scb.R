@@ -60,7 +60,9 @@ diag_utbniva_inr_utr_fodda_kon_lan_scb <- function(
     if (length(region_giltig) == 0) return(NULL)
 
     giltiga_ar <- pxweb2r::pxweb2_get_values(tabell_id, "Tid", quiet = TRUE)$code
-    tid_vekt <- if (identical(tid_koder, "9999")) max(giltiga_ar) else if (identical(tid_koder, "*")) giltiga_ar else as.character(tid_koder)[as.character(tid_koder) %in% giltiga_ar]
+    tid_vekt <- if ("*" %in% tid_koder) giltiga_ar else as.character(tid_koder)
+    if ("9999" %in% tid_vekt) tid_vekt <- c(tid_vekt, max(giltiga_ar))  # "9999" = senaste året i tabellen
+    tid_vekt <- unique(tid_vekt[tid_vekt %in% giltiga_ar])
     if (length(tid_vekt) == 0) return(NULL)
 
     px <- pxweb2r::pxweb2_get_data(
@@ -84,7 +86,11 @@ diag_utbniva_inr_utr_fodda_kon_lan_scb <- function(
     c("TAB4648", "TAB4655"),  # län, riket
     ~ hamta_en_integrationstabell(.x, region_vekt, valt_kon, bakgrund_klartext, cont_klartext, tid_koder)
   ) |>
-    purrr::list_rbind() |>
+    purrr::list_rbind()
+  if (nrow(integration_df) == 0) {
+    stop("Inga av de begärda perioderna (tid_koder) finns i SCB:s tabeller för utbildningsnivå efter bakgrund.", call. = FALSE)
+  }
+  integration_df <- integration_df |>
     dplyr::rename(utbildning = bakgrundsvariabel) |>
     dplyr::mutate(utbildning = utbildning |> stringr::str_remove("andel med ") |> stringr::str_remove(", procent"),
            utbildning = factor(utbildning, levels = c("förgymnasial utbildning", "gymnasial utbildning", "eftergymnasial utbildning")))

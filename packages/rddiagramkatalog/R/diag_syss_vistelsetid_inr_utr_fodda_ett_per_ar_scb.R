@@ -65,8 +65,9 @@ diag_syss_vistelsetid_inr_utr_fodda_ett_per_ar_scb <- function(
     if (length(region_var) == 0) return(NULL)
 
     giltiga_ar <- pxweb2r::pxweb2_get_values(tabell_id, "Tid", quiet = TRUE)$code
-    tid_var <- if (identical(tid_koder, "9999")) max(giltiga_ar) else if (all(is.na(tid_koder))) giltiga_ar else as.character(tid_koder)
-    tid_var <- tid_var[tid_var %in% giltiga_ar]
+    tid_var <- if (all(is.na(tid_koder)) || "*" %in% tid_koder) giltiga_ar else as.character(tid_koder)
+    if ("9999" %in% tid_var) tid_var <- c(tid_var, max(giltiga_ar))  # "9999" = senaste året i tabellen
+    tid_var <- unique(tid_var[tid_var %in% giltiga_ar])
     if (length(tid_var) == 0) return(NULL)
 
     px <- pxweb2r::pxweb2_get_data(
@@ -105,7 +106,11 @@ diag_syss_vistelsetid_inr_utr_fodda_ett_per_ar_scb <- function(
     c("TAB6379", "TAB6384", "TAB6383"),  # riket, län, kommun
     ~ hamta_en_tabell(.x, region_vekt, kon_klartext, cont_klartext_kod, bakgr_kod, tid_koder)
   ) |>
-    purrr::list_rbind() |>
+    purrr::list_rbind()
+  if (nrow(px_df) == 0) {
+    stop("Inga av de begärda perioderna (tid_koder) finns i SCB:s tabeller för sysselsättning efter vistelsetid.", call. = FALSE)
+  }
+  px_df <- px_df |>
     dplyr::rename(regionkod = region_kod)
 
     plot_df <- px_df |>
