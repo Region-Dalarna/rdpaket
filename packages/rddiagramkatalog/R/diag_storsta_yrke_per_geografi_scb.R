@@ -1,7 +1,10 @@
 #' Diagram: störst yrken (SSYK3) per geografi
 #'
 #' Skriv ut de x antal största yrkena SSYK3 (default är 15 största yrken)
-#' för valfritt län eller kommun.
+#' för valfritt län eller kommun. Statistiken avser dagbefolkningen, alltså anställda med arbetsplats i regionen
+#' (inte bosatta i regionen). Åldern är 16–64 år till och med 2022 och 16–69 år från 2023. Det står i undertiteln,
+#' och "dagbefolkning" står alltid i y-axelns text.
+#'
 #'
 #' @param region_vekt Går att skicka med flera. Ett diagram per geografi skrivs ut om man inte skickar med ett värde för `gruppera_namn`, då grupperas de ihop till en geografi.
 #' @param gruppera_namn Default är `NA` och då grupperas inget. Skickas namn med så grupperas alla geografier i `region_vekt` ihop till en geografi som döps till värdet för `gruppera_namn`.
@@ -125,30 +128,16 @@ diag_storsta_yrke_per_geografi_scb <- function(
              region = gruppera_namn)
   }
 
-  # bearbeta df:n beroende på om den ska vara könsuppdelad eller inte
+  # de antal_yrken största yrkena väljs för varje region och år (och kön om könsuppdelat) var för sig
   if (konsuppdelat) {
-      kon_var <- unique(px_df$kön)             # vektor med båda könen
-
-      # skapa en lista med två vektorer som innehåller yrkeskoder för de antal_yrken största yrkena per kön
-      storsta_yrke <- purrr::map(kon_var, ~ px_df |>
-                            dplyr::filter(kön == .x,
-                                   yrkeskod != "0002") |>
-                            dplyr::arrange(dplyr::desc(Antal)) |>
-                            dplyr::slice(1:antal_yrken) |>
-                            dplyr::pull(yrkeskod))
-
-      # filtrera ut de största yrkena per kön och lägg i en df
-      chart_df <- purrr::map2(storsta_yrke, kon_var, ~ dplyr::filter(px_df, yrkeskod %in% .x, kön == .y)) |>
-        purrr::list_rbind()
-
+    chart_df <- px_df |>
+      dplyr::filter(yrkeskod != "0002") |>
+      dplyr::slice_max(Antal, n = antal_yrken, by = c(regionkod, region, år, kön), with_ties = FALSE)
   } else {
     chart_df <- px_df |>
       dplyr::filter(yrkeskod != "0002") |>
-      dplyr::group_by(år, regionkod, region, yrkeskod, yrke) |>
-      dplyr::summarise(Antal = sum(Antal, na.rm = TRUE)) |>
-      dplyr::ungroup() |>
-      dplyr::arrange(dplyr::desc(Antal)) |>
-      dplyr::slice(1:antal_yrken)
+      dplyr::summarise(Antal = sum(Antal, na.rm = TRUE), .by = c(år, regionkod, region, yrkeskod, yrke)) |>
+      dplyr::slice_max(Antal, n = antal_yrken, by = c(regionkod, region, år), with_ties = FALSE)
   }
 
   # returnera datasetet till global environment, bl.a. bra när man skapar Rmarkdown-rapporter
@@ -165,19 +154,23 @@ diag_storsta_yrke_per_geografi_scb <- function(
     for (geo_namn in unique(chart_df$region)){
 
       diagramtitel <- paste0("Störst yrken i ", geo_namn, " år ", skickat_ar)
+      # tabellerna redovisar dagbefolkningen (arbetsplats i regionen); åldern är 16-64 år till och med 2022, 16-69 år från 2023
+      aldersintervall <- if (as.numeric(skickat_ar) >= 2023) "16–69 år" else "16–64 år"
+      undertitel <- paste0("Anställda ", aldersintervall, " med arbetsplats i regionen (dagbefolkning)")
       filnamn <- paste0(antal_yrken, "_storsta_yrken_", geo_namn, ifelse(konsuppdelat, "_kon", ""), "_", skickat_ar,".png")
 
       gg_obj <- rddiagram::SkapaStapelDiagram(skickad_df = dplyr::filter(chart_df, år == skickat_ar, region == geo_namn),
                         skickad_x_var = "yrke",
                         skickad_y_var = "Antal",
                         diagram_titel = if (ta_bort_diagramtitel) NULL else diagramtitel,
+                        diagram_undertitel = if (ta_bort_diagramtitel) NULL else undertitel,
                         diagram_capt = diagram_capt,
                         output_mapp = utmapp,
                         x_var_fokus = if (konsuppdelat) "kön" else NA,         # vi använder fokusvariabel endast i könsuppdelade diagram (för att få grönt för män och gul för kvinnor)
                         x_axis_sort_value = TRUE,
                         x_axis_lutning = 0,
                         manual_x_axis_title = "",
-                        manual_y_axis_title = "Antal sysselsatta",
+                        manual_y_axis_title = "Antal anställda (dagbefolkning)",
                         filnamn_diagram = filnamn,
                         manual_color = if (konsuppdelat) manual_color_kon else diag_fargvekt,         # grön/gul för könsuppdelat, blå när det inte är det (om man inte väljer andra färgskalor som parameter i funktionen)
                         stodlinjer_avrunda_fem = TRUE,

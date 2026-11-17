@@ -68,5 +68,7 @@ En namngiven lista med \code{ggplot}-objekt.
 }
 \description{
 Skriv ut de x antal största yrkena SSYK3 (default är 15 största yrken)
-för valfritt län eller kommun.
+för valfritt län eller kommun. Statistiken avser dagbefolkningen, alltså anställda med arbetsplats i regionen
+(inte bosatta i regionen). Åldern är 16–64 år till och med 2022 och 16–69 år från 2023. Det står i undertiteln,
+och "dagbefolkning" står alltid i y-axelns text.
 }

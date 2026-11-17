@@ -1,3 +1,8 @@
+# rddiagramkatalog 0.0.0.9110
+
+* `diag_storsta_yrke_per_geografi_scb()`: diagrammet anger nu att statistiken är dagbefolkningen (anställda med arbetsplats i regionen, inte bosatta). Undertiteln lyder "Anställda 16–64 år med arbetsplats i regionen (dagbefolkning)" (16–69 år från 2023, då SCB breddade åldersintervallet), och y-axeln heter "Antal anställda (dagbefolkning)" i stället för "Antal sysselsatta", som var missvisande. Gäller alla tre tabellerna (TAB4396, TAB3119 och TAB4434), som alla redovisar dagbefolkning.
+* Rättat: de `antal_yrken` största yrkena valdes över alla regioner och år samtidigt, så med flera regioner eller år fick regionerna med färre anställda för få staplar. De väljs nu för varje region, år och kön för sig. (Felet fanns redan i originalskriptet.)
+
 # rddiagramkatalog 0.0.0.9109
 
 * Nytt diagram `diag_befpyramid_scb()`: befolkningspyramider per region och år (utfall eller prognos), konverterat från det gamla skriptet `diag_befpyramid()`. Hämtar med `pxweb2r` och bygger vidare på de nya CKM-tabellerna:
