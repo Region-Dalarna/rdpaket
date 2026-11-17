@@ -160,6 +160,7 @@ ursprungliga namn.
 | diag_matchningsindikatorerna.R (`diag_jobbinfloden_utbgrp`) | diag_matchning_e2_jobbfloden_utbgrp_scb | 0.0.0.9106 | TAB6927 |
 | (nytt, ingen källfil) | diag_matchning_u1a_arbmarknadsstallning_utbgrp_scb | 0.0.0.9107, 0.0.0.9108 | TAB6367 (U1a) och äldre TAB5400; riket, län och FA-regioner |
 | (nytt, ingen källfil) | diag_matchning_u2_pendling_utbgrp_scb | 0.0.0.9107, 0.0.0.9108 | TAB6369 (U2) och äldre TAB5279; riket, län och FA-regioner |
+| diag_befpyramid.R (funktionen `diag_befpyramid`) | diag_befpyramid_scb | 0.0.0.9109 | Gammalt lokalt skript; hämtar med pxweb2r, CKM-tabeller för 2025, prognos för regioner och riket |
 
 ## D) SCB:s regionala matchningsindikatorer - vilka tabeller som används
 
