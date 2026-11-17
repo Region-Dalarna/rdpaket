@@ -27,6 +27,27 @@ test_that("view parameters prevent SQL identifier injection", {
   expect_equal(parametrar$vy_suffix, "_Regional__DROP_SCHEMA_public")
 })
 
+test_that("stops-tabellerna skapas med Dalatrafiks alternativa ID", {
+  sql <- character(0)
+  local_mocked_bindings(
+    dbExecute = function(conn, statement, ...) {
+      sql <<- c(sql, gsub("\\s+", " ", statement))
+      0L
+    },
+    dbQuoteIdentifier = function(conn, x, ...) x,
+    .package = "DBI"
+  )
+
+  rdgtfs:::skapa_tabeller(con = NULL, schema = "gtfs")
+
+  stops <- sql[grepl("CREATE TABLE IF NOT EXISTS gtfs(_historisk)?\\.stops \\(", sql)]
+  expect_length(stops, 2L)
+  expect_true(all(grepl(
+    "hpl_id VARCHAR, dt_hpl_id VARCHAR, dt_stop_id VARCHAR, stop_name",
+    stops, fixed = TRUE
+  )))
+})
+
 fanga_vy_sql <- function(skapa_vyer, env = parent.frame()) {
   sql <- character(0)
   testthat::local_mocked_bindings(

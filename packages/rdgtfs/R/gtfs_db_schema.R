@@ -151,7 +151,8 @@ skapa_tabeller <- function(con, schema = "gtfs", gtfs_dataset = "regional") {
     "CREATE INDEX IF NOT EXISTS idx_trips_route_id ON {schema_q}.trips (route_id);",
     "CREATE INDEX IF NOT EXISTS idx_trips_service_id ON {schema_q}.trips (service_id);",
     "CREATE TABLE IF NOT EXISTS {schema_q}.stops (
-       stop_id VARCHAR PRIMARY KEY, hpl_id VARCHAR, stop_name VARCHAR NOT NULL,
+       stop_id VARCHAR PRIMARY KEY, hpl_id VARCHAR, dt_hpl_id VARCHAR, dt_stop_id VARCHAR,
+       stop_name VARCHAR NOT NULL,
        stop_lat FLOAT NOT NULL, stop_lon FLOAT NOT NULL, location_type INTEGER,
        parent_station VARCHAR, platform_code VARCHAR, geometry GEOMETRY(Point, 3006)
      );",
@@ -244,7 +245,8 @@ skapa_tabeller <- function(con, schema = "gtfs", gtfs_dataset = "regional") {
     "CREATE INDEX IF NOT EXISTS idx_trips_shape_id_historisk ON {schema_h_q}.trips (shape_id);",
     "CREATE INDEX IF NOT EXISTS idx_trips_service_id_historisk ON {schema_h_q}.trips (service_id);",
     "CREATE TABLE IF NOT EXISTS {schema_h_q}.stops (
-       stop_id VARCHAR, hpl_id VARCHAR, stop_name VARCHAR NOT NULL, stop_lat FLOAT NOT NULL,
+       stop_id VARCHAR, hpl_id VARCHAR, dt_hpl_id VARCHAR, dt_stop_id VARCHAR,
+       stop_name VARCHAR NOT NULL, stop_lat FLOAT NOT NULL,
        stop_lon FLOAT NOT NULL, location_type INTEGER, parent_station VARCHAR,
        platform_code VARCHAR, geometry GEOMETRY(Point, 3006), version INTEGER,
        PRIMARY KEY (stop_id, version)
