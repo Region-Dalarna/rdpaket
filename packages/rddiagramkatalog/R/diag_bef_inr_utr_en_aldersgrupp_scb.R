@@ -62,7 +62,12 @@ diag_bef_inr_utr_en_aldersgrupp_scb <- function(
   # systerskriptet).
   alder_koder_hamta <- as.character(min(aldersintervall):max(aldersintervall))
 
-  bef_folkmangd_historik <- pxweb2r::pxweb2_get_data(
+  # Vilka år som hämtas ur respektive tabell, se intern_tid_for_tabell().
+  tid_tab4823 <- intern_tid_for_tabell("TAB4823", tid_koder, ger_senaste = TRUE)
+  tid_tab6645 <- intern_tid_for_tabell("TAB6645", tid_koder, ger_senaste = TRUE)
+  intern_stoppa_om_ingen_tid(list(tid_tab4823, tid_tab6645), "folkmängd efter födelseregion")
+
+  bef_folkmangd_historik <- if (length(tid_tab4823) > 0) pxweb2r::pxweb2_get_data(
     table = "TAB4823",
     query = list(
       Region = region_vekt,
@@ -70,11 +75,11 @@ diag_bef_inr_utr_en_aldersgrupp_scb <- function(
       Kon = c("män","kvinnor"),
       Fodelseregion = c("född i Sverige","utrikes född"),
       ContentsCode = "Antal",
-      Tid = intern_tolka_tidskoder("TAB4823", tid_koder)
+      Tid = tid_tab4823
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 
-  bef_folkmangd_ckm <- pxweb2r::pxweb2_get_data(
+  bef_folkmangd_ckm <- if (length(tid_tab6645) > 0) pxweb2r::pxweb2_get_data(
     table = "TAB6645",
     query = list(
       Region = region_vekt,
@@ -82,12 +87,13 @@ diag_bef_inr_utr_en_aldersgrupp_scb <- function(
       Kon = c("män","kvinnor"),
       Fodelseregion = c("född i Sverige","utrikes född"),
       ContentsCode = "Antal",
-      Tid = intern_tolka_tidskoder("TAB6645", tid_koder)
+      Tid = tid_tab6645
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 
   bef_folkmangd <- rdverktyg::funktion_upprepa_forsok_om_fel(function()
     dplyr::bind_rows(bef_folkmangd_historik, bef_folkmangd_ckm) |>
+      intern_behall_senaste_tid(tid_koder) |>
       dplyr::rename(regionkod = region_kod, Antal = value) |>
       dplyr::select(-tabellinnehåll))
 

@@ -50,27 +50,32 @@ diag_fodda_manad_scb <- function(
   # i funktioner-/hamta_data-reporna (den faktiska funktionen i den
   # sourcade filen heter hamta_bef_forandringar_region_forandringar_kon_
   # tid_scb) - skriptet skulle alltså krascha direkt om det kördes.
-  diagram_df_historik <- pxweb2r::pxweb2_get_data(
+  # Vilka perioder som hämtas ur respektive tabell, se intern_tid_for_tabell().
+  tid_tab1625 <- intern_tid_for_tabell("TAB1625", tid_koder, ger_senaste = TRUE)
+  tid_tab6473 <- intern_tid_for_tabell("TAB6473", tid_koder, ger_senaste = TRUE)
+  intern_stoppa_om_ingen_tid(list(tid_tab1625, tid_tab6473), "befolkningsförändringar per månad")
+
+  diagram_df_historik <- if (length(tid_tab1625) > 0) pxweb2r::pxweb2_get_data(
     table = "TAB1625",
     query = list(
       Region = region_vekt,
       Forandringar = bef_variabel,
       Kon = "totalt",
       ContentsCode = "Befolkning",
-      Tid = intern_tolka_tidskoder("TAB1625", tid_koder)
+      Tid = tid_tab1625
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 
   # CKM-tabellens klartext för "totalt" är "totalt, samtliga män och
   # kvinnor" (kod "TotSa") - inte bara "totalt" som i historiktabellen.
-  diagram_df_ckm <- pxweb2r::pxweb2_get_data(
+  diagram_df_ckm <- if (length(tid_tab6473) > 0) pxweb2r::pxweb2_get_data(
     table = "TAB6473",
     query = list(
       Region = region_vekt,
       Forandringar = bef_variabel,
       Kon = "TotSa",
       ContentsCode = "Befolkning",
-      Tid = intern_tolka_tidskoder("TAB6473", tid_koder)
+      Tid = tid_tab6473
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 
@@ -81,6 +86,7 @@ diag_fodda_manad_scb <- function(
   # kolumnen, vilket krävs för att resten av skriptet ska fungera alls.
   diagram_df <- rdverktyg::funktion_upprepa_forsok_om_fel(function()
     dplyr::bind_rows(diagram_df_historik, diagram_df_ckm) |>
+    intern_behall_senaste_tid(tid_koder, tidkol = "månad") |>
       dplyr::rename(regionkod = region_kod, Befolkning = value) |>
       dplyr::select(-tabellinnehåll) |>
       # CKM-tabellens etikett för totalt kön skiljer sig från historiktabellens

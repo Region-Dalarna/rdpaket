@@ -62,23 +62,29 @@ diag_befolkningsforandring_region_kon_ar_scb <- function(region_vekt = "20",
   # on_all_values_invalid = "null" gör att den tabell som inte har det
   # begärda året (t.ex. om `tid_koder` bara är ett gammalt årtal) hoppas över i
   # stället för att hela hämtningen stoppas.
-  befolkning_hist <- pxweb2r::pxweb2_get_data(
+  # Vilka år som hämtas ur respektive tabell, se intern_tid_for_tabell().
+  tid_hist <- intern_tid_for_tabell("TAB638", tid_koder, ger_senaste = TRUE)
+  tid_ckm  <- intern_tid_for_tabell("TAB5557", tid_koder, ger_senaste = TRUE)
+  intern_stoppa_om_ingen_tid(list(tid_hist, tid_ckm), "folkmängd och folkökning")
+
+  befolkning_hist <- if (length(tid_hist) > 0) pxweb2r::pxweb2_get_data(
     "TAB638",
     query = list(Region = region_vekt, Kon = kon_klartext, Civilstand = NA,
-                 Alder = NA, ContentsCode = c("Folkmängd", "Folkökning"), Tid = tid_koder),
+                 Alder = NA, ContentsCode = c("Folkmängd", "Folkökning"), Tid = tid_hist),
     on_all_values_invalid = "null",
   quiet = TRUE)
-  befolkning_ckm <- pxweb2r::pxweb2_get_data(
+  befolkning_ckm <- if (length(tid_ckm) > 0) pxweb2r::pxweb2_get_data(
     "TAB5557",
     query = list(Region = region_vekt, Kon = kon_klartext, Civilstand = "SC",
-                 Alder = "TotSA", ContentsCode = c("Folkmängd", "Folkökning"), Tid = tid_koder),
+                 Alder = "TotSA", ContentsCode = c("Folkmängd", "Folkökning"), Tid = tid_ckm),
     on_all_values_invalid = "null",
   quiet = TRUE)
   if (!is.null(befolkning_ckm)) {
     befolkning_ckm <- dplyr::select(befolkning_ckm, -dplyr::any_of(c("civilstånd", "ålder")))
   }
 
-  befolkning_df <- dplyr::bind_rows(befolkning_hist, befolkning_ckm)
+  befolkning_df <- dplyr::bind_rows(befolkning_hist, befolkning_ckm) |>
+    intern_behall_senaste_tid(tid_koder)
   if (ncol(befolkning_df) > 0) {
     befolkning_df <- dplyr::rename(befolkning_df, regionkod = region_kod, variabel = tabellinnehåll, varde = value)
   }

@@ -89,9 +89,14 @@ diag_utrikes_fodda_tidsserie_scb <-function(region_vekt = c("20"),
   # stället för att förlita sig på att en utelämnad variabel ger en färdig
   # totalsumma (pxweb2r fyller annars bara på med "*", se fynden i
   # diagram_befolkningsforandring.R).
+  # Vilka år som hämtas ur respektive tabell, se intern_tid_for_tabell().
+  tid_historik <- intern_tid_for_tabell("TAB4823", tid_koder, ger_senaste = TRUE)
+  tid_ckm      <- intern_tid_for_tabell("TAB6645", tid_koder, ger_senaste = TRUE)
+  intern_stoppa_om_ingen_tid(list(tid_historik, tid_ckm), "folkmängd efter födelseregion")
+
   hamta_inrikes_utrikes_fodda <- function(vald_region, full_aldersuppdelning = FALSE) {
 
-    historik <- pxweb2r::pxweb2_get_data(
+    historik <- if (length(tid_historik) > 0) pxweb2r::pxweb2_get_data(
       table = "TAB4823",
       query = list(
         Region = vald_region,
@@ -99,11 +104,11 @@ diag_utrikes_fodda_tidsserie_scb <-function(region_vekt = c("20"),
         Kon = c("män","kvinnor"),
         Fodelseregion = c("född i Sverige","utrikes född"),
         ContentsCode = "Antal",
-        Tid = intern_tolka_tidskoder("TAB4823", tid_koder)
+        Tid = tid_historik
       ),
       on_all_values_invalid = "null", quiet = TRUE)
 
-    ckm <- pxweb2r::pxweb2_get_data(
+    ckm <- if (length(tid_ckm) > 0) pxweb2r::pxweb2_get_data(
       table = "TAB6645",
       query = list(
         Region = vald_region,
@@ -111,11 +116,12 @@ diag_utrikes_fodda_tidsserie_scb <-function(region_vekt = c("20"),
         Kon = c("män","kvinnor"),
         Fodelseregion = c("född i Sverige","utrikes född"),
         ContentsCode = "Antal",
-        Tid = intern_tolka_tidskoder("TAB6645", tid_koder)
+        Tid = tid_ckm
       ),
       on_all_values_invalid = "null", quiet = TRUE)
 
     df <- dplyr::bind_rows(historik, ckm) |>
+      intern_behall_senaste_tid(tid_koder) |>
       dplyr::rename(regionkod = region_kod, Antal = value) |>
       dplyr::select(-tabellinnehåll)
 
@@ -135,6 +141,13 @@ diag_utrikes_fodda_tidsserie_scb <-function(region_vekt = c("20"),
   # Hämta data
   antal_inrikes_utrikes_df <- hamta_inrikes_utrikes_fodda(region_vekt) |>
     dplyr::mutate(region = rdverktyg::skapa_kortnamn_lan(region))
+
+  # Förändringsdiagrammen (kommuner, län, prognos) jämför år med varandra och går inte att göra för ett enda år
+  if (length(unique(antal_inrikes_utrikes_df$år)) < 2 &&
+      any(diag_forandring_kommuner, diag_forandring_lan, diag_forandring_prognos)) {
+    warning("tid_koder ger bara ett år - diagrammen för förändring (kommuner, län och prognos) hoppas över.", call. = FALSE)
+    diag_forandring_kommuner <- diag_forandring_lan <- diag_forandring_prognos <- FALSE
+  }
 
 
   if(diag_antal){
@@ -338,6 +351,13 @@ diag_utrikes_fodda_tidsserie_scb <-function(region_vekt = c("20"),
     names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfilnamn, ".png")
   }
 
+  # Prognosen (TAB6008) har bara framtida år: de begärda åren skärs mot dem, och förändring kräver minst två år
+  tid_prognos <- if (diag_forandring_prognos) intern_tid_for_tabell("TAB6008", tid_koder) else character(0)
+  if (diag_forandring_prognos && !identical(tid_prognos, "*") && length(tid_prognos) < 2) {
+    warning("tid_koder ger färre än två år i befolkningsframskrivningen (TAB6008) - diagrammet för prognos hoppas över.", call. = FALSE)
+    diag_forandring_prognos <- FALSE
+  }
+
   if(diag_forandring_prognos){
 
     # Länk till tabell: https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__BE__BE0401__BE0401A/BefProgRegFakN/
@@ -353,7 +373,7 @@ diag_utrikes_fodda_tidsserie_scb <-function(region_vekt = c("20"),
         Kon = "*",
         Alder = "*",
         ContentsCode = "Antal",
-        Tid = intern_tolka_tidskoder("TAB6008", tid_koder)
+        Tid = tid_prognos
       ), quiet = TRUE) |>
       dplyr::rename(regionkod = region_kod, Antal = value) |>
       dplyr::select(-tabellinnehåll) |>

@@ -48,29 +48,35 @@ diag_befolkningsforandring_manad_scb <- function(region_vekt = "20",
 
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
-  beffor_df_historik <- pxweb2r::pxweb2_get_data(
+  # Vilka perioder som hämtas ur respektive tabell, se intern_tid_for_tabell().
+  tid_tab1625 <- intern_tid_for_tabell("TAB1625", tid_koder, ger_senaste = TRUE)
+  tid_tab6473 <- intern_tid_for_tabell("TAB6473", tid_koder, ger_senaste = TRUE)
+  intern_stoppa_om_ingen_tid(list(tid_tab1625, tid_tab6473), "befolkningsförändringar per månad")
+
+  beffor_df_historik <- if (length(tid_tab1625) > 0) pxweb2r::pxweb2_get_data(
     table = "TAB1625",
     query = list(
       Region = region_vekt,
       Forandringar = befforandr_klartext,
       Kon = kon_klartext,
       ContentsCode = "Befolkning",
-      Tid = intern_tolka_tidskoder("TAB1625", tid_koder)
+      Tid = tid_tab1625
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 
-  beffor_df_ckm <- pxweb2r::pxweb2_get_data(
+  beffor_df_ckm <- if (length(tid_tab6473) > 0) pxweb2r::pxweb2_get_data(
     table = "TAB6473",
     query = list(
       Region = region_vekt,
       Forandringar = befforandr_klartext,
       Kon = kon_klartext_ckm,
       ContentsCode = "Befolkning",
-      Tid = intern_tolka_tidskoder("TAB6473", tid_koder)
+      Tid = tid_tab6473
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 
   beffor_df <- dplyr::bind_rows(beffor_df_historik, beffor_df_ckm) |>
+    intern_behall_senaste_tid(tid_koder, tidkol = "månad") |>
     dplyr::rename(regionkod = region_kod, Befolkning = value) |>
     dplyr::select(-tabellinnehåll) |>
     # Samma normalisering som i hamta_bef_forandringar_region_kon_manad_scb.R:

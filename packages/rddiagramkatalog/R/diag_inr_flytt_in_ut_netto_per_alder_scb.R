@@ -100,25 +100,31 @@ diag_inr_flytt_in_ut_netto_per_alder_scb <- function(region_vekt = "20",
                         pxweb2r::pxweb2_get_values("TAB6640", "Tid", quiet = TRUE)$code))
   }
 
-  flytt_df_historik <- pxweb2r::pxweb2_get_data(
+  # Vilka år som hämtas ur respektive tabell, se intern_tid_for_tabell(). "9999" är redan
+  # omräknat till ett verkligt år ovan.
+  tid_tab1212 <- intern_tid_for_tabell("TAB1212", tid_koder)
+  tid_tab6640 <- intern_tid_for_tabell("TAB6640", tid_koder, ger_senaste = TRUE)
+  intern_stoppa_om_ingen_tid(list(tid_tab1212, tid_tab6640), "inrikes flyttningar")
+
+  flytt_df_historik <- if (length(tid_tab1212) > 0) pxweb2r::pxweb2_get_data(
     table = "TAB1212",
     query = list(
       Region = region_vekt,
       Kon = kon_hamta,
       Alder = alder_hamta_historik,
       ContentsCode = c("Inrikes inflyttningar", "Inrikes utflyttningar"),
-      Tid = tid_koder
+      Tid = tid_tab1212
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 
-  flytt_df_ckm <- pxweb2r::pxweb2_get_data(
+  flytt_df_ckm <- if (length(tid_tab6640) > 0) pxweb2r::pxweb2_get_data(
     table = "TAB6640",
     query = list(
       Region = region_vekt,
       Kon = kon_hamta,
       Alder = alder_hamta_ckm,
       ContentsCode = c("Inrikes inflyttningar", "Inrikes utflyttningar"),
-      Tid = tid_koder
+      Tid = tid_tab6640
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 

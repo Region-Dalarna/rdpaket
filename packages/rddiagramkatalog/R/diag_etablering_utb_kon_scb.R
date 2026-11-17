@@ -144,6 +144,7 @@ diag_etablering_utb_kon_scb <- function(region_vekt = "20",
 
   # If you want a single combined data frame afterwards (assuming same column structure):
   etablering_df <- dplyr::bind_rows(resultat) |>
+    intern_behall_senaste_tid(tid_koder) |>
     dplyr::rename(andel = value,
            regionkod = region_kod) |>
       dplyr::mutate(bakgrundsvariabel = ifelse(bakgrundsvariabel == "födelseregion: Sverige","Inrikes född",bakgrundsvariabel)) |>

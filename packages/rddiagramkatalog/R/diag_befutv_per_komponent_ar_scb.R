@@ -65,7 +65,12 @@ diag_befutv_per_komponent_ar_scb <- function(
   forandringar_klartext <- c("flyttningsöverskott eget län", "flyttningsöverskott övriga Sverige",
                               "invandringsöverskott", "födelseöverskott")
 
-  beffor_df_historik <- pxweb2r::pxweb2_get_data(
+  # Vilka år som hämtas ur respektive tabell, se intern_tid_for_tabell().
+  tid_tab5169 <- intern_tid_for_tabell("TAB5169", tid_koder, ger_senaste = TRUE)
+  tid_tab6481 <- intern_tid_for_tabell("TAB6481", tid_koder, ger_senaste = TRUE)
+  intern_stoppa_om_ingen_tid(list(tid_tab5169, tid_tab6481), "befolkningsutveckling per komponent")
+
+  beffor_df_historik <- if (length(tid_tab5169) > 0) pxweb2r::pxweb2_get_data(
     table = "TAB5169",
     query = list(
       Region = region_vekt,
@@ -73,11 +78,11 @@ diag_befutv_per_komponent_ar_scb <- function(
       Period = "hela året",
       Kon = "totalt",
       ContentsCode = "Antal personer",
-      Tid = intern_tolka_tidskoder("TAB5169", tid_koder)
+      Tid = tid_tab5169
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 
-  beffor_df_ckm <- pxweb2r::pxweb2_get_data(
+  beffor_df_ckm <- if (length(tid_tab6481) > 0) pxweb2r::pxweb2_get_data(
     table = "TAB6481",
     query = list(
       Region = region_vekt,
@@ -85,11 +90,12 @@ diag_befutv_per_komponent_ar_scb <- function(
       Period = "hela året",
       Kon = "TotSa",
       ContentsCode = "Befolkningsstatistik antal personer",
-      Tid = intern_tolka_tidskoder("TAB6481", tid_koder)
+      Tid = tid_tab6481
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 
   beffor_df <- dplyr::bind_rows(beffor_df_historik, beffor_df_ckm) |>
+    intern_behall_senaste_tid(tid_koder) |>
     dplyr::rename(regionkod = region_kod, personer = value) |>
     dplyr::select(-tabellinnehåll, -kön)
 

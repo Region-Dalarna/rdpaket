@@ -1,3 +1,16 @@
+# rddiagramkatalog 0.0.0.9089
+
+* Tidsserier som delas mellan en historiktabell och en CKM-tabell hämtar nu rätt år ur respektive tabell (`intern_tid_for_tabell()`) i `diag_befolkningsforandring_region_kon_ar_scb()`,
+  `diag_befolkningsforandring_scb()`, `diag_befolkningsforandring_manad_scb()`, `diag_befutv_per_komponent_ar_scb()`, `diag_bef_inr_utr_en_aldersgrupp_scb()`,
+  `diag_fodda_manad_scb()`, `diag_fodelsenetto_region_scb()`, `diag_inr_flytt_in_ut_netto_per_alder_scb()`, `diag_inr_flytt_in_ut_netto_tidsserie_per_alder_scb()` och
+  `diag_utrikes_fodda_tidsserie_scb()`. Förut gav `tid_koder = "9999"` sista året i *varje* tabell (t.ex. både 2024 och 2025), och i `diag_befutv_per_komponent_ar_scb()`
+  tappades 2025 eftersom CKM-tabellens nyaste period (2026) saknar värden. Nu ger `"9999"` senaste året med data. Ett år som inte finns i någon tabell ger ett tydligt felmeddelande
+  i stället för "Can't rename columns that don't exist".
+* Nya interna hjälpfunktioner `intern_stoppa_om_ingen_tid()` och `intern_behall_senaste_tid()`; `intern_tid_for_tabell()` skickar de senaste åren i stället för `"9999"` till den nyaste tabellen.
+  `diag_etablering_utb_kon_scb()` och `diag_arbloshet_syss_utbildning_facet_ar_scb()` använder `intern_behall_senaste_tid()` så att `"9999"` ger senaste året med data.
+* `diag_utrikes_fodda_tidsserie_scb()` kraschade med "missing value where TRUE/FALSE needed" när `tid_koder` gav ett enda år eller för få år i prognosen. Förändringsdiagrammen
+  (kommuner, län, prognos) hoppas nu över med en varning i stället.
+
 # rddiagramkatalog 0.0.0.9088
 
 * Ny intern hjälpfunktion `intern_tid_for_tabell()` som väljer vilka `tid_koder` som ska skickas till varje tabell när en tidsserie delas mellan flera SCB-tabeller

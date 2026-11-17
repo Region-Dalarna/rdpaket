@@ -144,6 +144,7 @@ diag_arbloshet_syss_utbildning_facet_ar_scb <- function(
     if (length(tid_5400) > 0) hamta_tabell("TAB5400", tid_5400))
 
   arbl_df <- arbl_raw |>
+    intern_behall_senaste_tid(tid_koder) |>
     dplyr::rename(regionkod = region_kod) |>
     tidyr::pivot_wider(names_from = tabellinnehåll, values_from = value) |>
     dplyr::rename(forvarvsarbetande = `Förvärvsarbetande (A)`,

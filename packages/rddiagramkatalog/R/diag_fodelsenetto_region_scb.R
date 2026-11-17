@@ -69,17 +69,26 @@ diag_fodelsenetto_region_scb <- function(region_vekt = "20",
   #   längre - måste anges explicit som totalkoden "TotSA", vilket också gör
   #   dem till egna kolumner i svaret; select() plockar bort dem igen.
   # Kön hålls odelat (NA) i alla fyra, som i originalet.
+  # Vilka år som hämtas ur respektive tabell, se intern_tid_for_tabell().
+  tid_per_tabell <- list(TAB1264 = intern_tid_for_tabell("TAB1264", tid_koder, ger_senaste = TRUE),
+                         TAB6401 = intern_tid_for_tabell("TAB6401", tid_koder, ger_senaste = TRUE),
+                         TAB959  = intern_tid_for_tabell("TAB959",  tid_koder, ger_senaste = TRUE),
+                         TAB6757 = intern_tid_for_tabell("TAB6757", tid_koder, ger_senaste = TRUE))
+  intern_stoppa_om_ingen_tid(tid_per_tabell, "födda och döda")
+
   hamta_fodda <- function(table_id, alder_moder) {
+    if (length(tid_per_tabell[[table_id]]) == 0) return(NULL)
     pxweb2r::pxweb2_get_data(
       table_id,
-      query = list(Region = region_vekt, Kon = NA, AlderModer = alder_moder, Tid = tid_koder),
+      query = list(Region = region_vekt, Kon = NA, AlderModer = alder_moder, Tid = tid_per_tabell[[table_id]]),
       on_all_values_invalid = "null",
     quiet = TRUE)
   }
   hamta_doda <- function(table_id, alder) {
+    if (length(tid_per_tabell[[table_id]]) == 0) return(NULL)
     pxweb2r::pxweb2_get_data(
       table_id,
-      query = list(Region = region_vekt, Kon = NA, Alder = alder, Tid = tid_koder),
+      query = list(Region = region_vekt, Kon = NA, Alder = alder, Tid = tid_per_tabell[[table_id]]),
       on_all_values_invalid = "null",
     quiet = TRUE)
   }
@@ -97,10 +106,12 @@ diag_fodelsenetto_region_scb <- function(region_vekt = "20",
   diagram_capt <- rddiagram::lagg_till_ckm_notering(diagram_capt, har_ckm_data, fran_ar = ckm_fran_ar)
 
   fodda_df <- dplyr::bind_rows(fodda_hist, fodda_ckm) |>
+    intern_behall_senaste_tid(tid_koder) |>
     dplyr::rename(regionkod = region_kod, födda = value) |>
     dplyr::select(-dplyr::any_of("tabellinnehåll"))
 
   doda_df <- dplyr::bind_rows(doda_hist, doda_ckm) |>
+    intern_behall_senaste_tid(tid_koder) |>
     dplyr::rename(regionkod = region_kod, Döda = value) |>
     dplyr::select(-dplyr::any_of("tabellinnehåll"))
 

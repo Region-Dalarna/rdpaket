@@ -50,7 +50,10 @@ intern_tolka_ar_intervall <- function(tid_koder, ar_till_om_9999 = 2100) {
 # tabellen, så enskilda år skärs mot tabellens egna koder. Returnerar character(0) om
 # tabellen inte har något av åren - anroparen ska då hoppa över tabellen.
 # - "*" skickas vidare som det är.
-# - "9999" (senaste) hämtas bara från tabellen med ger_senaste = TRUE (den nyaste).
+# - "9999" (senaste) hämtas bara från tabellen med ger_senaste = TRUE (den nyaste). Eftersom
+#   nyaste periodens kod kan finnas utan värden (NA) skickas de senaste tre åren (15 perioder
+#   för månadstabeller) i stället för "9999" - anroparen MÅSTE då köra
+#   intern_behall_senaste_tid() på det hopslagna uttaget.
 # - Intervall ("2015:9999") tolkas av intern_tolka_tidskoder().
 #' @noRd
 intern_tid_for_tabell <- function(tabell, tid_koder, ger_senaste = FALSE) {
@@ -60,9 +63,36 @@ intern_tid_for_tabell <- function(tabell, tid_koder, ger_senaste = FALSE) {
   tid <- intern_tolka_tidskoder(tabell, tid_koder)
   vill_ha_senaste <- "9999" %in% tid
   tid <- setdiff(tid, "9999")
-  if (length(tid) > 0) {
-    tid <- intersect(tid, pxweb2r::pxweb2_get_values(tabell, "Tid", quiet = TRUE)$code)
+  if (length(tid) > 0 || (vill_ha_senaste && ger_senaste)) {
+    koder <- sort(pxweb2r::pxweb2_get_values(tabell, "Tid", quiet = TRUE)$code)
+    tid <- intersect(tid, koder)
+    if (vill_ha_senaste && ger_senaste) {
+      antal <- if (all(grepl("^[0-9]{4}$", koder))) 3 else 15
+      tid <- union(tid, utils::tail(koder, antal))
+    }
   }
-  if (vill_ha_senaste && ger_senaste) tid <- c(tid, "9999")
   tid
+}
+
+# Stoppar med ett tydligt fel om ingen av tabellerna har något av de begärda åren
+# (tid_lista = lista med resultatet av intern_tid_for_tabell() per tabell).
+#' @noRd
+intern_stoppa_om_ingen_tid <- function(tid_lista, amne = "uttaget") {
+  if (all(lengths(tid_lista) == 0)) {
+    stop("Inga av de begärda åren (tid_koder) finns i SCB:s tabeller för ", amne, ".", call. = FALSE)
+  }
+  invisible(NULL)
+}
+
+# "9999" betyder senaste året med data. SCB:s nyaste tabell kan ha en period som
+# finns som Tid-kod men ännu saknar värden (NA), och historiktabellen ger annars sitt
+# sista år vid sidan av det nya. Efter att tabellerna slagits ihop tas därför rader
+# utan värde bort och bara det senaste året (plus eventuella uttryckligen begärda år)
+# behålls. Utan "9999" i tid_koder returneras df oförändrad.
+#' @noRd
+intern_behall_senaste_tid <- function(df, tid_koder, tidkol = "år", varde = "value") {
+  if (is.null(df) || nrow(df) == 0 || !"9999" %in% tid_koder || !tidkol %in% names(df)) return(df)
+  if (varde %in% names(df)) df <- df[!is.na(df[[varde]]), , drop = FALSE]
+  if (nrow(df) == 0) return(df)
+  df[df[[tidkol]] %in% c(setdiff(tid_koder, "9999"), max(df[[tidkol]])), , drop = FALSE]
 }

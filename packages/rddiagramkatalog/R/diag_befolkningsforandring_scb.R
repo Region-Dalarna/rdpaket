@@ -58,7 +58,12 @@ diag_befolkningsforandring_scb <- function(region_vekt = rdverktyg::hamtaAllaLan
   # (resp. den riktiga totalkoden i CKM-tabellen) och summerar sedan ihop dem
   # själva innan pivotering, i stället för att förlita oss på att SCB redan
   # gjort det år oss.
-  bef_historik <- pxweb2r::pxweb2_get_data(
+  # Vilka år som hämtas ur respektive tabell, se intern_tid_for_tabell().
+  tid_tab638 <- intern_tid_for_tabell("TAB638", tid_koder, ger_senaste = TRUE)
+  tid_tab5557 <- intern_tid_for_tabell("TAB5557", tid_koder, ger_senaste = TRUE)
+  intern_stoppa_om_ingen_tid(list(tid_tab638, tid_tab5557), "folkmängd")
+
+  bef_historik <- if (length(tid_tab638) > 0) pxweb2r::pxweb2_get_data(
     table = "TAB638",
     query = list(
       Region = region_vekt,
@@ -66,11 +71,11 @@ diag_befolkningsforandring_scb <- function(region_vekt = rdverktyg::hamtaAllaLan
       Kon = c("män","kvinnor"),
       Alder = alder_koder,
       ContentsCode = c("Folkmängd","Folkökning"),
-      Tid = tid_koder
+      Tid = tid_tab638
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 
-  bef_ckm <- pxweb2r::pxweb2_get_data(
+  bef_ckm <- if (length(tid_tab5557) > 0) pxweb2r::pxweb2_get_data(
     table = "TAB5557",
     query = list(
       Region = region_vekt,
@@ -78,13 +83,14 @@ diag_befolkningsforandring_scb <- function(region_vekt = rdverktyg::hamtaAllaLan
       Kon = c("män","kvinnor"),
       Alder = alder_koder,
       ContentsCode = c("Folkmängd","Folkökning"),
-      Tid = tid_koder
+      Tid = tid_tab5557
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 
   har_ckm_bef <- !is.null(bef_ckm) && nrow(bef_ckm) > 0
 
   bef_df <- dplyr::bind_rows(bef_historik, bef_ckm) |>
+    intern_behall_senaste_tid(tid_koder) |>
     dplyr::rename(variabel = tabellinnehåll, varde = value) |>
     dplyr::group_by(region, ålder, kön, år, variabel) |>
     dplyr::summarize(varde = sum(varde, na.rm = TRUE), .groups = "drop") |>
@@ -96,31 +102,37 @@ diag_befolkningsforandring_scb <- function(region_vekt = rdverktyg::hamtaAllaLan
   # summeras ihop till en totalrad per region/ålder/år, i stället för att
   # utelämna Kon (vilket - som ovan - bara ger män+kvinnor var för sig,
   # inte en färdig totalsumma).
-  flytt_historik <- pxweb2r::pxweb2_get_data(
+  # Vilka år som hämtas ur respektive tabell, se intern_tid_for_tabell().
+  tid_tab1212 <- intern_tid_for_tabell("TAB1212", tid_koder, ger_senaste = TRUE)
+  tid_tab6640 <- intern_tid_for_tabell("TAB6640", tid_koder, ger_senaste = TRUE)
+  intern_stoppa_om_ingen_tid(list(tid_tab1212, tid_tab6640), "flyttningar")
+
+  flytt_historik <- if (length(tid_tab1212) > 0) pxweb2r::pxweb2_get_data(
     table = "TAB1212",
     query = list(
       Region = region_vekt,
       Alder = alder_koder,
       Kon = c("män","kvinnor"),
       ContentsCode = "*",
-      Tid = tid_koder
+      Tid = tid_tab1212
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 
-  flytt_ckm <- pxweb2r::pxweb2_get_data(
+  flytt_ckm <- if (length(tid_tab6640) > 0) pxweb2r::pxweb2_get_data(
     table = "TAB6640",
     query = list(
       Region = region_vekt,
       Alder = alder_koder,
       Kon = c("män","kvinnor"),
       ContentsCode = "*",
-      Tid = tid_koder
+      Tid = tid_tab6640
     ),
     on_all_values_invalid = "null", quiet = TRUE)
 
   har_ckm_flytt <- !is.null(flytt_ckm) && nrow(flytt_ckm) > 0
 
   flytt_df <- dplyr::bind_rows(flytt_historik, flytt_ckm) |>
+    intern_behall_senaste_tid(tid_koder) |>
     dplyr::rename(variabel = tabellinnehåll, varde = value) |>
     dplyr::group_by(region, ålder, år, variabel) |>
     dplyr::summarize(varde = sum(varde, na.rm = TRUE), .groups = "drop") |>
