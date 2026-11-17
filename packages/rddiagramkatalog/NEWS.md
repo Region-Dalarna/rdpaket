@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9093
+
+* `karta_gg_bakgrund_sverige()`: länsgränserna klipps nu mot kusten och ritas bara över land och sjöar. `lansgrans_i_havet = TRUE` ritar dem även i territorialvattnet. Kräver lagret `hav`
+  (bygg med `rdgis::skapa_bakgrundskarta_topografi(kalla_schema = "topografi_1m", lager = "hav")`) och rdgis 0.0.0.9009.
+* Ny parameter `max_orter_per_lan` begränsar antalet ortsnamn per län (största först, efter textklass och därefter folkmängd). Ortsnamnen är dessutom ca 20 % mindre.
+
 # rddiagramkatalog 0.0.0.9092
 
 * Ny `karta_gg_bakgrund_sverige()`: bakgrundskarta över hela Sverige eller flera län ur Topografi 1M (schemat `bakgrundskarta_sverige`, byggt med

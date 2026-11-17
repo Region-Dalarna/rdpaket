@@ -25,6 +25,9 @@
 #'   `""` ger ingen text.
 #' @param marginal Marginal runt området som andel av kartans bredd och höjd. Standard 0,03.
 #' @param lansgrans `TRUE` (standard) ritar länsgränserna (Lantmäteriets `lan_lm`) som tunna grå linjer.
+#' @param lansgrans_i_havet `FALSE` (standard) klipper länsgränserna mot kusten, så att de bara ritas över land och
+#'   sjöar. `TRUE` ritar dem också ut i territorialvattnet. Kräver att lagret `hav` byggts (se
+#'   `rdgis::skapa_bakgrundskarta_topografi()`) när gränserna klipps.
 #' @param etiketter Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket". Standard
 #'   `NULL` = inga etiketter.
 #'   * `"storstader"`: de största städerna (21 st.).
@@ -35,6 +38,9 @@
 #'   * `"storre_vatten"`: de största sjöarna och havsområdena (Vänern, Vättern, Mälaren, Östersjön ...).
 #'   * `"vatten"`: större sjöar och havsområden.
 #'   * `"terrang"`: terrängnamn (öar, fjäll).
+#' @param max_orter_per_lan Högsta antal ortsnamn per län (gäller paketen `"storstader"`, `"stader"`, `"tatorter"` och
+#'   `"orter"`). De största orterna väljs först (efter Lantmäteriets textklass, därefter folkmängd). `NULL` (standard) = ingen
+#'   begränsning.
 #' @param namn_storlek Faktor för etikettstorleken. Standard 1.
 #' @param bredd_cm Bildens bredd i centimeter när kartan skrivs till fil. Höjden följer kartans form.
 #' @param dpi Upplösning när kartan skrivs till fil. Standard 300.
@@ -56,7 +62,9 @@ karta_gg_bakgrund_sverige <- function(
     kalla_text = "Bakgrundskarta: Lantmäteriet, Topografi 1M\nBearbetning: Samhällsanalys, Region Dalarna",
     marginal = 0.03,
     lansgrans = TRUE,
+    lansgrans_i_havet = FALSE,
     etiketter = NULL,
+    max_orter_per_lan = NULL,
     namn_storlek = 1,
     bredd_cm = 20,
     dpi = 300,
@@ -76,7 +84,8 @@ karta_gg_bakgrund_sverige <- function(
 
   b <- intern_bygg_bakgrund_sverige(region_vekt, vagar = vagar, vattendrag = vattendrag, utland = utland,
                                     etiketter = etiketter, namn_storlek = namn_storlek, kalla_text = kalla_text,
-                                    marginal = marginal, lansgrans = lansgrans)
+                                    marginal = marginal, lansgrans = lansgrans, lansgrans_i_havet = lansgrans_i_havet,
+                                    max_orter_per_lan = max_orter_per_lan)
   gg <- b$gg
   bbox <- b$bbox
 
@@ -101,7 +110,12 @@ karta_gg_bakgrund_sverige <- function(
 # utsnitt (bbox i SWEREF 99 TM) och länsgränserna (lan_lm).
 #' @noRd
 intern_bygg_bakgrund_sverige <- function(region_vekt, vagar, vattendrag, utland, etiketter, namn_storlek,
-                                         kalla_text, marginal, lansgrans) {
+                                         kalla_text, marginal, lansgrans, lansgrans_i_havet = FALSE,
+                                         max_orter_per_lan = NULL) {
+  if (!is.null(max_orter_per_lan) &&
+      (length(max_orter_per_lan) != 1 || is.na(max_orter_per_lan) || max_orter_per_lan < 1)) {
+    stop("max_orter_per_lan ska vara ett heltal på minst 1, eller NULL.", call. = FALSE)
+  }
   vagar <- intern_valj_vagar(vagar)
   etiketter <- intern_valj_etiketter_sverige(etiketter)
   utland <- match.arg(utland, c("grann", "vatten", "inget"))
@@ -110,6 +124,7 @@ intern_bygg_bakgrund_sverige <- function(region_vekt, vagar, vattendrag, utland,
   lager_namn <- c("utland", "vatten", "skog", "fjall", "glaciar", "bebyggelse", "jarnvag",
                   paste0("vagar_", vagar),
                   if (vattendrag) "vattendrag",
+                  if (lansgrans && !lansgrans_i_havet) "hav",
                   if (any(etiketter %in% c("storstader", "stader", "tatorter", "orter"))) "ortnamn",
                   if (any(etiketter %in% c("storre_vatten", "vatten"))) "vattennamn",
                   if ("terrang" %in% etiketter) "terrangnamn")
@@ -132,14 +147,25 @@ intern_bygg_bakgrund_sverige <- function(region_vekt, vagar, vattendrag, utland,
   lager <- rdgis::hamta_bakgrundskarta(lager = lager_namn, bbox = bbox, marginal = 0,
                                        schema = "bakgrundskarta_sverige", con = con)
   if ("storsta_per_lan" %in% etiketter) lager$storsta_per_lan <- intern_storsta_tatort_per_lan(lan_gis)
+  if (!is.null(max_orter_per_lan) && !is.null(lager$ortnamn)) lager$ortnamn <- intern_lagg_pa_folkmangd(lager$ortnamn)
   tid("Hämtade lagren ur databasen", t0)
 
   t0 <- Sys.time()
-  # länsgränserna förenklas efter kartans storlek (ca 1/2000 av bredden, 300 m för hela Sverige)
+  # länsgränserna förenklas efter kartans storlek (ca 1/2000 av bredden, 300 m för hela Sverige) och klipps mot kusten
+  lan_linjer <- NULL
+  if (lansgrans) {
+    lan_linjer <- sf::st_cast(sf::st_geometry(sf::st_simplify(lan_gis, preserveTopology = TRUE, dTolerance = bredd / 2000)),
+                              "MULTILINESTRING")
+    if (!lansgrans_i_havet && !is.null(lager$hav) && nrow(lager$hav) > 0) {
+      hav <- sf::st_union(sf::st_buffer(sf::st_simplify(sf::st_geometry(lager$hav), preserveTopology = TRUE,
+                                                        dTolerance = bredd / 2000), 50))
+      lan_linjer <- sf::st_difference(lan_linjer, hav)
+      lan_linjer <- lan_linjer[!sf::st_is_empty(lan_linjer)]
+    }
+  }
   gg <- intern_rita_bakgrund_sverige(
     lager, bbox, vagar = vagar, utland = utland, etiketter = etiketter, namn_storlek = namn_storlek,
-    kalla_text = kalla_text,
-    lan_gis = if (lansgrans) sf::st_simplify(lan_gis, preserveTopology = TRUE, dTolerance = bredd / 2000))
+    kalla_text = kalla_text, lan_linjer = lan_linjer, lan_poly = lan_gis, max_orter_per_lan = max_orter_per_lan)
   tid("Byggde kartan", t0)
   list(gg = gg, bbox = bbox, lan_gis = lan_gis)
 }
@@ -169,13 +195,41 @@ intern_storsta_tatort_per_lan <- function(lan_gis) {
   sf::st_sf(namn = t$tatort, klass = 7L, geometry = sf::st_geometry(t))
 }
 
+# Lägger folkmängd (bef) på orterna ur närmaste tätort i tätortspunkterna (inom 3 km, annars 0). Används som
+# tiebreak när antalet orter per län begränsas.
+#' @noRd
+intern_lagg_pa_folkmangd <- function(ort) {
+  ort$bef <- 0
+  if (nrow(ort) == 0) return(ort)
+  t <- rdgis::hamta_karta("tatortspunkter", NA)
+  if (is.null(t) || nrow(t) == 0) return(ort)
+  t <- sf::st_transform(t[t$ar == max(t$ar), ], 3006)
+  n <- sf::st_nearest_feature(ort, t)
+  avstand <- as.numeric(sf::st_distance(ort, t[n, ], by_element = TRUE))
+  ort$bef <- ifelse(avstand <= 3000, t$bef[n], 0)
+  ort
+}
+
+# Behåller de max_n största orterna (textklass, därefter folkmängd) i varje län. Orter utanför länen behålls.
+#' @noRd
+intern_begransa_per_lan <- function(d, lan_poly, max_n) {
+  if (is.null(max_n) || is.null(lan_poly) || nrow(d) == 0) return(d)
+  if (!"bef" %in% names(d)) d$bef <- 0
+  lan_nr <- vapply(sf::st_intersects(d, lan_poly), function(i) if (length(i) > 0) i[1] else NA_integer_, 1L)
+  ordning <- order(-d$klass, -d$bef)
+  d <- d[ordning, ]; lan_nr <- lan_nr[ordning]
+  placering <- stats::ave(seq_along(lan_nr), ifelse(is.na(lan_nr), -1L, lan_nr), FUN = seq_along)
+  d[is.na(lan_nr) | placering <= max_n, ]
+}
+
 # Ritar bakgrundskartan ur en lista med sf-lager (som rdgis::hamta_bakgrundskarta() ger). Skild från
 # databashämtningen så att den går att testa. Basfärgerna kommer ur diagramfarger("rd_bakgrundskarta");
 # utland, fjäll och glaciär har egna toner här. Landets yta är kartans bakgrund (Topografi 1M har ingen
 # markyta för "öppen mark").
 #' @noRd
 intern_rita_bakgrund_sverige <- function(lager, bbox, vagar = "stora", utland = "grann", etiketter = character(0),
-                                         namn_storlek = 1, kalla_text = NULL, lan_gis = NULL) {
+                                         namn_storlek = 1, kalla_text = NULL, lan_linjer = NULL, lan_poly = NULL,
+                                         max_orter_per_lan = NULL) {
   f <- rddiagram::diagramfarger("rd_bakgrundskarta")
   farg_utland <- switch(utland, grann = "#E2E2E0", vatten = f[["vatten"]], inget = f[["land"]])
   gg <- ggplot2::ggplot()
@@ -211,24 +265,27 @@ intern_rita_bakgrund_sverige <- function(lager, bbox, vagar = "stora", utland = 
   }
   gg <- linje(gg, "jarnvag", f[["jarnvag"]], 0.2)
 
-  if (!is.null(lan_gis)) {
-    gg <- gg + ggplot2::geom_sf(data = sf::st_cast(sf::st_geometry(lan_gis), "MULTILINESTRING"), colour = "#9A9A9A",
-                                linewidth = 0.2)
+  if (!is.null(lan_linjer) && length(lan_linjer) > 0) {
+    gg <- gg + ggplot2::geom_sf(data = lan_linjer, colour = "#9A9A9A", linewidth = 0.2)
   }
 
   # Etikettpaket. Storleken (mm) följer textens klass (textstorleksklass i topografin: 2, 3, 5, 7, 10).
-  storlek_klass <- function(klass) {
+  storlek_vatten <- function(klass) {
     ifelse(klass >= 10, 3.0, ifelse(klass >= 7, 2.6, ifelse(klass >= 5, 2.2, ifelse(klass >= 3, 1.8, 1.5))))
   }
-  text_lager <- function(gg, lagernamn, urval, farg, kursiv) {
+  storlek_ort <- function(klass) {
+    ifelse(klass >= 7, 2.1, ifelse(klass >= 5, 1.8, ifelse(klass >= 3, 1.5, 1.2)))
+  }
+  text_lager <- function(gg, lagernamn, urval, farg, kursiv, storlek_fn = storlek_vatten, tak = NULL) {
     d <- lager[[lagernamn]]
     if (is.null(d) || nrow(d) == 0) return(gg)
     d <- d[urval(d), ]
+    d <- intern_begransa_per_lan(d, lan_poly, tak)
     if (nrow(d) == 0) return(gg)
     d <- d[order(-d$klass), ]   # störst först, så att de större namnen går före vid överlapp
     xy <- sf::st_coordinates(d)
     d$x <- xy[, 1]; d$y <- xy[, 2]
-    d$storlek <- namn_storlek * storlek_klass(d$klass)
+    d$storlek <- namn_storlek * storlek_fn(d$klass)
     gg + ggplot2::geom_text(data = sf::st_drop_geometry(d),
                             ggplot2::aes(x = x, y = y, label = namn, size = storlek),
                             colour = farg, fontface = if (kursiv) "italic" else "plain",
@@ -236,16 +293,16 @@ intern_rita_bakgrund_sverige <- function(lager, bbox, vagar = "stora", utland = 
   }
   tatort <- function(d) d$kategori == "Tätort"
   if ("orter" %in% etiketter) {
-    gg <- text_lager(gg, "ortnamn", function(d) rep(TRUE, nrow(d)), f[["ortnamn"]], FALSE)
+    gg <- text_lager(gg, "ortnamn", function(d) rep(TRUE, nrow(d)), f[["ortnamn"]], FALSE, storlek_ort, max_orter_per_lan)
   } else if ("tatorter" %in% etiketter) {
-    gg <- text_lager(gg, "ortnamn", function(d) tatort(d) & d$klass >= 3, f[["ortnamn"]], FALSE)
+    gg <- text_lager(gg, "ortnamn", function(d) tatort(d) & d$klass >= 3, f[["ortnamn"]], FALSE, storlek_ort, max_orter_per_lan)
   } else if ("stader" %in% etiketter) {
-    gg <- text_lager(gg, "ortnamn", function(d) tatort(d) & d$klass >= 5, f[["ortnamn"]], FALSE)
+    gg <- text_lager(gg, "ortnamn", function(d) tatort(d) & d$klass >= 5, f[["ortnamn"]], FALSE, storlek_ort, max_orter_per_lan)
   } else if ("storstader" %in% etiketter) {
-    gg <- text_lager(gg, "ortnamn", function(d) tatort(d) & d$klass >= 7, f[["ortnamn"]], FALSE)
+    gg <- text_lager(gg, "ortnamn", function(d) tatort(d) & d$klass >= 7, f[["ortnamn"]], FALSE, storlek_ort, max_orter_per_lan)
   }
   if ("storsta_per_lan" %in% etiketter) {
-    gg <- text_lager(gg, "storsta_per_lan", function(d) rep(TRUE, nrow(d)), f[["ortnamn"]], FALSE)
+    gg <- text_lager(gg, "storsta_per_lan", function(d) rep(TRUE, nrow(d)), f[["ortnamn"]], FALSE, storlek_ort)
   }
   if ("vatten" %in% etiketter) {
     gg <- text_lager(gg, "vattennamn", function(d) d$klass >= 3, f[["vattennamn"]], TRUE)

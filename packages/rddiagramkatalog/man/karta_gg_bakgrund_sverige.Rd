@@ -13,7 +13,9 @@ karta_gg_bakgrund_sverige(
     "Bakgrundskarta: Lantmäteriet, Topografi 1M\\nBearbetning: Samhällsanalys, Region Dalarna",
   marginal = 0.03,
   lansgrans = TRUE,
+  lansgrans_i_havet = FALSE,
   etiketter = NULL,
+  max_orter_per_lan = NULL,
   namn_storlek = 1,
   bredd_cm = 20,
   dpi = 300,
@@ -45,6 +47,10 @@ färg som Sverige.}
 
 \item{lansgrans}{\code{TRUE} (standard) ritar länsgränserna (Lantmäteriets \code{lan_lm}) som tunna grå linjer.}
 
+\item{lansgrans_i_havet}{\code{FALSE} (standard) klipper länsgränserna mot kusten, så att de bara ritas över land och
+sjöar. \code{TRUE} ritar dem också ut i territorialvattnet. Kräver att lagret \code{hav} byggts (se
+\code{rdgis::skapa_bakgrundskarta_topografi()}) när gränserna klipps.}
+
 \item{etiketter}{Vilka etiketter som ritas, som en teckenvektor med ett eller flera "paket". Standard
 \code{NULL} = inga etiketter.
 \itemize{
@@ -57,6 +63,10 @@ färg som Sverige.}
 \item \code{"vatten"}: större sjöar och havsområden.
 \item \code{"terrang"}: terrängnamn (öar, fjäll).
 }}
+
+\item{max_orter_per_lan}{Högsta antal ortsnamn per län (gäller paketen \code{"storstader"}, \code{"stader"}, \code{"tatorter"} och
+\code{"orter"}). De största orterna väljs först (efter Lantmäteriets textklass, därefter folkmängd). \code{NULL} (standard) = ingen
+begränsning.}
 
 \item{namn_storlek}{Faktor för etikettstorleken. Standard 1.}
 
