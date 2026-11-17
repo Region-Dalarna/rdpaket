@@ -1,8 +1,9 @@
-# rdgis 0.0.0.9006
+# rdgis 0.0.0.9007
 
 * `skapa_bakgrundskarta_topografi(kalla_schema = "topografi_1m")` bygger bakgrundskartan för hela Sverige ur Lantmäteriets Topografi 1M, som standard i schemat
   `bakgrundskarta_sverige`. Lager: `utland`, `vatten` (sjöar och hav), `skog`, `fjall`, `glaciar`, `bebyggelse`, `vattendrag`, `vagar_stora`, `vagar_mellan`, `vagar_sma` och `jarnvag`.
-  Namnlager tillkommer senare.
+  Namnlager: `ortnamn`, `vattennamn` och `terrangnamn` (ur `textpunkt`; delade namn slås ihop till en punkt).
+* `skapa_bakgrundskarta_topografi()` stoppar om `schema` och `kalla_schema` hör till olika källor (t.ex. `topografi_1m` till `bakgrundskarta_dalarna`), så att ett schema inte skrivs över av fel källa.
 * `schema` i `skapa_bakgrundskarta_topografi()` är `NULL` som standard och väljs utifrån källan. `lager` i `bakgrundskarta_finns()` och `hamta_bakgrundskarta()` är `NULL` som standard
   och betyder alla lager för schemat (`schema = "bakgrundskarta_sverige"` för hela Sverige).
 

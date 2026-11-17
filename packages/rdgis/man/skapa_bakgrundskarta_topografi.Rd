@@ -23,7 +23,8 @@ skapa_bakgrundskarta_topografi(
 \item{lager}{Vilka lager som ska byggas, \code{NULL} (standard) = alla.
 Ur \code{topografi_10}: \code{vatten}, \code{skog}, \code{bebyggelse}, \code{vagar_stora}, \code{vagar_mellan}, \code{vagar_sma}, \code{jarnvag},
 \code{ortnamn}, \code{vattennamn}, \code{sjoar}. Ur \code{topografi_1m}: \code{utland}, \code{vatten} (sjöar och hav), \code{skog}, \code{fjall},
-\code{glaciar}, \code{bebyggelse}, \code{vattendrag}, \code{vagar_stora}, \code{vagar_mellan}, \code{vagar_sma}, \code{jarnvag}.}
+\code{glaciar}, \code{bebyggelse}, \code{vattendrag}, \code{vagar_stora}, \code{vagar_mellan}, \code{vagar_sma}, \code{jarnvag}, \code{ortnamn},
+\code{vattennamn}, \code{terrangnamn}.}
 }
 \value{
 En \code{data.frame} med lager, antal rader och storlek. Osynligt.

@@ -24,5 +24,7 @@ test_that("Topografi 1M har egna lager och egen SQL", {
   expect_equal(intern_bakgrund_kalla("bakgrundskarta_dalarna"), "topografi_10")
   expect_equal(intern_bakgrund_standardschema("topografi_1m"), "bakgrundskarta_sverige")
   expect_error(skapa_bakgrundskarta_topografi(con = "x", kalla_schema = "topografi_1m", lager = "sjoar"), "Okända lager")
-  expect_error(hamta_bakgrundskarta(schema = "bakgrundskarta_sverige", lager = "ortnamn"), "Okända lager")
+  expect_error(hamta_bakgrundskarta(schema = "bakgrundskarta_sverige", lager = "sjoar"), "Okända lager")
+  expect_error(skapa_bakgrundskarta_topografi(con = "x", schema = "bakgrundskarta_dalarna", kalla_schema = "topografi_1m"), "annan topografikälla")
+  expect_error(skapa_bakgrundskarta_topografi(con = "x", schema = "bakgrundskarta_sverige", kalla_schema = "topografi_10"), "annan topografikälla")
 })

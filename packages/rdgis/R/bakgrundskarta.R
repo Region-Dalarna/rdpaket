@@ -4,7 +4,7 @@
 intern_bakgrund_lager <- function(kalla = "topografi_10") {
   if (kalla == "topografi_1m") {
     return(c("utland", "vatten", "skog", "fjall", "glaciar", "bebyggelse", "vattendrag",
-             "vagar_stora", "vagar_mellan", "vagar_sma", "jarnvag"))
+             "vagar_stora", "vagar_mellan", "vagar_sma", "jarnvag", "ortnamn", "vattennamn", "terrangnamn"))
   }
   c("vatten", "skog", "bebyggelse", "vagar_stora", "vagar_mellan", "vagar_sma", "jarnvag",
     "ortnamn", "vattennamn", "sjoar")
@@ -33,6 +33,17 @@ intern_bakgrund_sql_1m <- function(src = "topografi_1m") {
     FROM {src}.{tabell} WHERE {villkor}")
   vag <- function(typer) linje("vaglinje", glue::glue("objekttyp IN ({typer})"),
                                "objekttyp, gastvag1nummer AS vagnummer, ")
+  # Namnen ligger i textpunkt. textstrang är hela namnet och ett namn kan vara delat på två rader (textdelnr 1 och 2,
+  # t.ex. "Drottning-" och "skär") som ligger nära varandra. Delarna slås ihop till en punkt per namn och kategori;
+  # lika namn på olika platser (över 3 km ifrån varandra) hålls isär. klass = textstorleksklass (högre = större).
+  text <- function(kategorier) glue::glue("
+    SELECT t.textstrang AS namn, t.textkategori AS kategori, max(t.textstorleksklass::int) AS klass,
+           ST_Centroid(ST_Collect(t.geom))::geometry(Point, 3006) AS geom,
+           count(*)::int AS delar
+    FROM (SELECT textstrang, textkategori, textstorleksklass, ST_Force2D(geom) AS geom,
+                 ST_ClusterDBSCAN(ST_Force2D(geom), 3000, 1) OVER (PARTITION BY textstrang, textkategori) AS grupp
+          FROM {src}.textpunkt WHERE textkategori IN ({kategorier})) t
+    GROUP BY t.textstrang, t.textkategori, t.grupp")
   list(
     utland = yta("objekttyp = 'Ej karterat område'"),
     vatten = yta("objekttyp IN ('Vattenyta', 'Hav')"),
@@ -44,7 +55,10 @@ intern_bakgrund_sql_1m <- function(src = "topografi_1m") {
     vagar_stora = vag("'Motorväg', 'Motortrafikled', 'Mötesfri väg', 'Landsväg'"),
     vagar_mellan = vag("'Landsväg liten'"),
     vagar_sma = vag("'Småväg'"),
-    jarnvag = linje("ralstrafik")
+    jarnvag = linje("ralstrafik"),
+    ortnamn = text("'Tätort', 'Bebyggelse'"),
+    vattennamn = text("'Hydrografi'"),
+    terrangnamn = text("'Terrängnamn'")
   )
 }
 
@@ -122,7 +136,8 @@ intern_bakgrund_sql <- function(src = "topografi_10", mitt = "(ST_MaximumInscrib
 #' @param lager Vilka lager som ska byggas, `NULL` (standard) = alla.
 #'   Ur `topografi_10`: `vatten`, `skog`, `bebyggelse`, `vagar_stora`, `vagar_mellan`, `vagar_sma`, `jarnvag`,
 #'   `ortnamn`, `vattennamn`, `sjoar`. Ur `topografi_1m`: `utland`, `vatten` (sjöar och hav), `skog`, `fjall`,
-#'   `glaciar`, `bebyggelse`, `vattendrag`, `vagar_stora`, `vagar_mellan`, `vagar_sma`, `jarnvag`.
+#'   `glaciar`, `bebyggelse`, `vattendrag`, `vagar_stora`, `vagar_mellan`, `vagar_sma`, `jarnvag`, `ortnamn`,
+#'   `vattennamn`, `terrangnamn`.
 #'
 #' @return En `data.frame` med lager, antal rader och storlek. Osynligt.
 #' @seealso [hamta_bakgrundskarta()]
@@ -130,6 +145,10 @@ intern_bakgrund_sql <- function(src = "topografi_10", mitt = "(ST_MaximumInscrib
 skapa_bakgrundskarta_topografi <- function(con = NULL, schema = NULL,
                                            kalla_schema = "topografi_10", lager = NULL) {
   if (is.null(schema)) schema <- intern_bakgrund_standardschema(kalla_schema)
+  if (intern_bakgrund_kalla(schema) != if (grepl("1m", kalla_schema, fixed = TRUE)) "topografi_1m" else "topografi_10") {
+    stop("Schemat '", schema, "' hör till en annan topografikälla än '", kalla_schema, "'. ",
+         "Använd bakgrundskarta_sverige för topografi_1m och bakgrundskarta_dalarna för topografi_10.", call. = FALSE)
+  }
   okanda <- setdiff(lager, intern_bakgrund_lager(intern_bakgrund_kalla(schema)))
   if (length(okanda) > 0) stop("Okända lager: ", paste(okanda, collapse = ", "), call. = FALSE)
   egen <- is.null(con)
