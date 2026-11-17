@@ -6,7 +6,7 @@ matchning (datakälla, PxWeb-tabellkoder/URL:er, `diagram_capt`-text, kommentare
 källfilerna och paketets `diag_*()`-funktioner - inte bara namnlikhet, eftersom namnen
 ofta ändrades rejält vid migrering.
 
-Skapad: 2026-11-07. Senast uppdaterad: 2026-11-16 (efter migrering av
+Skapad: 2026-11-07. Senast uppdaterad: 2026-11-17 (nytt avsnitt C för lokala skript; tidigare 2026-11-16, efter migrering av
 func_forsorjningskvot.R, som ligger i repot `funktioner`; tidigare 2026-11-09, då båda kartorna migrerats). Uppdatera vid behov när fler
 diagram/kartor migreras - filen är ingen automatiskt genererad rapport.
 
@@ -141,6 +141,18 @@ Kan redan vara täckt av en migrerad funktion (se tabell A, låg/medel konfidens
 behöva en manuell dubbelkoll innan den migreras på nytt (för att undvika dubbelarbete).
 
 - `diag_bef_forandring_per_manad.R`
+
+## C) Lokala diagramskript migrerade till rddiagramkatalog (utanför `diagram`-repot)
+
+Skript som inte kommer från `Region-Dalarna/diagram` utan som legat lokalt (t.ex. uppladdade
+av Samhällsanalys) och som anpassats till katalogens konventioner. Källfilen anges med sitt
+ursprungliga namn.
+
+| Lokal källfil | Funktion (rddiagramkatalog) | Version | Kommentar |
+|---|---|---|---|
+| diag_inflyttare_kommuner_dalarna_kvar_efter_5ar.R | diag_inflyttare_kvarboende_5_ar_kommun_mikrodata_scb | 0.0.0.9098 | Excelfil från G:, mikrodatabasen (vy RTB) |
+| diag_uppfoljning_kvarboende_flytt_gymnavg_ej_kon_bakgr.R | diag_uppfoljning_gymnavg_kvarboende_flytt_mikrodata_scb | 0.0.0.9099 | Excelfil från G:, mikrodatabasen (vy Gymnasiet – avgångna och RTB) |
+| diag_bas_syss_arblosa_inr_utr_fodda_manad.R | diag_bas_arblos_syss_inr_utr_fodda_manad_scb | 0.0.0.9102 | Hämtar direkt med pxweb2r (TAB6260); ett diagram per anrop, `diagramtyp` = jamforelse/tidsserie |
 
 ## Avsiktligt inte migrerade (avvecklade eller ersatta källskript)
 
