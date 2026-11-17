@@ -31,6 +31,7 @@ export(spatial_join_med_ovrkat)
 export(st_centroid_within_geo)
 export(st_largest_ring)
 export(unzip_zipfil_med_zipfiler)
+export(uppdatera_bakgrundskartor)
 importFrom(rlang,
   ":=",
   .data

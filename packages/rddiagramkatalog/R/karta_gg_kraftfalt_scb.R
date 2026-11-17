@@ -8,16 +8,16 @@
 #' kraftfältet för det centrum de pendlar mest till; fältet ritas som en zon kring vägen dit. Beräkningen görs
 #' av [rdgeorouting::pendling_kraftfalt()] mot vägnätet i geodatabasen.
 #'
-#' Bakgrunden är den grå topografiska bakgrundskartan i [karta_gg_bakgrund_topografi()] med namn på de största
-#' sjöarna. Kartan har en textruta uppe till höger, en teckenförklaring nere till vänster och källhänvisning nere
+#' Bakgrunden är den grå topografiska bakgrundskartan över Sverige i [karta_gg_bakgrund_sverige()] (Topografi 1M)
+#' med namn på sjöar och havsområden. Kartan har en textruta uppe till höger, en teckenförklaring nere till vänster och källhänvisning nere
 #' till höger. Textrutan och teckenförklaringen är anpassade för Dalarnas form; för andra län kan de hamna
 #' ovanpå kartan. Leaflet-versionen finns i [karta_lf_kraftfalt_scb()].
 #'
 #' Kräver åtkomst till geodatabasen och att bakgrundskartan byggts med
-#' `rdgis::skapa_bakgrundskarta_topografi()`.
+#' `rdgis::uppdatera_bakgrundskartor()`.
 #'
 #' @inheritParams karta_lf_kraftfalt_scb
-#' @inheritParams karta_gg_bakgrund_topografi
+#' @inheritParams karta_gg_bakgrund_sverige
 #' @param pendlingsar Vilket år pendlingsdata gäller. Visas i källhänvisningen och filnamnet. Standard 2022.
 #' @param kartrubrik Rubriken i textrutan. Standard `"Kraftfält"`.
 #' @param forklaringstext Texten i textrutan som ett eller flera stycken (en teckenvektor). `NULL` (standard) = en
@@ -31,7 +31,7 @@
 #'   storlek med denna parameter och inte genom att skala bilden.
 #'
 #' @return Osynligt: en namngiven lista med ett `ggplot`-objekt; namnet är bildfilens namn utan ändelse.
-#' @seealso [karta_lf_kraftfalt_scb()], [karta_gg_bakgrund_topografi()]
+#' @seealso [karta_lf_kraftfalt_scb()], [karta_gg_bakgrund_sverige()]
 #' @export
 karta_gg_kraftfalt_scb <- function(
     tabell_pend_relation = NULL,
@@ -81,11 +81,12 @@ karta_gg_kraftfalt_scb <- function(
   }
 
   if (is.null(kalla_text)) {
-    kalla_text <- paste0("Bakgrundskarta: Lantmäteriet, Topografi 10\n",
+    kalla_text <- paste0("Bakgrundskarta: Lantmäteriet, Topografi 1M\n",
                          "Pendlingsdata: SCB ", pendlingsar, ". Bearbetning: Samhällsanalys, Region Dalarna")
   }
-  b <- intern_bygg_bakgrundskarta(region_vekt, vagar = vagar, etiketter = "storre_sjoar", namn_storlek = 1,
-                                  kalla_text = kalla_text, marginal = marginal, lansgrans = FALSE)
+  b <- intern_bygg_bakgrund_sverige(region_vekt, vagar = vagar, vattendrag = TRUE, utland = "grann",
+                                    etiketter = "vatten", namn_storlek = 1, kalla_text = kalla_text,
+                                    marginal = marginal, lansgrans = FALSE)
 
   gg <- intern_lagg_kraftfalt_pa_karta(
     b$gg, kraftfalt, b$bbox, b$lan_gis, kartrubrik = kartrubrik,

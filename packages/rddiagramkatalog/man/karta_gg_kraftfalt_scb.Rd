@@ -70,12 +70,11 @@ mörkgrå text som undviker att hamna ovanpå punkterna och varandra. \code{FALS
 \item{kalla_text}{Källhänvisning nere till höger. \code{NULL} (standard) = bakgrundskartans källa, pendlingsdatats
 år och "Bearbetning: Samhällsanalys, Region Dalarna" på två rader. \code{NA} eller \code{""} ger ingen text.}
 
-\item{vagar}{Vilka vägnivåer som ritas: \code{"stora"} (motortrafikleder, landsvägar), \code{"mellan"}
-(små landsvägar, huvudgator) och \code{"sma"} (lokalgator, småvägar). Standard \code{c("stora", "mellan")};
-\code{NULL} ritar inga vägar.}
+\item{vagar}{Vilka vägnivåer som ritas: \code{"stora"} (motorvägar, motortrafikleder, mötesfria vägar och
+landsvägar), \code{"mellan"} (små landsvägar) och \code{"sma"}. Standard \code{"stora"}, eftersom de mindre vägarna
+gör en riksöversikt stökig. \code{NULL} ritar inga vägar.}
 
-\item{marginal}{Marginal runt länet som andel av kartans bredd och höjd. Standard 0,03 (3 \%). Ytor utanför
-länsgränsen som finns i topografin ritas ut, och källhänvisningen får plats utan att skäras av.}
+\item{marginal}{Marginal runt området som andel av kartans bredd och höjd. Standard 0,03.}
 
 \item{bredd_cm}{Bildens bredd i centimeter. Textrutan och teckenförklaringen dimensioneras efter den, så ändra
 storlek med denna parameter och inte genom att skala bilden.}
@@ -107,14 +106,14 @@ kraftfältet för det centrum de pendlar mest till; fältet ritas som en zon kri
 av \code{\link[rdgeorouting:pendling_kraftfalt]{rdgeorouting::pendling_kraftfalt()}} mot vägnätet i geodatabasen.
 }
 \details{
-Bakgrunden är den grå topografiska bakgrundskartan i \code{\link[=karta_gg_bakgrund_topografi]{karta_gg_bakgrund_topografi()}} med namn på de största
-sjöarna. Kartan har en textruta uppe till höger, en teckenförklaring nere till vänster och källhänvisning nere
+Bakgrunden är den grå topografiska bakgrundskartan över Sverige i \code{\link[=karta_gg_bakgrund_sverige]{karta_gg_bakgrund_sverige()}} (Topografi 1M)
+med namn på sjöar och havsområden. Kartan har en textruta uppe till höger, en teckenförklaring nere till vänster och källhänvisning nere
 till höger. Textrutan och teckenförklaringen är anpassade för Dalarnas form; för andra län kan de hamna
 ovanpå kartan. Leaflet-versionen finns i \code{\link[=karta_lf_kraftfalt_scb]{karta_lf_kraftfalt_scb()}}.
 
 Kräver åtkomst till geodatabasen och att bakgrundskartan byggts med
-\code{rdgis::skapa_bakgrundskarta_topografi()}.
+\code{rdgis::uppdatera_bakgrundskartor()}.
 }
 \seealso{
-\code{\link[=karta_lf_kraftfalt_scb]{karta_lf_kraftfalt_scb()}}, \code{\link[=karta_gg_bakgrund_topografi]{karta_gg_bakgrund_topografi()}}
+\code{\link[=karta_lf_kraftfalt_scb]{karta_lf_kraftfalt_scb()}}, \code{\link[=karta_gg_bakgrund_sverige]{karta_gg_bakgrund_sverige()}}
 }

@@ -1,3 +1,8 @@
+# rddiagramkatalog 0.0.0.9095
+
+* `karta_gg_kraftfalt_scb()` använder nu bakgrundskartan över Sverige (Topografi 1M, med grannländer) i stället för Dalarna-kartan ur Topografi 10, med sjö- och havsnamn (`etiketter = "vatten"`).
+  Kräver att `rdgis::uppdatera_bakgrundskartor()` (rdgis 0.0.0.9011) har byggt `bakgrundskarta_sverige`. Källtexten anger Topografi 1M.
+
 # rddiagramkatalog 0.0.0.9094
 
 * `karta_gg_bakgrund_sverige()`: har lagret `grannlander` byggts (`rdgis::skapa_grannlander()`, kräver rdgis 0.0.0.9010) ritas grannländerna grå och havet utanför Sverige i vattenfärg. Utan lagret ritas utlandet som förut.

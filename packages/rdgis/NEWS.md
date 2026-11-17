@@ -1,3 +1,7 @@
+# rdgis 0.0.0.9011
+
+* Ny funktion `uppdatera_bakgrundskartor()` bygger om `bakgrundskarta_dalarna` (ur `topografi_10`), `bakgrundskarta_sverige` (ur `topografi_1m`) och grannländerna i ett svep, för det schemalagda skriptet.
+
 # rdgis 0.0.0.9010
 
 * Ny funktion `skapa_grannlander()` bygger lagret `grannlander` (landytor för grannländerna, ur Natural Earth 10 m, public domain) i `bakgrundskarta_sverige`.
