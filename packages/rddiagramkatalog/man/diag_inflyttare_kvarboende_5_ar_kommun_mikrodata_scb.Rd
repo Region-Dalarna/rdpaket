@@ -8,7 +8,7 @@
 diag_inflyttare_kvarboende_5_ar_kommun_mikrodata_scb(
   indatafil = "G:/Samhällsanalys/Leveranser/inr_flytt_kvarboende_1975-2017.xlsx",
   diagram_capt =
-    "Källa: Regionala utvecklingsdatabasen (SCB)\\nBearbetning: Samhällsanalys, Region Dalarna",
+    "Källa: Regionala utvecklingsdatabasen (SCB), RTB\\nBearbetning: Samhällsanalys, Region Dalarna",
   utmapp = rdverktyg::utskriftsmapp(),
   skriv_diagramfil = TRUE,
   returnera_data = FALSE,
@@ -34,6 +34,6 @@ En namngiven lista med ett \code{ggplot}-objekt.
 \description{
 Ett stapeldiagram per kommun i Dalarna med andelen av de som flyttade in till kommunen ett visst år och som
 fortfarande bor kvar i kommunen fem år senare, per inflyttningsår. Data är en manuellt underhållen
-ögonblicksbild ur Regionala utvecklingsdatabasen (SCB), en Excel-fil på G:, och hämtas alltså inte live från SCB.
+ögonblicksbild ur Regionala utvecklingsdatabasen (SCB), vyn RTB (Registret för totalbefolkningen), en Excel-fil på G:, och hämtas alltså inte live från SCB.
 Filen ska ha kolumnerna \code{Ar} (inflyttningsår), \code{andel} (procent) och \code{Kommun_namn}.
 }

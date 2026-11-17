@@ -99,7 +99,7 @@ på en egen färg i funktionen: lägg i så fall en ny namngiven färgskala i
   län år 2024". Det framgår av kartan att den är uppdelad per kommun, så det
   behöver inte stå i titeln.
 - Data ur mikrodatabasen anges som `Källa: Regionala utvecklingsdatabasen (SCB), <vy eller vyer>`, t.ex.
-  `Källa: Regionala utvecklingsdatabasen (SCB), Gymnasiet – avgångna och RAKS/BAS`, och inte "Dalarnas mikrodatabas".
+  `Källa: Regionala utvecklingsdatabasen (SCB), Gymnasiet – avgångna och RTB`, och inte "Dalarnas mikrodatabas".
   Funktionsnamn för sådana diagram har `mikrodata` före `_scb`.
 - Källtexten (`caption`) är högst två rader: källa och bearbetning på första
   raden, eventuell förklaring av måttet på andra.

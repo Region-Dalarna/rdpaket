@@ -1,6 +1,10 @@
+# rddiagramkatalog 0.0.0.9101
+
+* Källtexternas vy för mikrodatabasen ändrad till RTB (Registret för totalbefolkningen) i de två mikrodatadiagrammen.
+
 # rddiagramkatalog 0.0.0.9100
 
-* Källtext för mikrodatabasen enhetlig: "Källa: Regionala utvecklingsdatabasen (SCB), <vy>". Ändrat i `diag_uppfoljning_gymnavg_kvarboende_flytt_mikrodata_scb()` (vy: Gymnasiet – avgångna och RAKS/BAS) och `diag_inflyttare_kvarboende_5_ar_kommun_mikrodata_scb()` (vy saknas än). Regeln finns i KONVENTIONER.md.
+* Källtext för mikrodatabasen enhetlig: "Källa: Regionala utvecklingsdatabasen (SCB), <vy>". Ändrat i `diag_uppfoljning_gymnavg_kvarboende_flytt_mikrodata_scb()` (vy: Gymnasiet – avgångna och RTB) och `diag_inflyttare_kvarboende_5_ar_kommun_mikrodata_scb()` (vy: RTB, Registret för totalbefolkningen). Regeln finns i KONVENTIONER.md.
 
 # rddiagramkatalog 0.0.0.9099
 

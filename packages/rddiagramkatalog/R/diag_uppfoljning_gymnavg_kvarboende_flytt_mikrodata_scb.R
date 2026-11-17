@@ -3,7 +3,7 @@
 #' Stapeldiagram över var avgångseleverna från gymnasiet bor tio år efter avgången: kvarboende, återflyttade,
 #' utflyttade, utvandrade eller avlidna, per avgångsår och utan uppdelning på kön eller bakgrund. Flyttningarna kan
 #' redovisas över kommungräns, över länsgräns eller båda i samma diagram (två paneler). Data är en manuellt
-#' underhållen ögonblicksbild ur Regionala utvecklingsdatabasen (SCB), vyn Gymnasiet – avgångna och RAKS/BAS, en Excel-fil på G:, och hämtas alltså inte live från SCB.
+#' underhållen ögonblicksbild ur Regionala utvecklingsdatabasen (SCB), vyn Gymnasiet – avgångna och RTB, en Excel-fil på G:, och hämtas alltså inte live från SCB.
 #'
 #' Excel-filen ska ha en flik vars namn innehåller `kommun_kon` och en vars namn innehåller `lan_kon`, med kolumnerna
 #' `avgangs_ar`, `regionkod`, `region`, `antal` och `flytt_kat` (`flytt_kat_lan` i länsfliken).
@@ -25,7 +25,7 @@
 diag_uppfoljning_gymnavg_kvarboende_flytt_mikrodata_scb <- function(
     region_vekt = "20",
     datafil = "G:/Samhällsanalys/Statistik/Flyttningar/gymnavg_flytt kon_bakgr.xlsx",
-    diagram_capt = "Källa: Regionala utvecklingsdatabasen (SCB), Gymnasiet – avgångna och RAKS/BAS\nBearbetning: Samhällsanalys, Region Dalarna",
+    diagram_capt = "Källa: Regionala utvecklingsdatabasen (SCB), Gymnasiet – avgångna och RTB\nBearbetning: Samhällsanalys, Region Dalarna",
     visa_dataetiketter = FALSE,
     diag_kommungrans = FALSE,
     diag_lansgrans = FALSE,

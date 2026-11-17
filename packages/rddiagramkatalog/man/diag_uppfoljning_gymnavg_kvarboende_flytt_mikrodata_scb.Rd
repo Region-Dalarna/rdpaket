@@ -9,7 +9,7 @@ diag_uppfoljning_gymnavg_kvarboende_flytt_mikrodata_scb(
   region_vekt = "20",
   datafil = "G:/Samhällsanalys/Statistik/Flyttningar/gymnavg_flytt kon_bakgr.xlsx",
   diagram_capt =
-    "Källa: Regionala utvecklingsdatabasen (SCB), Gymnasiet – avgångna och RAKS/BAS\\nBearbetning: Samhällsanalys, Region Dalarna",
+    "Källa: Regionala utvecklingsdatabasen (SCB), Gymnasiet – avgångna och RTB\\nBearbetning: Samhällsanalys, Region Dalarna",
   visa_dataetiketter = FALSE,
   diag_kommungrans = FALSE,
   diag_lansgrans = FALSE,
@@ -50,7 +50,7 @@ En namngiven lista med \code{ggplot}-objekt, ett per valt diagram.
 Stapeldiagram över var avgångseleverna från gymnasiet bor tio år efter avgången: kvarboende, återflyttade,
 utflyttade, utvandrade eller avlidna, per avgångsår och utan uppdelning på kön eller bakgrund. Flyttningarna kan
 redovisas över kommungräns, över länsgräns eller båda i samma diagram (två paneler). Data är en manuellt
-underhållen ögonblicksbild ur Regionala utvecklingsdatabasen (SCB), vyn Gymnasiet – avgångna och RAKS/BAS, en Excel-fil på G:, och hämtas alltså inte live från SCB.
+underhållen ögonblicksbild ur Regionala utvecklingsdatabasen (SCB), vyn Gymnasiet – avgångna och RTB, en Excel-fil på G:, och hämtas alltså inte live från SCB.
 }
 \details{
 Excel-filen ska ha en flik vars namn innehåller \code{kommun_kon} och en vars namn innehåller \code{lan_kon}, med kolumnerna
