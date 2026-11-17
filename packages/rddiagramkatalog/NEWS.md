@@ -1,3 +1,10 @@
+# rddiagramkatalog 0.0.0.9102
+
+* Nytt diagram `diag_bas_arblos_syss_inr_utr_fodda_manad_scb()`: arbetslöshet (eller annat BAS-mått) per månad för inrikes och utrikes födda. Migrerat från `diag_bas_arblosa_inr_utr_fodda_manad()`.
+  Hämtar direkt med `pxweb2r` (TAB6260), utan hämta-skript. Ett diagram per anrop: `diagramtyp = "jamforelse"` (regioner jämförda senaste månaden med data) eller `"tidsserie"` (med flera regioner en panel per region, vilket ersätter originalets facetdiagram).
+  `region_vekt` tar valfritt antal regioner (standard `rdverktyg::hamtakommuner("20")`: länet, kommunerna och riket), så man kan jämföra t.ex. Dalarna med en kommun. `dataetiketter` är `TRUE`/`FALSE` i stället för en vektor som gav två filer.
+  Ändrat jämfört med originalet: `vald_region` → `region_vekt` (flera tillåtna), `output_mapp` → `utmapp`, `skriv_diagram` → `skriv_diagramfil`, `returnera_dataframe_global_environment` → `returnera_data`, månader utan värde (senaste perioden i SCB:s tabell) hoppas över via `intern_behall_senaste_tid()`, och månadsnamnen är svenska oavsett språkinställning.
+
 # rddiagramkatalog 0.0.0.9101
 
 * Källtexternas vy för mikrodatabasen ändrad till RTB (Registret för totalbefolkningen) i de två mikrodatadiagrammen.
