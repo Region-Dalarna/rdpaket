@@ -1,3 +1,9 @@
+# rddiagramkatalog 0.0.0.9092
+
+* Ny `karta_gg_bakgrund_sverige()`: bakgrundskarta över hela Sverige eller flera län ur Topografi 1M (schemat `bakgrundskarta_sverige`, byggt med
+  `rdgis::skapa_bakgrundskarta_topografi(kalla_schema = "topografi_1m")`). Vatten, skog, fjäll, glaciärer, bebyggelse, stora vägar, järnväg, vattendrag och länsgränser, med
+  etikettpaket för städer, tätorter, största tätort per län och större vatten. `utland` styr hur grannländerna ritas. Kräver rdgis 0.0.0.9008.
+
 # rddiagramkatalog 0.0.0.9091
 
 * `tid_koder` hanteras nu rätt när tidsserien delas mellan flera SCB-tabeller, eller när "9999" kombineras med andra år, i `diag_flytt_inrikes_aldersgrupper_scb()`,
