@@ -41,16 +41,16 @@ diag_BNP_forandring_SCB <- function(utmapp = rdverktyg::utskriftsmapp(),
       Anvandningstyp = "- BNP till marknadspris",
       ContentsCode   = "Säsongrensad, volymförändring föregående period, procent",
       Tid            = "*"
-    ), quiet = TRUE) %>%
-    dplyr::rename("Säsongrensad, volymförändring föregående period, procent" = value) %>%
+    ), quiet = TRUE) |>
+    dplyr::rename("Säsongrensad, volymförändring föregående period, procent" = value) |>
     dplyr::select(-tabellinnehåll)
   
-  BNP_df <- BNP_df %>%
+  BNP_df <- BNP_df |>
     dplyr::mutate(ar = substr(kvartal, 1, 4),
                   ar_kvartal = kvartal,
-                  kvartal = substr(kvartal, 5, 6)) %>%
-    dplyr::rename("Sasongsransad_forandring" = `Säsongrensad, volymförändring föregående period, procent`) %>%
-    dplyr::mutate(kvartal_ar = paste0(kvartal, " ", ar)) %>%
+                  kvartal = substr(kvartal, 5, 6)) |>
+    dplyr::rename("Sasongsransad_forandring" = `Säsongrensad, volymförändring föregående period, procent`) |>
+    dplyr::mutate(kvartal_ar = paste0(kvartal, " ", ar)) |>
     dplyr::mutate(kvartal = dplyr::case_when(
       kvartal == "K1" ~ "kvartal ett",
       kvartal == "K2" ~ "kvartal två",
@@ -78,7 +78,7 @@ diag_BNP_forandring_SCB <- function(utmapp = rdverktyg::utskriftsmapp(),
                               ordered = TRUE)
   
   gg_obj <- rddiagram::SkapaStapelDiagram(
-    skickad_df = BNP_df %>% dplyr::filter(ar >= startar),
+    skickad_df = BNP_df |> dplyr::filter(ar >= startar),
     skickad_x_var = "kvartal_ar",
     skickad_y_var = "Sasongsransad_forandring",
     stodlinjer_avrunda_fem = TRUE,
@@ -94,7 +94,7 @@ diag_BNP_forandring_SCB <- function(utmapp = rdverktyg::utskriftsmapp(),
     skriv_till_diagramfil = skriv_diagramfil)
   
   gg_list <- c(gg_list, list(gg_obj))
-  names(gg_list) <- diagramfilnamn %>% stringr::str_remove(".png")
+  names(gg_list) <- diagramfilnamn |> stringr::str_remove(".png")
   
   if (returnera_figur == TRUE) return(gg_list)
 }
