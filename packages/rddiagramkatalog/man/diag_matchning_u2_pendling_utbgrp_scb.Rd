@@ -12,6 +12,7 @@ diag_matchning_u2_pendling_utbgrp_scb(
   kon_klartext = "totalt",
   utb_klartext = NA,
   ar = NA,
+  inkludera_aldre_tabell = TRUE,
   minsta_antal = 30,
   visa_logga_i_diagram = TRUE,
   logga_sokvag = NA,
@@ -42,6 +43,11 @@ arbetar i regionen), \code{"nettopendling antal"} (inpendlare minus utpendlare) 
 
 \item{ar}{Vilket år som visas för \code{"utbildningsgrupper"} och \code{"jamforelse"}. \code{NA} (standard) tar senaste året.}
 
+\item{inkludera_aldre_tabell}{\code{TRUE} (standard) sätter ihop den nya tabellen (2019–) med SCB:s äldre U2 (TAB5279,
+2006–2018, uppdateras inte längre) till en tidsserie 2006–2024. Utbildningsgrupper som bara finns i en av
+tabellerna får bara den delen. Ett år till och med 2018 i \code{ar} hämtas ur den äldre tabellen. \code{FALSE} använder
+bara den nya.}
+
 \item{minsta_antal}{Utbildningsgrupper med färre förvärvsarbetande än så (nattbefolkning, eller dagbefolkning för
 inpendling) tas inte med i \code{"utbildningsgrupper"} och \code{"jamforelse"}. Standard 30.}
 
@@ -63,7 +69,7 @@ inpendling) tas inte med i \code{"utbildningsgrupper"} och \code{"jamforelse"}. 
 En namngiven lista med ett \code{ggplot}-objekt.
 }
 \description{
-Stapeldiagram ur SCB:s regionala matchningsindikatorer, tabellen In- och utpendling (U2, TAB6369):
+Stapeldiagram ur SCB:s regionala matchningsindikatorer, tabellen In- och utpendling (U2, TAB6369 och äldre TAB5279):
 förvärvsarbetande 20–64 år som pendlar över regiongräns, per utbildningsgrupp. Funktionen ger ett diagram per
 anrop, av tre slag (\code{diagramtyp}):
 \itemize{
@@ -75,7 +81,9 @@ riket till som jämförelse. Den första regionen markeras.
 }
 }
 \details{
-Tabellen finns för riket, län och FA-regioner (\code{"FA01"} ... \code{"FA60"}, men inte för kommuner) och gäller 2019–2024. Det finns ingen nyare
-version, och inga äldre versioner finns kvar i SCB:s API. Observera tidsseriebrott 2019 (ny datakälla och
-metod) och 2022 (BAS används för förvärvsarbetande).
+Tabellen finns för riket, län och FA-regioner (\code{"FA01"} ... \code{"FA60"}, men inte för kommuner) och gäller 2019–2024.
+Den äldre versionen (TAB5279, 2006–2018, uppdateras inte) kan sättas ihop med den (\code{inkludera_aldre_tabell}).
+Observera tidsseriebrott 2019 (ny datakälla och metod, AGI i stället för KU) och 2022 (BAS används för
+förvärvsarbetande), och att utbildningsgrupperna är något färre i den äldre tabellen. Gränspendling till Norge och
+Danmark är bara med i äldre data till och med 2017.
 }

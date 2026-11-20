@@ -158,8 +158,9 @@ ursprungliga namn.
 | diag_matchningsindikatorerna.R (`diag_matchad_forvarvsfrekvens`) | diag_matchning_e3_utbgrp_scb | 0.0.0.9106 | TAB6929; andel i matchade yrken räknas om (A/(A+B+C)), se NEWS |
 | diag_matchningsindikatorerna.R (`diag_utbildningsfloden`) | diag_matchning_u3_utbildningsfloden_scb | 0.0.0.9106 | TAB6928 |
 | diag_matchningsindikatorerna.R (`diag_jobbinfloden_utbgrp`) | diag_matchning_e2_jobbfloden_utbgrp_scb | 0.0.0.9106 | TAB6927 |
-| (nytt, ingen källfil) | diag_matchning_u1a_arbmarknadsstallning_utbgrp_scb | 0.0.0.9107 | TAB6367 (U1a); riket, län och FA-regioner |
-| (nytt, ingen källfil) | diag_matchning_u2_pendling_utbgrp_scb | 0.0.0.9107 | TAB6369 (U2); riket, län och FA-regioner |
+| (nytt, ingen källfil) | diag_matchning_u1a_arbmarknadsstallning_utbgrp_scb | 0.0.0.9107, 0.0.0.9108 | TAB6367 (U1a) och äldre TAB5400; riket, län och FA-regioner |
+| (nytt, ingen källfil) | diag_matchning_u2_pendling_utbgrp_scb | 0.0.0.9107, 0.0.0.9108 | TAB6369 (U2) och äldre TAB5279; riket, län och FA-regioner |
+| diag_befpyramid.R (funktionen `diag_befpyramid`) | diag_befpyramid_scb | 0.0.0.9109 | Gammalt lokalt skript; hämtar med pxweb2r, CKM-tabeller för 2025, prognos för regioner och riket |
 
 ## D) SCB:s regionala matchningsindikatorer - vilka tabeller som används
 
@@ -169,8 +170,8 @@ ursprungliga namn.
 | U3 Utbildningsflöden | TAB6928 | 2019–2020 till 2023–2024 | 18–69 | riket, län, kommuner | diag_matchning_u3_utbildningsfloden_scb | Äldre TAB6370 (utan CKM) uppdateras inte, samma period |
 | E2 Jobbflöden | TAB6927 | 2020–2021 till 2023–2024 | 20–69 | riket, län, kommuner | diag_matchning_e2_jobbfloden_utbgrp_scb | Äldre TAB6363 (20–64, utan CKM) uppdateras inte och är inte jämförbar |
 | E2b Jobbinflöden efter näringsgren | TAB5447 | 2007–2008 till 2023–2024 | 20–64 | riket, län | (inget) | Uppdateras inte |
-| U1a Arbetsmarknadsställning | TAB6367 | 2019–2024 | 20–64 | riket, län, FA-regioner | diag_matchning_u1a_arbmarknadsstallning_utbgrp_scb | Tidsseriebrott 2019 och 2022 |
-| U2 In- och utpendling | TAB6369 | 2019–2024 | 20–64 | riket, län, FA-regioner | diag_matchning_u2_pendling_utbgrp_scb | Tidsseriebrott 2019 och 2022 |
+| U1a Arbetsmarknadsställning | TAB6367 + äldre TAB5400 (2006–2018, uppdateras ej, ej CKM) | 2006–2024 | 20–64 | riket, län, FA-regioner | diag_matchning_u1a_arbmarknadsstallning_utbgrp_scb | Sammansatt serie; tidsseriebrott 2019 och 2022; 117 av 119 äldre utbildningsgrupper finns i nya |
+| U2 In- och utpendling | TAB6369 + äldre TAB5279 (2006–2018, uppdateras ej) | 2006–2024 | 20–64 | riket, län, FA-regioner | diag_matchning_u2_pendling_utbgrp_scb | Sammansatt serie; tidsseriebrott 2019 och 2022 |
 | U1b Arbetskraftsdeltagande | TAB6368 | 2019–2024 | 20–64 | (ej undersökt) | (inget) | Möjligt kommande skript |
 | E4 Typ av matchning, E5 Yrke, M1, M2 | TAB6364, TAB6926/TAB6365, TAB6428, TAB6366 | | | | (M2: diag_matchning_lan_scb) | E4, E5 och M1 har inget skript än |
 

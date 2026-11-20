@@ -382,7 +382,7 @@ diagramfarger <- function(farg = "rus_sex") {
     gron_gul_tvagrp_fyra = c("#375623", "#548235", "#70AD47", "#C6E0B4", "#806000",
                              "#BF8F00", "#FFC000", "#FFE699"),
     gron_yrke_4_fokus = c("#000000", "#548235", "#70AD47", "#375623"),
-    utb_floden = c("#70AD47", "#548235", "#375623", "#F4A460", "#D2691E", "#8B4513"),
+    utb_floden = c("#93CEC1", "#54B798", "#459079", "#8EDDED", "#00B4E4", "#0074A2"),
     etabl_fokus = c("#4472C4", "#203864"),
     konsbalans_fem = c("#E2A855", "#FFD378", "#969696", "#459079", "#54B798"),
     kon_bakgrund = c("#e2a855", "#459079", "#00B4E4", "#0074A2"),

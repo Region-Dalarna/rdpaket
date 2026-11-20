@@ -1,6 +1,6 @@
 #' Diagram: in- och utpendling per utbildningsgrupp (U2)
 #'
-#' Stapeldiagram ur SCB:s regionala matchningsindikatorer, tabellen In- och utpendling (U2, TAB6369):
+#' Stapeldiagram ur SCB:s regionala matchningsindikatorer, tabellen In- och utpendling (U2, TAB6369 och äldre TAB5279):
 #' förvärvsarbetande 20–64 år som pendlar över regiongräns, per utbildningsgrupp. Funktionen ger ett diagram per
 #' anrop, av tre slag (`diagramtyp`):
 #' * `"utbildningsgrupper"` (standard): alla utbildningsgrupper jämförda ett år, sorterade efter värdet. Med
@@ -9,9 +9,11 @@
 #' * `"jamforelse"`: regionerna i `region_vekt` jämförda för en utbildningsgrupp ett år. Anges bara en region läggs
 #'   riket till som jämförelse. Den första regionen markeras.
 #'
-#' Tabellen finns för riket, län och FA-regioner (`"FA01"` ... `"FA60"`, men inte för kommuner) och gäller 2019–2024. Det finns ingen nyare
-#' version, och inga äldre versioner finns kvar i SCB:s API. Observera tidsseriebrott 2019 (ny datakälla och
-#' metod) och 2022 (BAS används för förvärvsarbetande).
+#' Tabellen finns för riket, län och FA-regioner (`"FA01"` ... `"FA60"`, men inte för kommuner) och gäller 2019–2024.
+#' Den äldre versionen (TAB5279, 2006–2018, uppdateras inte) kan sättas ihop med den (`inkludera_aldre_tabell`).
+#' Observera tidsseriebrott 2019 (ny datakälla och metod, AGI i stället för KU) och 2022 (BAS används för
+#' förvärvsarbetande), och att utbildningsgrupperna är något färre i den äldre tabellen. Gränspendling till Norge och
+#' Danmark är bara med i äldre data till och med 2017.
 #'
 #' @param region_vekt Region(er): läns-, FA-regions- eller rikskod (`"00"`). Kommuner finns inte i tabellen. Bara en region för alla
 #'   diagramtyper utom `"jamforelse"`.
@@ -25,6 +27,10 @@
 #'   `NA` markerar ingen). För `"tidsserie"` och `"jamforelse"` är det de som visas (standard `NA` ger
 #'   `"samtliga utbildningsgrupper"`; `"jamforelse"` använder den första).
 #' @param ar Vilket år som visas för `"utbildningsgrupper"` och `"jamforelse"`. `NA` (standard) tar senaste året.
+#' @param inkludera_aldre_tabell `TRUE` (standard) sätter ihop den nya tabellen (2019–) med SCB:s äldre U2 (TAB5279,
+#'   2006–2018, uppdateras inte längre) till en tidsserie 2006–2024. Utbildningsgrupper som bara finns i en av
+#'   tabellerna får bara den delen. Ett år till och med 2018 i `ar` hämtas ur den äldre tabellen. `FALSE` använder
+#'   bara den nya.
 #' @param minsta_antal Utbildningsgrupper med färre förvärvsarbetande än så (nattbefolkning, eller dagbefolkning för
 #'   inpendling) tas inte med i `"utbildningsgrupper"` och `"jamforelse"`. Standard 30.
 #' @param visa_logga_i_diagram `TRUE` om logga ska visas i diagrammet.
@@ -44,6 +50,7 @@ diag_matchning_u2_pendling_utbgrp_scb <- function(
     kon_klartext = "totalt",
     utb_klartext = NA,
     ar = NA,
+    inkludera_aldre_tabell = TRUE,
     minsta_antal = 30,
     visa_logga_i_diagram = TRUE,
     logga_sokvag = NA,
@@ -74,26 +81,22 @@ diag_matchning_u2_pendling_utbgrp_scb <- function(
   # Länk till tabell: https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__AM__AM9906__AM9906A/RegionInd19U2N/
   # (motsvarande tabell TAB6369)
 
-  utb_koder <- if (diagramtyp == "utbildningsgrupper") "*" else {
-    intern_matchning_kod("TAB6369", "Utbildngrupp",
-                         if (all(is.na(utb_klartext))) "samtliga utbildningsgrupper" else utb_klartext)
+  koder <- list(
+    ny = c(inpendlare = "000007IH", utpendlare = "000007II", dag = "000007IJ", natt = "000007IK"),
+    gammal = c(inpendlare = "0000036V", utpendlare = "0000036W", dag = "0000036X", natt = "0000036Y"))
+
+  enskilt_ar <- diagramtyp %in% c("utbildningsgrupper", "jamforelse")
+  if (enskilt_ar && is.na(ar)) {
+    ar <- max(pxweb2r::pxweb2_get_values("TAB6369", "Tid", quiet = TRUE)$code)
   }
-  if (diagramtyp == "jamforelse") utb_koder <- utb_koder[1]
+  utb_val <- if (diagramtyp == "utbildningsgrupper") NULL else {
+    if (all(is.na(utb_klartext))) "samtliga utbildningsgrupper" else if (diagramtyp == "jamforelse") utb_klartext[1] else utb_klartext
+  }
 
-  koder <- c(inpendlare = "000007IH", utpendlare = "000007II", dag = "000007IJ", natt = "000007IK")
-  innehall <- c(inpendlare = "Inpendlare över regiongräns", utpendlare = "Utpendlare över regiongräns",
-                dag = "Dagbefolkning (förvärvsarbetande)", natt = "Nattbefolkning (förvärvsarbetande)")
-
-  u2_df <- pxweb2r::pxweb2_get_data(
-    table = "TAB6369",
-    query = list(Region = region_vekt, Utbildngrupp = utb_koder,
-                 Kon = intern_matchning_kod("TAB6369", "Kon", kon_klartext),
-                 ContentsCode = unname(koder), Tid = "*"),
-    quiet = TRUE) |>
-    dplyr::rename(regionkod = region_kod, ar = år, kon = kön) |>
-    dplyr::select(regionkod, region, utbildning_kod, utbildning, kon, ar, tabellinnehåll, value) |>
-    dplyr::mutate(tabellinnehåll = names(innehall)[match(tabellinnehåll, innehall)]) |>
-    tidyr::pivot_wider(names_from = tabellinnehåll, values_from = value) |>
+  u2_df <- intern_matchning_hamta_tabellpar(
+    c(ny = "TAB6369", gammal = "TAB5279"), koder, region_vekt, utb_val, list(Kon = kon_klartext),
+    ar = if (enskilt_ar) ar else NULL, med_gammal = inkludera_aldre_tabell) |>
+    tidyr::pivot_wider(names_from = post, values_from = value) |>
     dplyr::mutate(region_txt = intern_matchning_regiontext(regionkod, region),
                   kon = stringr::str_to_title(kon))
 

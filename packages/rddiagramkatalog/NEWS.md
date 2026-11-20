@@ -1,3 +1,30 @@
+# rddiagramkatalog 0.0.0.9111
+
+* `diagramkatalog_utforska()` har fått sökbara listrutor (som också tillåter eget värde) där de valbara värdena är kända, i stället för bara textrutor:
+  * parametrar som valideras med `match.arg()` (t.ex. `diagramtyp`, `matt`) får en listruta med de giltiga valen,
+  * `region_vekt` (flerval) och `jmfr_region` får en lista med riket, län och kommuner (namnet visas, koden skickas),
+  * parametrar som en funktion skickar direkt till ett SCB-uttag (`pxweb2r::pxweb2_get_data()`), t.ex. `kon_klartext`, `alder_klartext`, `cont_klartext` och `tid_koder`, får SCB:s giltiga värden för just den tabellen och variabeln. Kopplingen mellan parameter och tabellvariabel läses automatiskt ur funktionens kod (inklusive enkla mellansteg som `tid_vekt <- tid_koder`) och godkänns bara om parameterns standardvärde finns bland SCB:s värden. Värdena slås upp när funktionen väljs och cachas under sessionen, så ingenting sparas i någon databas och listorna är alltid aktuella.
+  Parametrar där värdena inte är kända är textrutor som tidigare, och en tom listruta betyder funktionens standardvärde. I katalogen får 97 av 111 funktioner minst en listruta (197 listrutor).
+
+# rddiagramkatalog 0.0.0.9110
+
+* `diag_storsta_yrke_per_geografi_scb()`: diagrammet anger nu att statistiken är dagbefolkningen (anställda med arbetsplats i regionen, inte bosatta). Undertiteln lyder "Anställda 16–64 år med arbetsplats i regionen (dagbefolkning)" (16–69 år från 2023, då SCB breddade åldersintervallet), och y-axeln heter "Antal anställda (dagbefolkning)" i stället för "Antal sysselsatta", som var missvisande. Gäller alla tre tabellerna (TAB4396, TAB3119 och TAB4434), som alla redovisar dagbefolkning.
+* Rättat: de `antal_yrken` största yrkena valdes över alla regioner och år samtidigt, så med flera regioner eller år fick regionerna med färre anställda för få staplar. De väljs nu för varje region, år och kön för sig. (Felet fanns redan i originalskriptet.)
+
+# rddiagramkatalog 0.0.0.9109
+
+* Nytt diagram `diag_befpyramid_scb()`: befolkningspyramider per region och år (utfall eller prognos), konverterat från det gamla skriptet `diag_befpyramid()`. Hämtar med `pxweb2r` och bygger vidare på de nya CKM-tabellerna:
+  * Utfall: TAB638 (till och med 2024) och TAB5557 (2025, CKM) för totalbefolkningen, TAB4823 och TAB6645 (2025, CKM) för inrikes och utrikes födda.
+  * Prognos: SCB:s regionala befolkningsprognos 2024 (TAB698, till 2070), SCB:s befolkningsprognos för riket (TAB5974, till 2120) och, bara för inrikes och utrikes födda per region, den föråldrade prognosen 2022 (TAB6302). Källtexten anger alltid vilka år som är prognos och vilken prognos.
+  Allt i originalet finns kvar: flera regioner och år, jämförelse med annan region (`jmfr_linje = "region"`), mellan inrikes och utrikes födda (`"utr_inr"`) eller med ett annat år (`"ar"`), åldersgrupper eller ettårsklasser, sammanslagning av regioner (`grupp_namn`), logga och animerad gif (`skapa_gif`, kräver paketet `gifski`, som lagts till i Suggests).
+  Rättat jämfört med originalet: åldersgruppen 45–54 år innehöll 44-åringar, begränsningen av gifens bildlängd (`del_langd == 1`) var en jämförelse och gjorde ingenting, och 100 år och äldre i tabeller med ettårsklasser över 99 slås nu ihop till 100+ år. Parametrarna följer konventionerna (`region_vekt`, `utmapp`, `skriv_diagramfil`, `returnera_data`, `returnera_figur`).
+  Gifen är inte provkörd (gifski saknas i utvecklingsmiljön).
+
+# rddiagramkatalog 0.0.0.9108
+
+* `diag_matchning_u1a_arbmarknadsstallning_utbgrp_scb()` och `diag_matchning_u2_pendling_utbgrp_scb()` sätter nu ihop de nya tabellerna (TAB6367/TAB6369, 2019–) med SCB:s äldre U1a (TAB5400) och U2 (TAB5279), 2006–2018, till tidsserier 2006–2024 (`inkludera_aldre_tabell = TRUE`, standard). Tabellerna har samma regioner, och 117 av de 119 äldre utbildningsgrupperna finns med samma kod och namn i de nya; grupper som bara finns i en av tabellerna får bara den delen. De äldre tabellerna är inte CKM-behandlade, och serien har tidsseriebrott 2019 och 2022. Ett enskilt år till och med 2018 i `ar` hämtas ur den äldre tabellen.
+* Fördelningsdiagrammet i U1a klippte bort en stapeldel när andelarna summerade till 100,00000000000001 (flyttalsfel); andelarna avrundas nu nedåt. Årsetiketterna i tidsserier med många år ritas lodrätt.
+
 # rddiagramkatalog 0.0.0.9107
 
 * Två nya diagram ur SCB:s regionala matchningsindikatorer, för riket, län och FA-regioner (inte kommuner), 2019–2024, med utbildningsgrupp som uppdelning:

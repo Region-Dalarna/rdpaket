@@ -26,6 +26,18 @@ Varje fält visar parameterns standardvärde som R-kod (t.ex. \code{"20"} eller
 in rakt av i det genererade funktionsanropet. Booleska parametrar (\code{TRUE}/
 \code{FALSE}) får en kryssruta i stället.
 
+Där de valbara värdena är kända får parametern en sökbar listruta i stället för
+en textruta (man kan också skriva ett eget värde):
+\itemize{
+\item parametrar som valideras med \code{match.arg()} (t.ex. \code{diagramtyp}) får en listruta med de giltiga valen,
+\item \code{region_vekt} och \code{jmfr_region} får en lista med riket, län och kommuner (namnet visas, koden skickas),
+\item parametrar som funktionen skickar direkt till ett SCB-uttag (\code{pxweb2r::pxweb2_get_data()}) - t.ex.
+\code{kon_klartext}, \code{alder_klartext}, \code{cont_klartext} och \code{tid_koder} - får SCB:s giltiga värden för just den
+tabellen och variabeln. Värdena slås upp när funktionen väljs och cachas under sessionen.
+}
+
+Allt annat är en textruta som tidigare. En tom listruta betyder funktionens standardvärde.
+
 "Visa hjälp" visar funktionens hjälptext (samma innehåll som
 \code{?funktionsnamn}) i en egen ruta ovanpå gadgeten, i stället för i RStudios
 Hjälp-ruta - annars hamnar den bakom gadgetens eget dialogfönster och syns
