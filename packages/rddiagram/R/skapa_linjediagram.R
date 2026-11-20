@@ -234,6 +234,14 @@ SkapaLinjeDiagram <- function(
     p <- p + ggplot2::theme(strip.text = ggplot2::element_blank())
   }
 
+  # filinställningarna följer med objektet, så att det kan skrivas till fil i efterhand
+  # med skriv_diagram_fran_skrivinfo() utan att diagrammet byggs om
+  attr(p, "skrivinfo") <- list(
+    output_mapp = output_mapp, filnamn_diagram = filnamn_diagram,
+    diagramfil_bredd = diagramfil_bredd, diagramfil_hojd = diagramfil_hojd,
+    logga = logga_arg, logga_storlek = logga_scaling, diagram_bildformat = diagram_bildformat
+  )
+
   if (skriv_till_diagramfil) {
     skriv_till_diagramfil(
       ggplot_objekt = p, output_mapp = output_mapp, filnamn_diagram = filnamn_diagram,

@@ -166,3 +166,20 @@ skriv_till_diagramfil <- function(ggplot_objekt, output_mapp, filnamn_diagram,
   }
   invisible(fullpath)
 }
+
+#' Skriv ett diagram till fil utifrån de filinställningar som följer med objektet
+#'
+#' Diagram från [SkapaStapelDiagram()] och [SkapaLinjeDiagram()] bär med sig attributet `skrivinfo`
+#' (mapp, filnamn, mått, logga och format). Den här funktionen skriver ett sådant diagram till fil
+#' med [skriv_till_diagramfil()], utan att diagrammet behöver byggas om. Mappen skapas om den saknas.
+#'
+#' @param ggplot_objekt Ett diagram skapat med `skriv_till_diagramfil = FALSE` (eller `TRUE`).
+#'
+#' @return Sökvägen till filen (osynligt), eller `NULL` om objektet saknar `skrivinfo`.
+#' @export
+skriv_diagram_fran_skrivinfo <- function(ggplot_objekt) {
+  info <- attr(ggplot_objekt, "skrivinfo")
+  if (is.null(info)) return(NULL)
+  if (!dir.exists(info$output_mapp)) dir.create(info$output_mapp, recursive = TRUE)
+  do.call(skriv_till_diagramfil, c(list(ggplot_objekt = ggplot_objekt), info))
+}

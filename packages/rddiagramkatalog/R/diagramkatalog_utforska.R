@@ -3,8 +3,8 @@
 #' Öppnar ett eget, större fönster ovanpå RStudio där man kan söka bland
 #' paketets diagramfunktioner (samma sökning som [sok_diagram()]), läsa
 #' hjälptexten för en vald funktion, fylla i parametrar, och antingen köra
-#' diagrammet direkt för en förhandsvisning eller infoga motsvarande R-kod i
-#' det aktiva skriptet. Nås enklast via RStudios Addins-meny ("Utforska
+#' diagrammet direkt för en förhandsvisning, skriva det till fil eller kopiera
+#' motsvarande R-kod till urklipp. Nås enklast via RStudios Addins-meny ("Utforska
 #' diagramkatalog").
 #'
 #' Parameterformuläret byggs generiskt utifrån `formals()` för den valda
@@ -30,19 +30,29 @@
 #' Hjälp-ruta - annars hamnar den bakom gadgetens eget dialogfönster och syns
 #' inte.
 #'
+#' "Skapa diagram" visar bara diagrammet i förhandsvisningen. Anropet körs med
+#' `skriv_diagramfil = FALSE` (`skriv_leaflet_fil = FALSE` för kartorna) oavsett
+#' vad formuläret säger, så ingen fil skrivs.
+#'
 #' "Skriv till fil" körs bara om funktionen har både `utmapp`- och
 #' `skriv_diagramfil`-parametrar (annars visas ett felmeddelande) och
-#' `utmapp`-fältet i formuläret är ifyllt. Anropet körs med
-#' `skriv_diagramfil = TRUE` oavsett kryssrutans läge, och en tillfällig
-#' notis visar sedan sökväg(ar) + filnamn för de fil(er) som skrevs/
-#' uppdaterades i `utmapp`.
+#' `utmapp`-fältet i formuläret är ifyllt. Har diagrammet nyss skapats med
+#' "Skapa diagram", och varken parametrar eller funktion ändrats sedan dess, skrivs
+#' det redan skapade diagrammet direkt till fil (om funktionen bygger på
+#' [rddiagram::SkapaStapelDiagram()] eller [rddiagram::SkapaLinjeDiagram()], som bär med sig sina
+#' filinställningar), utan att data hämtas på nytt. Annars körs anropet om med
+#' `skriv_diagramfil = TRUE`. En tillfällig notis visar sedan sökväg(ar) + filnamn
+#' för de fil(er) som skrevs/uppdaterades i `utmapp`.
+#'
+#' "Kopiera kod" lägger anropet med valda parametrar i urklipp (via `clipr`) och
+#' lämnar gadgeten öppen. Går urklippet inte att nå infogas koden i det aktiva
+#' skriptet i stället (kräver `rstudioapi` och RStudio), annars skrivs den ut i konsolen.
 #'
 #' Kräver `shiny` och `miniUI` (`install.packages(c("shiny", "miniUI"))`),
 #' som bara är valfria beroenden till paketet eftersom de bara behövs för
-#' den här interaktiva funktionen. "Infoga kod" kräver dessutom `rstudioapi`
-#' och att man kör RStudio - annars skrivs koden ut i konsolen istället.
+#' den här interaktiva funktionen.
 #'
-#' @return Ingenting (anropas interaktivt). Avslutas med `stopApp()`.
+#' @return Ingenting (anropas interaktivt).
 #' @export
 diagramkatalog_utforska <- function() {
   if (!requireNamespace("shiny", quietly = TRUE) ||
@@ -99,7 +109,7 @@ diagramkatalog_utforska <- function() {
         litenknapp("hjalp", "Visa hjälp", "info"),
         litenknapp("visa", "Skapa diagram", TRUE),
         litenknapp("skriv_fil", "Skriv till fil", "success"),
-        litenknapp("infoga", "Infoga kod", TRUE)
+        litenknapp("kopiera", "Kopiera kod", TRUE)
       )
     ),
     miniUI::miniContentPanel(
@@ -222,8 +232,22 @@ diagramkatalog_utforska <- function() {
       paste0(vald_fn(), "(\n  ", paste(argument_text, collapse = ",\n  "), "\n)")
     }
 
+    # Det senast skapade diagrammet: anropskoden (med skrivparametern satt till FALSE) och resultatet.
+    # Används av "Skriv till fil" för att slippa köra om skriptet när inget ändrats.
+    senaste <- NULL
+
+    # Namnet på parametern som styr filskrivning (skriv_diagramfil, eller skriv_leaflet_fil för kartor)
+    skrivparam <- function() intersect(c("skriv_diagramfil", "skriv_leaflet_fil"), names(vald_args()))[1]
+
+    # anropskoden som förhandsvisningen kör: skrivparametern tvingas till FALSE
+    forhandskod <- function() {
+      p <- skrivparam()
+      bygg_anrop(overrides = if (is.na(p)) list() else stats::setNames(list("FALSE"), p))
+    }
+
     shiny::observeEvent(input$visa, {
-      kod <- bygg_anrop()
+      kod <- forhandskod()
+      senaste <<- NULL
       output$forhandsvisning <- shiny::renderPlot({
         # Notisen visas direkt (skickas till webbläsaren oberoende av den
         # pågående beräkningen) och måste därför läggas HÄR, inne i
@@ -241,6 +265,7 @@ diagramkatalog_utforska <- function() {
           NULL
         })
         if (is.null(resultat)) return(NULL)
+        senaste <<- list(kod = kod, resultat = resultat)
         # Alla funktioner returnerar en namngiven lista; förhandsvisningen visar det första
         # elementet. karta_lf_*() ger leaflet-kartor, som inte kan ritas av renderPlot() - de öppnas
         # i stället i webbläsaren (en tillfällig html-fil).
@@ -280,11 +305,23 @@ diagramkatalog_utforska <- function() {
       # knappen. innan_tid används för att efteråt avgöra vilka fil(er) i utmapp som faktiskt
       # skrevs/uppdaterades av just detta anrop (funktionerna returnerar bara ggplot-/leaflet-
       # objekt, inte vilket filnamn de skrev till).
-      kod <- bygg_anrop(overrides = stats::setNames(list("TRUE"), skriv_param))
       innan_tid <- Sys.time()
       notis_id <- shiny::showNotification("Skriver diagram till fil...", duration = NULL, type = "message")
 
-      resultat <- tryCatch(eval(parse(text = kod)), error = function(e) {
+      # Oförändrat anrop sedan "Skapa diagram" och diagram som bär med sig sina filinställningar
+      # (attributet skrivinfo): skriv det redan skapade diagrammet utan att köra om skriptet.
+      kan_ateranvanda <- !is.null(senaste) && identical(senaste$kod, forhandskod()) &&
+        is.list(senaste$resultat) &&
+        all(vapply(senaste$resultat, function(x) !is.null(attr(x, "skrivinfo")), logical(1)))
+
+      resultat <- tryCatch({
+        if (kan_ateranvanda) {
+          lapply(senaste$resultat, rddiagram::skriv_diagram_fran_skrivinfo)
+        } else {
+          kod <- bygg_anrop(overrides = stats::setNames(list("TRUE"), skriv_param))
+          eval(parse(text = kod))
+        }
+      }, error = function(e) {
         shiny::showNotification(paste("Fel:", conditionMessage(e)), type = "error", duration = NULL)
         NULL
       })
@@ -329,14 +366,19 @@ diagramkatalog_utforska <- function() {
       ))
     })
 
-    shiny::observeEvent(input$infoga, {
+    shiny::observeEvent(input$kopiera, {
       kod <- bygg_anrop()
-      if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+      kopierad <- requireNamespace("clipr", quietly = TRUE) && clipr::clipr_available() &&
+        !inherits(try(clipr::write_clip(kod, allow_non_interactive = TRUE), silent = TRUE), "try-error")
+      if (kopierad) {
+        shiny::showNotification("Koden är kopierad till urklipp.", type = "message", duration = 4)
+      } else if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
         rstudioapi::insertText(kod)
+        shiny::showNotification("Urklippet gick inte att nå - koden har infogats i skriptet.", type = "warning", duration = 7)
       } else {
         message(kod)
+        shiny::showNotification("Urklippet gick inte att nå - koden har skrivits ut i konsolen.", type = "warning", duration = 7)
       }
-      shiny::stopApp()
     })
 
     shiny::observeEvent(input$done, shiny::stopApp())

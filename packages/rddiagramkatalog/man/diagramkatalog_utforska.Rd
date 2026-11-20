@@ -7,14 +7,14 @@
 diagramkatalog_utforska()
 }
 \value{
-Ingenting (anropas interaktivt). Avslutas med \code{stopApp()}.
+Ingenting (anropas interaktivt).
 }
 \description{
 Öppnar ett eget, större fönster ovanpå RStudio där man kan söka bland
 paketets diagramfunktioner (samma sökning som \code{\link[=sok_diagram]{sok_diagram()}}), läsa
 hjälptexten för en vald funktion, fylla i parametrar, och antingen köra
-diagrammet direkt för en förhandsvisning eller infoga motsvarande R-kod i
-det aktiva skriptet. Nås enklast via RStudios Addins-meny ("Utforska
+diagrammet direkt för en förhandsvisning, skriva det till fil eller kopiera
+motsvarande R-kod till urklipp. Nås enklast via RStudios Addins-meny ("Utforska
 diagramkatalog").
 }
 \details{
@@ -43,15 +43,25 @@ Allt annat är en textruta som tidigare. En tom listruta betyder funktionens sta
 Hjälp-ruta - annars hamnar den bakom gadgetens eget dialogfönster och syns
 inte.
 
+"Skapa diagram" visar bara diagrammet i förhandsvisningen. Anropet körs med
+\code{skriv_diagramfil = FALSE} (\code{skriv_leaflet_fil = FALSE} för kartorna) oavsett
+vad formuläret säger, så ingen fil skrivs.
+
 "Skriv till fil" körs bara om funktionen har både \code{utmapp}- och
 \code{skriv_diagramfil}-parametrar (annars visas ett felmeddelande) och
-\code{utmapp}-fältet i formuläret är ifyllt. Anropet körs med
-\code{skriv_diagramfil = TRUE} oavsett kryssrutans läge, och en tillfällig
-notis visar sedan sökväg(ar) + filnamn för de fil(er) som skrevs/
-uppdaterades i \code{utmapp}.
+\code{utmapp}-fältet i formuläret är ifyllt. Har diagrammet nyss skapats med
+"Skapa diagram", och varken parametrar eller funktion ändrats sedan dess, skrivs
+det redan skapade diagrammet direkt till fil (om funktionen bygger på
+\code{\link[rddiagram:SkapaStapelDiagram]{rddiagram::SkapaStapelDiagram()}} eller \code{\link[rddiagram:SkapaLinjeDiagram]{rddiagram::SkapaLinjeDiagram()}}, som bär med sig sina
+filinställningar), utan att data hämtas på nytt. Annars körs anropet om med
+\code{skriv_diagramfil = TRUE}. En tillfällig notis visar sedan sökväg(ar) + filnamn
+för de fil(er) som skrevs/uppdaterades i \code{utmapp}.
+
+"Kopiera kod" lägger anropet med valda parametrar i urklipp (via \code{clipr}) och
+lämnar gadgeten öppen. Går urklippet inte att nå infogas koden i det aktiva
+skriptet i stället (kräver \code{rstudioapi} och RStudio), annars skrivs den ut i konsolen.
 
 Kräver \code{shiny} och \code{miniUI} (\code{install.packages(c("shiny", "miniUI"))}),
 som bara är valfria beroenden till paketet eftersom de bara behövs för
-den här interaktiva funktionen. "Infoga kod" kräver dessutom \code{rstudioapi}
-och att man kör RStudio - annars skrivs koden ut i konsolen istället.
+den här interaktiva funktionen.
 }

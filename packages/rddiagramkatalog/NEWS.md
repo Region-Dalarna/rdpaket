@@ -1,3 +1,11 @@
+# rddiagramkatalog 0.0.0.9115
+
+* `diagramkatalog_utforska()`: knapparna är omarbetade.
+  * "Skapa diagram" visar bara diagrammet och skriver aldrig någon fil (`skriv_diagramfil = FALSE` tvingas i förhandsvisningen, `skriv_leaflet_fil = FALSE` för kartorna).
+  * "Skriv till fil" skriver det nyss skapade diagrammet direkt till fil, utan att köra om skriptet, om anropet är oförändrat sedan "Skapa diagram" och diagrammet bär med sig sina filinställningar (gäller funktioner byggda på `SkapaStapelDiagram()` och `SkapaLinjeDiagram()`). Annars körs anropet om med `skriv_diagramfil = TRUE` som förut.
+  * "Infoga kod" är ersatt av "Kopiera kod", som lägger anropet i urklipp (`clipr`) och lämnar gadgeten öppen. Går urklippet inte att nå infogas koden i skriptet som förut.
+* Kräver rddiagram >= 0.0.0.9046.
+
 # rddiagramkatalog 0.0.0.9111
 
 * `diagramkatalog_utforska()` har fått sökbara listrutor (som också tillåter eget värde) där de valbara värdena är kända, i stället för bara textrutor:

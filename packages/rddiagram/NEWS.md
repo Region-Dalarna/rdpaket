@@ -1,3 +1,7 @@
+# rddiagram 0.0.0.9046
+
+* `SkapaStapelDiagram()` och `SkapaLinjeDiagram()` lägger filinställningarna (mapp, filnamn, mått, logga, format) som attributet `skrivinfo` på det returnerade diagrammet. Ny funktion `skriv_diagram_fran_skrivinfo()` skriver ett sådant diagram till fil utan att det byggs om.
+
 # rddiagram 0.0.0.9045
 
 * `diagramfarger("utb_floden")`: nya färger ur grafiska profilen (grönt för inflöden, blått för utflöden, tre toner vardera) i stället för Office-grönt och orangebrunt.
