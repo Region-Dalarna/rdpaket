@@ -27,6 +27,22 @@ test_that("intern_scaffold_struktur skapar rätt mappar", {
   expect_true(dir.exists(file.path(sokvag2, ".github", "workflows")))
 })
 
+test_that("_dependencies.R listar rdshinyappar och shiny.telemetry bara med telemetri", {
+  tmp <- withr::local_tempdir()
+  for (t in c(TRUE, FALSE)) {
+    d <- file.path(tmp, paste0("app_", t)); dir.create(file.path(d, "www"), recursive = TRUE)
+    intern_scaffold_appfiler(d, shinyapp_config("app", grundsokvag = tmp, telemetri = t))
+    dep <- readLines(file.path(d, "_dependencies.R"))
+    expect_equal(any(grepl("library(rdshinyappar)", dep, fixed = TRUE)), t)
+    expect_equal(any(grepl("library(shiny.telemetry)", dep, fixed = TRUE)), t)
+  }
+})
+
+test_that("intern_pat_for_telemetri avbryter med tydligt fel om token saknas", {
+  testthat::local_mocked_bindings(rddeploy_pat = function(...) stop("ingen token"))
+  expect_error(intern_pat_for_telemetri(), "GitHub-token")
+})
+
 test_that("intern_scaffold_appfiler skriver appfiler med/utan telemetri", {
   tmp <- withr::local_tempdir()
   sokvag <- file.path(tmp, "app")

@@ -1,3 +1,11 @@
+# rddeploy 0.0.0.9026
+
+- `shinyapp_skapa_med_github_repo()`: `_dependencies.R` får nu `library(rdshinyappar)` (tillsammans med
+  `library(shiny.telemetry)`) när `telemetri = TRUE`, så att `renv::snapshot()` aldrig missar paketet.
+- Saknas GitHub-token avbryter funktionen nu direkt, innan något skapas, med ett tydligt felmeddelande.
+  Tidigare användes en tyst reserv, så `rdshinyappar` installerades inte och appen kraschade vid start.
+  Använd `telemetri = FALSE` för att skapa en app utan telemetri och utan token.
+
 # rddeploy 0.0.0.9025
 
 - `analysrapport_publicera(html_fil = )` använder som standard beskrivningen i

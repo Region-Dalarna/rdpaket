@@ -37,7 +37,7 @@ intern_scaffold_appfiler <- function(sokvag, cfg) {
   } else ""
   telemetri_ui_rad     <- if (cfg$telemetri) ",\n      rdshinyappar::telemetri_ui(telemetry)" else ""
   telemetri_server_rad <- if (cfg$telemetri) "  rdshinyappar::telemetri_server(telemetry, navigation_id = 'flikval', forsta_flik = 'Tab 1')\n" else ""
-  telemetri_dep_rad    <- if (cfg$telemetri) "library(shiny.telemetry)\n" else ""
+  telemetri_dep_rad    <- if (cfg$telemetri) "library(rdshinyappar)\nlibrary(shiny.telemetry)\n" else ""
 
   intern_skriv_mall("shinyapp", "global.R", file.path(sokvag, "global.R"),
                     list(github_repo = cfg$github_repo, telemetri_block = telemetri_block))
@@ -92,6 +92,17 @@ intern_scaffold_meta <- function(sokvag, cfg, fork = FALSE) {
   invisible(sokvag)
 }
 
+# GitHub-token för att kunna installera rdshinyappar (finns inte på CRAN). Avbryter med ett begripligt
+# fel om token saknas, hellre än att skapa en app som kraschar vid start.
+intern_pat_for_telemetri <- function() {
+  tryCatch(rddeploy_pat(), error = function(e) {
+    cli::cli_abort(c(
+      "Telemetri kräver en GitHub-token, eftersom {.pkg rdshinyappar} installeras från GitHub.",
+      "i" = "Sätt {.envvar GITHUB_PAT} eller kör {.run gitcreds::gitcreds_set()}, eller skapa appen med {.code telemetri = FALSE}."
+    ), parent = e)
+  })
+}
+
 # renv-bootstrap i en fräsch R-process (callr). Tvingar https-CRAN och tar bara
 # runtime-beroenden (inte Suggests).
 intern_scaffold_renv <- function(sokvag, telemetri = TRUE) {
@@ -106,7 +117,8 @@ intern_scaffold_renv <- function(sokvag, telemetri = TRUE) {
   # som global.R/ui.R/server.R anropar när telemetri = TRUE) finns bara på GitHub,
   # inte CRAN - måste installeras separat, annars hamnar den aldrig i renv.lock
   # och library(rdshinyappar) i global.R kraschar appen efter renv::restore().
-  github_pat <- if (isTRUE(telemetri)) tryCatch(rddeploy_pat(), error = function(e) "") else ""
+  # Ingen tyst reserv: utan token installeras rdshinyappar inte och appen kraschar sedan vid start.
+  github_pat <- if (isTRUE(telemetri)) intern_pat_for_telemetri() else ""
 
   callr::r(
     func = function(project, packages, telemetri, github_pat) {
@@ -245,6 +257,9 @@ shinyapp_skapa_med_github_repo <- function(github_repo,
     beskrivning = beskrivning
   )
   sokvag <- cfg$sokvag_proj
+
+  # Kontrollera token INNAN något skapas, så att ett fel inte lämnar ett halvfärdigt projekt
+  if (isTRUE(initiera_renv) && isTRUE(cfg$telemetri)) invisible(intern_pat_for_telemetri())
 
   intern_preflight(sokvag, cfg$grundsokvag, force,
                    extra = if (initiera_renv) "renv-bibliotek (kan ta några minuter)")
