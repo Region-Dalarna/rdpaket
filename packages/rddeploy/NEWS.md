@@ -1,3 +1,9 @@
+# rddeploy 0.0.0.9027
+
+- Mallen `global.R` (`shinyapp_skapa_med_github_repo()`) sätter `options(shiny.sanitize.errors = !interactive())`:
+  inga R-fel visas för användaren på servern (felet hamnar ändå i appens logg, se Adminportalen), men de visas i
+  klartext när appen körs lokalt i RStudio.
+
 # rddeploy 0.0.0.9026
 
 - `shinyapp_skapa_med_github_repo()`: `_dependencies.R` får nu `library(rdshinyappar)` (tillsammans med
