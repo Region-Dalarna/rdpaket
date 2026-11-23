@@ -103,6 +103,55 @@ intern_pat_for_telemetri <- function() {
   })
 }
 
+# Kontroll av byggverktyg (Rtools) på Windows innan renv-bootstrap. Paket som saknar färdig binär byggs från
+# källkod (t.ex. systemfonts, gdtools och ggiraph), och då går bygget fel om Rtools ligger i en sökväg med
+# mellanslag (typiskt C:/Program Files/rtools45) - freetype-flaggorna skickas vidare utan citattecken.
+# Rtools för en annan R-version än den som körs ger en varning. Ren funktion så att den går att testa:
+# returnerar list(fel = , varning = ) med textvektorer.
+intern_byggverktyg_problem <- function(make_sokvag,
+                                       r_version = paste(R.version$major, sub("\\..*", "", R.version$minor), sep = "."),
+                                       windows = .Platform$OS.type == "windows") {
+  res <- list(fel = character(), varning = character())
+  if (!isTRUE(windows)) return(res)
+
+  if (!nzchar(make_sokvag)) {
+    res$varning <- "Hittar inte Rtools (make.exe). Paket som saknar färdig binär kan då inte byggas."
+    return(res)
+  }
+  sokvag <- gsub("\\\\", "/", make_sokvag)
+  if (grepl(" ", sokvag, fixed = TRUE)) {
+    res$fel <- paste0("Rtools ligger i en sökväg med mellanslag: ", sokvag)
+  }
+  hittad <- regmatches(sokvag, regexpr("rtools[0-9]+", sokvag, ignore.case = TRUE))
+  forvantad <- paste0("rtools", sub(".", "", r_version, fixed = TRUE))
+  if (length(hittad) == 1 && tolower(hittad) != forvantad) {
+    res$varning <- paste0("Hittade ", hittad, " men R ", r_version, " hör till ", forvantad, ".")
+  }
+  res
+}
+
+intern_kontrollera_byggverktyg <- function() {
+  if (isTRUE(getOption("rddeploy.hoppa_byggkontroll"))) return(invisible(NULL))
+  make <- Sys.which("make")
+  make <- if (nzchar(make)) normalizePath(make, winslash = "/", mustWork = FALSE) else ""
+  problem <- intern_byggverktyg_problem(make)
+  for (v in problem$varning) {
+    cli::cli_warn(c(
+      "{v}",
+      "i" = "Installera Rtools som matchar din R-version från CRAN (på standardplatsen, t.ex. {.path C:/rtools46}) om paketinstallationen misslyckas."
+    ))
+  }
+  if (length(problem$fel) > 0) {
+    cli::cli_abort(c(
+      "Paketen i det nya projektet kan inte byggas: {problem$fel}",
+      "i" = "Mellanslag i sökvägen gör att {.pkg systemfonts}, {.pkg gdtools} och {.pkg ggiraph} inte går att kompilera.",
+      "i" = "Installera Rtools som matchar din R-version från CRAN på en sökväg utan mellanslag (t.ex. {.path C:/rtools46}), starta om R och försök igen.",
+      "i" = "Vill du ändå fortsätta, sätt {.code options(rddeploy.hoppa_byggkontroll = TRUE)}."
+    ))
+  }
+  invisible(NULL)
+}
+
 # renv-bootstrap i en fräsch R-process (callr). Tvingar https-CRAN och tar bara
 # runtime-beroenden (inte Suggests).
 intern_scaffold_renv <- function(sokvag, telemetri = TRUE) {
@@ -260,6 +309,8 @@ shinyapp_skapa_med_github_repo <- function(github_repo,
 
   # Kontrollera token INNAN något skapas, så att ett fel inte lämnar ett halvfärdigt projekt
   if (isTRUE(initiera_renv) && isTRUE(cfg$telemetri)) invisible(intern_pat_for_telemetri())
+  # ... och kontrollera att paket går att bygga (Rtools) innan något skapas
+  if (isTRUE(initiera_renv)) intern_kontrollera_byggverktyg()
 
   intern_preflight(sokvag, cfg$grundsokvag, force,
                    extra = if (initiera_renv) "renv-bibliotek (kan ta några minuter)")
