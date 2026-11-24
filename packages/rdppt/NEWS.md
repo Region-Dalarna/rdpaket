@@ -1,6 +1,6 @@
 # rdppt 0.0.0.9015
 
-* Rapportsidan: länkarna längst ned är tre block i samma kolumner som listorna ("Hitta alla våra rapporter" med
+* Rapportsidan: länkarna längst ned är tre block i samma kolumner som listorna ("Här finns alla våra rapporter" med
   shiny.regiondalarna.se, "Samhällsanalys webbsida" och "Lyssna på vår podd") i stället för tre centrerade rader.
   Det ger listorna mer plats.
 
