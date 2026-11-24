@@ -74,6 +74,7 @@ ppt_ny <- function(huvudrubrik = NULL,
       layouter = layouter$layout[layouter$master == profil$master],
       bildmapp = bildmapp,
       anv_uppgifter = anv_uppgifter,
+      starttid = Sys.time(),
       rubrik_namn = rubrik_namn,
       grundfil = NULL,
       loggfil = loggfil,
@@ -286,7 +287,11 @@ ppt_befintlig_visa <- function(fil, bilder = FALSE, oppna = FALSE) {
 #'
 #' Med flera personer i `anv_uppgifter` sparas en fil per person - samma
 #' slides, men med personens namn och e-post på titel- och avslutssidan.
-#' Diagrammen körs bara en gång, så det går snabbt.
+#' Diagrammen körs bara en gång, så det går snabbt. Anges ett enda namn
+#' (`"peter"`) får filnamnet också namnet (`utmaningar_peter.pptx`).
+#'
+#' När presentationen är sparad skrivs den tid det tagit sedan [ppt_ny()]
+#' ut i konsolen.
 #'
 #' @param ppt En presentation från [ppt_ny()].
 #' @param filnamn Filnamn, eller en hel sökväg, på pptx-filen. `NULL`
@@ -329,7 +334,7 @@ ppt_spara <- function(ppt,
   }
 
   # flera personer: en fil per person
-  flera <- is.character(anv_uppgifter) && length(anv_uppgifter) > 1
+  flera <- is.character(anv_uppgifter) && length(anv_uppgifter) >= 1
   personer <- if (flera) as.list(anv_uppgifter) else list(anv_uppgifter)
   filer <- vapply(personer, function(person) {
     filnamn_person <- filnamn
@@ -350,9 +355,21 @@ ppt_spara <- function(ppt,
     )
   }, character(1))
 
+  if (!is.null(ppt$starttid)) {
+    message("Det tog ", intern_tid_text(as.numeric(difftime(Sys.time(), ppt$starttid, units = "secs"))),
+            " att skapa presentationen.")
+  }
   intern_logg_sammanfatta(ppt)
   if (isTRUE(oppna)) for (fil in filer) intern_oppna_fil(fil)
   invisible(filer)
+}
+
+# Sekunder som text: "45 s", "3 min 12 s", "1 h 05 min".
+intern_tid_text <- function(sek) {
+  sek <- round(sek)
+  if (sek < 60) return(paste0(sek, " s"))
+  if (sek < 3600) return(paste0(sek %/% 60, " min ", sek %% 60, " s"))
+  paste0(sek %/% 3600, " h ", formatC((sek %% 3600) %/% 60, width = 2, flag = "0"), " min")
 }
 
 intern_kontrollera_ppt <- function(ppt) {

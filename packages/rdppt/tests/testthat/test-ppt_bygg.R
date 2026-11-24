@@ -300,7 +300,11 @@ test_that("ppt_spara() sparar en fil per person när flera anges", {
   expect_equal(basename(filer), c("utmaningar_peter.pptx", "utmaningar_jon.pptx"))
   expect_true(all(file.exists(filer)))
 
-  # en person: inget tillägg i filnamnet
+  # ett enda namn: namnet läggs också till i filnamnet
+  fil <- suppressMessages(ppt_spara(ppt, "ett.pptx", mapp = mapp, anv_uppgifter = "peter"))
+  expect_equal(basename(fil), "ett_peter.pptx")
+
+  # namn och e-post som lista: inget tillägg i filnamnet
   fil <- suppressMessages(ppt_spara(ppt, "en.pptx", mapp = mapp, anv_uppgifter = list(namn = "A", epost = "a@b.se")))
   expect_equal(basename(fil), "en.pptx")
 })
@@ -330,4 +334,12 @@ test_that("funktionsparametrar ger diagramfunktionen parametrar som krockar med 
   expect_error(ppt_lagg_till_slide(ny_testppt(), "diagram", funktion = diagram, fokus = "x", funktionsparametrar = list(fokus = "y")),
                "både direkt och i funktionsparametrar")
   expect_error(ppt_lagg_till_slide(ny_testppt(), "text", rubrik = "R", funktionsparametrar = list(a = 1)), "ingen parameter som heter 'funktionsparametrar'")
+})
+
+test_that("ppt_spara() skriver ut hur lång tid presentationen tog", {
+  ppt <- ny_testppt() |> ppt_lagg_till_slide("text", rubrik = "R", text = "T")
+  expect_match(paste(testthat::capture_messages(ppt_spara(ppt, "tid.pptx", mapp = testmapp())), collapse = ""),
+               "Det tog \\d+ s att skapa presentationen")
+  expect_equal(intern_tid_text(192), "3 min 12 s")
+  expect_equal(intern_tid_text(3900), "1 h 05 min")
 })

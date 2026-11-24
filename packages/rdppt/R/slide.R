@@ -130,8 +130,7 @@ intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckninga
   spaltrubrik <- function(txt) officer::fpar(officer::ftext(txt, officer::fp_text_lite(font.size = 18, bold = TRUE)))
   punktlista <- function(typ_varde) {
     rader <- rapporter_rd$text[rapporter_rd$typ == typ_varde]
-    officer::unordered_list(str_list = rader, level_list = rep(1, length(rader)),
-                            style = officer::fp_text_lite(font.size = 16))
+    intern_punktlista(rader, officer::fp_text_lite(font.size = 16))
   }
   innehall <- list(spaltrubrik("Analysrapporter"), spaltrubrik("Publicerade rapporter (pdf)"), punktlista("webb"), punktlista("pdf"))
 
@@ -262,8 +261,14 @@ intern_text_varde <- function(text, txt_size = NA) {
   if (length(text) == 1) {
     officer::fpar(officer::ftext(text, stil))
   } else {
-    officer::unordered_list(str_list = text, level_list = rep(1, length(text)), style = stil)
+    intern_punktlista(text, stil)
   }
+}
+
+# Ett stycke per rad, så att punkterna kommer från platshållarens egen punktlista. officer::unordered_list()
+# tappar textstilen när den är fp_text_lite() och storleken blir då mallens.
+intern_punktlista <- function(rader, stil) {
+  do.call(officer::block_list, lapply(rader, function(rad) officer::fpar(officer::ftext(rad, stil))))
 }
 
 # En rubrik med egen storlek/färg. Är varken storlek eller färg angiven returneras texten som den

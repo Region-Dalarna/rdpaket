@@ -1,3 +1,13 @@
+# rdppt 0.0.0.9009
+
+* `ppt_spara()` skriver ut hur lång tid det tog att skapa presentationen (från `ppt_ny()`).
+
+* Ett enda namn i `anv_uppgifter` (`"peter"`) läggs också till i filnamnet (`utmaningar_peter.pptx`),
+  som när flera namn anges.
+
+* Rapportsidan och text med `txt_size` i flera rader fick mallens teckenstorlek i stället för den angivna:
+  `officer::unordered_list()` tappar `fp_text_lite()`-stilen. Texten blir nu ett stycke per rad.
+
 # rdppt 0.0.0.9008
 
 * `anteckningar` kan för diagram vara en namngiven vektor eller lista med en post per region
