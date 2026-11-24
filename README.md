@@ -12,14 +12,15 @@ Planen för uppdelningen finns i `funktioner/PLAN-paketuppdelning.md`.
 | Paket | Innehåll | Status |
 |---|---|---|
 | `rdverktyg` | text, filer, SCB-/regionhämtning, allmänna verktyg, datakällor | **klart** |
-| `rdhamtadata` | datahämtning (befolkningsprognoser m.m.), ur `Region-Dalarna/hamta_data` | **pågående** |
+| `rdhamtadata` | datahämtning (befolkningsprognoser, pendling), ur `Region-Dalarna/hamta_data` | **pågående** |
 | `rddiagram` | diagram (ggplot), färg/skala, bubbeldiagram | **klart** |
-| `rdgis` | geometri, kartdata, sf till/från PostGIS, områdesnycklar, rutor, GIS-filinläsning | **klart** |
+| `rddiagramkatalog` | färdiga diagram och kartor, en funktion per diagram (`diag_*()`, `karta_gg_*()`, `karta_lf_*()`), ur `Region-Dalarna/diagram` | **pågående** |
+| `rdgis` | geometri, kartdata, bakgrundskartor, sf till/från PostGIS, områdesnycklar, rutor, GIS-filinläsning | **klart** |
 | `rdpostgres` | databasanslutningar, roller/rättigheter, metadata, grants, PostGIS-tillägg, kopiera/flytta tabeller | **klart** |
 | `rdgeorouting` | pgRouting, isokroner, pendling (nätverk, kraftfält, ruta), ur `func_GIS.R` | **klart** (SQL-pipelines behöver verifieras mot riktig pgRouting-databas) |
 | `rdgtfs` | GTFS-hämtning, normalisering, geospatial filtrering och PostGIS-lagring | **klart** |
-| `rddeploy` | github/git, webbrapport/portal, shiny-app-scaffolding & -publicering | **klart** |
-| `rdppt` | bygg PowerPoint-presentationer från diagram, ur `G:/skript/ppt/` | **pågående** |
+| `rddeploy` | github/git, analysrapport/portal, shiny-app-scaffolding & -publicering (inkl. uppdatering av deploy-workflows) | **klart** |
+| `rdppt` | bygg PowerPoint-presentationer från diagram, med rapportsida, ur `G:/skript/ppt/` | **pågående** |
 | `rdshinyappar` | runtime-hjälpare för Shiny-appar (DB, lösenord, telemetri) | **klart** |
 | `rdadminportal` | adminportal + serverdrift: landningssidor, ikoner, nedladdningar, cron | **klart** |
 | `rd` | paraplypaket – `library(rd)` drar in analyspaketen | **klart** |
