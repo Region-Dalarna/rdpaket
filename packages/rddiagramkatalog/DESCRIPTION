@@ -52,7 +52,9 @@ Imports:
     tidyselect,
     tools,
     writexl,
-    xml2
+    xml2,
+    ggtext,
+    utils
 Suggests:
     clipr,
     gifski,
