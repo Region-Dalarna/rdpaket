@@ -33,7 +33,8 @@ intern_bygg_pptx <- function(pptlista,
                                  utan_rubriker = FALSE,
                                  utan_text = FALSE,
                                  slides_flytta = NULL,
-                                 anv_uppgifter = NULL) {
+                                 anv_uppgifter = NULL,
+                                 nytt_namn_om_last = FALSE) {
 
   # Inställningar ==================================================
   profil <- intern_mall_aktuell(mall_fil)
@@ -121,7 +122,7 @@ intern_bygg_pptx <- function(pptlista,
 
   # ================================================== Spara filen =============================================================
   if (spara_backup_om_fil_redan_finns) fullpath <- rdverktyg::sparafil_backup_omfinns(fullpath)
-  intern_skriv_pptx(pres, fullpath)
+  fullpath <- intern_skriv_pptx(pres, fullpath, nytt_namn_om_last = nytt_namn_om_last)
   message("Presentation med ", length(pres), " slides sparad: ", fullpath)
   invisible(fullpath)
 }

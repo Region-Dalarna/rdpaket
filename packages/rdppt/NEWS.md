@@ -1,3 +1,13 @@
+# rdppt 0.0.0.9012
+
+* `ppt_spara()` sparar under ett annat namn (`namn_2.pptx`, `namn_3.pptx` ...) om filen är öppen i PowerPoint eller
+  låst, och säger till om det (`nytt_namn_om_last = FALSE` ger felmeddelande som förut).
+
+* Meddelanden i konsolen när en presentation påbörjas (`ppt_ny()`) och när rapportsidan läggs till och byggs
+  (vilka spalter och hur många rapporter i varje).
+
+* "1 diagram tillagt." i stället för "1 diagram tillagda." (flera: "tillagda").
+
 # rdppt 0.0.0.9011
 
 * `ppt_lagg_till_slide("rapporter", antal_rapporter = 6)` styr hur många rapporter som visas i varje spalt.

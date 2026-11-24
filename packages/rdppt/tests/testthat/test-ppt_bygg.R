@@ -378,3 +378,27 @@ test_that("rapportsidan får en spalt per källa som gick att hämta och markera
   expect_false(grepl("Analys 4", text3))
   expect_error(ppt_lagg_till_slide(ny_testppt(), "rapporter", antal_rapporter = 0), "antal_rapporter")
 })
+
+test_that("en låst fil sparas under nytt namn (_2, _3) om det är tillåtet", {
+  mapp <- testmapp()
+  forsok <- character(0)
+  print.rdppt_lastfil <- function(x, target, ...) {
+    forsok <<- c(forsok, basename(target))
+    if (!grepl("_3\\.pptx$", target)) stop("... is open. To write to this document, please, close it.")
+    file.create(target)
+  }
+  registerS3method("print", "rdppt_lastfil", print.rdppt_lastfil)
+  pres <- structure(list(), class = "rdppt_lastfil")
+  fil <- file.path(mapp, "ppt.pptx")
+
+  res <- suppressMessages(intern_skriv_pptx(pres, fil, nytt_namn_om_last = TRUE))
+  expect_equal(basename(res), "ppt_3.pptx")
+  expect_equal(forsok, c("ppt.pptx", "ppt_2.pptx", "ppt_3.pptx"))
+  expect_message(intern_skriv_pptx(pres, fil, nytt_namn_om_last = TRUE), "Sparade som ppt_3.pptx")
+  expect_error(intern_skriv_pptx(pres, fil, nytt_namn_om_last = FALSE), "Kunde inte skriva")
+})
+
+test_that("meddelandet om tillagda diagram böjs efter antal", {
+  ppt <- ny_testppt()
+  expect_message(ppt_lagg_till_slide(ppt, "diagram", funktion = testdiagram, region_vekt = "20"), "1 diagram tillagt\\.")
+})

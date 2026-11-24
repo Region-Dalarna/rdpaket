@@ -127,6 +127,9 @@ intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckninga
   spalter <- Filter(function(sp) length(sp$rader) > 0, spalter)
   if (length(spalter) == 0) return(pres)
 
+  message("Rapportsidan: ", paste0(vapply(spalter, function(sp) {
+    paste0(tolower(sub(" \\(pdf\\)", "", sp$rubrik)), " ", min(antal, length(sp$rader)), " av ", length(sp$rader))
+  }, ""), collapse = ", "), ".")
   pres <- intern_lagg_till_slide(
     pres, lp, profil, layout = layout, master = master,
     rubrik = intern_formaterad("Rapporter", if (is.null(profil$stil)) NULL else 30, profil$stil$farg_rubrik, fet = TRUE),
@@ -344,16 +347,29 @@ intern_har_innehall <- function(x) {
 }
 
 # Skriver presentationen till fil, med ett begripligt fel om filen är låst.
-intern_skriv_pptx <- function(pres, fil) {
-  tryCatch(
-    print(pres, target = fil),
-    error = function(e) {
-      stop("Kunde inte skriva presentationen till:\n  ", fil,
-           "\nÄr filen öppen i PowerPoint? Stäng den i så fall och försök igen. (", conditionMessage(e), ")",
-           call. = FALSE)
-    }
+intern_skriv_pptx <- function(pres, fil, nytt_namn_om_last = FALSE) {
+  skriv <- function(sokvag) tryCatch(
+    {print(pres, target = sokvag); NULL},
+    error = function(e) e
   )
-  invisible(fil)
+  fel <- skriv(fil)
+  if (is.null(fel)) return(invisible(fil))
+
+  # filen är troligen öppen i PowerPoint: prova fil_2, fil_3 ... om det är tillåtet
+  ar_last <- grepl("is open|close it|Permission denied|being used|används av", conditionMessage(fel), ignore.case = TRUE)
+  if (nytt_namn_om_last && ar_last) {
+    bas <- sub("\\.pptx$", "", fil, ignore.case = TRUE)
+    for (nr in 2:99) {
+      alternativ <- paste0(bas, "_", nr, ".pptx")
+      if (is.null(skriv(alternativ))) {
+        message("OBS: ", basename(fil), " är öppen i PowerPoint eller låst. Sparade som ", basename(alternativ), " i stället.")
+        return(invisible(alternativ))
+      }
+    }
+  }
+  stop("Kunde inte skriva presentationen till:\n  ", fil,
+       "\nÄr filen öppen i PowerPoint? Stäng den i så fall och försök igen. (", conditionMessage(fel), ")",
+       call. = FALSE)
 }
 
 intern_oppna_fil <- function(fil) {

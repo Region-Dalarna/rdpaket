@@ -55,6 +55,7 @@ ppt_ny <- function(huvudrubrik = NULL,
                    loggfil = NULL) {
 
   profil <- intern_mall_aktuell(mall)
+  message("rdppt: ny presentation påbörjad", if (intern_har_innehall(huvudrubrik)) paste0(": ", huvudrubrik) else "", ".")
   if (!is.null(stil) && !is.null(profil$stil)) profil$stil <- utils::modifyList(profil$stil, as.list(stil))
   if (is.null(loggfil)) loggfil <- getOption("rdppt.loggfil")
   layouter <- officer::layout_summary(intern_las_pptx(profil$mall_fil))
@@ -192,7 +193,8 @@ intern_ppt_diagram <- function(ppt, funktion, funktion_namn, argument, region_ve
     }
   }
 
-  message(funktion_namn, ": ", nrow(ppt$slides) - antal_fore, " diagram tillagda.")
+  antal_nya <- nrow(ppt$slides) - antal_fore
+  message(funktion_namn, ": ", antal_nya, " diagram ", if (antal_nya == 1) "tillagt." else "tillagda.")
   ppt
 }
 
@@ -301,6 +303,8 @@ ppt_befintlig_visa <- function(fil, bilder = FALSE, oppna = FALSE) {
 #' @param oppna `TRUE` om presentationen ska öppnas direkt.
 #' @param spara_backup_om_fil_redan_finns `TRUE` om en befintlig fil med
 #'   samma namn ska säkerhetskopieras i stället för att skrivas över.
+#' @param nytt_namn_om_last `TRUE` (standard) sparar under ett annat namn (`namn_2.pptx`, `namn_3.pptx` ...) om
+#'   filen är öppen i PowerPoint eller låst, och säger till om det. `FALSE` ger i stället ett felmeddelande.
 #' @param anv_uppgifter Vems namn/e-post som ska stå på titel- och
 #'   avslutssidan. `NULL` (standard) = det som angavs i [ppt_ny()], annars
 #'   inloggad användare. Ett namn som slås upp med
@@ -316,7 +320,8 @@ ppt_spara <- function(ppt,
                       mapp = rdverktyg::utskriftsmapp(),
                       oppna = FALSE,
                       spara_backup_om_fil_redan_finns = FALSE,
-                      anv_uppgifter = NULL) {
+                      anv_uppgifter = NULL,
+                      nytt_namn_om_last = TRUE) {
 
   intern_kontrollera_ppt(ppt)
   if (is.null(anv_uppgifter)) anv_uppgifter <- ppt$anv_uppgifter
@@ -351,7 +356,8 @@ ppt_spara <- function(ppt,
       filnamn = filnamn_person,
       mall_fil = intern_mall_aktuell(ppt$profil, grundfil = ppt$grundfil),
       rubrik_namn = ppt$rubrik_namn,
-      anv_uppgifter = person
+      anv_uppgifter = person,
+      nytt_namn_om_last = nytt_namn_om_last
     )
   }, character(1))
 

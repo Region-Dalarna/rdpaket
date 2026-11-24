@@ -276,6 +276,7 @@ ppt_lagg_till_slide <- function(ppt,
       if (length(antal_rapporter) != 1 || is.na(antal_rapporter) || !is.numeric(antal_rapporter) || antal_rapporter < 1) {
         stop("antal_rapporter ska vara ett heltal på minst 1.", call. = FALSE)
       }
+      message("rdppt::rapporter: rapportsida tillagd (rapporterna hämtas när presentationen sparas).")
       intern_ppt_lagg_till(ppt, mall = "Rapporter_Samhallsanalys", anteckningar = anteckningar,
                            antal = as.integer(antal_rapporter))
     },

@@ -10,7 +10,8 @@ ppt_spara(
   mapp = rdverktyg::utskriftsmapp(),
   oppna = FALSE,
   spara_backup_om_fil_redan_finns = FALSE,
-  anv_uppgifter = NULL
+  anv_uppgifter = NULL,
+  nytt_namn_om_last = TRUE
 )
 }
 \arguments{
@@ -33,6 +34,9 @@ inloggad användare. Ett namn som slås upp med
 \code{\link[rddeploy:anv_hamta_namn_epost_fran_lista]{rddeploy::anv_hamta_namn_epost_fran_lista()}} (t.ex. \code{"peter"}),
 flera sådana namn (\code{c("peter", "jon")}, en fil per person), eller en
 lista \code{list(namn = "...", epost = "...")}.}
+
+\item{nytt_namn_om_last}{\code{TRUE} (standard) sparar under ett annat namn (\code{namn_2.pptx}, \code{namn_3.pptx} ...) om
+filen är öppen i PowerPoint eller låst, och säger till om det. \code{FALSE} ger i stället ett felmeddelande.}
 }
 \value{
 Sökvägen (en per fil) till den eller de sparade
