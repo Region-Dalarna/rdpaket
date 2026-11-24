@@ -112,7 +112,7 @@ karta_gg_bakgrund_sverige <- function(
 #' @noRd
 intern_bygg_bakgrund_sverige <- function(region_vekt, vagar, vattendrag, utland, etiketter, namn_storlek,
                                          kalla_text, marginal, lansgrans, lansgrans_i_havet = FALSE,
-                                         max_orter_per_lan = NULL) {
+                                         max_orter_per_lan = NULL, proportion = NULL) {
   if (!is.null(max_orter_per_lan) &&
       (length(max_orter_per_lan) != 1 || is.na(max_orter_per_lan) || max_orter_per_lan < 1)) {
     stop("max_orter_per_lan ska vara ett heltal på minst 1, eller NULL.", call. = FALSE)
@@ -145,6 +145,16 @@ intern_bygg_bakgrund_sverige <- function(region_vekt, vagar, vattendrag, utland,
   bbox <- sf::st_bbox(c(xmin = bbox[["xmin"]] - marginal * bredd, ymin = bbox[["ymin"]] - marginal * hojd,
                         xmax = bbox[["xmax"]] + marginal * bredd, ymax = bbox[["ymax"]] + marginal * hojd),
                       crs = sf::st_crs(3006))
+  # proportion (bredd/höjd) större än länets: utsnittet vidgas lika mycket åt vänster och höger, så att länet hamnar
+  # mitt i en liggande bild och att bakgrundskartan fortsätter på båda sidor
+  if (!is.null(proportion)) {
+    b1 <- bbox[["xmax"]] - bbox[["xmin"]]; h1 <- bbox[["ymax"]] - bbox[["ymin"]]
+    extra <- (proportion * h1 - b1) / 2
+    if (extra > 0) {
+      bbox <- sf::st_bbox(c(xmin = bbox[["xmin"]] - extra, ymin = bbox[["ymin"]],
+                            xmax = bbox[["xmax"]] + extra, ymax = bbox[["ymax"]]), crs = sf::st_crs(3006))
+    }
+  }
   lager <- rdgis::hamta_bakgrundskarta(lager = lager_namn, bbox = bbox, marginal = 0,
                                        schema = "bakgrundskarta_sverige", con = con)
   # grannländer (Natural Earth) är frivilligt; utan lagret ritas utlandet som en enda yta

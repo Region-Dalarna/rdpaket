@@ -22,7 +22,8 @@ karta_gg_kraftfalt_scb(
   kalla_text = NULL,
   vagar = c("stora", "mellan"),
   marginal = 0.03,
-  bredd_cm = 20,
+  liggande = FALSE,
+  bredd_cm = NULL,
   dpi = 300,
   ...,
   utmapp = rdverktyg::utskriftsmapp(),
@@ -76,8 +77,13 @@ gör en riksöversikt stökig. \code{NULL} ritar inga vägar.}
 
 \item{marginal}{Marginal runt området som andel av kartans bredd och höjd. Standard 0,03.}
 
+\item{liggande}{\code{FALSE} (standard) ger en stående bild som följer länets form. \code{TRUE} ger en liggande bild
+(bredd:höjd 3:2): kartan vidgas åt sidorna med mer av bakgrundskartan och länet hamnar i mitten, med textrutan
+uppe till höger och teckenförklaringen nere till vänster i utrymmet bredvid länet.}
+
 \item{bredd_cm}{Bildens bredd i centimeter. Textrutan och teckenförklaringen dimensioneras efter den, så ändra
-storlek med denna parameter och inte genom att skala bilden.}
+storlek med denna parameter och inte genom att skala bilden. \code{NULL} (standard) = 20 cm för stående och
+27 cm för liggande bild.}
 
 \item{dpi}{Upplösning när kartan skrivs till fil. Standard 300.}
 

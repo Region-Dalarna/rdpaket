@@ -27,8 +27,12 @@
 #' @param namn_storlek Faktor för namnens textstorlek. Standard 1; 1,3 ger 30 % större text.
 #' @param kalla_text Källhänvisning nere till höger. `NULL` (standard) = bakgrundskartans källa, pendlingsdatats
 #'   år och "Bearbetning: Samhällsanalys, Region Dalarna" på två rader. `NA` eller `""` ger ingen text.
+#' @param liggande `FALSE` (standard) ger en stående bild som följer länets form. `TRUE` ger en liggande bild
+#'   (bredd:höjd 3:2): kartan vidgas åt sidorna med mer av bakgrundskartan och länet hamnar i mitten, med textrutan
+#'   uppe till höger och teckenförklaringen nere till vänster i utrymmet bredvid länet.
 #' @param bredd_cm Bildens bredd i centimeter. Textrutan och teckenförklaringen dimensioneras efter den, så ändra
-#'   storlek med denna parameter och inte genom att skala bilden.
+#'   storlek med denna parameter och inte genom att skala bilden. `NULL` (standard) = 20 cm för stående och
+#'   27 cm för liggande bild.
 #'
 #' @return Osynligt: en namngiven lista med ett `ggplot`-objekt; namnet är bildfilens namn utan ändelse.
 #' @seealso [karta_lf_kraftfalt_scb()], [karta_gg_bakgrund_sverige()]
@@ -51,7 +55,8 @@ karta_gg_kraftfalt_scb <- function(
     kalla_text = NULL,
     vagar = c("stora", "mellan"),
     marginal = 0.03,
-    bredd_cm = 20,
+    liggande = FALSE,
+    bredd_cm = NULL,
     dpi = 300,
     ...,
     utmapp = rdverktyg::utskriftsmapp(),
@@ -67,6 +72,8 @@ karta_gg_kraftfalt_scb <- function(
     stop("Parametern vald_lan heter numera region_vekt.", call. = FALSE)
   }
   intern_kontrollera_utdata(skriv_diagramfil, returnera_figur, "skriv_diagramfil")
+  if (length(liggande) != 1 || is.na(liggande) || !is.logical(liggande)) stop("liggande ska vara TRUE eller FALSE.", call. = FALSE)
+  if (is.null(bredd_cm)) bredd_cm <- if (liggande) 27 else 20
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
   # ========================================== Hämta och beräkna ========================================
@@ -86,18 +93,20 @@ karta_gg_kraftfalt_scb <- function(
   }
   b <- intern_bygg_bakgrund_sverige(region_vekt, vagar = vagar, vattendrag = TRUE, utland = "grann",
                                     etiketter = "vatten", namn_storlek = 1, kalla_text = kalla_text,
-                                    marginal = marginal, lansgrans = FALSE)
+                                    marginal = marginal, lansgrans = FALSE,
+                                    proportion = if (liggande) 1.5)
 
   gg <- intern_lagg_kraftfalt_pa_karta(
     b$gg, kraftfalt, b$bbox, b$lan_gis, kartrubrik = kartrubrik,
     forklaringstext = if (is.null(forklaringstext)) {
       intern_kraftfalt_forklaringstext(enskilt_troskelvarde, totalt_troskelvarde)
     } else forklaringstext,
-    bredd_cm = bredd_cm, tatortsnamn = tatortsnamn, namn_storlek = namn_storlek)
+    bredd_cm = bredd_cm, tatortsnamn = tatortsnamn, namn_storlek = namn_storlek,
+    ruta_andel = if (liggande) 0.30 else 0.40)
 
   lansnamn <- rdverktyg::hamtaregion_kod_namn(region_vekt)$region[1]
   filnamn_bas <- paste0("kraftfalt_", gsub("[^a-z0-9]+", "_", tolower(stringi::stri_trans_general(lansnamn, "Latin-ASCII"))),
-                        "_ar", pendlingsar)
+                        "_ar", pendlingsar, if (liggande) "_liggande")
 
   if (skriv_diagramfil) {
     hojd_cm <- bredd_cm * as.numeric(diff(b$bbox[c("ymin", "ymax")]) / diff(b$bbox[c("xmin", "xmax")]))
@@ -161,7 +170,7 @@ intern_kraftfalt_forklaringstext <- function(enskilt_troskelvarde, totalt_troske
 # ruta och teckenförklaring) räknas om till kartans enheter utifrån bildens bredd (bredd_cm).
 #' @noRd
 intern_lagg_kraftfalt_pa_karta <- function(gg, kraftfalt, bbox, lan_gis, kartrubrik, forklaringstext, bredd_cm = 20,
-                                            tatortsnamn = TRUE, namn_storlek = 1) {
+                                            tatortsnamn = TRUE, namn_storlek = 1, ruta_andel = 0.40) {
   f <- rddiagram::diagramfarger("rd_kraftfaltskarta")
   till_3006 <- function(x) if (is.null(x) || nrow(x) == 0) NULL else sf::st_transform(x, 3006)
   # tätorternas geometri kan vara polygoner - punkterna ritas i en punkt innanför
@@ -218,7 +227,7 @@ intern_lagg_kraftfalt_pa_karta <- function(gg, kraftfalt, bbox, lan_gis, kartrub
 
   # ===== textruta uppe till höger =====
   textstorlek <- 2.4
-  ruta_mm <- 0.40 * bredd_cm * 10
+  ruta_mm <- ruta_andel * bredd_cm * 10
   tecken_per_rad <- floor((ruta_mm - 10) / (textstorlek * 2.845 * 0.3528 * 0.48))
   stycken <- vapply(forklaringstext, function(x) paste(strwrap(x, width = tecken_per_rad), collapse = "\n"), "")
   brodtext <- paste(stycken, collapse = "\n\n")

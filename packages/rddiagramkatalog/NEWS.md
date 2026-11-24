@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9119
+
+* `karta_gg_kraftfalt_scb(liggande = TRUE)` ger en liggande bild (3:2) i stället för den stående. Bakgrundskartan vidgas åt sidorna så att länet hamnar i mitten, med textrutan uppe till höger och teckenförklaringen nere till vänster i utrymmet bredvid länet. `liggande = FALSE` är standard och ger samma bild som förut. `bredd_cm` är numera `NULL` som standard (20 cm stående, 27 cm liggande), och filnamnet får ändelsen `_liggande`.
+
 # rddiagramkatalog 0.0.0.9115
 
 * `diagramkatalog_utforska()`: knapparna är omarbetade.
