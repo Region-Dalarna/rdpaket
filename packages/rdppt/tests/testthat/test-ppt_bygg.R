@@ -356,7 +356,7 @@ test_that("rapportsidan får en spalt per källa som gick att hämta och markera
     rapporter_rd_webb_hamta = function() dplyr::tibble(text = c(paste("Analys", 1:8), paste("Pdf", 1:3)),
                                                      url = "x", typ = c(rep("webb", 8), rep("pdf", 3))),
     rapporter_rd_interaktiva_hamta = function() stop("ingen kontakt"))
-  ppt <- ny_testppt() |> ppt_lagg_till_slide("rapporter")
+  ppt <- ny_testppt() |> ppt_lagg_till_slide("rapporter", antal_rapporter = 6)
   fil <- suppressMessages(ppt_spara(ppt, "rapporter.pptx", mapp = mapp))
   text <- paste(vapply(officer::read_pptx(fil)$slide$get_slide(2)$get() |> xml2::xml_find_all("//*[local-name()='t']"),
                        xml2::xml_text, ""), collapse = " ")
@@ -401,4 +401,20 @@ test_that("en låst fil sparas under nytt namn (_2, _3) om det är tillåtet", {
 test_that("meddelandet om tillagda diagram böjs efter antal", {
   ppt <- ny_testppt()
   expect_message(ppt_lagg_till_slide(ppt, "diagram", funktion = testdiagram, region_vekt = "20"), "1 diagram tillagt\\.")
+})
+
+test_that("rapportsidan fylls med så många rapporter som ryms, och listorna får punkter", {
+  mapp <- testmapp()
+  lang <- paste("Rapport nummer", 1:40, "om något ganska långt som bryts på två rader i spalten")
+  testthat::local_mocked_bindings(
+    rapporter_rd_webb_hamta = function() dplyr::tibble(text = lang, url = "x", typ = "webb"),
+    rapporter_rd_interaktiva_hamta = function() stop("ingen kontakt"))
+  fil <- suppressMessages(ppt_spara(ny_testppt() |> ppt_lagg_till_slide("rapporter"), "fyll.pptx", mapp = mapp))
+  xml <- officer::read_pptx(fil)$slide$get_slide(2)$get()
+  antal <- sum(grepl("^Rapport nummer", vapply(xml2::xml_find_all(xml, "//*[local-name()='t']"), xml2::xml_text, "")))
+  expect_gt(antal, 3)
+  expect_lt(antal, 12)
+  expect_gt(length(xml2::xml_find_all(xml, "//*[local-name()='buChar']")), 3)
+  expect_equal(intern_antal_som_ryms(character(0), 4, 3, 14), 0L)
+  expect_equal(intern_antal_som_ryms(lang, 4, 3, 14, max = 2), 2L)
 })

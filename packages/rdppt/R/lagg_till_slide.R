@@ -157,7 +157,8 @@ ppt_slidetyper <- function() {
 #'   som körs en gång per region.
 #' @param txt_size Textstorlek. `NA` (standard) = mallens egen.
 #' @param antal_rapporter För `"rapporter"`: högst så många rapporter i varje spalt (interaktiva rapporter,
-#'   analysrapporter och publicerade rapporter). Standard 6. Finns det fler markeras det som ett urval.
+#'   analysrapporter och publicerade rapporter). `NULL` (standard) fyller varje spalt med så många som ryms.
+#'   Finns det fler rapporter än som visas markeras det som ett urval.
 #'
 #' @return Presentationen, med nya slides tillagda.
 #' @seealso [ppt_slidetyper()], [ppt_mall_visa()], [ppt_befintlig_visa()]
@@ -191,7 +192,7 @@ ppt_lagg_till_slide <- function(ppt,
                                 slide = NULL,
                                 anteckningar = NULL,
                                 txt_size = NA,
-                                antal_rapporter = 6) {
+                                antal_rapporter = NULL) {
 
   intern_kontrollera_ppt(ppt)
   if (is.null(layout)) {
@@ -273,12 +274,13 @@ ppt_lagg_till_slide <- function(ppt,
                                       mall = "Slutsatser_Samhallsanalys", anteckningar = anteckningar, txt_size = txt_size),
     avsnitt = intern_ppt_lagg_till(ppt, titel = rubrik, beskr = text, mall = "roll:avsnitt", anteckningar = anteckningar),
     rapporter = {
-      if (length(antal_rapporter) != 1 || is.na(antal_rapporter) || !is.numeric(antal_rapporter) || antal_rapporter < 1) {
+      if (!is.null(antal_rapporter) &&
+          (length(antal_rapporter) != 1 || !is.numeric(antal_rapporter) || is.na(antal_rapporter) || antal_rapporter < 1)) {
         stop("antal_rapporter ska vara ett heltal på minst 1.", call. = FALSE)
       }
       message("rdppt::rapporter: rapportsida tillagd (rapporterna hämtas när presentationen sparas).")
       intern_ppt_lagg_till(ppt, mall = "Rapporter_Samhallsanalys", anteckningar = anteckningar,
-                           antal = as.integer(antal_rapporter))
+                           antal = if (is.null(antal_rapporter)) NA_integer_ else as.integer(antal_rapporter))
     },
     avslut = intern_ppt_lagg_till(ppt, titel = rubrik, beskr = text, mall = "Avslutsbild_Samhallsanalys", anteckningar = anteckningar),
     befintlig = intern_ppt_befintlig(ppt, fil = fil, slide = slide)

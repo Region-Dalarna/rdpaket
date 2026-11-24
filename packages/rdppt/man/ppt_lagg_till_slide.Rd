@@ -21,7 +21,7 @@ ppt_lagg_till_slide(
   slide = NULL,
   anteckningar = NULL,
   txt_size = NA,
-  antal_rapporter = 6
+  antal_rapporter = NULL
 )
 }
 \arguments{
@@ -89,7 +89,8 @@ som körs en gång per region.}
 \item{txt_size}{Textstorlek. \code{NA} (standard) = mallens egen.}
 
 \item{antal_rapporter}{För \code{"rapporter"}: högst så många rapporter i varje spalt (interaktiva rapporter,
-analysrapporter och publicerade rapporter). Standard 6. Finns det fler markeras det som ett urval.}
+analysrapporter och publicerade rapporter). \code{NULL} (standard) fyller varje spalt med så många som ryms.
+Finns det fler rapporter än som visas markeras det som ett urval.}
 }
 \value{
 Presentationen, med nya slides tillagda.

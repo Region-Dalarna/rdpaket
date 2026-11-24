@@ -89,7 +89,7 @@ intern_bygg_pptx <- function(pptlista,
     if (rad$typ == "rapporter") {
       pres <- intern_slide_rapporter(pres, lp, profil, layout = rad$layout, master = rad$master,
                                      anteckningar = rad$anteckningar,
-                                     antal = if (is.na(rad$antal)) 6 else rad$antal)
+                                     antal = if (is.na(rad$antal)) NULL else rad$antal)
     } else if (rad$typ == "avslut") {
       pres <- intern_slide_avslut(pres, lp, profil, layout = rad$layout, master = rad$master,
                                   rubrik = rad$rubrik, text = rad$text,

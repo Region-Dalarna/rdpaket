@@ -106,11 +106,43 @@ intern_slide_titel <- function(pres, lp, profil, master, huvudrubrik, underrubri
   pres
 }
 
+# Hur många av texterna (en per punkt, brutna efter spaltens bredd) som ryms i en ruta. Bredden mäts i
+# teckensnittet (systemfonts) om det går, annars med en grov uppskattning. NULL max = så många som ryms.
+intern_antal_som_ryms <- function(texter, bredd_tum, hojd_tum, storlek, mellanrum_pt = 8, indrag_tum = 0.25,
+                                  max = NULL, familj = "Arial") {
+  if (length(texter) == 0) return(0L)
+  max_pt <- 0.95 * (bredd_tum - 0.2 - indrag_tum) * 72
+  ord_bredd <- function(x) {
+    if (requireNamespace("systemfonts", quietly = TRUE)) {
+      b <- tryCatch(vapply(x, function(t) systemfonts::shape_string(t, family = familj, size = storlek)$metrics$width, 0),
+                    error = function(e) NULL)
+      if (!is.null(b)) return(b)
+    }
+    nchar(x) * storlek * 0.5
+  }
+  antal_rader <- function(text) {
+    ord <- strsplit(trimws(text), "[[:space:]]+")[[1]]
+    rader <- 1L; rad <- ""
+    for (o in ord) {
+      kand <- if (nchar(rad) == 0) o else paste(rad, o)
+      if (nchar(rad) > 0 && ord_bredd(kand) > max_pt) { rader <- rader + 1L; rad <- o } else rad <- kand
+    }
+    rader
+  }
+  tillgangligt <- hojd_tum * 72 - 8
+  hojd_text <- vapply(texter, function(t) antal_rader(t) * storlek * 1.2 + mellanrum_pt, 0)
+  n <- sum(cumsum(hojd_text) - mellanrum_pt <= tillgangligt)
+  n <- max(n, 1L)
+  if (!is.null(max)) n <- min(n, max)
+  as.integer(min(n, length(texter)))
+}
+
 # Rapportsidan: tre spalter med Samhällsanalys interaktiva rapporter (appar på shiny.regiondalarna.se),
-# analysrapporter (webb) och publicerade rapporter (pdf), högst `antal` per spalt, länkar till landningssidan och
+# analysrapporter (webb) och publicerade rapporter (pdf) som punktlistor, länkar till landningssidan och
 # Samhällsanalys webbsida, och en rad om podden. Spalterna är textrutor under en "endast rubrik"-layout, alla med
-# samma höjd och topplacerad text. Det som inte går att hämta lämnas ut; hämtas ingenting alls hoppas sidan över.
-intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckningar = NULL, antal = 6) {
+# samma höjd och topplacerad text. Varje spalt fylls med så många rapporter som ryms (högst `antal` om det anges).
+# Det som inte går att hämta lämnas ut; hämtas ingenting alls hoppas sidan över.
+intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckningar = NULL, antal = NULL) {
   hamta <- function(fun, vad) {
     tryCatch(fun(), error = function(e) {
       message("OBS: Kunde inte hämta ", vad, " (", conditionMessage(e), "). Spalten hoppas över.")
@@ -127,43 +159,51 @@ intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckninga
   spalter <- Filter(function(sp) length(sp$rader) > 0, spalter)
   if (length(spalter) == 0) return(pres)
 
+  ph <- intern_platshallare(lp, layout, master)
+  yta <- intern_fri_yta(pres, ph[ph$roll == "rubrik", , drop = FALSE], TRUE, marginal = 0.45)
+  luft <- 0.35
+  bredd <- (yta$width - luft * (length(spalter) - 1)) / length(spalter)
+  lista_hojd <- 3.3
+  textstorlek <- 14
+
+  for (i in seq_along(spalter)) {
+    spalter[[i]]$visa <- utils::head(spalter[[i]]$rader, intern_antal_som_ryms(
+      spalter[[i]]$rader, bredd, lista_hojd, textstorlek, max = antal))
+  }
   message("Rapportsidan: ", paste0(vapply(spalter, function(sp) {
-    paste0(tolower(sub(" \\(pdf\\)", "", sp$rubrik)), " ", min(antal, length(sp$rader)), " av ", length(sp$rader))
+    paste0(tolower(sub(" \\(pdf\\)", "", sp$rubrik)), " ", length(sp$visa), " av ", length(sp$rader))
   }, ""), collapse = ", "), ".")
+
   pres <- intern_lagg_till_slide(
     pres, lp, profil, layout = layout, master = master,
     rubrik = intern_formaterad("Rapporter", if (is.null(profil$stil)) NULL else 30, profil$stil$farg_rubrik, fet = TRUE),
     anteckningar = anteckningar
   )
 
-  ph <- intern_platshallare(lp, layout, master)
-  yta <- intern_fri_yta(pres, ph[ph$roll == "rubrik", , drop = FALSE], TRUE, marginal = 0.45)
-  luft <- 0.35
-  bredd <- (yta$width - luft * (length(spalter) - 1)) / length(spalter)
   stil <- intern_text_stil
-  ruta <- function(pres, innehall, left, top, width, height) {
+  ruta <- function(pres, innehall, left, top, width, height, namn = "rapportruta") {
     officer::ph_with(pres, value = innehall, location = officer::ph_location(
-      left = left, top = top, width = width, height = height, newlabel = "rapportruta"))
+      left = left, top = top, width = width, height = height, newlabel = namn))
   }
   lank <- function(text, href, storlek) {
     officer::hyperlink_ftext(text, href = href, prop = stil(storlek, fet = FALSE, farg = "blue", underlined = TRUE))
   }
+  rubrikfarg <- if (is.null(profil$stil$farg_rubrik)) "#000000" else profil$stil$farg_rubrik
 
   # alla spalter har samma mått, så rubriker, listor och urvalsrader hamnar på samma höjd
   for (i in seq_along(spalter)) {
     sp <- spalter[[i]]
     vanster <- yta$left + (i - 1) * (bredd + luft)
-    visa <- utils::head(sp$rader, antal)
-    pres <- ruta(pres, officer::fpar(officer::ftext(sp$rubrik, stil(18, fet = TRUE))),
+    pres <- ruta(pres, officer::fpar(officer::ftext(sp$rubrik, stil(18, fet = TRUE, farg = rubrikfarg))),
                  vanster, yta$top + 0.1, bredd, 0.45)
-    lista <- do.call(officer::block_list, lapply(visa, function(rad) {
-      officer::fpar(officer::ftext(rad, stil(14, fet = FALSE)), fp_p = officer::fp_par(padding.bottom = 8))
+    lista <- do.call(officer::block_list, lapply(sp$visa, function(rad) {
+      officer::fpar(officer::ftext(rad, stil(textstorlek, fet = FALSE)), fp_p = officer::fp_par(padding.bottom = 8))
     }))
-    pres <- ruta(pres, lista, vanster, yta$top + 0.6, bredd, 3.2)
+    pres <- ruta(pres, lista, vanster, yta$top + 0.55, bredd, lista_hojd, namn = "rapportlista")
     pres <- ruta(pres, officer::fpar(officer::ftext(
-      if (length(sp$rader) > length(visa)) paste0("Urval – ", length(visa), " av ", length(sp$rader)) else paste0("Alla ", length(sp$rader)),
+      if (length(sp$rader) > length(sp$visa)) paste0("Urval – ", length(sp$visa), " av ", length(sp$rader)) else paste0("Alla ", length(sp$rader)),
       stil(12, fet = FALSE, kursiv = TRUE, farg = "#595959"))),
-      vanster, yta$top + 3.85, bredd, 0.35)
+      vanster, yta$top + 3.9, bredd, 0.35)
   }
 
   pres <- ruta(pres, officer::fpar(
@@ -184,13 +224,29 @@ intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckninga
     fp_p = officer::fp_par(text.align = "center")),
     yta$left, yta$top + 5.1, yta$width, 0.4)
 
-  # textrutorna får annars ibland vertikal centrering från mallens bodyPr - texten ska börja överst
-  xml <- pres$slide$get_slide(pres$cursor)$get()
-  rutor <- xml2::xml_find_all(xml, paste0(
-    "//*[local-name()='sp'][*[local-name()='nvSpPr']/*[local-name()='cNvPr'][starts-with(@name,'rapportruta')]]",
-    "/*[local-name()='txBody']/*[local-name()='bodyPr']"))
-  for (ruta_xml in rutor) xml2::xml_set_attr(ruta_xml, "anchor", "t")
+  intern_efterbehandla_rapportsida(pres$slide$get_slide(pres$cursor)$get())
   pres
+}
+
+# Finjusterar sidans xml: texten börjar överst i rutorna (mallens bodyPr kan annars centrera den vertikalt),
+# listorna får punkter med hängande indrag, och texten markeras som svenska så att PowerPoint inte understryker
+# den som felstavad.
+intern_efterbehandla_rapportsida <- function(xml) {
+  sok <- function(xpath) xml2::xml_find_all(xml, xpath)
+  ar_rapport <- "[*[local-name()='nvSpPr']/*[local-name()='cNvPr'][starts-with(@name,'rapport')]]"
+  for (n in sok(paste0("//*[local-name()='sp']", ar_rapport, "/*[local-name()='txBody']/*[local-name()='bodyPr']"))) {
+    xml2::xml_set_attr(n, "anchor", "t")
+  }
+  lista <- "[*[local-name()='nvSpPr']/*[local-name()='cNvPr'][@name='rapportlista']]"
+  for (n in sok(paste0("//*[local-name()='sp']", lista, "//*[local-name()='pPr']"))) {
+    for (bu in xml2::xml_find_all(n, "./*[local-name()='buNone']")) xml2::xml_remove(bu)
+    xml2::xml_set_attr(n, "marL", "228600")
+    xml2::xml_set_attr(n, "indent", "-228600")
+    xml2::xml_add_child(n, xml2::read_xml('<a:buFont xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" typeface="Arial"/>'))
+    xml2::xml_add_child(n, xml2::read_xml('<a:buChar xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" char="&#8226;"/>'))
+  }
+  for (n in sok("//*[local-name()='rPr']")) xml2::xml_set_attr(n, "lang", "sv-SE")
+  invisible(xml)
 }
 
 # Samhällsanalys avslutsbild: "Tack för mig!" med presentatörens namn och e-post, om inget annat anges.

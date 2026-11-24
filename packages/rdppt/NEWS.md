@@ -1,3 +1,9 @@
+# rdppt 0.0.0.9013
+
+* Rapportsidan: listorna är punktlistor, och varje spalt fylls med så många rapporter som ryms (bredden mäts i
+  teckensnittet). `antal_rapporter` är numera `NULL` som standard (= fyll spalten) och anger annars ett tak. Spaltrubrikerna
+  har rubrikfärgen, och texten är märkt som svenska så att PowerPoint inte understryker den som felstavad.
+
 # rdppt 0.0.0.9012
 
 * `ppt_spara()` sparar under ett annat namn (`namn_2.pptx`, `namn_3.pptx` ...) om filen är öppen i PowerPoint eller
