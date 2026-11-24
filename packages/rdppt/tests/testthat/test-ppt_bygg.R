@@ -363,7 +363,18 @@ test_that("rapportsidan får en spalt per källa som gick att hämta och markera
   expect_match(text, "Analysrapporter")
   expect_match(text, "Publicerade rapporter")
   expect_false(grepl("Interaktiva rapporter", text))
-  expect_match(text, "Urval – alla 8")
-  expect_match(text, "Alla: ")
+  expect_match(text, "Urval – 6 av 8")
+  expect_match(text, "Alla 3")
   expect_false(grepl("Analys 7", text))
+  expect_match(text, "shiny.regiondalarna.se")
+  expect_match(text, "Statistik och rapporter")
+
+  # antal_rapporter styr hur många som visas
+  ppt3 <- ny_testppt() |> ppt_lagg_till_slide("rapporter", antal_rapporter = 3)
+  fil3 <- suppressMessages(ppt_spara(ppt3, "rapporter3.pptx", mapp = mapp))
+  text3 <- paste(vapply(officer::read_pptx(fil3)$slide$get_slide(2)$get() |> xml2::xml_find_all("//*[local-name()='t']"),
+                        xml2::xml_text, ""), collapse = " ")
+  expect_match(text3, "Urval – 3 av 8")
+  expect_false(grepl("Analys 4", text3))
+  expect_error(ppt_lagg_till_slide(ny_testppt(), "rapporter", antal_rapporter = 0), "antal_rapporter")
 })

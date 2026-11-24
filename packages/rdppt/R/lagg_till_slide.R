@@ -25,7 +25,7 @@ intern_slidetyper <- list(
     krav = "rubrik"),
   rapporter = list(
     beskr = "Samhällsanalys senaste rapporter (hämtas från regiondalarna.se när presentationen sparas)",
-    param = "anteckningar",
+    param = c("antal_rapporter", "anteckningar"),
     krav = character(0)),
   avslut = list(
     beskr = "avslutsbild (standard \"Tack för mig!\" med namn och e-post)",
@@ -79,7 +79,7 @@ ppt_slidetyper <- function() {
 #' | `"text"` | rubrik och text/punktlista | `rubrik`, `text` |
 #' | `"slutsatser"` | rubrik ("Slutsatser") och punktlista | `text`*, `rubrik` |
 #' | `"avsnitt"` | avsnittsrubrik | `rubrik`*, `text` |
-#' | `"rapporter"` | Samhällsanalys senaste rapporter | - |
+#' | `"rapporter"` | Samhällsanalys rapporter i tre spalter | `antal_rapporter` |
 #' | `"avslut"` | avslutsbild | `rubrik`, `text` |
 #' | `"befintlig"` | färdiga slides från en pptx-fil | `fil`, `slide` |
 #'
@@ -156,6 +156,8 @@ ppt_slidetyper <- function() {
 #'   med en funktion av regionen, `\(region) mina_anteckningar(region)`,
 #'   som körs en gång per region.
 #' @param txt_size Textstorlek. `NA` (standard) = mallens egen.
+#' @param antal_rapporter För `"rapporter"`: högst så många rapporter i varje spalt (interaktiva rapporter,
+#'   analysrapporter och publicerade rapporter). Standard 6. Finns det fler markeras det som ett urval.
 #'
 #' @return Presentationen, med nya slides tillagda.
 #' @seealso [ppt_slidetyper()], [ppt_mall_visa()], [ppt_befintlig_visa()]
@@ -188,7 +190,8 @@ ppt_lagg_till_slide <- function(ppt,
                                 fil = NULL,
                                 slide = NULL,
                                 anteckningar = NULL,
-                                txt_size = NA) {
+                                txt_size = NA,
+                                antal_rapporter = 6) {
 
   intern_kontrollera_ppt(ppt)
   if (is.null(layout)) {
@@ -269,7 +272,13 @@ ppt_lagg_till_slide <- function(ppt,
     slutsatser = intern_ppt_lagg_till(ppt, titel = if (is.null(rubrik)) "Slutsatser" else rubrik, beskr = text,
                                       mall = "Slutsatser_Samhallsanalys", anteckningar = anteckningar, txt_size = txt_size),
     avsnitt = intern_ppt_lagg_till(ppt, titel = rubrik, beskr = text, mall = "roll:avsnitt", anteckningar = anteckningar),
-    rapporter = intern_ppt_lagg_till(ppt, mall = "Rapporter_Samhallsanalys", anteckningar = anteckningar),
+    rapporter = {
+      if (length(antal_rapporter) != 1 || is.na(antal_rapporter) || !is.numeric(antal_rapporter) || antal_rapporter < 1) {
+        stop("antal_rapporter ska vara ett heltal på minst 1.", call. = FALSE)
+      }
+      intern_ppt_lagg_till(ppt, mall = "Rapporter_Samhallsanalys", anteckningar = anteckningar,
+                           antal = as.integer(antal_rapporter))
+    },
     avslut = intern_ppt_lagg_till(ppt, titel = rubrik, beskr = text, mall = "Avslutsbild_Samhallsanalys", anteckningar = anteckningar),
     befintlig = intern_ppt_befintlig(ppt, fil = fil, slide = slide)
   )

@@ -392,13 +392,14 @@ intern_kontrollera_layout <- function(ppt, layout) {
 
 # Lägger till en rad (= en slide) sist i presentationens ppt-lista.
 intern_ppt_lagg_till <- function(ppt, bild = NULL, titel = NULL, beskr = NULL, mall = NA_character_,
-                                 anteckningar = NULL, txt_size = NA) {
+                                 anteckningar = NULL, txt_size = NA, antal = NA_integer_) {
   rad <- data.frame(
     dia_path = if (is.character(bild)) bild else NA_character_,
     titel = if (intern_har_innehall(titel)) as.character(titel)[1] else NA_character_,
     master = NA_character_,
     mall = mall,
-    txt_size = as.double(txt_size)
+    txt_size = as.double(txt_size),
+    antal = as.integer(antal)
   )
   rad$beskr <- list(beskr)
   rad$gg_obj <- list(if (intern_ar_ggplot(bild)) bild else NULL)

@@ -1,3 +1,11 @@
+# rdppt 0.0.0.9011
+
+* `ppt_lagg_till_slide("rapporter", antal_rapporter = 6)` styr hur många rapporter som visas i varje spalt.
+  Under spalterna står t.ex. "Urval – 6 av 12".
+
+* Rapportsidan: spalterna har samma höjd och texten börjar överst (och är inte fet) även i PowerPoint. Längst ned
+  finns länkar till landningssidan (shiny.regiondalarna.se), Samhällsanalys webbsida och podden.
+
 # rdppt 0.0.0.9010
 
 * Rapportsidan (`ppt_lagg_till_slide("rapporter")`) har tre spalter: interaktiva rapporter (de sex första på

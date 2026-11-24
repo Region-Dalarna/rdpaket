@@ -107,9 +107,9 @@ intern_slide_titel <- function(pres, lp, profil, master, huvudrubrik, underrubri
 }
 
 # Rapportsidan: tre spalter med Samhällsanalys interaktiva rapporter (appar på shiny.regiondalarna.se),
-# analysrapporter (webb) och publicerade rapporter (pdf), högst `antal` per spalt, och en rad om podden. Spalterna
-# är textrutor under en "endast rubrik"-layout. Det som inte går att hämta lämnas ut; hämtas ingenting alls
-# hoppas sidan över.
+# analysrapporter (webb) och publicerade rapporter (pdf), högst `antal` per spalt, länkar till landningssidan och
+# Samhällsanalys webbsida, och en rad om podden. Spalterna är textrutor under en "endast rubrik"-layout, alla med
+# samma höjd och topplacerad text. Det som inte går att hämta lämnas ut; hämtas ingenting alls hoppas sidan över.
 intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckningar = NULL, antal = 6) {
   hamta <- function(fun, vad) {
     tryCatch(fun(), error = function(e) {
@@ -120,14 +120,10 @@ intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckninga
   rd <- hamta(rapporter_rd_webb_hamta, "rapporter från regiondalarna.se")
   interaktiva <- hamta(rapporter_rd_interaktiva_hamta, "interaktiva rapporter från shiny.regiondalarna.se")
 
-  statistiksida <- "https://www.regiondalarna.se/verksamhet/regional-utveckling/statistik-och-rapporter/"
   spalter <- list(
-    list(rubrik = "Interaktiva rapporter", rader = interaktiva$text, alla = "shiny.regiondalarna.se",
-         href = "https://shiny.regiondalarna.se/"),
-    list(rubrik = "Analysrapporter", rader = rd$text[rd$typ == "webb"], alla = "regiondalarna.se",
-         href = statistiksida),
-    list(rubrik = "Publicerade rapporter (pdf)", rader = rd$text[rd$typ == "pdf"], alla = "regiondalarna.se",
-         href = statistiksida))
+    list(rubrik = "Interaktiva rapporter", rader = interaktiva$text),
+    list(rubrik = "Analysrapporter", rader = rd$text[rd$typ == "webb"]),
+    list(rubrik = "Publicerade rapporter (pdf)", rader = rd$text[rd$typ == "pdf"]))
   spalter <- Filter(function(sp) length(sp$rader) > 0, spalter)
   if (length(spalter) == 0) return(pres)
 
@@ -141,37 +137,56 @@ intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckninga
   yta <- intern_fri_yta(pres, ph[ph$roll == "rubrik", , drop = FALSE], TRUE, marginal = 0.45)
   luft <- 0.35
   bredd <- (yta$width - luft * (length(spalter) - 1)) / length(spalter)
-  text_lite <- intern_text_stil
+  stil <- intern_text_stil
   ruta <- function(pres, innehall, left, top, width, height) {
-    officer::ph_with(pres, value = innehall, location = officer::ph_location(left = left, top = top, width = width, height = height))
+    officer::ph_with(pres, value = innehall, location = officer::ph_location(
+      left = left, top = top, width = width, height = height, newlabel = "rapportruta"))
+  }
+  lank <- function(text, href, storlek) {
+    officer::hyperlink_ftext(text, href = href, prop = stil(storlek, fet = FALSE, farg = "blue", underlined = TRUE))
   }
 
+  # alla spalter har samma mått, så rubriker, listor och urvalsrader hamnar på samma höjd
   for (i in seq_along(spalter)) {
     sp <- spalter[[i]]
     vanster <- yta$left + (i - 1) * (bredd + luft)
     visa <- utils::head(sp$rader, antal)
-    pres <- ruta(pres, officer::fpar(officer::ftext(sp$rubrik, text_lite(18, fet = TRUE))),
+    pres <- ruta(pres, officer::fpar(officer::ftext(sp$rubrik, stil(18, fet = TRUE))),
                  vanster, yta$top + 0.1, bredd, 0.45)
     lista <- do.call(officer::block_list, lapply(visa, function(rad) {
-      officer::fpar(officer::ftext(rad, text_lite(14)), fp_p = officer::fp_par(padding.bottom = 8))
+      officer::fpar(officer::ftext(rad, stil(14, fet = FALSE)), fp_p = officer::fp_par(padding.bottom = 8))
     }))
-    pres <- ruta(pres, lista, vanster, yta$top + 0.6, bredd, 3.5)
-    urval <- length(sp$rader) > length(visa)
-    pres <- ruta(pres, officer::fpar(
-      officer::ftext(if (urval) paste0("Urval – alla ", length(sp$rader), ": ") else "Alla: ",
-                     text_lite(12, kursiv = TRUE, farg = "#595959")),
-      officer::hyperlink_ftext(sp$alla, href = sp$href,
-                               prop = text_lite(12, farg = "blue", underlined = TRUE))),
-      vanster, yta$top + 4.15, bredd, 0.4)
+    pres <- ruta(pres, lista, vanster, yta$top + 0.6, bredd, 3.2)
+    pres <- ruta(pres, officer::fpar(officer::ftext(
+      if (length(sp$rader) > length(visa)) paste0("Urval – ", length(visa), " av ", length(sp$rader)) else paste0("Alla ", length(sp$rader)),
+      stil(12, fet = FALSE, kursiv = TRUE, farg = "#595959"))),
+      vanster, yta$top + 3.85, bredd, 0.35)
   }
 
   pres <- ruta(pres, officer::fpar(
-    officer::ftext("Lyssna på vår podd: ", text_lite(15)),
-    officer::hyperlink_ftext("Läget i Dalarna", href = "https://open.spotify.com/show/74b9qUtR2cT0DNQMAyvlRa",
-                             prop = text_lite(15, farg = "blue", underlined = TRUE)),
-    officer::ftext(" – om Dalarnas utveckling baserat på fakta, trender och statistik", text_lite(15)),
+    officer::ftext("Alla tre typer av rapporter finns på vår landningssida: ", stil(14, fet = FALSE)),
+    lank("shiny.regiondalarna.se", "https://shiny.regiondalarna.se/", 14),
     fp_p = officer::fp_par(text.align = "center")),
-    yta$left, yta$top + 4.75, yta$width, 0.45)
+    yta$left, yta$top + 4.3, yta$width, 0.4)
+  pres <- ruta(pres, officer::fpar(
+    officer::ftext("Samhällsanalys webbsida: ", stil(14, fet = FALSE)),
+    lank("Statistik och rapporter - Samhällsanalys, Region Dalarna",
+         "https://www.regiondalarna.se/verksamhet/regional-utveckling/statistik-och-rapporter/", 14),
+    fp_p = officer::fp_par(text.align = "center")),
+    yta$left, yta$top + 4.7, yta$width, 0.4)
+  pres <- ruta(pres, officer::fpar(
+    officer::ftext("Lyssna på vår podd: ", stil(14, fet = FALSE)),
+    lank("Läget i Dalarna", "https://open.spotify.com/show/74b9qUtR2cT0DNQMAyvlRa", 14),
+    officer::ftext(" – om Dalarnas utveckling baserat på fakta, trender och statistik", stil(14, fet = FALSE)),
+    fp_p = officer::fp_par(text.align = "center")),
+    yta$left, yta$top + 5.1, yta$width, 0.4)
+
+  # textrutorna får annars ibland vertikal centrering från mallens bodyPr - texten ska börja överst
+  xml <- pres$slide$get_slide(pres$cursor)$get()
+  rutor <- xml2::xml_find_all(xml, paste0(
+    "//*[local-name()='sp'][*[local-name()='nvSpPr']/*[local-name()='cNvPr'][starts-with(@name,'rapportruta')]]",
+    "/*[local-name()='txBody']/*[local-name()='bodyPr']"))
+  for (ruta_xml in rutor) xml2::xml_set_attr(ruta_xml, "anchor", "t")
   pres
 }
 

@@ -87,7 +87,8 @@ intern_bygg_pptx <- function(pptlista,
 
     if (rad$typ == "rapporter") {
       pres <- intern_slide_rapporter(pres, lp, profil, layout = rad$layout, master = rad$master,
-                                     anteckningar = rad$anteckningar)
+                                     anteckningar = rad$anteckningar,
+                                     antal = if (is.na(rad$antal)) 6 else rad$antal)
     } else if (rad$typ == "avslut") {
       pres <- intern_slide_avslut(pres, lp, profil, layout = rad$layout, master = rad$master,
                                   rubrik = rad$rubrik, text = rad$text,
@@ -132,7 +133,8 @@ intern_tom_ppt_lista <- function() {
     titel = character(),
     master = character(),
     mall = character(),
-    txt_size = double())
+    txt_size = double(),
+    antal = integer())
   retur_df$beskr <- list()
   retur_df$gg_obj <- list()
   retur_df$anteckningar <- list()
@@ -226,7 +228,8 @@ intern_tolka_rad <- function(pptlista, i, profil, layouter, antal_befintliga, ut
   }
 
   rad <- list(typ = "generell", layout = NA_character_, master = master, rubrik = rubrik, text = text,
-              bild = bild, txt_size = txt_size, anteckningar = cell("anteckningar"))
+              bild = bild, txt_size = txt_size, anteckningar = cell("anteckningar"),
+              antal = { a <- varde("antal"); if (is.null(a)) NA_integer_ else as.integer(a) })
   finns <- layouter$layout[layouter$master == master]
 
   if (is.null(mall)) {

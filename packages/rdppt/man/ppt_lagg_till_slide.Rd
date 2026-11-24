@@ -20,7 +20,8 @@ ppt_lagg_till_slide(
   fil = NULL,
   slide = NULL,
   anteckningar = NULL,
-  txt_size = NA
+  txt_size = NA,
+  antal_rapporter = 6
 )
 }
 \arguments{
@@ -86,6 +87,9 @@ med en funktion av regionen, \verb{\\(region) mina_anteckningar(region)},
 som körs en gång per region.}
 
 \item{txt_size}{Textstorlek. \code{NA} (standard) = mallens egen.}
+
+\item{antal_rapporter}{För \code{"rapporter"}: högst så många rapporter i varje spalt (interaktiva rapporter,
+analysrapporter och publicerade rapporter). Standard 6. Finns det fler markeras det som ett urval.}
 }
 \value{
 Presentationen, med nya slides tillagda.
@@ -103,7 +107,7 @@ sorter och deras parametrar med \code{\link[=ppt_slidetyper]{ppt_slidetyper()}}:
    \code{"text"} \tab rubrik och text/punktlista \tab \code{rubrik}, \code{text} \cr
    \code{"slutsatser"} \tab rubrik ("Slutsatser") och punktlista \tab \code{text}*, \code{rubrik} \cr
    \code{"avsnitt"} \tab avsnittsrubrik \tab \code{rubrik}*, \code{text} \cr
-   \code{"rapporter"} \tab Samhällsanalys senaste rapporter \tab - \cr
+   \code{"rapporter"} \tab Samhällsanalys rapporter i tre spalter \tab \code{antal_rapporter} \cr
    \code{"avslut"} \tab avslutsbild \tab \code{rubrik}, \code{text} \cr
    \code{"befintlig"} \tab färdiga slides från en pptx-fil \tab \code{fil}, \code{slide} \cr
 }
