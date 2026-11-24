@@ -163,7 +163,7 @@ intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckninga
   yta <- intern_fri_yta(pres, ph[ph$roll == "rubrik", , drop = FALSE], TRUE, marginal = 0.45)
   luft <- 0.35
   bredd <- (yta$width - luft * (length(spalter) - 1)) / length(spalter)
-  lista_hojd <- 3.3
+  lista_hojd <- 3.55
   textstorlek <- 14
 
   for (i in seq_along(spalter)) {
@@ -203,26 +203,24 @@ intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckninga
     pres <- ruta(pres, officer::fpar(officer::ftext(
       if (length(sp$rader) > length(sp$visa)) paste0("Urval – ", length(sp$visa), " av ", length(sp$rader)) else paste0("Alla ", length(sp$rader)),
       stil(12, fet = FALSE, kursiv = TRUE, farg = "#595959"))),
-      vanster, yta$top + 3.9, bredd, 0.35)
+      vanster, yta$top + 4.15, bredd, 0.35)
   }
 
-  pres <- ruta(pres, officer::fpar(
-    officer::ftext("Alla tre typer av rapporter finns på vår landningssida: ", stil(14, fet = FALSE)),
-    lank("shiny.regiondalarna.se", "https://shiny.regiondalarna.se/", 14),
-    fp_p = officer::fp_par(text.align = "center")),
-    yta$left, yta$top + 4.3, yta$width, 0.4)
-  pres <- ruta(pres, officer::fpar(
-    officer::ftext("Samhällsanalys webbsida: ", stil(14, fet = FALSE)),
-    lank("Statistik och rapporter - Samhällsanalys, Region Dalarna",
-         "https://www.regiondalarna.se/verksamhet/regional-utveckling/statistik-och-rapporter/", 14),
-    fp_p = officer::fp_par(text.align = "center")),
-    yta$left, yta$top + 4.7, yta$width, 0.4)
-  pres <- ruta(pres, officer::fpar(
-    officer::ftext("Lyssna på vår podd: ", stil(14, fet = FALSE)),
-    lank("Läget i Dalarna", "https://open.spotify.com/show/74b9qUtR2cT0DNQMAyvlRa", 14),
-    officer::ftext(" – om Dalarnas utveckling baserat på fakta, trender och statistik", stil(14, fet = FALSE)),
-    fp_p = officer::fp_par(text.align = "center")),
-    yta$left, yta$top + 5.1, yta$width, 0.4)
+  # länkarna längst ned: tre block i samma kolumner som listorna, med en rubrik och en länk i varje
+  lankblock <- list(
+    list(rubrik = "Hitta alla våra rapporter", text = "shiny.regiondalarna.se", href = "https://shiny.regiondalarna.se/"),
+    list(rubrik = "Samhällsanalys webbsida", text = "Statistik och rapporter",
+         href = "https://www.regiondalarna.se/verksamhet/regional-utveckling/statistik-och-rapporter/"),
+    list(rubrik = "Lyssna på vår podd", text = "Läget i Dalarna på Spotify",
+         href = "https://open.spotify.com/show/74b9qUtR2cT0DNQMAyvlRa"))
+  blockbredd <- (yta$width - luft * 2) / 3
+  for (i in seq_along(lankblock)) {
+    lb <- lankblock[[i]]
+    pres <- ruta(pres, list(
+      officer::fpar(officer::ftext(lb$rubrik, stil(14, fet = TRUE, farg = "#595959"))),
+      officer::fpar(lank(lb$text, lb$href, 14))) |> do.call(what = officer::block_list),
+      yta$left + (i - 1) * (blockbredd + luft), yta$top + 4.65, blockbredd, 0.85)
+  }
 
   intern_efterbehandla_rapportsida(pres$slide$get_slide(pres$cursor)$get())
   pres

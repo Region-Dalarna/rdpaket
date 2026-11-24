@@ -1,3 +1,9 @@
+# rdppt 0.0.0.9015
+
+* Rapportsidan: länkarna längst ned är tre block i samma kolumner som listorna ("Hitta alla våra rapporter" med
+  shiny.regiondalarna.se, "Samhällsanalys webbsida" och "Lyssna på vår podd") i stället för tre centrerade rader.
+  Det ger listorna mer plats.
+
 # rdppt 0.0.0.9014
 
 * `ppt_ny(visa_manuell_datakalla = FALSE)` döljer meddelandet "Data hämtas från en manuellt underhållen källa ... INTE en live-hämtning" medan presentationens diagram skapas. Standard är att det visas. Kräver rdverktyg >= 0.0.0.9010 för att ha effekt.
