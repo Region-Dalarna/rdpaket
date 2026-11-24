@@ -343,3 +343,27 @@ test_that("ppt_spara() skriver ut hur lång tid presentationen tog", {
   expect_equal(intern_tid_text(192), "3 min 12 s")
   expect_equal(intern_tid_text(3900), "1 h 05 min")
 })
+
+test_that("textstil med storlek ger teckenformatering i xml (officer tappar den utan färg)", {
+  xml <- officer::to_pml(officer::fpar(officer::ftext("a", intern_text_stil(14, fet = TRUE))))
+  expect_match(xml, 'sz="1400"')
+  expect_match(xml, 'b="1"')
+})
+
+test_that("rapportsidan får en spalt per källa som gick att hämta och markerar urval", {
+  mapp <- testmapp()
+  testthat::local_mocked_bindings(
+    rapporter_rd_webb_hamta = function() dplyr::tibble(text = c(paste("Analys", 1:8), paste("Pdf", 1:3)),
+                                                     url = "x", typ = c(rep("webb", 8), rep("pdf", 3))),
+    rapporter_rd_interaktiva_hamta = function() stop("ingen kontakt"))
+  ppt <- ny_testppt() |> ppt_lagg_till_slide("rapporter")
+  fil <- suppressMessages(ppt_spara(ppt, "rapporter.pptx", mapp = mapp))
+  text <- paste(vapply(officer::read_pptx(fil)$slide$get_slide(2)$get() |> xml2::xml_find_all("//*[local-name()='t']"),
+                       xml2::xml_text, ""), collapse = " ")
+  expect_match(text, "Analysrapporter")
+  expect_match(text, "Publicerade rapporter")
+  expect_false(grepl("Interaktiva rapporter", text))
+  expect_match(text, "Urval – alla 8")
+  expect_match(text, "Alla: ")
+  expect_false(grepl("Analys 7", text))
+})

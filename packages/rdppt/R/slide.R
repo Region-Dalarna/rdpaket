@@ -106,51 +106,73 @@ intern_slide_titel <- function(pres, lp, profil, master, huvudrubrik, underrubri
   pres
 }
 
-# Rapportsidan: aktuella rapporter från regiondalarna.se i två spalter (webb och pdf), på mallens
-# tvåspaltiga layout. Går rapporterna inte att hämta hoppas sidan över.
-intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckningar = NULL) {
-  rapporter_rd <- tryCatch(
-    rapporter_rd_webb_hamta(),
-    error = function(e) {
-      message("OBS: Kunde inte hämta rapporter från regiondalarna.se (", conditionMessage(e), "). Rapportsidan hoppas över.")
+# Rapportsidan: tre spalter med Samhällsanalys interaktiva rapporter (appar på shiny.regiondalarna.se),
+# analysrapporter (webb) och publicerade rapporter (pdf), högst `antal` per spalt, och en rad om podden. Spalterna
+# är textrutor under en "endast rubrik"-layout. Det som inte går att hämta lämnas ut; hämtas ingenting alls
+# hoppas sidan över.
+intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckningar = NULL, antal = 6) {
+  hamta <- function(fun, vad) {
+    tryCatch(fun(), error = function(e) {
+      message("OBS: Kunde inte hämta ", vad, " (", conditionMessage(e), "). Spalten hoppas över.")
       NULL
-    }
-  )
-  if (is.null(rapporter_rd)) return(pres)
-
-  # spalterna fylls efter platshållarnas läge: de två övre är spaltrubriker, de två under är
-  # listorna, och en eventuell femte längst ned får länken till webbsidan
-  text_ph <- intern_platshallare(lp, layout, master)
-  text_ph <- text_ph[text_ph$roll == "text", , drop = FALSE]
-  if (nrow(text_ph) < 4) {
-    message("Layouten '", layout, "' har färre än fyra textplatshållare och går inte att använda för rapportsidan. Rapportsidan hoppas över.")
-    return(pres)
+    })
   }
+  rd <- hamta(rapporter_rd_webb_hamta, "rapporter från regiondalarna.se")
+  interaktiva <- hamta(rapporter_rd_interaktiva_hamta, "interaktiva rapporter från shiny.regiondalarna.se")
 
-  spaltrubrik <- function(txt) officer::fpar(officer::ftext(txt, officer::fp_text_lite(font.size = 18, bold = TRUE)))
-  punktlista <- function(typ_varde) {
-    rader <- rapporter_rd$text[rapporter_rd$typ == typ_varde]
-    intern_punktlista(rader, officer::fp_text_lite(font.size = 16))
-  }
-  innehall <- list(spaltrubrik("Analysrapporter"), spaltrubrik("Publicerade rapporter (pdf)"), punktlista("webb"), punktlista("pdf"))
+  statistiksida <- "https://www.regiondalarna.se/verksamhet/regional-utveckling/statistik-och-rapporter/"
+  spalter <- list(
+    list(rubrik = "Interaktiva rapporter", rader = interaktiva$text, alla = "shiny.regiondalarna.se",
+         href = "https://shiny.regiondalarna.se/"),
+    list(rubrik = "Analysrapporter", rader = rd$text[rd$typ == "webb"], alla = "regiondalarna.se",
+         href = statistiksida),
+    list(rubrik = "Publicerade rapporter (pdf)", rader = rd$text[rd$typ == "pdf"], alla = "regiondalarna.se",
+         href = statistiksida))
+  spalter <- Filter(function(sp) length(sp$rader) > 0, spalter)
+  if (length(spalter) == 0) return(pres)
 
-  if (nrow(text_ph) >= 5) {
-    innehall[[5]] <- officer::fpar(
-      officer::ftext("Länk: ", officer::fp_text_lite(font.size = 18)),
-      officer::hyperlink_ftext(
-        "Statistik och rapporter - Samhällsanalys, Region Dalarna",
-        href = "https://www.regiondalarna.se/verksamhet/regional-utveckling/statistik-och-rapporter/",
-        prop = officer::fp_text_lite(color = "blue", underlined = TRUE, font.size = 18)),
-      fp_p = officer::fp_par(text.align = "center"))
-  }
-  names(innehall) <- text_ph$ph_label[seq_along(innehall)]
-
-  intern_lagg_till_slide(
+  pres <- intern_lagg_till_slide(
     pres, lp, profil, layout = layout, master = master,
     rubrik = intern_formaterad("Rapporter", if (is.null(profil$stil)) NULL else 30, profil$stil$farg_rubrik, fet = TRUE),
-    text = innehall,
     anteckningar = anteckningar
   )
+
+  ph <- intern_platshallare(lp, layout, master)
+  yta <- intern_fri_yta(pres, ph[ph$roll == "rubrik", , drop = FALSE], TRUE, marginal = 0.45)
+  luft <- 0.35
+  bredd <- (yta$width - luft * (length(spalter) - 1)) / length(spalter)
+  text_lite <- intern_text_stil
+  ruta <- function(pres, innehall, left, top, width, height) {
+    officer::ph_with(pres, value = innehall, location = officer::ph_location(left = left, top = top, width = width, height = height))
+  }
+
+  for (i in seq_along(spalter)) {
+    sp <- spalter[[i]]
+    vanster <- yta$left + (i - 1) * (bredd + luft)
+    visa <- utils::head(sp$rader, antal)
+    pres <- ruta(pres, officer::fpar(officer::ftext(sp$rubrik, text_lite(18, fet = TRUE))),
+                 vanster, yta$top + 0.1, bredd, 0.45)
+    lista <- do.call(officer::block_list, lapply(visa, function(rad) {
+      officer::fpar(officer::ftext(rad, text_lite(14)), fp_p = officer::fp_par(padding.bottom = 8))
+    }))
+    pres <- ruta(pres, lista, vanster, yta$top + 0.6, bredd, 3.5)
+    urval <- length(sp$rader) > length(visa)
+    pres <- ruta(pres, officer::fpar(
+      officer::ftext(if (urval) paste0("Urval – alla ", length(sp$rader), ": ") else "Alla: ",
+                     text_lite(12, kursiv = TRUE, farg = "#595959")),
+      officer::hyperlink_ftext(sp$alla, href = sp$href,
+                               prop = text_lite(12, farg = "blue", underlined = TRUE))),
+      vanster, yta$top + 4.15, bredd, 0.4)
+  }
+
+  pres <- ruta(pres, officer::fpar(
+    officer::ftext("Lyssna på vår podd: ", text_lite(15)),
+    officer::hyperlink_ftext("Läget i Dalarna", href = "https://open.spotify.com/show/74b9qUtR2cT0DNQMAyvlRa",
+                             prop = text_lite(15, farg = "blue", underlined = TRUE)),
+    officer::ftext(" – om Dalarnas utveckling baserat på fakta, trender och statistik", text_lite(15)),
+    fp_p = officer::fp_par(text.align = "center")),
+    yta$left, yta$top + 4.75, yta$width, 0.45)
+  pres
 }
 
 # Samhällsanalys avslutsbild: "Tack för mig!" med presentatörens namn och e-post, om inget annat anges.
@@ -257,12 +279,18 @@ intern_text_varde <- function(text, txt_size = NA) {
   text[is.na(text)] <- ""
   if (is.null(txt_size) || is.na(txt_size)) return(text)
 
-  stil <- officer::fp_text_lite(font.size = txt_size)
+  stil <- intern_text_stil(txt_size)
   if (length(text) == 1) {
     officer::fpar(officer::ftext(text, stil))
   } else {
     intern_punktlista(text, stil)
   }
+}
+
+# Textstil med storlek (och ev. fet/kursiv/färg). officer 0.7.x skriver ingen teckenformatering alls för en
+# fp_text_lite() utan färg, så färgen anges alltid (svart om inget annat anges).
+intern_text_stil <- function(storlek, fet = NA, kursiv = NA, farg = "#000000", ...) {
+  officer::fp_text_lite(font.size = storlek, bold = fet, italic = kursiv, color = farg, ...)
 }
 
 # Ett stycke per rad, så att punkterna kommer från platshållarens egen punktlista. officer::unordered_list()

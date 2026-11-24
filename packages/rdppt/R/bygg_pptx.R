@@ -261,7 +261,7 @@ intern_tolka_rad <- function(pptlista, i, profil, layouter, antal_befintliga, ut
 
   } else if (mall == "Rapporter_Samhallsanalys") {
     rad$typ <- "rapporter"
-    rad$layout <- intern_roll_layout(profil, "jamforelse")
+    rad$layout <- intern_roll_layout(profil, "bild_rubrik")
 
   } else if (mall == "Avslutsbild_Samhallsanalys") {
     rad$typ <- "avslut"

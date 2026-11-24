@@ -1,3 +1,15 @@
+# rdppt 0.0.0.9010
+
+* Rapportsidan (`ppt_lagg_till_slide("rapporter")`) har tre spalter: interaktiva rapporter (de sex första på
+  shiny.regiondalarna.se), analysrapporter och publicerade rapporter (pdf), högst sex per spalt. Under varje spalt
+  står att det är ett urval, hur många som finns och en länk till alla. Längst ned finns en rad om podden
+  Läget i Dalarna. Spalter som inte går att hämta lämnas ut. Nya `rapporter_rd_interaktiva_hamta()` läser
+  landningssidan. Sidan använder layouten "Endast rubrik" (rollen `bild_rubrik`) i stället för "Jämförelse".
+
+* Rättelse till 9009: teckenstorleken på rapportsidan och i `txt_size`-text med flera rader kom ändå inte med, eftersom
+  officer 0.7.x inte skriver någon teckenformatering för `fp_text_lite()` utan färg. Formateringen görs nu av
+  `intern_text_stil()`, som alltid anger färg (svart om inget annat anges).
+
 # rdppt 0.0.0.9009
 
 * `ppt_spara()` skriver ut hur lång tid det tog att skapa presentationen (från `ppt_ny()`).

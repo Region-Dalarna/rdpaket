@@ -95,3 +95,21 @@ rapporter_rd_webb_hamta <- function() {
 
   return(retur_df)
 }
+
+#' Hämta Region Dalarnas interaktiva rapporter för en "Rapporter"-slide
+#'
+#' Läser landningssidan för Samhällsanalys interaktiva rapporter (shiny.regiondalarna.se) och
+#' returnerar apparna i den ordning de står på sidan, för `ppt_lagg_till_slide("rapporter")`.
+#'
+#' @param url Landningssidans adress.
+#' @return En `tibble` med kolumnerna `text` (appens namn) och `url`.
+#' @export
+rapporter_rd_interaktiva_hamta <- function(url = "https://shiny.regiondalarna.se/") {
+  sida <- rvest::read_html(url)
+  kort <- rvest::html_elements(sida, xpath = "//*[@id='interaktiva']//a[@href]")
+  if (length(kort) == 0) stop("Hittade inga interaktiva rapporter på ", url, call. = FALSE)
+  dplyr::tibble(
+    text = rvest::html_text(rvest::html_element(kort, xpath = "./div/div[1]"), trim = TRUE),
+    url = xml2::url_absolute(rvest::html_attr(kort, "href"), url)
+  )
+}
