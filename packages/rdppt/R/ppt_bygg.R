@@ -32,6 +32,11 @@
 #'   presentationen byggs (ett diagram som hoppas över, och varför) loggas
 #'   fortlöpande. `NULL` (standard) = `options(rdppt.loggfil)`, annars ingen
 #'   loggfil. Problemen sammanfattas också när presentationen sparas.
+#' @param visa_manuell_datakalla `TRUE` (standard) låter diagramfunktionerna skriva ut meddelandet om att en
+#'   fil eller mapp är manuellt underhållen och kan vara inaktuell. `FALSE` döljer det medan presentationens
+#'   diagram skapas, för en renare konsol när du vet vilka källor som används. Gäller bara den här
+#'   presentationen; i övrigt styrs det av `options(rdverktyg.visa_manuell_datakalla)`, se
+#'   [rdverktyg::visa_manuell_datakalla_info()].
 #'
 #' @return En presentation (klassen `rdppt`) att bygga vidare på.
 #' @examples
@@ -52,7 +57,8 @@ ppt_ny <- function(huvudrubrik = NULL,
                    anv_uppgifter = NULL,
                    rubrik_namn = TRUE,
                    stil = NULL,
-                   loggfil = NULL) {
+                   loggfil = NULL,
+                   visa_manuell_datakalla = TRUE) {
 
   profil <- intern_mall_aktuell(mall)
   message("rdppt: ny presentation påbörjad", if (intern_har_innehall(huvudrubrik)) paste0(": ", huvudrubrik) else "", ".")
@@ -79,6 +85,7 @@ ppt_ny <- function(huvudrubrik = NULL,
       rubrik_namn = rubrik_namn,
       grundfil = NULL,
       loggfil = loggfil,
+      visa_manuell_datakalla = visa_manuell_datakalla,
       logg = intern_tom_logg(),
       slides = intern_tom_ppt_lista()
     ),
@@ -148,6 +155,12 @@ intern_ppt_diagram <- function(ppt, funktion, funktion_namn, argument, region_ve
     as.list(region_vekt)
   } else {
     list(region_vekt)
+  }
+
+  # meddelandet om manuellt underhållna datakällor kan stängas av för hela presentationen
+  if (isFALSE(ppt$visa_manuell_datakalla)) {
+    gammalt <- options(rdverktyg.visa_manuell_datakalla = FALSE)
+    on.exit(options(gammalt), add = TRUE)
   }
 
   antal_fore <- nrow(ppt$slides)

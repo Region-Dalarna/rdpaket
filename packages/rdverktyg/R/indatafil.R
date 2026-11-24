@@ -38,15 +38,43 @@ sakerstall_indatafil <- function(sokvag) {
 #' garanterat aktuellt. Används av funktioner som läser in en sådan källa,
 #' så att den som kör funktionen alltid får samma tydliga varning.
 #'
+#' Meddelandet kan stängas av med `options(rdverktyg.visa_manuell_datakalla = FALSE)`
+#' (eller [visa_manuell_datakalla_info()]), t.ex. överst i ett skript som
+#' skapar en presentation och där du vet vilka källor som används.
+#' Standard är att meddelandet visas.
+#'
 #' @param kalla Sökväg, mapp eller url till den manuellt underhållna
 #'   källan - skrivs ut i meddelandet.
+#' @param visa `TRUE` visar meddelandet, `FALSE` döljer det. Standard följer
+#'   `options(rdverktyg.visa_manuell_datakalla)`, som är `TRUE` om den inte är satt.
 #' @return `NULL` (osynligt). Funktionen anropas för sin konsol-utskrift.
+#' @seealso [visa_manuell_datakalla_info()]
 #' @export
-meddela_manuell_datakalla <- function(kalla) {
+meddela_manuell_datakalla <- function(kalla, visa = getOption("rdverktyg.visa_manuell_datakalla", TRUE)) {
+  if (!isTRUE(visa)) return(invisible(NULL))
   message(
     "Data hämtas från en manuellt underhållen källa:\n  ", kalla,
     "\nDetta är INTE en live-hämtning mot ett API eller en automatisk ",
     "generering - innehållet är en ögonblicksbild som kan vara inaktuell ",
     "och måste uppdateras manuellt vid behov."
   )
+  invisible(NULL)
+}
+
+#' Slå på eller av meddelandet om manuellt underhållna datakällor
+#'
+#' Sätter `options(rdverktyg.visa_manuell_datakalla)`, som styr om
+#' [meddela_manuell_datakalla()] (och därmed alla `diag_*()`-funktioner och
+#' datahämtare som läser en manuellt underhållen fil eller mapp) skriver ut
+#' sitt meddelande. Meddelandet är påslaget som standard.
+#'
+#' @param visa `TRUE` (standard) visar meddelandet, `FALSE` döljer det.
+#' @return Det tidigare värdet (osynligt), som kan skickas in igen för att återställa.
+#' @examples
+#' \dontrun{
+#' visa_manuell_datakalla_info(FALSE)   # renare konsol i ett ppt-skript
+#' }
+#' @export
+visa_manuell_datakalla_info <- function(visa = TRUE) {
+  invisible(options(rdverktyg.visa_manuell_datakalla = isTRUE(visa))[[1]])
 }

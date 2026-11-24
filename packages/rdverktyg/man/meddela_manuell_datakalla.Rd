@@ -4,11 +4,17 @@
 \alias{meddela_manuell_datakalla}
 \title{Varna om att data/en mall kommer från en manuellt underhållen källa}
 \usage{
-meddela_manuell_datakalla(kalla)
+meddela_manuell_datakalla(
+  kalla,
+  visa = getOption("rdverktyg.visa_manuell_datakalla", TRUE)
+)
 }
 \arguments{
 \item{kalla}{Sökväg, mapp eller url till den manuellt underhållna
 källan - skrivs ut i meddelandet.}
+
+\item{visa}{\code{TRUE} visar meddelandet, \code{FALSE} döljer det. Standard följer
+\code{options(rdverktyg.visa_manuell_datakalla)}, som är \code{TRUE} om den inte är satt.}
 }
 \value{
 \code{NULL} (osynligt). Funktionen anropas för sin konsol-utskrift.
@@ -19,4 +25,13 @@ mapp eller url) är manuellt underhållen i stället för att hämtas live
 eller genereras automatiskt - och att innehållet därför inte är
 garanterat aktuellt. Används av funktioner som läser in en sådan källa,
 så att den som kör funktionen alltid får samma tydliga varning.
+}
+\details{
+Meddelandet kan stängas av med \code{options(rdverktyg.visa_manuell_datakalla = FALSE)}
+(eller \code{\link[=visa_manuell_datakalla_info]{visa_manuell_datakalla_info()}}), t.ex. överst i ett skript som
+skapar en presentation och där du vet vilka källor som används.
+Standard är att meddelandet visas.
+}
+\seealso{
+\code{\link[=visa_manuell_datakalla_info]{visa_manuell_datakalla_info()}}
 }

@@ -1,3 +1,7 @@
+# rdhamtadata 0.0.0.9005
+
+* `hamta_befprognos_data()` använder `rdverktyg::meddela_manuell_datakalla()` för meddelandet om lokala Profet-/Halland-mappar, så att det kan stängas av med `options(rdverktyg.visa_manuell_datakalla = FALSE)`. Meddelandets text är samma som för övriga manuella källor.
+
 # rdhamtadata 0.0.0.9004
 
 * Fixar `hamta_befprognos_data()` mot mappar med Excel-filer från Hallands

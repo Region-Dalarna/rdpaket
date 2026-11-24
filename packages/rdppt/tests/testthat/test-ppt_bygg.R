@@ -418,3 +418,16 @@ test_that("rapportsidan fylls med så många rapporter som ryms, och listorna f�
   expect_equal(intern_antal_som_ryms(character(0), 4, 3, 14), 0L)
   expect_equal(intern_antal_som_ryms(lang, 4, 3, 14, max = 2), 2L)
 })
+
+test_that("ppt_ny(visa_manuell_datakalla = FALSE) döljer datakällsmeddelandet bara under diagramkörningen", {
+  visas <- NULL
+  diagram <- function(region_vekt, utmapp, skriv_diagramfil) {
+    visas <<- c(visas, getOption("rdverktyg.visa_manuell_datakalla", TRUE))
+    testdiagram(region_vekt = region_vekt, utmapp = utmapp, skriv_diagramfil = skriv_diagramfil)
+  }
+  withr::local_options(rdverktyg.visa_manuell_datakalla = NULL)
+  suppressMessages(ny_testppt(visa_manuell_datakalla = FALSE) |> ppt_lagg_till_slide("diagram", funktion = diagram, region_vekt = "20"))
+  suppressMessages(ny_testppt() |> ppt_lagg_till_slide("diagram", funktion = diagram, region_vekt = "20"))
+  expect_equal(visas, c(FALSE, TRUE))
+  expect_null(getOption("rdverktyg.visa_manuell_datakalla"))
+})

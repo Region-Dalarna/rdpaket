@@ -1,3 +1,8 @@
+# rdverktyg 0.0.0.9010
+
+* Meddelandet från `meddela_manuell_datakalla()` ("Data hämtas från en manuellt underhållen källa ... INTE en live-hämtning") kan stängas av med `options(rdverktyg.visa_manuell_datakalla = FALSE)`, med parametern `visa` eller med nya `visa_manuell_datakalla_info(FALSE)`. Standard är att det visas.
+* Det gäller alla `diag_*()`-funktioner i rddiagramkatalog som läser en manuellt underhållen fil eller mapp.
+
 # rdverktyg 0.0.0.9009
 
 * `rdpaket_uppdatera_alla()` kollar nu också `rdppt` och `rdhamtadata`,

@@ -62,14 +62,7 @@ hamta_befprognos_data <- function(
   # (live-API) - samma typ av konsolvarning som alla andra diag_*()-funktioner i rddiagramkatalog ger
   # när de läser en manuell fil, så att ingen missar att datan är en ögonblicksbild.
   lokala_mappar <- url_prognos_vektor[!stringr::str_detect(url_prognos_vektor, "^https://")]
-  for (mapp in lokala_mappar) {
-    message(
-      "Data hämtas från en manuellt underhållen mapp:\n  ", mapp,
-      "\nDetta är INTE en live-hämtning mot ett API - innehållet är en ",
-      "ögonblicksbild som kan vara inaktuell och måste uppdateras manuellt ",
-      "vid behov."
-    )
-  }
+  for (mapp in lokala_mappar) rdverktyg::meddela_manuell_datakalla(mapp)
 
   hamta_url_rad_i_vektor <- function(hamta_url) {
 

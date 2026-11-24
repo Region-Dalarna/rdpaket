@@ -12,7 +12,8 @@ ppt_ny(
   anv_uppgifter = NULL,
   rubrik_namn = TRUE,
   stil = NULL,
-  loggfil = NULL
+  loggfil = NULL,
+  visa_manuell_datakalla = TRUE
 )
 }
 \arguments{
@@ -49,6 +50,12 @@ anges får mallens stil (se \code{\link[=ppt_mallprofil]{ppt_mallprofil()}}) och
 presentationen byggs (ett diagram som hoppas över, och varför) loggas
 fortlöpande. \code{NULL} (standard) = \code{options(rdppt.loggfil)}, annars ingen
 loggfil. Problemen sammanfattas också när presentationen sparas.}
+
+\item{visa_manuell_datakalla}{\code{TRUE} (standard) låter diagramfunktionerna skriva ut meddelandet om att en
+fil eller mapp är manuellt underhållen och kan vara inaktuell. \code{FALSE} döljer det medan presentationens
+diagram skapas, för en renare konsol när du vet vilka källor som används. Gäller bara den här
+presentationen; i övrigt styrs det av \code{options(rdverktyg.visa_manuell_datakalla)}, se
+\code{\link[rdverktyg:visa_manuell_datakalla_info]{rdverktyg::visa_manuell_datakalla_info()}}.}
 }
 \value{
 En presentation (klassen \code{rdppt}) att bygga vidare på.

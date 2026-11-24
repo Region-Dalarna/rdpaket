@@ -1,3 +1,7 @@
+# rdppt 0.0.0.9014
+
+* `ppt_ny(visa_manuell_datakalla = FALSE)` döljer meddelandet "Data hämtas från en manuellt underhållen källa ... INTE en live-hämtning" medan presentationens diagram skapas. Standard är att det visas. Kräver rdverktyg >= 0.0.0.9010 för att ha effekt.
+
 # rdppt 0.0.0.9013
 
 * Rapportsidan: listorna är punktlistor, och varje spalt fylls med så många rapporter som ryms (bredden mäts i
