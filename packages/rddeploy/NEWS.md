@@ -1,9 +1,14 @@
+# rddeploy 0.0.0.9029
+
+- Byggkontrollen (se 0.0.0.9028) varnar inte längre för "fel Rtools-version" - jämförelsen byggde på ett antagande
+  om att varje R-version har en egen Rtools, vilket inte stämmer. Kvar är kontrollen av mellanslag i sökvägen.
+
 # rddeploy 0.0.0.9028
 
 - `shinyapp_skapa_med_github_repo()` kontrollerar byggverktygen (Rtools) på Windows innan något skapas. Ligger Rtools
   i en sökväg med mellanslag (t.ex. `C:/Program Files/rtools45`) avbryts funktionen med ett tydligt meddelande
   i stället för ett kompileringsfel efter flera minuter (`systemfonts`, `gdtools` och `ggiraph` byggs från
-  källkod och går då inte att kompilera). Rtools för en annan R-version än den som körs ger en varning.
+  källkod och går då inte att kompilera).
   Kontrollen kan stängas av med `options(rddeploy.hoppa_byggkontroll = TRUE)`.
 
 # rddeploy 0.0.0.9027

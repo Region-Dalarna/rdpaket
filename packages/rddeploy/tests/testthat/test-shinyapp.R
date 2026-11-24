@@ -70,23 +70,18 @@ test_that("intern_scaffold_meta skriver target i _publicering_till_server.yml", 
   expect_true(file.exists(file.path(sokvag, "README.md")))
 })
 
-test_that("intern_byggverktyg_problem: mellanslag är fel, fel Rtools-version är varning", {
+test_that("intern_byggverktyg_problem: mellanslag i sökvägen är fel, saknad make är varning", {
   # inte Windows: ingenting att kontrollera
-  expect_length(intern_byggverktyg_problem("C:/Program Files/rtools45/usr/bin/make.exe", "4.6", windows = FALSE)$fel, 0)
+  expect_length(intern_byggverktyg_problem("C:/Program Files/rtools45/usr/bin/make.exe", windows = FALSE)$fel, 0)
 
-  ok <- intern_byggverktyg_problem("C:/rtools46/usr/bin/make.exe", "4.6", windows = TRUE)
+  ok <- intern_byggverktyg_problem("C:/rtools45/usr/bin/make.exe", windows = TRUE)
   expect_length(ok$fel, 0)
   expect_length(ok$varning, 0)
 
-  mellanslag <- intern_byggverktyg_problem("C:/Program Files/rtools45/usr/bin/make.exe", "4.5", windows = TRUE)
+  mellanslag <- intern_byggverktyg_problem("C:\\Program Files\\rtools45\\usr\\bin\\make.exe", windows = TRUE)
   expect_match(mellanslag$fel, "mellanslag")
-  expect_length(mellanslag$varning, 0)
 
-  fel_version <- intern_byggverktyg_problem("C:/rtools45/usr/bin/make.exe", "4.6", windows = TRUE)
-  expect_length(fel_version$fel, 0)
-  expect_match(fel_version$varning, "rtools45.*rtools46")
-
-  saknas <- intern_byggverktyg_problem("", "4.6", windows = TRUE)
+  saknas <- intern_byggverktyg_problem("", windows = TRUE)
   expect_length(saknas$fel, 0)
   expect_match(saknas$varning, "make.exe")
 })
