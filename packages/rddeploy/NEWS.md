@@ -1,3 +1,10 @@
+# rddeploy 0.0.0.9030
+
+- `shinyapp_skapa_med_github_repo()` på Windows: CRAN-paketen installeras i första hand som färdiga binärer
+  (`renv::install(type = "binary")`), så att Rtools inte behövs. Misslyckas det (t.ex. att en binär saknas) provas
+  vanlig installation som bygger från källkod. Orsak: `systemfonts`, `gdtools` och `ggiraph` byggdes från källkod
+  och kompileringen föll på en dator utan användbar Rtools, trots att binärer finns på CRAN.
+
 # rddeploy 0.0.0.9029
 
 - Byggkontrollen (se 0.0.0.9028) varnar inte längre för "fel Rtools-version" - jämförelsen byggde på ett antagande

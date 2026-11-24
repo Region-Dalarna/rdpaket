@@ -172,11 +172,24 @@ intern_scaffold_renv <- function(sokvag, telemetri = TRUE) {
                                           which = c("Depends", "Imports", "LinkingTo"),
                                           recursive = TRUE)
       alla <- setdiff(unique(c(packages, unlist(deps, use.names = FALSE))), c("R", NA))
-      renv::install(alla, project = project,
-                    library = renv::paths$library(project = project), prompt = FALSE)
+      lib <- renv::paths$library(project = project)
+      # Windows: installera färdiga binärer (kräver inte Rtools). Faller binärinstallationen, eller saknas binärer
+      # för något paket, provas vanlig installation (som bygger från källkod och då kräver Rtools).
+      klart <- FALSE
+      if (.Platform$OS.type == "windows") {
+        klart <- tryCatch({
+          renv::install(alla, type = "binary", project = project, library = lib, prompt = FALSE)
+          TRUE
+        }, error = function(e) {
+          message("Installation av färdiga binärer räckte inte (", conditionMessage(e),
+                  "), provar att bygga från källkod.")
+          FALSE
+        })
+      }
+      if (!klart) renv::install(alla, project = project, library = lib, prompt = FALSE)
       if (isTRUE(telemetri)) {
         renv::install("Region-Dalarna/rdpaket/packages/rdshinyappar", project = project,
-                      library = renv::paths$library(project = project), prompt = FALSE)
+                      library = lib, prompt = FALSE)
       }
       renv::snapshot(project = project, prompt = FALSE)
       renv::restore(project = project, prompt = FALSE)
