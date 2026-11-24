@@ -70,18 +70,21 @@ test_that("intern_scaffold_meta skriver target i _publicering_till_server.yml", 
   expect_true(file.exists(file.path(sokvag, "README.md")))
 })
 
-test_that("intern_byggverktyg_problem: mellanslag i sökvägen är fel, saknad make är varning", {
-  # inte Windows: ingenting att kontrollera
-  expect_length(intern_byggverktyg_problem("C:/Program Files/rtools45/usr/bin/make.exe", windows = FALSE)$fel, 0)
+test_that("intern_byggverktyg_problem: bara när binärer saknas, och då fel vid saknad Rtools eller mellanslag", {
+  # alla paket har binär: Rtools behövs inte, ens med mellanslag i sökvägen
+  expect_null(intern_byggverktyg_problem("C:/Program Files/rtools45/usr/bin/make.exe", character(), windows = TRUE))
+  # inte Windows
+  expect_null(intern_byggverktyg_problem("", "systemfonts", windows = FALSE))
 
-  ok <- intern_byggverktyg_problem("C:/rtools45/usr/bin/make.exe", windows = TRUE)
-  expect_length(ok$fel, 0)
-  expect_length(ok$varning, 0)
+  expect_null(intern_byggverktyg_problem("C:/rtools45/usr/bin/make.exe", "systemfonts", windows = TRUE))
+  expect_match(intern_byggverktyg_problem("C:/Program Files/rtools45/usr/bin/make.exe", c("gdtools", "systemfonts"), windows = TRUE),
+               "gdtools, systemfonts.*mellanslag")
+  expect_match(intern_byggverktyg_problem("C:\\Program Files\\rtools45\\usr\\bin\\make.exe", "systemfonts", windows = TRUE),
+               "mellanslag")
+  expect_match(intern_byggverktyg_problem("", "systemfonts", windows = TRUE), "Rtools hittas inte")
+})
 
-  mellanslag <- intern_byggverktyg_problem("C:\\Program Files\\rtools45\\usr\\bin\\make.exe", windows = TRUE)
-  expect_match(mellanslag$fel, "mellanslag")
-
-  saknas <- intern_byggverktyg_problem("", windows = TRUE)
-  expect_length(saknas$fel, 0)
-  expect_match(saknas$varning, "make.exe")
+test_that("intern_scaffold_grundpaket tar med shiny.telemetry bara vid telemetri", {
+  expect_true("shiny.telemetry" %in% intern_scaffold_grundpaket(TRUE))
+  expect_false("shiny.telemetry" %in% intern_scaffold_grundpaket(FALSE))
 })

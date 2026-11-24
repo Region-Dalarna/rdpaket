@@ -103,41 +103,54 @@ intern_pat_for_telemetri <- function() {
   })
 }
 
-# Kontroll av byggverktyg (Rtools) på Windows innan renv-bootstrap. Paket som saknar färdig binär byggs från
-# källkod (t.ex. systemfonts, gdtools och ggiraph), och då går bygget fel om Rtools ligger i en sökväg med
-# mellanslag (typiskt C:/Program Files/rtools45) - freetype-flaggorna skickas vidare utan citattecken.
-# Ren funktion så att den går att testa: returnerar list(fel = , varning = ) med textvektorer.
-intern_byggverktyg_problem <- function(make_sokvag, windows = .Platform$OS.type == "windows") {
-  res <- list(fel = character(), varning = character())
-  if (!isTRUE(windows)) return(res)
+# Paketen som appens renv-bibliotek byggs av (grundpaket, plus shiny.telemetry vid telemetri).
+intern_scaffold_grundpaket <- function(telemetri = TRUE) {
+  c("shiny", "shinyjs", "shinyWidgets", "DT", "ggiraph", "dplyr",
+    "tidyr", "readr", "ggplot2", "DBI", "RPostgres", "sf",
+    if (isTRUE(telemetri)) "shiny.telemetry")
+}
 
+# Paket (inklusive beroenden) som saknar färdig binär på CRAN för den R-version som körs, och därför måste
+# byggas från källkod. NULL om det inte går att avgöra (t.ex. inget nätverk) - då avbryts inget.
+intern_paket_utan_binar <- function(paket, repo = "https://cloud.r-project.org") {
+  tryCatch({
+    kalla <- utils::available.packages(contriburl = utils::contrib.url(repo, "source"))
+    binar <- utils::available.packages(contriburl = utils::contrib.url(repo, "win.binary"), type = "win.binary")
+    beroenden <- tools::package_dependencies(paket, db = kalla,
+                                             which = c("Depends", "Imports", "LinkingTo"), recursive = TRUE)
+    alla <- setdiff(unique(c(paket, unlist(beroenden, use.names = FALSE))), c("R", NA))
+    basis <- rownames(utils::installed.packages(priority = c("base", "recommended")))
+    sort(setdiff(alla, c(rownames(binar), basis)))
+  }, error = function(e) NULL, warning = function(w) NULL)
+}
+
+# Kontroll av byggverktyg (Rtools) på Windows innan renv-bootstrap, och bara om något paket saknar färdig binär
+# och därmed måste byggas från källkod (t.ex. systemfonts, gdtools och ggiraph när binärer saknas). Då går bygget
+# fel om Rtools saknas, eller ligger i en sökväg med mellanslag (typiskt C:/Program Files/rtools45) - freetype-
+# flaggorna skickas vidare utan citattecken. Ren funktion så att den går att testa: returnerar en text vid fel.
+intern_byggverktyg_problem <- function(make_sokvag, paket_utan_binar, windows = .Platform$OS.type == "windows") {
+  if (!isTRUE(windows) || length(paket_utan_binar) == 0) return(NULL)
+  lista <- paste(paket_utan_binar, collapse = ", ")
   if (!nzchar(make_sokvag)) {
-    res$varning <- "Hittar inte Rtools (make.exe). Paket som saknar färdig binär kan då inte byggas."
-    return(res)
+    return(paste0("Det saknas färdig binär för ", lista, ", så de måste byggas från källkod, men Rtools hittas inte."))
   }
   sokvag <- gsub("\\\\", "/", make_sokvag)
   if (grepl(" ", sokvag, fixed = TRUE)) {
-    res$fel <- paste0("Rtools ligger i en sökväg med mellanslag: ", sokvag)
+    return(paste0("Det saknas färdig binär för ", lista, ", så de måste byggas från källkod, men Rtools ligger i en sökväg med mellanslag (", sokvag, ")."))
   }
-  res
+  NULL
 }
 
-intern_kontrollera_byggverktyg <- function() {
-  if (isTRUE(getOption("rddeploy.hoppa_byggkontroll"))) return(invisible(NULL))
+intern_kontrollera_byggverktyg <- function(telemetri = TRUE) {
+  if (isTRUE(getOption("rddeploy.hoppa_byggkontroll")) || .Platform$OS.type != "windows") return(invisible(NULL))
+  utan_binar <- intern_paket_utan_binar(intern_scaffold_grundpaket(telemetri))
   make <- Sys.which("make")
   make <- if (nzchar(make)) normalizePath(make, winslash = "/", mustWork = FALSE) else ""
-  problem <- intern_byggverktyg_problem(make)
-  for (v in problem$varning) {
-    cli::cli_warn(c(
-      "{v}",
-      "i" = "Installera Rtools från CRAN om paketinstallationen misslyckas."
-    ))
-  }
-  if (length(problem$fel) > 0) {
+  fel <- intern_byggverktyg_problem(make, utan_binar)
+  if (!is.null(fel)) {
     cli::cli_abort(c(
-      "Paketen i det nya projektet kan inte byggas: {problem$fel}",
-      "i" = "Mellanslag i sökvägen gör att {.pkg systemfonts}, {.pkg gdtools} och {.pkg ggiraph} inte går att kompilera.",
-      "i" = "Installera om Rtools på en sökväg utan mellanslag (standardplatsen, t.ex. {.path C:/rtools45}), starta om R och försök igen.",
+      "Paketen i det nya projektet går inte att installera: {fel}",
+      "i" = "Inget har skapats. Att installera om Rtools på en sökväg utan mellanslag (standardplatsen, t.ex. {.path C:/rtools45}) löser det, annars behövs färdiga binärer (kontrollera {.code getOption(\"pkgType\")} och {.code getOption(\"repos\")}).",
       "i" = "Vill du ändå fortsätta, sätt {.code options(rddeploy.hoppa_byggkontroll = TRUE)}."
     ))
   }
@@ -150,9 +163,7 @@ intern_scaffold_renv <- function(sokvag, telemetri = TRUE) {
   if (!requireNamespace("renv", quietly = TRUE) || !requireNamespace("callr", quietly = TRUE)) {
     cli::cli_abort("Paketen {.pkg renv} och {.pkg callr} krävs för renv-bootstrap.")
   }
-  paket_app <- c("shiny", "shinyjs", "shinyWidgets", "DT", "ggiraph", "dplyr",
-                 "tidyr", "readr", "ggplot2", "DBI", "RPostgres", "sf",
-                 if (isTRUE(telemetri)) "shiny.telemetry")
+  paket_app <- intern_scaffold_grundpaket(telemetri)
 
   # rdshinyappar (behövs för skapa_telemetry()/telemetri_ui()/telemetri_server(),
   # som global.R/ui.R/server.R anropar när telemetri = TRUE) finns bara på GitHub,
@@ -315,7 +326,7 @@ shinyapp_skapa_med_github_repo <- function(github_repo,
   # Kontrollera token INNAN något skapas, så att ett fel inte lämnar ett halvfärdigt projekt
   if (isTRUE(initiera_renv) && isTRUE(cfg$telemetri)) invisible(intern_pat_for_telemetri())
   # ... och kontrollera att paket går att bygga (Rtools) innan något skapas
-  if (isTRUE(initiera_renv)) intern_kontrollera_byggverktyg()
+  if (isTRUE(initiera_renv)) intern_kontrollera_byggverktyg(cfg$telemetri)
 
   intern_preflight(sokvag, cfg$grundsokvag, force,
                    extra = if (initiera_renv) "renv-bibliotek (kan ta några minuter)")

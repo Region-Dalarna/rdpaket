@@ -1,3 +1,10 @@
+# rddeploy 0.0.0.9031
+
+- Byggkontrollen i `shinyapp_skapa_med_github_repo()` (Windows) körs nu bara om något av paketen, eller deras
+  beroenden, saknar färdig binär på CRAN för aktuell R-version. Då avbryts funktionen, innan något skapas,
+  om Rtools saknas eller ligger i en sökväg med mellanslag, och meddelandet nämner vilka paket det gäller.
+  Finns binärer för allt behövs ingen Rtools och kontrollen släpper igenom.
+
 # rddeploy 0.0.0.9030
 
 - `shinyapp_skapa_med_github_repo()` på Windows: CRAN-paketen installeras i första hand som färdiga binärer
