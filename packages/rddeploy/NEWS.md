@@ -1,3 +1,14 @@
+# rddeploy 0.0.0.9032
+
+- Mallarna `deploy.yml` och `avpublicera.yml` (Shiny-appar) är korta: de anropar bara serverns skript
+  `shiny_deploy.sh` respektive `shiny_avpublicera.sh` (serverdrift), som gör allt efterarbete på servern:
+  `touch restart.txt` (appens R-processer byts ut vid nästa besök, ingen omstart av hela Shiny Server vid deploy),
+  landningssida, app-lista och, vid avpublicering, borttagning och omstart. Tidigare låg stegen i varje apps
+  workflow och en publicering av flera appar gav en omstart av hela servern per app.
+- Ny `shinyapp_uppdatera_workflows()` för att föra ut de nya workflows till befintliga app-repon (torrkörning
+  som standard; hoppar över repon med ohanterade ändringar eller en `deploy.yml` som inte kommer från mallen).
+  Kör den först när serverdrift med `shiny_avpublicera.sh` är utrullat på båda servrarna.
+
 # rddeploy 0.0.0.9031
 
 - Byggkontrollen i `shinyapp_skapa_med_github_repo()` (Windows) körs nu bara om något av paketen, eller deras

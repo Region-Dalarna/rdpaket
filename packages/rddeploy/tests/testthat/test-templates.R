@@ -25,3 +25,17 @@ test_that("intern_skriv_mall skriver ifylld fil", {
                     list(target = "intern"))
   expect_match(paste(readLines(tmp), collapse = "\n"), "target: intern")
 })
+
+test_that("deploy.yml och avpublicera.yml anropar serverns skript och startar inte om hela servern", {
+  deploy <- intern_las_mall("shinyapp", "deploy.yml", list(temp_dir_suffix = ""))
+  expect_match(deploy, "/usr/local/bin/shiny_deploy.sh", fixed = TRUE)
+  expect_no_match(deploy, "systemctl restart", fixed = TRUE)
+  expect_no_match(deploy, "generera_landningssida", fixed = TRUE)
+  avpub <- intern_las_mall("shinyapp", "avpublicera.yml")
+  expect_match(avpub, "/usr/local/bin/shiny_avpublicera.sh", fixed = TRUE)
+  expect_no_match(avpub, "rm -rf", fixed = TRUE)
+  expect_no_match(avpub, "systemctl restart", fixed = TRUE)
+  skip_if_not_installed("yaml")
+  expect_no_error(yaml::yaml.load(deploy))
+  expect_no_error(yaml::yaml.load(avpub))
+})
