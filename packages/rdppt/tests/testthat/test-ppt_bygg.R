@@ -367,7 +367,7 @@ test_that("rapportsidan får en spalt per källa som gick att hämta och markera
   expect_match(text, "Alla 3")
   expect_false(grepl("Analys 7", text))
   expect_match(text, "shiny.regiondalarna.se")
-  expect_match(text, "Statistik och rapporter")
+  expect_match(text, "samhallsanalys.regiondalarna.se")
 
   # antal_rapporter styr hur många som visas
   ppt3 <- ny_testppt() |> ppt_lagg_till_slide("rapporter", antal_rapporter = 3)

@@ -1,3 +1,7 @@
+# rdppt 0.0.0.9016
+
+* Rapportsidan: länken under "Samhällsanalys webbsida" visar nu samhallsanalys.regiondalarna.se och går dit.
+
 # rdppt 0.0.0.9015
 
 * Rapportsidan: länkarna längst ned är tre block i samma kolumner som listorna ("Här finns alla våra rapporter" med
