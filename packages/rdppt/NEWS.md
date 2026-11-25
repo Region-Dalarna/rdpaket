@@ -1,3 +1,8 @@
+# rdppt 0.0.0.9020
+
+* `ppt_spara()`: utan angiven person får filnamnet den inloggades förnamn (`namn_peter.pptx`), om det går att slå upp.
+* `ppt_forhandsvisa()` / `ppt_befintlig_visa(bilder = TRUE)`: PowerPoint styrs nu utan en .ps1-fil, så det fungerar även på datorer där körpolicyn kräver signerade skript.
+
 # rdppt 0.0.0.9019
 
 * Ny `ppt_regioner(region_vekt)`: länskoder, kommunkoder, regionnamn och färdiga texter (uppräkning med Dalarna sist, genitiv, filnamn).

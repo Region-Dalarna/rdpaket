@@ -104,25 +104,35 @@ intern_rendera_slides <- function(fil, mapp, bredd) {
 
 # PowerPoint styrs via PowerShell. Filen öppnas skrivskyddad och utan fönster. PowerPoint stängs bara
 # om den inte redan var igång med andra presentationer öppna.
+# Skriptet körs inte som en .ps1-fil med -File: många datorer har en körpolicy som kräver signerade skript
+# ("is not digitally signed") och den går inte att kringgå med -ExecutionPolicy Bypass. Körpolicyn gäller bara
+# skriptfiler, så skriptets text läses in och körs som ett skriptblock i stället.
 intern_rendera_powerpoint <- function(fil, mapp, bredd, hojd) {
-  skript <- tempfile(fileext = ".ps1")
-  on.exit(unlink(skript))
-  writeLines(c(
-    "param([string]$fil, [string]$mapp, [int]$bredd, [int]$hojd)",
+  skriptfil <- tempfile(fileext = ".txt")
+  on.exit(unlink(skriptfil))
+  ps_text <- function(x) paste0("'", gsub("'", "''", x, fixed = TRUE), "'")
+  skript <- c(
     "$ErrorActionPreference = 'Stop'",
+    paste0("$fil = ", ps_text(fil)),
+    paste0("$mapp = ", ps_text(normalizePath(mapp))),
     "$app = New-Object -ComObject PowerPoint.Application",
     "try {",
     "  $pres = $app.Presentations.Open($fil, -1, 0, 0)",
-    "  $pres.Export($mapp, 'PNG', $bredd, $hojd)",
+    paste0("  $pres.Export($mapp, 'PNG', ", as.integer(bredd), ", ", as.integer(hojd), ")"),
     "  $pres.Close()",
     "} finally {",
     "  if ($app.Presentations.Count -eq 0) { $app.Quit() }",
     "}"
-  ), skript)
+  )
+  # UTF-8 med BOM, så att å/ä/ö i sökvägar läses rätt av PowerShell
+  con <- file(skriptfil, "wb")
+  writeBin(c(as.raw(c(0xEF, 0xBB, 0xBF)), charToRaw(enc2utf8(paste(skript, collapse = "\r\n")))), con)
+  close(con)
 
+  kommando <- paste0("& ([scriptblock]::Create((Get-Content -Raw -Encoding UTF8 -LiteralPath ",
+                     ps_text(normalizePath(skriptfil)), ")))")
   utan_resultat <- suppressWarnings(system2(
-    "powershell", c("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", shQuote(skript),
-                    shQuote(fil), shQuote(normalizePath(mapp)), bredd, hojd),
+    "powershell", c("-NoProfile", "-Command", shQuote(kommando)),
     stdout = TRUE, stderr = TRUE))
   if (!is.null(attr(utan_resultat, "status"))) {
     return(structure(character(0), orsak = paste(trimws(utan_resultat), collapse = " ")))

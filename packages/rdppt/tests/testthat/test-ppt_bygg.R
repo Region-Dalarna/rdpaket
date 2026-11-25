@@ -471,3 +471,11 @@ test_that("loggfil = TRUE ger en loggfil i utskriftsmappen med automatiskt namn"
   expect_match(basename(ppt$loggfil), "^min_presentation_.*\\.txt$")
   expect_equal(dirname(ppt$loggfil), mapp)
 })
+
+test_that("utan angiven person får filnamnet den inloggades förnamn", {
+  testthat::local_mocked_bindings(anv_fornamn_efternamn_hamta = function() "Peter Möller", .package = "rddeploy")
+  mapp <- testmapp()
+  ppt <- ppt_ny("Rapport", mall = "inbyggd") |> ppt_lagg_till_slide("text", rubrik = "R", text = "T")
+  fil <- suppressMessages(ppt_spara(ppt, "min_fil.pptx", mapp = mapp))
+  expect_equal(basename(fil), "min_fil_peter.pptx")
+})

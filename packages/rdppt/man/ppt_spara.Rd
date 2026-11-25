@@ -51,7 +51,9 @@ något gått fel när presentationen byggdes (ett diagram som hoppades
 Med flera personer i \code{anv_uppgifter} sparas en fil per person - samma
 slides, men med personens namn och e-post på titel- och avslutssidan.
 Diagrammen körs bara en gång, så det går snabbt. Anges ett enda namn
-(\code{"peter"}) får filnamnet också namnet (\code{utmaningar_peter.pptx}).
+(\code{"peter"}) får filnamnet också namnet (\code{utmaningar_peter.pptx}). Anges
+ingen person får filnamnet den inloggades förnamn, om det går att slå upp
+(\code{utmaningar_peter.pptx}).
 
 När presentationen är sparad skrivs den tid det tagit sedan \code{\link[=ppt_ny]{ppt_ny()}}
 ut i konsolen.

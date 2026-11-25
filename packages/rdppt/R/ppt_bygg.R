@@ -318,7 +318,9 @@ ppt_befintlig_visa <- function(fil, bilder = FALSE, oppna = FALSE) {
 #' Med flera personer i `anv_uppgifter` sparas en fil per person - samma
 #' slides, men med personens namn och e-post på titel- och avslutssidan.
 #' Diagrammen körs bara en gång, så det går snabbt. Anges ett enda namn
-#' (`"peter"`) får filnamnet också namnet (`utmaningar_peter.pptx`).
+#' (`"peter"`) får filnamnet också namnet (`utmaningar_peter.pptx`). Anges
+#' ingen person får filnamnet den inloggades förnamn, om det går att slå upp
+#' (`utmaningar_peter.pptx`).
 #'
 #' När presentationen är sparad skrivs den tid det tagit sedan [ppt_ny()]
 #' ut i konsolen.
@@ -369,6 +371,14 @@ ppt_spara <- function(ppt,
   # flera personer: en fil per person
   flera <- is.character(anv_uppgifter) && length(anv_uppgifter) >= 1
   personer <- if (flera) as.list(anv_uppgifter) else list(anv_uppgifter)
+
+  # utan angiven person får filnamnet den inloggades förnamn (peter -> namn_peter.pptx), om det går att slå upp
+  if (is.null(anv_uppgifter)) {
+    fornamn <- intern_filnamnsbas(intern_inloggad_fornamn())
+    if (nzchar(fornamn)) {
+      filnamn <- paste0(sub("\\.pptx$", "", filnamn, ignore.case = TRUE), "_", fornamn, ".pptx")
+    }
+  }
   filer <- vapply(personer, function(person) {
     filnamn_person <- filnamn
     if (flera) {
@@ -396,6 +406,13 @@ ppt_spara <- function(ppt,
   intern_logg_sammanfatta(ppt)
   if (isTRUE(oppna)) for (fil in filer) intern_oppna_fil(fil)
   invisible(filer)
+}
+
+# Den inloggades förnamn, eller "" om det inte går att slå upp (t.ex. utanför Windows).
+intern_inloggad_fornamn <- function() {
+  namn <- tryCatch(suppressWarnings(rddeploy::anv_fornamn_efternamn_hamta()), error = function(e) NA_character_)
+  if (length(namn) != 1 || is.na(namn) || !nzchar(namn)) return("")
+  sub("\\s.*$", "", trimws(namn))
 }
 
 # Sekunder som text: "45 s", "3 min 12 s", "1 h 05 min".
