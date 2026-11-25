@@ -1,3 +1,7 @@
+# rdppt 0.0.0.9017
+
+* `ppt_forhandsvisa()` och `ppt_befintlig_visa(bilder = TRUE)`: när PowerPoint inte gick att styra visas nu det riktiga felet från PowerPoint i stället för att det döljs.
+
 # rdppt 0.0.0.9016
 
 * Rapportsidan: länken under "Samhällsanalys webbsida" visar nu samhallsanalys.regiondalarna.se och går dit.

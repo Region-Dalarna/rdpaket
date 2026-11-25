@@ -83,14 +83,19 @@ intern_rendera_slides <- function(fil, mapp, bredd) {
   storlek <- officer::slide_size(intern_las_pptx(fil))
   hojd <- round(bredd * storlek$height / storlek$width)
 
+  ppt_orsak <- NULL
   if (.Platform$OS.type == "windows") {
-    bilder <- tryCatch(intern_rendera_powerpoint(fil, mapp, bredd, hojd), error = function(e) character(0))
+    bilder <- tryCatch(intern_rendera_powerpoint(fil, mapp, bredd, hojd),
+                       error = function(e) structure(character(0), orsak = conditionMessage(e)))
     if (length(bilder) > 0) return(bilder)
+    ppt_orsak <- attr(bilder, "orsak")
   }
 
   bilder <- intern_rendera_libreoffice(fil, mapp, bredd)
   if (length(bilder) == 0) {
-    stop("Kan inte göra bilder av sliderna: varken PowerPoint (Windows) eller LibreOffice hittades.\n",
+    stop("Kan inte göra bilder av sliderna: ",
+         if (is.null(ppt_orsak)) "varken PowerPoint (Windows) eller LibreOffice hittades.\n"
+         else paste0("PowerPoint gick inte att styra och LibreOffice hittades inte.\nFel från PowerPoint: ", ppt_orsak, "\n"),
          "Öppna filen direkt med ppt_befintlig_visa(fil, oppna = TRUE) i stället, eller installera LibreOffice ",
          "(https://www.libreoffice.org).", call. = FALSE)
   }
@@ -119,10 +124,15 @@ intern_rendera_powerpoint <- function(fil, mapp, bredd, hojd) {
     "powershell", c("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", shQuote(skript),
                     shQuote(fil), shQuote(normalizePath(mapp)), bredd, hojd),
     stdout = TRUE, stderr = TRUE))
-  if (!is.null(attr(utan_resultat, "status"))) return(character(0))
+  if (!is.null(attr(utan_resultat, "status"))) {
+    return(structure(character(0), orsak = paste(trimws(utan_resultat), collapse = " ")))
+  }
 
   # PowerPoint döper filerna efter språk (Slide1.PNG, Bild1.PNG ...) - ordna efter numret
   filer <- list.files(mapp, pattern = "\\.png$", full.names = TRUE, ignore.case = TRUE)
+  if (length(filer) == 0) {
+    return(structure(character(0), orsak = paste("PowerPoint körde klart men gjorde inga bilder.", paste(trimws(utan_resultat), collapse = " "))))
+  }
   nummer <- as.integer(sub(".*?([0-9]+)\\.png$", "\\1", filer, ignore.case = TRUE))
   filer[order(nummer)]
 }
