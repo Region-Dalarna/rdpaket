@@ -429,6 +429,8 @@ diag_inr_flyttnetto_bakgrund_scb <- function(
       gg_obj <- gg_obj +
         ggplot2::geom_line(ggplot2::aes(group = 1, color = "line"), alpha = 0) +
         ggplot2::scale_color_manual(name = "", values = c("line" = "black"), labels = "inrikes flyttnetto totalt") +
+        # override.aes gör strecket i teckenförklaringen synligt trots att själva linjelagret är osynligt
+        ggplot2::guides(color = ggplot2::guide_legend(override.aes = list(alpha = 1, linewidth = 1.5))) +
         ggplot2::theme(legend.key = ggplot2::element_rect(fill = "white"),
               legend.box.just = "bottom")
     } # slut if-sats visa_totalvarden

@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9122
+
+* `diag_inr_flyttnetto_bakgrund_scb()`: totalstrecket har nu ett synligt streck i teckenförklaringen.
+
 # rddiagramkatalog 0.0.0.9121
 
 * `diag_bef_inr_utr_en_aldersgrupp_scb(forandring = TRUE)`: totalstrecket har nu ett synligt streck i teckenförklaringen.
