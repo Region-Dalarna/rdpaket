@@ -7,6 +7,8 @@
 diag_bef_inr_utr_en_aldersgrupp_scb(
   region_vekt = "20",
   aldersintervall = c(20, 65),
+  forandring = FALSE,
+  visa_totalvarden = TRUE,
   diagram_capt =
     "Källa: SCB:s öppna statistikdatabas\\nBearbetning: Samhällsanalys, Region Dalarna",
   utmapp = rdverktyg::utskriftsmapp(),
@@ -26,6 +28,12 @@ diag_bef_inr_utr_en_aldersgrupp_scb(
 \item{region_vekt}{Läns- och kommunkoder, det blir ett diagram (och en fil om man skriver bildfiler) per region.}
 
 \item{aldersintervall}{Två värden: från och med åldern, till och med ålder. \code{c(20,65)} blir åldersgruppen 20-65 år.}
+
+\item{forandring}{\code{TRUE} visar förändringen från året innan (första året i urvalet har ingen förändring och
+visas inte) i stället för antalet. Staplarna för inrikes och utrikes födda läggs på varandra, och ett svart
+streck i varje stapel visar förändringen totalt (summan av de två grupperna).}
+
+\item{visa_totalvarden}{Bara med \code{forandring = TRUE}: \code{TRUE} (standard) ritar totalstrecket, \code{FALSE} döljer det.}
 
 \item{diagram_capt}{Diagrammets källtext.}
 
@@ -56,5 +64,7 @@ En namngiven lista med \code{ggplot}-objekt.
 }
 \description{
 Stapeldiagram över befolkning uppdelat på inrikes/utrikes födda, för en
-vald åldersgrupp, per år.
+vald åldersgrupp, per år. Med \code{forandring = TRUE} visas i stället hur
+befolkningen förändrats från året innan, uppdelat på inrikes och utrikes
+födda, med ett svart streck i varje stapel för förändringen totalt.
 }

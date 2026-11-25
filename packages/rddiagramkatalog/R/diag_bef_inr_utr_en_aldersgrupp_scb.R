@@ -1,10 +1,16 @@
 #' Diagram: befolkning inrikes/utrikes födda, en åldersgrupp
 #'
 #' Stapeldiagram över befolkning uppdelat på inrikes/utrikes födda, för en
-#' vald åldersgrupp, per år.
+#' vald åldersgrupp, per år. Med `forandring = TRUE` visas i stället hur
+#' befolkningen förändrats från året innan, uppdelat på inrikes och utrikes
+#' födda, med ett svart streck i varje stapel för förändringen totalt.
 #'
 #' @param region_vekt Läns- och kommunkoder, det blir ett diagram (och en fil om man skriver bildfiler) per region.
 #' @param aldersintervall Två värden: från och med åldern, till och med ålder. `c(20,65)` blir åldersgruppen 20-65 år.
+#' @param forandring `TRUE` visar förändringen från året innan (första året i urvalet har ingen förändring och
+#'   visas inte) i stället för antalet. Staplarna för inrikes och utrikes födda läggs på varandra, och ett svart
+#'   streck i varje stapel visar förändringen totalt (summan av de två grupperna).
+#' @param visa_totalvarden Bara med `forandring = TRUE`: `TRUE` (standard) ritar totalstrecket, `FALSE` döljer det.
 #' @param diagram_capt Diagrammets källtext.
 #' @param utmapp Mapp där diagram (och ev. excelfil) ska sparas. Måste finnas om `skriv_diagramfil = TRUE` eller `skriv_till_excelfil = TRUE`.
 #' @param diag_fargvekt Valfri färgvektor, standard: `rddiagram::diagramfarger("rus_sex")`.
@@ -23,6 +29,8 @@
 diag_bef_inr_utr_en_aldersgrupp_scb <- function(
     region_vekt = "20",
     aldersintervall = c(20, 65),
+    forandring = FALSE,
+    visa_totalvarden = TRUE,
     diagram_capt = "Källa: SCB:s öppna statistikdatabas\nBearbetning: Samhällsanalys, Region Dalarna",
     utmapp = rdverktyg::utskriftsmapp(),
     diag_fargvekt = NA,
@@ -105,6 +113,18 @@ diag_bef_inr_utr_en_aldersgrupp_scb <- function(
              bakgrund = factor(bakgrund, levels = c("Utrikes födda", "Inrikes födda")),
              region = rdverktyg::skapa_kortnamn_lan(region))
 
+  # förändring från året innan, per region och bakgrund. Första året saknar föregående år och tas bort.
+  if (forandring) {
+    diagram_df <- diagram_df |>
+      dplyr::arrange(regionkod, bakgrund, år) |>
+      dplyr::group_by(regionkod, region, bakgrund) |>
+      dplyr::mutate(antal = antal - dplyr::lag(antal)) |>
+      dplyr::ungroup() |>
+      dplyr::filter(!is.na(antal)) |>
+      dplyr::arrange(regionkod, år, bakgrund)
+    if (nrow(diagram_df) == 0) stop("För att visa förändring behövs minst två år. Ange fler år i tid_koder.", call. = FALSE)
+  }
+
   # returnera datasetet till global environment, bl.a. bra när man skapar Rmarkdown-rapporter
   if(returnera_data == TRUE){
     assign("bef_inr_utr_en_aldersgrupp", diagram_df, envir = .GlobalEnv)
@@ -120,8 +140,21 @@ diag_bef_inr_utr_en_aldersgrupp_scb <- function(
 
     region_txt <- rdverktyg::skapa_kortnamn_lan(unique(diagram_region_df$region))
 
-    diagramtitel <- glue::glue("Befolkning {aldersgrupp_txt} i {region_txt}")
-    diagramfil <- glue::glue("bef_inr_utr_{aldersgrupp_txt}_{region_txt}_ar{min(diagram_region_df$år)}-{max(diagram_region_df$år)}.png")
+    diagramtitel <- if (forandring) glue::glue("Befolkningsförändring {aldersgrupp_txt} i {region_txt}") else glue::glue("Befolkning {aldersgrupp_txt} i {region_txt}")
+    diagramfil <- glue::glue("bef_inr_utr_{if (forandring) 'forandring_' else ''}{aldersgrupp_txt}_{region_txt}_ar{min(diagram_region_df$år)}-{max(diagram_region_df$år)}.png")
+
+    # totalstrecket: ett kort svart streck i varje stapel vid summan av inrikes och utrikes födda, som i
+    # diag_inr_flyttnetto_bakgrund_scb(). x-positionen är årets plats på den diskreta x-axeln.
+    visa_total <- forandring && visa_totalvarden
+    total_list <- NA
+    if (visa_total) {
+      totaler <- dplyr::summarise(dplyr::group_by(diagram_region_df, år), summa = sum(antal, na.rm = TRUE), .groups = "drop")
+      totaler <- dplyr::arrange(totaler, år)
+      halv_tjocklek <- max(diff(range(c(0, totaler$summa))), 1) * 0.006
+      total_list <- purrr::map(seq_len(nrow(totaler)), \(i) list(
+        geom = "rect", ymin = totaler$summa[i] - halv_tjocklek, ymax = totaler$summa[i] + halv_tjocklek,
+        xmin = i - 0.45, xmax = i + 0.45, alpha = 1, fill = "black"))
+    }
 
     gg_obj <- rddiagram::SkapaStapelDiagram(
       skickad_df = diagram_region_df,
@@ -140,9 +173,25 @@ diag_bef_inr_utr_en_aldersgrupp_scb <- function(
       logga_path = logga_sokvag,
       dataetiketter = visa_dataetiketter,
       geom_position_stack = TRUE,
+      fokusera_varden = total_list,
       legend_vand_ordning = TRUE,
-      facet_legend_bottom = TRUE
+      facet_legend_bottom = TRUE,
+      skriv_till_diagramfil = skriv_diagramfil && !visa_total
     ) # slut skriv ggplot_objekt
+
+    if (visa_total) {
+      # totalstrecket ritas av fokusera_varden ovan; det här osynliga linjelagret ger bara en förklaring i
+      # teckenförklaringen (samma lösning som i diag_inr_flyttnetto_bakgrund_scb()). Diagrammet måste sparas
+      # här eftersom lagret läggs till efter SkapaStapelDiagram().
+      gg_obj <- gg_obj +
+        ggplot2::geom_line(ggplot2::aes(group = 1, color = "line"), alpha = 0) +
+        ggplot2::scale_color_manual(name = "", values = c("line" = "black"), labels = "förändring totalt") +
+        ggplot2::theme(legend.key = ggplot2::element_rect(fill = "white"), legend.box.just = "bottom")
+      if (skriv_diagramfil) {
+        rddiagram::skriv_till_diagramfil(gg_obj, output_mapp = utmapp, filnamn_diagram = diagramfil,
+                                         logga = if (visa_logga_i_diagram) (if (is.na(logga_sokvag)) TRUE else logga_sokvag) else FALSE)
+      }
+    }
 
     gg_list <- c(gg_list, list(gg_obj))
     names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfil, ".png")

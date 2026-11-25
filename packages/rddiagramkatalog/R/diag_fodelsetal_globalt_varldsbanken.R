@@ -53,7 +53,13 @@ diag_fodelsetal_globalt_varldsbanken <- function(
       # ett saknat värde och gör att landet tappas. Sätts tillbaka manuellt.
       id_A2 = dplyr::if_else(country.name.en == "Namibia" & is.na(iso2c), "NA", iso2c),
       id_A3 = iso3c,
-      Land = cldr.short.sv,
+      # några länder saknar svenskt namn i countrycode (Mikronesien, Saint-Martin). Utan namn hamnar de båda
+      # i samma kategori ("NA") längst upp i diagrammet, så de får ett eget namn, annars det engelska.
+      Land = dplyr::case_when(
+        iso3c == "FSM" ~ "Mikronesien",
+        iso3c == "MAF" ~ "Saint-Martin",
+        TRUE ~ dplyr::coalesce(cldr.short.sv, country.name.en)
+      ),
       varldsdel = dplyr::case_when(
         iso3c == "RUS" ~ "Ryssland",
         continent == "Antarctica" ~ "Antarktis",

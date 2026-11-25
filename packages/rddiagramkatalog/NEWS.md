@@ -1,3 +1,8 @@
+# rddiagramkatalog 0.0.0.9120
+
+* `diag_fodelsetal_globalt_varldsbanken()`: Mikronesien och Saint-Martin saknade svenskt namn och hamnade båda i en kategori "NA" överst i diagrammet (två staplar ovanpå varandra). De har nu egna namn, och länder utan svenskt namn får det engelska.
+* `diag_bef_inr_utr_en_aldersgrupp_scb(forandring = TRUE)` visar förändringen från året innan, uppdelat på inrikes och utrikes födda, med ett svart totalstreck i varje stapel (`visa_totalvarden = FALSE` döljer det).
+
 # rddiagramkatalog 0.0.0.9119
 
 * `karta_gg_kraftfalt_scb(liggande = TRUE)` ger en liggande bild (3:2) i stället för den stående. Bakgrundskartan vidgas åt sidorna så att länet hamnar i mitten, med textrutan uppe till höger och teckenförklaringen nere till vänster i utrymmet bredvid länet. `liggande = FALSE` är standard och ger samma bild som förut. `bredd_cm` är numera `NULL` som standard (20 cm stående, 27 cm liggande), och filnamnet får ändelsen `_liggande`.
