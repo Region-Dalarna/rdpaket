@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9127
+
+* `diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb()`: ny parameter `dela_upp_pa` för att visa förändringen uppdelad på `"kön och bakgrund"` (standard, som tidigare), bara `"kön"`, bara `"bakgrund"` (inrikes/utrikes födda) eller `"ingen"` (bara totalen per bransch). Filnamnet får ändelsen `_kon`, `_bakgrund` respektive `_totalt` när uppdelningen avviker från standarden.
+
 # rddiagramkatalog 0.0.0.9126
 
 * `diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb()`: skillnaden var vänd (äldre månad minus senaste, alltså minus där sysselsättningen ökat) och titeln visade åren i fel ordning ("aug år 2025 jämfört med aug år 2026"). Raderna sorteras nu kronologiskt, så plus betyder ökning och titeln lyder "aug år 2026 jämfört med aug år 2025".

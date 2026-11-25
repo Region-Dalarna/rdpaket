@@ -7,6 +7,7 @@
 \usage{
 diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb(
   region_vekt = "20",
+  dela_upp_pa = c("kön och bakgrund", "kön", "bakgrund", "ingen"),
   kon_klartext = c("kvinnor", "män"),
   diagram_capt =
     "Källa: SCB:s öppna statistikdatabas\\nBearbetning: Samhällsanalys, Region Dalarna",
@@ -29,7 +30,12 @@ diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb(
 \arguments{
 \item{region_vekt}{Region.}
 
-\item{kon_klartext}{Välj bland \code{"kvinnor"}, \code{"män"}, \code{"totalt"} - vilka som ska visas.}
+\item{dela_upp_pa}{Hur förändringen ska delas upp: \code{"kön och bakgrund"} (standard: kvinnor/män i en panel för
+inrikes och en för utrikes födda), \code{"kön"} (kvinnor och män), \code{"bakgrund"} (inrikes och utrikes födda) eller
+\code{"ingen"} (bara totalen per bransch).}
+
+\item{kon_klartext}{Välj bland \code{"kvinnor"}, \code{"män"}, \code{"totalt"} - vilka som ska visas. Används bara när
+\code{dela_upp_pa} delar upp på kön (\code{"kön och bakgrund"} eller \code{"kön"}).}
 
 \item{diagram_capt}{Diagrammets källtext.}
 

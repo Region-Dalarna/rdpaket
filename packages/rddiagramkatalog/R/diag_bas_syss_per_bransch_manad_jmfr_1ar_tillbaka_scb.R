@@ -4,7 +4,11 @@
 #' valbart antal månader tillbaka (standard 12 månader/ett år).
 #'
 #' @param region_vekt Region.
-#' @param kon_klartext Välj bland `"kvinnor"`, `"män"`, `"totalt"` - vilka som ska visas.
+#' @param dela_upp_pa Hur förändringen ska delas upp: `"kön och bakgrund"` (standard: kvinnor/män i en panel för
+#'   inrikes och en för utrikes födda), `"kön"` (kvinnor och män), `"bakgrund"` (inrikes och utrikes födda) eller
+#'   `"ingen"` (bara totalen per bransch).
+#' @param kon_klartext Välj bland `"kvinnor"`, `"män"`, `"totalt"` - vilka som ska visas. Används bara när
+#'   `dela_upp_pa` delar upp på kön (`"kön och bakgrund"` eller `"kön"`).
 #' @param diagram_capt Diagrammets källtext.
 #' @param utmapp Mapp där diagram ska sparas. Måste finnas om `skriv_diagramfil = TRUE`.
 #' @param diag_fargvekt Valfri färgvektor.
@@ -25,6 +29,7 @@
 #' @export
 diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb <- function(
     region_vekt = "20",
+    dela_upp_pa = c("kön och bakgrund", "kön", "bakgrund", "ingen"),
     kon_klartext = c("kvinnor", "män"),
     diagram_capt = "Källa: SCB:s öppna statistikdatabas\nBearbetning: Samhällsanalys, Region Dalarna",
     utmapp = rdverktyg::utskriftsmapp(),
@@ -53,6 +58,12 @@ diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb <- function(
     rdverktyg::stop_tyst()
   }
 
+  dela_upp_pa <- match.arg(dela_upp_pa)
+  dela_kon <- dela_upp_pa %in% c("kön och bakgrund", "kön")
+  dela_bakgrund <- dela_upp_pa %in% c("kön och bakgrund", "bakgrund")
+  # utan uppdelning på kön visas totalen för kön
+  if (!dela_kon) kon_klartext <- "totalt"
+
   if (!all(kon_klartext %in% c("kvinnor", "män", "totalt"))) {
     stop("kon_klartext måste vara en delmängd av c(\"kvinnor\", \"män\", \"totalt\").")
   }
@@ -62,7 +73,7 @@ diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb <- function(
   # kvinnor+män)
   if (all(is.na(diag_fargvekt))) {
     diag_fargvekt <- if (setequal(kon_klartext, "totalt")) {
-      rddiagram::diagramfarger("rus_sex")[1]
+      rddiagram::diagramfarger("rus_sex")[if (dela_bakgrund) 1:2 else 1]
     } else if (setequal(kon_klartext, c("kvinnor", "män", "totalt"))) {
       rddiagram::diagramfarger("kon_och_total")
     } else {
@@ -118,7 +129,7 @@ diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb <- function(
     dplyr::mutate(diff = .data[[manad_nu]] - .data[[manad_da]]) |>
     dplyr::filter(kön %in% kon_klartext,
            `näringsgren SNI 2007` != "Total",
-           födelseregion != "totalt") |>
+           if (dela_bakgrund) födelseregion != "totalt" else födelseregion == "totalt") |>
     dplyr::left_join(dplyr::select(nyckel_bransch, Br15kod, Bransch), by = c("sni2007kod" = "Br15kod")) |>
     dplyr::mutate(Bransch = ifelse(is.na(Bransch), stringr::str_to_sentence(`näringsgren SNI 2007`), Bransch))
 
@@ -161,7 +172,9 @@ diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb <- function(
   diagramtitel <- glue::glue("Skillnad i antal sysselsatta 15-74 år {region_txt} i {manad_slut} år {ar_slut} jämfört med {manad_start} år {ar_start}")
   # filnamnet får en extra kon_klartext-markör bara om urvalet avviker från standarden (kvinnor+män), så
   # att befintliga filnamn inte påverkas av den nya parametern
-  kon_filnamn <- if (setequal(kon_klartext, c("kvinnor", "män"))) "" else paste0("_", paste(sort(kon_klartext), collapse = "_"))
+  kon_filnamn <- if (!dela_kon || setequal(kon_klartext, c("kvinnor", "män"))) "" else paste0("_", paste(sort(kon_klartext), collapse = "_"))
+  # uppdelning som avviker från standarden (kön och bakgrund) märks i filnamnet
+  kon_filnamn <- paste0(kon_filnamn, switch(dela_upp_pa, "kön och bakgrund" = "", "kön" = "_kon", "bakgrund" = "_bakgrund", "ingen" = "_totalt"))
   diagramfil <- glue::glue("bas_syss_{regionfil_txt}_{manad_slut}_ar{ar_slut}_jmfrt_med_{manad_start}_ar{ar_start}_{dagnatt_filnamn}{kon_filnamn}.png")
 
 
@@ -169,7 +182,7 @@ diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb <- function(
     skickad_df = chart_df,
     skickad_x_var = "Bransch",
     skickad_y_var = "diff",
-    skickad_x_grupp = "kön",
+    skickad_x_grupp = if (dela_kon) "kön" else if (dela_bakgrund) "födelseregion" else NULL,
     diagram_titel = if (ta_bort_diagramtitel) NULL else diagramtitel,
     diagram_capt = diagram_capt,
     diagram_liggande = TRUE,
@@ -183,7 +196,7 @@ diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb <- function(
     lagg_pa_logga = visa_logga_i_diagram,
     logga_path = logga_sokvag,
     skriv_till_diagramfil = skriv_diagramfil,
-    facet_grp = "födelseregion",
+    facet_grp = if (dela_kon && dela_bakgrund) "födelseregion" else NULL,
     facet_scale = "fixed",
     facet_legend_bottom = TRUE
   )
