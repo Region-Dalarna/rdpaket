@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9121
+
+* `diag_bef_inr_utr_en_aldersgrupp_scb(forandring = TRUE)`: totalstrecket har nu ett synligt streck i teckenförklaringen.
+
 # rddiagramkatalog 0.0.0.9120
 
 * `diag_fodelsetal_globalt_varldsbanken()`: Mikronesien och Saint-Martin saknade svenskt namn och hamnade båda i en kategori "NA" överst i diagrammet (två staplar ovanpå varandra). De har nu egna namn, och länder utan svenskt namn får det engelska.
