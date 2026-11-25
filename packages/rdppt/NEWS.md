@@ -1,3 +1,7 @@
+# rdppt 0.0.0.9021
+
+* `ppt_forhandsvisa()`: bilder av sliderna görs först med ett VBScript (cscript) och sedan med PowerShell. På datorer där PowerShell är låst (signerade skript, constrained language mode) går det inte att styra PowerPoint därifrån.
+
 # rdppt 0.0.0.9020
 
 * `ppt_spara()`: utan angiven person får filnamnet den inloggades förnamn (`namn_peter.pptx`), om det går att slå upp.

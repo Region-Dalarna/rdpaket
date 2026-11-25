@@ -85,10 +85,15 @@ intern_rendera_slides <- function(fil, mapp, bredd) {
 
   ppt_orsak <- NULL
   if (.Platform$OS.type == "windows") {
-    bilder <- tryCatch(intern_rendera_powerpoint(fil, mapp, bredd, hojd),
-                       error = function(e) structure(character(0), orsak = conditionMessage(e)))
-    if (length(bilder) > 0) return(bilder)
-    ppt_orsak <- attr(bilder, "orsak")
+    # Windows Script Host (VBScript) först: på datorer där PowerShell är låst (signerade skript, "constrained
+    # language mode") går det inte att styra PowerPoint därifrån, men VBScript brukar fungera.
+    for (metod in list(intern_rendera_powerpoint_vbs, intern_rendera_powerpoint)) {
+      bilder <- tryCatch(metod(fil, mapp, bredd, hojd),
+                         error = function(e) structure(character(0), orsak = conditionMessage(e)))
+      if (length(bilder) > 0) return(bilder)
+      ppt_orsak <- c(ppt_orsak, attr(bilder, "orsak"))
+    }
+    ppt_orsak <- paste(unique(ppt_orsak), collapse = "\n  ")
   }
 
   bilder <- intern_rendera_libreoffice(fil, mapp, bredd)
@@ -100,6 +105,38 @@ intern_rendera_slides <- function(fil, mapp, bredd) {
          "(https://www.libreoffice.org).", call. = FALSE)
   }
   bilder
+}
+
+# PowerPoint styrs via ett VBScript som körs med cscript. Skriptet sparas som UTF-16 så att å/ä/ö i sökvägar går igenom.
+intern_rendera_powerpoint_vbs <- function(fil, mapp, bredd, hojd) {
+  skriptfil <- tempfile(fileext = ".vbs")
+  on.exit(unlink(skriptfil))
+  vbs_text <- function(x) paste0('"', gsub('"', '""', x, fixed = TRUE), '"')
+  skript <- c(
+    'Set app = CreateObject("PowerPoint.Application")',
+    paste0("Set pres = app.Presentations.Open(", vbs_text(fil), ", -1, 0, 0)"),
+    paste0("pres.Export ", vbs_text(normalizePath(mapp)), ', "PNG", ', as.integer(bredd), ", ", as.integer(hojd)),
+    "pres.Close",
+    "If app.Presentations.Count = 0 Then app.Quit"
+  )
+  con <- file(skriptfil, "wb")
+  writeBin(c(as.raw(c(0xFF, 0xFE)), iconv(paste(skript, collapse = "\r\n"), "UTF-8", "UTF-16LE", toRaw = TRUE)[[1]]), con)
+  close(con)
+
+  utan_resultat <- suppressWarnings(system2("cscript", c("//nologo", shQuote(normalizePath(skriptfil))),
+                                            stdout = TRUE, stderr = TRUE))
+  if (!is.null(attr(utan_resultat, "status"))) {
+    return(structure(character(0), orsak = paste("VBScript:", paste(trimws(utan_resultat), collapse = " "))))
+  }
+  intern_png_i_ordning(mapp, paste("PowerPoint (VBScript) körde klart men gjorde inga bilder.", paste(trimws(utan_resultat), collapse = " ")))
+}
+
+# PowerPoint döper filerna efter språk (Slide1.PNG, Bild1.PNG ...) - ordna efter numret
+intern_png_i_ordning <- function(mapp, orsak_om_inga) {
+  filer <- list.files(mapp, pattern = "\\.png$", full.names = TRUE, ignore.case = TRUE)
+  if (length(filer) == 0) return(structure(character(0), orsak = orsak_om_inga))
+  nummer <- as.integer(sub(".*?([0-9]+)\\.png$", "\\1", filer, ignore.case = TRUE))
+  filer[order(nummer)]
 }
 
 # PowerPoint styrs via PowerShell. Filen öppnas skrivskyddad och utan fönster. PowerPoint stängs bara
