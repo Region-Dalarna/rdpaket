@@ -126,9 +126,18 @@ intern_rendera_powerpoint_vbs <- function(fil, mapp, bredd, hojd) {
   utan_resultat <- suppressWarnings(system2("cscript", c("//nologo", shQuote(normalizePath(skriptfil))),
                                             stdout = TRUE, stderr = TRUE))
   if (!is.null(attr(utan_resultat, "status"))) {
-    return(structure(character(0), orsak = paste("VBScript:", paste(trimws(utan_resultat), collapse = " "))))
+    return(structure(character(0), orsak = paste("VBScript:", intern_programtext(utan_resultat))))
   }
-  intern_png_i_ordning(mapp, paste("PowerPoint (VBScript) körde klart men gjorde inga bilder.", paste(trimws(utan_resultat), collapse = " ")))
+  intern_png_i_ordning(mapp, paste("PowerPoint (VBScript) körde klart men gjorde inga bilder.", intern_programtext(utan_resultat)))
+}
+
+# Utskrift från ett externt program (cscript, powershell) som en rad text. På svenska Windows är den i
+# konsolens teckenkodning (CP850), inte UTF-8, och trimws() ger då felet "input string 1 is invalid UTF-8".
+intern_programtext <- function(x) {
+  x <- as.character(x)
+  ogiltig <- !validUTF8(x)
+  if (any(ogiltig)) x[ogiltig] <- iconv(x[ogiltig], "CP850", "UTF-8", sub = "?")
+  paste(trimws(x), collapse = " ")
 }
 
 # PowerPoint döper filerna efter språk (Slide1.PNG, Bild1.PNG ...) - ordna efter numret
@@ -172,13 +181,13 @@ intern_rendera_powerpoint <- function(fil, mapp, bredd, hojd) {
     "powershell", c("-NoProfile", "-Command", shQuote(kommando)),
     stdout = TRUE, stderr = TRUE))
   if (!is.null(attr(utan_resultat, "status"))) {
-    return(structure(character(0), orsak = paste(trimws(utan_resultat), collapse = " ")))
+    return(structure(character(0), orsak = intern_programtext(utan_resultat)))
   }
 
   # PowerPoint döper filerna efter språk (Slide1.PNG, Bild1.PNG ...) - ordna efter numret
   filer <- list.files(mapp, pattern = "\\.png$", full.names = TRUE, ignore.case = TRUE)
   if (length(filer) == 0) {
-    return(structure(character(0), orsak = paste("PowerPoint körde klart men gjorde inga bilder.", paste(trimws(utan_resultat), collapse = " "))))
+    return(structure(character(0), orsak = paste("PowerPoint körde klart men gjorde inga bilder.", intern_programtext(utan_resultat))))
   }
   nummer <- as.integer(sub(".*?([0-9]+)\\.png$", "\\1", filer, ignore.case = TRUE))
   filer[order(nummer)]

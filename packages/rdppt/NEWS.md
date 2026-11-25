@@ -1,3 +1,7 @@
+# rdppt 0.0.0.9022
+
+* `ppt_forhandsvisa()`: felmeddelanden från cscript/PowerShell med å/ä/ö gav "input string 1 is invalid UTF-8" i stället för det riktiga felet. Texten omkodas nu.
+
 # rdppt 0.0.0.9021
 
 * `ppt_forhandsvisa()`: bilder av sliderna görs först med ett VBScript (cscript) och sedan med PowerShell. På datorer där PowerShell är låst (signerade skript, constrained language mode) går det inte att styra PowerPoint därifrån.
