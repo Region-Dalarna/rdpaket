@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9125
+
+* Ny funktion `diag_matchning_e2_jobbfloden_naringsgren_scb()` (E2, TAB6927): jobbflöden till och från näringsgrenar (nya förvärvsarbetande, jobbytare från/till annan näringsgren, lämnat sysselsättning) med nettoförändringen markerad. Flera näringsgrenar eller flera urval (t.ex. kvinnor och män) blir facetdiagram, med fast y-axel som standard (`facet_skala`).
+
 # rddiagramkatalog 0.0.0.9124
 
 * `diag_matchning_u3_utbildningsfloden_scb()`: ny parameter `facet_skala`. Standard `"fixed"` ger samma y-axel i alla paneler (tidigare fria axlar); `"free"` ger var sin.
