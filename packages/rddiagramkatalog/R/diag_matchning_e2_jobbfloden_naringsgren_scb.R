@@ -20,7 +20,8 @@
 #'   `c("kvinnor", "män")`: med `diag_facet = TRUE` och en näringsgren blir urvalen paneler i ett facetdiagram.
 #' @param visa_flode Vad som ska visas: `"uppdelat"` (standard) ritar de fyra posterna staplade (nya förvärvsarbetande,
 #'   lämnat sysselsättning och jobbytare från/till annan näringsgren), `"totalt"` ritar bara inflöden totalt över och
-#'   utflöden totalt under nollstrecket, och `"bada"` ger ett facetdiagram med båda vyerna (totalen till vänster).
+#'   utflöden totalt under nollstrecket, `"bada"` ger ett facetdiagram med båda vyerna (totalen till vänster) och
+#'   `"jobbytare"` visar bara jobbytare från respektive till annan näringsgren (nettostrecket är då nettot av jobbytena).
 #' @param visa_totalvarden `TRUE` (standard) markerar nettoförändringen (inflöden minus utflöden) per årsintervall med
 #'   ett svart streck, även i facetdiagram.
 #' @param diag_facet `TRUE` (standard) ger ett facetdiagram när flera näringsgrenar (eller, med en näringsgren, flera
@@ -45,7 +46,7 @@ diag_matchning_e2_jobbfloden_naringsgren_scb <- function(
     naringsgren_klartext = "samtliga näringsgrenar",
     utb_klartext = "samtliga utbildningsgrupper",
     kon_bakgr_klartext = "totalt",
-    visa_flode = c("uppdelat", "totalt", "bada"),
+    visa_flode = c("uppdelat", "totalt", "bada", "jobbytare"),
     visa_totalvarden = TRUE,
     diag_facet = TRUE,
     facet_skala = "fixed",
@@ -106,16 +107,17 @@ diag_matchning_e2_jobbfloden_naringsgren_scb <- function(
     dplyr::summarise(value = sum(value), .groups = "drop")
   flode_df$vy <- vyer[["uppdelat"]]
   tot_df$vy <- vyer[["totalt"]]
-  niva <- switch(visa_flode, uppdelat = poster, totalt = poster_tot, bada = c(poster, poster_tot))
+  niva <- switch(visa_flode, uppdelat = poster, totalt = poster_tot, bada = c(poster, poster_tot), jobbytare = poster[c(1, 3)])
   flode_df <- switch(visa_flode,
                      uppdelat = flode_df,
+                     jobbytare = dplyr::filter(flode_df, tabellinnehåll %in% poster[c(1, 3)]),
                      totalt = tot_df,
                      bada = dplyr::bind_rows(dplyr::mutate(flode_df, tabellinnehåll = as.character(tabellinnehåll)),
                                              dplyr::mutate(tot_df, tabellinnehåll = as.character(tabellinnehåll))))
   flode_df$tabellinnehåll <- factor(as.character(flode_df$tabellinnehåll), levels = niva)
   farger <- rddiagram::diagramfarger("utb_floden")
   fargvekt <- switch(visa_flode, uppdelat = farger[c(1, 3, 4, 6)], totalt = farger[c(2, 5)],
-                     bada = farger[c(1, 3, 4, 6, 2, 5)])
+                     bada = farger[c(1, 3, 4, 6, 2, 5)], jobbytare = farger[c(1, 4)])
 
   flode_df$kon_bakgr <- factor(flode_df$kon_bakgr, levels = unique(flode_df$kon_bakgr))
   flode_df$naringsgren <- factor(stringr::str_wrap(flode_df$naringsgren, 35),

@@ -9,7 +9,7 @@ diag_matchning_e2_jobbfloden_naringsgren_scb(
   naringsgren_klartext = "samtliga näringsgrenar",
   utb_klartext = "samtliga utbildningsgrupper",
   kon_bakgr_klartext = "totalt",
-  visa_flode = c("uppdelat", "totalt", "bada"),
+  visa_flode = c("uppdelat", "totalt", "bada", "jobbytare"),
   visa_totalvarden = TRUE,
   diag_facet = TRUE,
   facet_skala = "fixed",
@@ -32,7 +32,7 @@ diag_matchning_e2_jobbfloden_naringsgren_scb(
 
 \item{kon_bakgr_klartext}{Urval av befolkningen: \code{"totalt"} (standard), \code{"män"}, \code{"kvinnor"}, \code{"inrikes född"},  \code{"utrikes född"} eller en åldersgrupp (\code{"20–24 år"}, \code{"25–29 år"} ... \code{"65–69 år"}). Flera urval går bra, t.ex.  \code{c("kvinnor", "män")}: med \code{diag_facet = TRUE} och en näringsgren blir urvalen paneler i ett facetdiagram.}
 
-\item{visa_flode}{Vad som ska visas: \code{"uppdelat"} (standard) ritar de fyra posterna staplade (nya förvärvsarbetande,  lämnat sysselsättning och jobbytare från/till annan näringsgren), \code{"totalt"} ritar bara inflöden totalt över och  utflöden totalt under nollstrecket, och \code{"bada"} ger ett facetdiagram med båda vyerna (totalen till vänster).}
+\item{visa_flode}{Vad som ska visas: \code{"uppdelat"} (standard) ritar de fyra posterna staplade (nya förvärvsarbetande,  lämnat sysselsättning och jobbytare från/till annan näringsgren), \code{"totalt"} ritar bara inflöden totalt över och  utflöden totalt under nollstrecket, och \code{"bada"} ger ett facetdiagram med båda vyerna (totalen till vänster) och \code{"jobbytare"} visar bara jobbytare från respektive till annan näringsgren (nettostrecket är då nettot av jobbytena).}
 
 \item{visa_totalvarden}{\code{TRUE} (standard) markerar nettoförändringen (inflöden minus utflöden) per årsintervall med  ett svart streck, även i facetdiagram.}
 

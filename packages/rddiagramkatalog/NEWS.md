@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9129
+
+* `diag_matchning_e2_jobbfloden_naringsgren_scb(visa_flode = "jobbytare")` visar bara jobbytare från respektive till annan näringsgren.
+
 # rddiagramkatalog 0.0.0.9128
 
 * `diag_matchning_e2_jobbfloden_naringsgren_scb()`: ny parameter `visa_flode`: `"uppdelat"` (standard, som tidigare), `"totalt"` (inflöden och utflöden totalt) eller `"bada"` (facetdiagram med båda vyerna, och med urval i `kon_bakgr_klartext` som egna rader). Nettoförändringen markeras nu med ett svart streck i alla paneler, och finns med i teckenförklaringen.
