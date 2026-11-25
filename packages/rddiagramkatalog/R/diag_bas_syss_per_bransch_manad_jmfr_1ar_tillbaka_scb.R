@@ -101,6 +101,11 @@ diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb <- function(
     dplyr::select(-tabellinnehåll) |>
     rdverktyg::manader_bearbeta_scbtabeller()
 
+  # Raderna följer frågeordningen i tid_hamta (senaste månaden först), inte tiden. Utan sortering pekade
+  # manad_nu/manad_da och årtalen i titeln åt fel håll: diff blev äldre månad minus senaste (minustecken
+  # där sysselsättningen ökat) och titeln "aug år 2025 jämfört med aug år 2026".
+  bas_syss_df <- dplyr::arrange(bas_syss_df, as.character(tid))
+
   # hämta branschnyckel från Region Dalarnas github-repo depot
   nyckel_bransch <- intern_hamta_branschnyckel()
 

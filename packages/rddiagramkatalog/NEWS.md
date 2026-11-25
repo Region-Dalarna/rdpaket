@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9126
+
+* `diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb()`: skillnaden var vänd (äldre månad minus senaste, alltså minus där sysselsättningen ökat) och titeln visade åren i fel ordning ("aug år 2025 jämfört med aug år 2026"). Raderna sorteras nu kronologiskt, så plus betyder ökning och titeln lyder "aug år 2026 jämfört med aug år 2025".
+
 # rddiagramkatalog 0.0.0.9125
 
 * Ny funktion `diag_matchning_e2_jobbfloden_naringsgren_scb()` (E2, TAB6927): jobbflöden till och från näringsgrenar (nya förvärvsarbetande, jobbytare från/till annan näringsgren, lämnat sysselsättning) med nettoförändringen markerad. Flera näringsgrenar eller flera urval (t.ex. kvinnor och män) blir facetdiagram, med fast y-axel som standard (`facet_skala`).
