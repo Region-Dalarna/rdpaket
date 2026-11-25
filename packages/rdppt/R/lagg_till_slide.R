@@ -195,6 +195,9 @@ ppt_lagg_till_slide <- function(ppt,
                                 antal_rapporter = NULL) {
 
   intern_kontrollera_ppt(ppt)
+  rubrik <- intern_ersatt_regionplatshallare(rubrik, ppt$regioner)
+  text <- intern_ersatt_regionplatshallare(text, ppt$regioner)
+  anteckningar <- intern_ersatt_regionplatshallare(anteckningar, ppt$regioner)
   if (is.null(layout)) {
     stop("Ange vilken sorts slide som ska läggas till med layout, t.ex. ppt_lagg_till_slide(ppt, \"diagram\", ...).\n",
          "Sorter: ", paste0("\"", names(intern_slidetyper), "\"", collapse = ", "), ". Se ppt_slidetyper().", call. = FALSE)

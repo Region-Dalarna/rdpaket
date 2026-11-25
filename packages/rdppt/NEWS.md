@@ -1,3 +1,9 @@
+# rdppt 0.0.0.9019
+
+* Ny `ppt_regioner(region_vekt)`: länskoder, kommunkoder, regionnamn och färdiga texter (uppräkning med Dalarna sist, genitiv, filnamn).
+* `ppt_ny(region_vekt = )`: `<region>` och `<regions>` (genitiv) i huvudrubrik, underrubrik och i rubrik, text och anteckningar på slidesen byts mot regionernas namn.
+* `ppt_ny(loggfil = TRUE)`: loggfil i utskriftsmappen med automatiskt namn (presentation, användare, `_auto` om skriptet inte körs för hand). Mappen skapas om den saknas.
+
 # rdppt 0.0.0.9018
 
 * Rapportsidan: länkblocken står i ordningen Samhällsanalys webbsida, Här finns alla våra rapporter, Lyssna på vår podd.

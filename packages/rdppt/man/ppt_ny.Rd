@@ -13,7 +13,8 @@ ppt_ny(
   rubrik_namn = TRUE,
   stil = NULL,
   loggfil = NULL,
-  visa_manuell_datakalla = TRUE
+  visa_manuell_datakalla = TRUE,
+  region_vekt = NULL
 )
 }
 \arguments{
@@ -49,13 +50,21 @@ anges får mallens stil (se \code{\link[=ppt_mallprofil]{ppt_mallprofil()}}) och
 \item{loggfil}{Sökväg till en textfil där det som går fel när
 presentationen byggs (ett diagram som hoppas över, och varför) loggas
 fortlöpande. \code{NULL} (standard) = \code{options(rdppt.loggfil)}, annars ingen
-loggfil. Problemen sammanfattas också när presentationen sparas.}
+loggfil. \code{TRUE} ger en loggfil i utskriftsmappen med automatiskt namn (presentationens namn, användaren,
+och \verb{_auto} om skriptet inte körs för hand), och mappen skapas om den saknas. Problemen sammanfattas
+också när presentationen sparas.}
 
 \item{visa_manuell_datakalla}{\code{TRUE} (standard) låter diagramfunktionerna skriva ut meddelandet om att en
 fil eller mapp är manuellt underhållen och kan vara inaktuell. \code{FALSE} döljer det medan presentationens
 diagram skapas, för en renare konsol när du vet vilka källor som används. Gäller bara den här
 presentationen; i övrigt styrs det av \code{options(rdverktyg.visa_manuell_datakalla)}, se
 \code{\link[rdverktyg:visa_manuell_datakalla_info]{rdverktyg::visa_manuell_datakalla_info()}}.}
+
+\item{region_vekt}{De regioner (läns- och/eller kommunkoder) presentationen byggs för. Anges de kan du skriva
+\verb{<region>} (t.ex. "Gävleborg och Dalarna", Dalarna sist) och \verb{<regions>} (genitiv, "Gävleborgs och Dalarnas")
+i huvudrubrik, underrubrik och i \code{rubrik}, \code{text} och \code{anteckningar} på slidesen, så byts de mot regionernas
+namn. Uppgifterna finns också som \code{ppt$regioner}, se \code{\link[=ppt_regioner]{ppt_regioner()}}. \code{NULL} (standard) = inga regioner.
+Anges inte \code{region_vekt} i \code{\link[=ppt_lagg_till_slide]{ppt_lagg_till_slide()}} körs diagrammen fortfarande en gång utan region.}
 }
 \value{
 En presentation (klassen \code{rdppt}) att bygga vidare på.

@@ -431,3 +431,43 @@ test_that("ppt_ny(visa_manuell_datakalla = FALSE) döljer datakällsmeddelandet 
   expect_equal(visas, c(FALSE, TRUE))
   expect_null(getOption("rdverktyg.visa_manuell_datakalla"))
 })
+
+# regionuppslagen ersätts så att testerna inte behöver nätverk
+mocka_regioner <- function(env = parent.frame()) {
+  testthat::local_mocked_bindings(
+    hamtaregion_kod_namn = function(regionkod, kolada = FALSE) {
+      tibble::tibble(regionkod = c("20", "21", "2080", "1490"),
+                     region = c("Dalarnas län", "Gävleborgs län", "Falun", "Borås"))
+    },
+    .package = "rdverktyg", .env = env)
+}
+
+test_that("ppt_regioner ger koder och texter", {
+  mocka_regioner()
+  r <- ppt_regioner(c("20", "21", "2080", "1490"))
+  expect_equal(r$lan_koder, c("20", "21", "14"))
+  expect_equal(r$kommun_koder, c("2080", "1490"))
+  expect_equal(r$namn, c("Dalarna", "Gävleborg", "Falun", "Borås"))
+  expect_equal(r$text, "Borås, Falun, Gävleborg och Dalarna")
+  expect_equal(r$text_genitiv, "Dalarnas, Gävleborgs, Faluns och Borås")
+  expect_equal(r$filnamn, "dalarnas_gavleborgs_faluns_boras")
+  expect_error(ppt_regioner(character(0)), "region_vekt")
+})
+
+test_that("<region> byts mot regionernas namn när ppt_ny får region_vekt", {
+  mocka_regioner()
+  ppt <- ppt_ny("Läget i <regions> kommuner", mall = "inbyggd", region_vekt = c("20", "21")) |>
+    ppt_lagg_till_slide("slutsatser", rubrik = "Slutsatser för <region>", text = "Bra för <region>")
+  expect_equal(ppt$huvudrubrik, "Läget i Dalarnas och Gävleborgs kommuner")
+  expect_equal(ppt$slides$titel[1], "Slutsatser för Gävleborg och Dalarna")
+  expect_match(ppt$slides$beskr[[1]], "Bra för Gävleborg och Dalarna")
+})
+
+test_that("loggfil = TRUE ger en loggfil i utskriftsmappen med automatiskt namn", {
+  mapp <- file.path(testmapp(), "logg")
+  withr::local_options(rdverktyg.utskriftsmapp = mapp)
+  ppt <- suppressMessages(ppt_ny("Min presentation", mall = "inbyggd", loggfil = TRUE))
+  expect_true(dir.exists(mapp))
+  expect_match(basename(ppt$loggfil), "^min_presentation_.*\\.txt$")
+  expect_equal(dirname(ppt$loggfil), mapp)
+})

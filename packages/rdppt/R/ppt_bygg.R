@@ -28,10 +28,17 @@
 #'   den här presentationen, t.ex. `list(titel_stlk = 54)`. Det som inte
 #'   anges får mallens stil (se [ppt_mallprofil()]) och det som anges med
 #'   `options(rdppt.stil = list(...))`.
+#' @param region_vekt De regioner (läns- och/eller kommunkoder) presentationen byggs för. Anges de kan du skriva
+#'   `<region>` (t.ex. "Gävleborg och Dalarna", Dalarna sist) och `<regions>` (genitiv, "Gävleborgs och Dalarnas")
+#'   i huvudrubrik, underrubrik och i `rubrik`, `text` och `anteckningar` på slidesen, så byts de mot regionernas
+#'   namn. Uppgifterna finns också som `ppt$regioner`, se [ppt_regioner()]. `NULL` (standard) = inga regioner.
+#'   Anges inte `region_vekt` i [ppt_lagg_till_slide()] körs diagrammen fortfarande en gång utan region.
 #' @param loggfil Sökväg till en textfil där det som går fel när
 #'   presentationen byggs (ett diagram som hoppas över, och varför) loggas
 #'   fortlöpande. `NULL` (standard) = `options(rdppt.loggfil)`, annars ingen
-#'   loggfil. Problemen sammanfattas också när presentationen sparas.
+#'   loggfil. `TRUE` ger en loggfil i utskriftsmappen med automatiskt namn (presentationens namn, användaren,
+#'   och `_auto` om skriptet inte körs för hand), och mappen skapas om den saknas. Problemen sammanfattas
+#'   också när presentationen sparas.
 #' @param visa_manuell_datakalla `TRUE` (standard) låter diagramfunktionerna skriva ut meddelandet om att en
 #'   fil eller mapp är manuellt underhållen och kan vara inaktuell. `FALSE` döljer det medan presentationens
 #'   diagram skapas, för en renare konsol när du vet vilka källor som används. Gäller bara den här
@@ -58,12 +65,19 @@ ppt_ny <- function(huvudrubrik = NULL,
                    rubrik_namn = TRUE,
                    stil = NULL,
                    loggfil = NULL,
-                   visa_manuell_datakalla = TRUE) {
+                   visa_manuell_datakalla = TRUE,
+                   region_vekt = NULL) {
+
+  regioner <- if (is.null(region_vekt)) NULL else ppt_regioner(region_vekt)
+  huvudrubrik <- intern_ersatt_regionplatshallare(huvudrubrik, regioner)
+  if (is.character(underrubrik)) underrubrik <- intern_ersatt_regionplatshallare(underrubrik, regioner)
 
   profil <- intern_mall_aktuell(mall)
   message("rdppt: ny presentation påbörjad", if (intern_har_innehall(huvudrubrik)) paste0(": ", huvudrubrik) else "", ".")
   if (!is.null(stil) && !is.null(profil$stil)) profil$stil <- utils::modifyList(profil$stil, as.list(stil))
   if (is.null(loggfil)) loggfil <- getOption("rdppt.loggfil")
+  if (isTRUE(loggfil)) loggfil <- intern_loggfil_automatisk(huvudrubrik)
+  if (isFALSE(loggfil)) loggfil <- NULL
   layouter <- officer::layout_summary(intern_las_pptx(profil$mall_fil))
 
   if (is.null(bildmapp)) {
@@ -85,6 +99,7 @@ ppt_ny <- function(huvudrubrik = NULL,
       rubrik_namn = rubrik_namn,
       grundfil = NULL,
       loggfil = loggfil,
+      regioner = regioner,
       visa_manuell_datakalla = visa_manuell_datakalla,
       logg = intern_tom_logg(),
       slides = intern_tom_ppt_lista()
@@ -341,7 +356,7 @@ ppt_spara <- function(ppt,
 
   if (is.null(filnamn)) {
     filnamn <- if (intern_har_innehall(ppt$huvudrubrik)) {
-      gsub("^_+|_+$", "", gsub("[^a-z0-9]+", "_", chartr("åäöéü", "aaoeu", tolower(ppt$huvudrubrik))))
+      intern_filnamnsbas(ppt$huvudrubrik)
     } else {
       "presentation"
     }
