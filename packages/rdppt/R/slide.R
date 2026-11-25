@@ -208,9 +208,9 @@ intern_slide_rapporter <- function(pres, lp, profil, layout, master, anteckninga
 
   # länkarna längst ned: tre block i samma kolumner som listorna, med en rubrik och en länk i varje
   lankblock <- list(
-    list(rubrik = "Här finns alla våra rapporter", text = "shiny.regiondalarna.se", href = "https://shiny.regiondalarna.se/"),
     list(rubrik = "Samhällsanalys webbsida", text = "samhallsanalys.regiondalarna.se",
          href = "https://samhallsanalys.regiondalarna.se/"),
+    list(rubrik = "Här finns alla våra rapporter", text = "shiny.regiondalarna.se", href = "https://shiny.regiondalarna.se/"),
     list(rubrik = "Lyssna på vår podd", text = "Läget i Dalarna på Spotify",
          href = "https://open.spotify.com/show/74b9qUtR2cT0DNQMAyvlRa"))
   blockbredd <- (yta$width - luft * 2) / 3
