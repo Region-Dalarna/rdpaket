@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9123
+
+* `diag_matchning_u3_utbildningsfloden_scb()`: `kon_bakgr_klartext` kan ha flera värden, t.ex. `c("kvinnor", "män")`, som blir paneler i ett facetdiagram (`diag_facet = TRUE`) eller egna diagram (`FALSE`).
+
 # rddiagramkatalog 0.0.0.9122
 
 * `diag_inr_flyttnetto_bakgrund_scb()`: totalstrecket har nu ett synligt streck i teckenförklaringen.

@@ -11,12 +11,15 @@
 #'
 #' @param region_vekt Länskod eller kommunkod, bara en åt gången.
 #' @param utb_klartext Utbildningsgrupper som klartext. Standard `"samtliga utbildningsgrupper"`.
-#' @param kon_bakgr_klartext Urval av befolkningen, bara ett åt gången: `"totalt"` (standard), `"män"`,
-#'   `"kvinnor"`, `"inrikes född"`, `"utrikes född"` eller en åldersgrupp (`"18–24 år"`, `"25–29 år"` ... `"65–69 år"`).
+#' @param kon_bakgr_klartext Urval av befolkningen: `"totalt"` (standard), `"män"`, `"kvinnor"`,
+#'   `"inrikes född"`, `"utrikes född"` eller en åldersgrupp (`"18–24 år"`, `"25–29 år"` ... `"65–69 år"`).
+#'   Flera urval går bra, t.ex. `c("kvinnor", "män")`: med `diag_facet = TRUE` och en utbildningsgrupp blir
+#'   urvalen paneler i ett facetdiagram.
 #' @param visa_totalvarden `TRUE` (standard) markerar nettoförändringen (inflöden minus utflöden) per årsintervall med
 #'   en svart markering. Ritas bara i diagram med en utbildningsgrupp, inte i facetdiagram.
-#' @param diag_facet `TRUE` (standard) ger ett facetdiagram när flera utbildningsgrupper valts, `FALSE` ger ett
-#'   diagram per utbildningsgrupp.
+#' @param diag_facet `TRUE` (standard) ger ett facetdiagram när flera utbildningsgrupper (eller, med en
+#'   utbildningsgrupp, flera urval i `kon_bakgr_klartext`) valts, `FALSE` ger ett diagram per grupp/urval.
+#'   Är både flera utbildningsgrupper och flera urval valda blir utbildningsgrupperna paneler, med ett diagram per urval.
 #' @param visa_logga_i_diagram `TRUE` om logga ska visas i diagrammet.
 #' @param logga_sokvag Sökväg till logga. `NA` använder standardloggan.
 #' @param diagram_capt Diagrammets källtext.
@@ -45,7 +48,6 @@ diag_matchning_u3_utbildningsfloden_scb <- function(
   # ========================================== Inställningar ============================================
 
   if (length(region_vekt) != 1) stop("region_vekt ska vara en läns- eller kommunkod (ett värde).", call. = FALSE)
-  if (length(kon_bakgr_klartext) != 1) stop("kon_bakgr_klartext ska vara ett enda värde.", call. = FALSE)
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
   # ========================================== Hämta data ===============================================
@@ -87,7 +89,7 @@ diag_matchning_u3_utbildningsfloden_scb <- function(
                                                alpha = 1, fill = "black"))
   }
 
-  skapa <- function(df, titel_tillagg, fil_tillagg, facet) {
+  skapa <- function(df, titel_tillagg, fil_tillagg, facet_var) {
     diagramfil <- paste0("utbildningsfloden_", region_fil, "_", fil_tillagg, ".png")
     gg_obj <- rddiagram::SkapaStapelDiagram(
       skickad_df = df,
@@ -96,14 +98,14 @@ diag_matchning_u3_utbildningsfloden_scb <- function(
       skickad_x_grupp = "tabellinnehåll",
       geom_position_stack = TRUE,
       manual_color = rddiagram::diagramfarger("utb_floden"),
-      fokusera_varden = if (visa_totalvarden && !facet) nettomarkeringar(df) else NULL,
+      fokusera_varden = if (visa_totalvarden && is.null(facet_var)) nettomarkeringar(df) else NULL,
       diagram_titel = paste0("Utbildningsflöden i ", region_txt, titel_tillagg),
       diagram_capt = diagram_capt,
       manual_y_axis_title = "antal personer",
       x_axis_lutning = 45,
       manual_x_axis_text_vjust = 1,
       manual_x_axis_text_hjust = 1,
-      facet_grp = if (facet) "utbildning" else NULL,
+      facet_grp = facet_var,
       facet_legend_bottom = TRUE,
       legend_byrow = TRUE,
       lagg_pa_logga = visa_logga_i_diagram,
@@ -115,16 +117,46 @@ diag_matchning_u3_utbildningsfloden_scb <- function(
     stats::setNames(list(gg_obj), stringr::str_remove(diagramfil, "\\.[^.]+$"))
   }
 
-  flera <- length(unique(floden_df$utbildning)) > 1
-  if (flera && diag_facet) {
-    floden_df$utbildning <- stringr::str_wrap(floden_df$utbildning, 35)
-    gg_list <- skapa(floden_df, "", paste0(length(unique(floden_df$utbildning)), "_utbgrp"), TRUE)
-  } else {
-    gg_list <- purrr::flatten(purrr::map(unique(floden_df$utbildning_kod), \(kod) {
-      df <- floden_df[floden_df$utbildning_kod == kod, ]
-      skapa(df, paste0("\n", unique(df$utbildning)), kod, FALSE)
-    }))
-  }
+  # Facetdiagram: en panel per utbildningsgrupp, eller (med en grupp) en panel per urval i kon_bakgr_klartext.
+  # Allt som inte är facet blir egna diagram.
+  floden_df$kon_bakgr <- factor(floden_df$kon_bakgr, levels = unique(floden_df$kon_bakgr))
+  n_utb <- length(unique(floden_df$utbildning))
+  n_kon <- length(unique(floden_df$kon_bakgr))
+  kon_fil <- function(x) gsub("[^a-z0-9]+", "_", chartr("åäö", "aao", tolower(as.character(x))))
+
+  facet_var <- if (!diag_facet) NULL else if (n_utb > 1) "utbildning" else if (n_kon > 1) "kon_bakgr" else NULL
+  floden_df$utbildning <- stringr::str_wrap(floden_df$utbildning, 35)
+
+  # en rad per diagram: det som inte ligger som paneler delas upp i egna diagram
+  delar <- unique(floden_df[, c("utbildning_kod", "utbildning", "kon_bakgr")])
+  if (identical(facet_var, "utbildning")) delar <- delar[!duplicated(delar$kon_bakgr), ]
+  if (identical(facet_var, "kon_bakgr")) delar <- delar[!duplicated(delar$utbildning_kod), ]
+
+  gg_list <- purrr::flatten(purrr::map(seq_len(nrow(delar)), \(i) {
+    df <- floden_df
+    titel <- ""
+    fil <- character()
+    if (!identical(facet_var, "utbildning")) {
+      df <- df[df$utbildning_kod == delar$utbildning_kod[i], ]
+      if (n_utb > 1) {
+        titel <- paste0(titel, "\n", gsub("\n", " ", delar$utbildning[i]))
+        fil <- c(fil, delar$utbildning_kod[i])
+      }
+    } else {
+      fil <- c(fil, paste0(n_utb, "_utbgrp"))
+    }
+    if (!identical(facet_var, "kon_bakgr")) {
+      df <- df[df$kon_bakgr == delar$kon_bakgr[i], ]
+      if (n_kon > 1) {
+        titel <- paste0(titel, if (nzchar(titel)) ", " else "\n", delar$kon_bakgr[i])
+        fil <- c(fil, kon_fil(delar$kon_bakgr[i]))
+      }
+    } else {
+      fil <- c(fil, paste0(n_kon, "_urval"))
+    }
+    if (length(fil) == 0) fil <- unique(df$utbildning_kod)
+    skapa(df, titel, paste(fil, collapse = "_"), facet_var)
+  }))
 
   if (returnera_figur) return(gg_list)
   invisible(NULL)

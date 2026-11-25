@@ -25,14 +25,17 @@ diag_matchning_u3_utbildningsfloden_scb(
 
 \item{utb_klartext}{Utbildningsgrupper som klartext. Standard \code{"samtliga utbildningsgrupper"}.}
 
-\item{kon_bakgr_klartext}{Urval av befolkningen, bara ett åt gången: \code{"totalt"} (standard), \code{"män"},
-\code{"kvinnor"}, \code{"inrikes född"}, \code{"utrikes född"} eller en åldersgrupp (\code{"18–24 år"}, \code{"25–29 år"} ... \code{"65–69 år"}).}
+\item{kon_bakgr_klartext}{Urval av befolkningen: \code{"totalt"} (standard), \code{"män"}, \code{"kvinnor"},
+\code{"inrikes född"}, \code{"utrikes född"} eller en åldersgrupp (\code{"18–24 år"}, \code{"25–29 år"} ... \code{"65–69 år"}).
+Flera urval går bra, t.ex. \code{c("kvinnor", "män")}: med \code{diag_facet = TRUE} och en utbildningsgrupp blir
+urvalen paneler i ett facetdiagram.}
 
 \item{visa_totalvarden}{\code{TRUE} (standard) markerar nettoförändringen (inflöden minus utflöden) per årsintervall med
 en svart markering. Ritas bara i diagram med en utbildningsgrupp, inte i facetdiagram.}
 
-\item{diag_facet}{\code{TRUE} (standard) ger ett facetdiagram när flera utbildningsgrupper valts, \code{FALSE} ger ett
-diagram per utbildningsgrupp.}
+\item{diag_facet}{\code{TRUE} (standard) ger ett facetdiagram när flera utbildningsgrupper (eller, med en
+utbildningsgrupp, flera urval i \code{kon_bakgr_klartext}) valts, \code{FALSE} ger ett diagram per grupp/urval.
+Är både flera utbildningsgrupper och flera urval valda blir utbildningsgrupperna paneler, med ett diagram per urval.}
 
 \item{visa_logga_i_diagram}{\code{TRUE} om logga ska visas i diagrammet.}
 
