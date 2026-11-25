@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9128
+
+* `diag_matchning_e2_jobbfloden_naringsgren_scb()`: ny parameter `visa_flode`: `"uppdelat"` (standard, som tidigare), `"totalt"` (inflöden och utflöden totalt) eller `"bada"` (facetdiagram med båda vyerna, och med urval i `kon_bakgr_klartext` som egna rader). Nettoförändringen markeras nu med ett svart streck i alla paneler, och finns med i teckenförklaringen.
+
 # rddiagramkatalog 0.0.0.9127
 
 * `diag_bas_syss_per_bransch_manad_jmfr_1ar_tillbaka_scb()`: ny parameter `dela_upp_pa` för att visa förändringen uppdelad på `"kön och bakgrund"` (standard, som tidigare), bara `"kön"`, bara `"bakgrund"` (inrikes/utrikes födda) eller `"ingen"` (bara totalen per bransch). Filnamnet får ändelsen `_kon`, `_bakgrund` respektive `_totalt` när uppdelningen avviker från standarden.

@@ -9,6 +9,7 @@ diag_matchning_e2_jobbfloden_naringsgren_scb(
   naringsgren_klartext = "samtliga näringsgrenar",
   utb_klartext = "samtliga utbildningsgrupper",
   kon_bakgr_klartext = "totalt",
+  visa_flode = c("uppdelat", "totalt", "bada"),
   visa_totalvarden = TRUE,
   diag_facet = TRUE,
   facet_skala = "fixed",
@@ -31,9 +32,11 @@ diag_matchning_e2_jobbfloden_naringsgren_scb(
 
 \item{kon_bakgr_klartext}{Urval av befolkningen: \code{"totalt"} (standard), \code{"män"}, \code{"kvinnor"}, \code{"inrikes född"},  \code{"utrikes född"} eller en åldersgrupp (\code{"20–24 år"}, \code{"25–29 år"} ... \code{"65–69 år"}). Flera urval går bra, t.ex.  \code{c("kvinnor", "män")}: med \code{diag_facet = TRUE} och en näringsgren blir urvalen paneler i ett facetdiagram.}
 
-\item{visa_totalvarden}{\code{TRUE} (standard) markerar nettoförändringen (inflöden minus utflöden) per årsintervall med  en svart markering. Ritas bara i diagram med ett enda urval och en näringsgren, inte i facetdiagram.}
+\item{visa_flode}{Vad som ska visas: \code{"uppdelat"} (standard) ritar de fyra posterna staplade (nya förvärvsarbetande,  lämnat sysselsättning och jobbytare från/till annan näringsgren), \code{"totalt"} ritar bara inflöden totalt över och  utflöden totalt under nollstrecket, och \code{"bada"} ger ett facetdiagram med båda vyerna (totalen till vänster).}
 
-\item{diag_facet}{\code{TRUE} (standard) ger ett facetdiagram när flera näringsgrenar (eller, med en näringsgren, flera  urval i \code{kon_bakgr_klartext}) valts, \code{FALSE} ger ett diagram per näringsgren/urval. Är både flera näringsgrenar och  flera urval valda blir näringsgrenarna paneler, med ett diagram per urval.}
+\item{visa_totalvarden}{\code{TRUE} (standard) markerar nettoförändringen (inflöden minus utflöden) per årsintervall med  ett svart streck, även i facetdiagram.}
+
+\item{diag_facet}{\code{TRUE} (standard) ger ett facetdiagram när flera näringsgrenar (eller, med en näringsgren, flera  urval i \code{kon_bakgr_klartext}) valts, \code{FALSE} ger ett diagram per näringsgren/urval. Är både flera näringsgrenar och  flera urval valda blir näringsgrenarna paneler, med ett diagram per urval. Med \code{visa_flode = "bada"} är de två vyerna  paneler, och urvalen i \code{kon_bakgr_klartext} läggs som egna rader av paneler (en rad per urval); flera näringsgrenar  ger då ett diagram per näringsgren.}
 
 \item{facet_skala}{Y-axelns skala i facetdiagram: \code{"fixed"} (standard) ger samma axel i alla paneler, \code{"free"} ger  var sin axel.}
 
