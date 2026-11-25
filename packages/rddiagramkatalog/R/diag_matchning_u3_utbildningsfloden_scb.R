@@ -20,6 +20,8 @@
 #' @param diag_facet `TRUE` (standard) ger ett facetdiagram när flera utbildningsgrupper (eller, med en
 #'   utbildningsgrupp, flera urval i `kon_bakgr_klartext`) valts, `FALSE` ger ett diagram per grupp/urval.
 #'   Är både flera utbildningsgrupper och flera urval valda blir utbildningsgrupperna paneler, med ett diagram per urval.
+#' @param facet_skala Y-axelns skala i facetdiagram: `"fixed"` (standard) ger samma axel i alla paneler, `"free"` ger
+#'   var sin axel.
 #' @param visa_logga_i_diagram `TRUE` om logga ska visas i diagrammet.
 #' @param logga_sokvag Sökväg till logga. `NA` använder standardloggan.
 #' @param diagram_capt Diagrammets källtext.
@@ -36,6 +38,7 @@ diag_matchning_u3_utbildningsfloden_scb <- function(
     kon_bakgr_klartext = "totalt",
     visa_totalvarden = TRUE,
     diag_facet = TRUE,
+    facet_skala = "fixed",
     visa_logga_i_diagram = TRUE,
     logga_sokvag = NA,
     diagram_capt = "Källa: SCB:s öppna statistikdatabas, Regionala matchningsindikatorer\nBearbetning: Samhällsanalys, Region Dalarna",
@@ -106,6 +109,7 @@ diag_matchning_u3_utbildningsfloden_scb <- function(
       manual_x_axis_text_vjust = 1,
       manual_x_axis_text_hjust = 1,
       facet_grp = facet_var,
+      facet_scale = facet_skala,
       facet_legend_bottom = TRUE,
       legend_byrow = TRUE,
       lagg_pa_logga = visa_logga_i_diagram,

@@ -10,6 +10,7 @@ diag_matchning_u3_utbildningsfloden_scb(
   kon_bakgr_klartext = "totalt",
   visa_totalvarden = TRUE,
   diag_facet = TRUE,
+  facet_skala = "fixed",
   visa_logga_i_diagram = TRUE,
   logga_sokvag = NA,
   diagram_capt =
@@ -36,6 +37,9 @@ en svart markering. Ritas bara i diagram med en utbildningsgrupp, inte i facetdi
 \item{diag_facet}{\code{TRUE} (standard) ger ett facetdiagram när flera utbildningsgrupper (eller, med en
 utbildningsgrupp, flera urval i \code{kon_bakgr_klartext}) valts, \code{FALSE} ger ett diagram per grupp/urval.
 Är både flera utbildningsgrupper och flera urval valda blir utbildningsgrupperna paneler, med ett diagram per urval.}
+
+\item{facet_skala}{Y-axelns skala i facetdiagram: \code{"fixed"} (standard) ger samma axel i alla paneler, \code{"free"} ger
+var sin axel.}
 
 \item{visa_logga_i_diagram}{\code{TRUE} om logga ska visas i diagrammet.}
 

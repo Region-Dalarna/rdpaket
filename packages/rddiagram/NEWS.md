@@ -1,3 +1,7 @@
+# rddiagram 0.0.0.9047
+
+* `SkapaStapelDiagram()`: staplade diagram med både positiva och negativa värden och facet (`facet_scale = "fixed"`) beräknade y-axelns gräns över alla paneler ihop (staplarna i olika paneler summerades). Gränsen räknas nu per panel och x-värde.
+
 # rddiagram 0.0.0.9046
 
 * `SkapaStapelDiagram()` och `SkapaLinjeDiagram()` lägger filinställningarna (mapp, filnamn, mått, logga, format) som attributet `skrivinfo` på det returnerade diagrammet. Ny funktion `skriv_diagram_fran_skrivinfo()` skriver ett sådant diagram till fil utan att det byggs om.

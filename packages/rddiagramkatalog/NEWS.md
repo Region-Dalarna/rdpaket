@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9124
+
+* `diag_matchning_u3_utbildningsfloden_scb()`: ny parameter `facet_skala`. Standard `"fixed"` ger samma y-axel i alla paneler (tidigare fria axlar); `"free"` ger var sin.
+
 # rddiagramkatalog 0.0.0.9123
 
 * `diag_matchning_u3_utbildningsfloden_scb()`: `kon_bakgr_klartext` kan ha flera värden, t.ex. `c("kvinnor", "män")`, som blir paneler i ett facetdiagram (`diag_facet = TRUE`) eller egna diagram (`FALSE`).

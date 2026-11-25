@@ -26,8 +26,9 @@ intern_yaxel_grans <- function(plot_df, x_var, x_grupp, facet_grp, stacked, y_ax
 
   if (stacked) {
     if (max(plot_df$total, na.rm = TRUE) > 0 && min(plot_df$total, na.rm = TRUE) < 0) {
-      max_v <- intern_stack_extremvarde(plot_df, x_var, max, filter_tecken = 1)
-      min_v <- intern_stack_extremvarde(plot_df, x_var, min, filter_tecken = -1)
+      grupper <- stats::na.omit(c(x_var, facet_grp))
+      max_v <- intern_stack_extremvarde(plot_df, grupper, max, filter_tecken = 1)
+      min_v <- intern_stack_extremvarde(plot_df, grupper, min, filter_tecken = -1)
     } else {
       grupper <- if (!is.null(facet_grp)) {
         stats::na.omit(c(x_var, facet_grp, x_grupp))
