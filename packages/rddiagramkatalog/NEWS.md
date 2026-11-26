@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9137
+
+* Endast versionshöjning, för test av uppdateringsprocessen.
+
 # rddiagramkatalog 0.0.0.9136
 
 * Ny `diag_sjalvskattad_halsa_aldersgrupper_riket_fohm()`: tidsserie över andel med bra eller mycket bra självskattad hälsa per åldersgrupp (standard 65-84 och 85- år), uppdelad på kön, för riket (FoHM halsgodaald.px). Åldersuppdelning finns inte för län eller kommuner.
