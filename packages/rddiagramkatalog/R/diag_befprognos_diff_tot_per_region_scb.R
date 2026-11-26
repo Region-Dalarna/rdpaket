@@ -101,6 +101,8 @@ diag_befprognos_diff_tot_per_region_scb <- function(
   enhet <- ifelse(andel_istallet_for_antal, "andel", "antal")
   filnamn <- paste0("befprogn_", tolower(region_txt), "_", enhet, "_alla_tot.png")
 
+  # hamta_befprognos_diff_data() ger en rad per åldersgrupp - här ska bara totalen med
+  prognos_diff_df <- dplyr::filter(prognos_diff_df, aldergrp == "totalt")
   chart_df <- if (andel_istallet_for_antal) prognos_diff_df else dplyr::filter(prognos_diff_df, regionkod != fokus_regionkod)
 
   gg_obj <- rddiagram::SkapaStapelDiagram(

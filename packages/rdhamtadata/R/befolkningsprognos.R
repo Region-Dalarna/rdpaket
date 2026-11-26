@@ -411,16 +411,6 @@ hamta_befprognos_diff_data <- function(region_vekt = "20",
                                        prognos_ar = prognos_ar           # prognos_ar funkar bara för profet-uttag (för uttag från SCB:s API styr url:en vilket år som hämtas men i Profet kan flera år hämtas med samma url om det finns data för flera år i mappen)
                                        )
 
-  # Här skapar vi en rad med total folkmängd ====================================================
-  total_df <- befprogn_df |>
-    dplyr::group_by(regionkod, region, kön, år, prognos_ar) |>
-    dplyr::summarize(dplyr::across(dplyr::where(is.numeric), ~ sum(.x, na.rm = TRUE))) |>
-    dplyr::ungroup() |>
-    dplyr::mutate(ålder = "totalt ålder")
-
-  # Lägg på total_df som rad
-  befprogn_df <- dplyr::bind_rows(befprogn_df, total_df)
-
   prognosar <- befprogn_df$prognos_ar |> unique()                         # lägg prognosår(en) i en vektor
   startar <- as.character(as.numeric(prognosar) - 1)    # lägg startår(en) i en vektor
   slutar <- as.character(as.numeric(startar) + jmfrtid)   # lägg slutår(en) i en vektor
@@ -433,7 +423,7 @@ hamta_befprognos_diff_data <- function(region_vekt = "20",
     query = list(
       Region = region_vekt,
       Civilstand = c("OG", "G", "SK", "ÄNKL"),
-      Alder = c(0:99, "100+1", "TOT1"),
+      Alder = c(0:99, "100+", "100+1", "100+10"),   # kodnamnen för 100+ skiljer mellan tabellerna; ogiltiga hoppas över
       Kon = c("män", "kvinnor"),
       ContentsCode = "Folkmängd",
       Tid = startar
@@ -462,6 +452,9 @@ hamta_befprognos_diff_data <- function(region_vekt = "20",
            ar_beskr = paste0("Förändring ", start_ar, "-", slut_ar, " (prognos våren ",
                               prognos_ar, ")"),
            Folkmängd = round(Folkmängd))
+
+  # Totalen räknas alltid ut från åldersraderna (inte från tabellernas totalkod, som saknas i den äldre tabellen)
+  progn_bef <- dplyr::bind_rows(progn_bef, dplyr::mutate(progn_bef, aldergrp = "totalt"))
 
   # om vi inte vill ha könsuppdelad data (stöds ännu inte fullt ut) så tar vi bort det här
   if (!konsuppdelat) {

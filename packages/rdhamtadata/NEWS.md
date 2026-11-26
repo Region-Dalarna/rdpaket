@@ -1,3 +1,7 @@
+# rdhamtadata 0.0.0.9006
+
+* `hamta_befprognos_diff_data()`: startårets folkmängd hämtades med åldersgrupps- och totalkoder som bara finns i TAB5557, så för startår i TAB638 saknades 100+ år och totalen (andel blev `Inf`). Totalen räknas nu alltid som summan av åldersraderna och 100+ hämtas med kodnamn för båda tabellerna.
+
 # rdhamtadata 0.0.0.9005
 
 * `hamta_befprognos_data()` använder `rdverktyg::meddela_manuell_datakalla()` för meddelandet om lokala Profet-/Halland-mappar, så att det kan stängas av med `options(rdverktyg.visa_manuell_datakalla = FALSE)`. Meddelandets text är samma som för övriga manuella källor.
