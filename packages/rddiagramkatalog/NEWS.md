@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9134
+
+* `diag_hemtjanst_aldre_kolada()` visar nu länet (standard `"20"` i `region_vekt`) som ett viktat värde: summan av kommunernas antal med hemtjänst (Kolada N21703/N21705) dividerat med kommunernas folkmängd i åldersgruppen (SCB), i stället för att utelämna länet. Mot Koladas egna kommunandelar skiljer det som mest 0,35 procentenheter. År där någon kommun saknar värde utelämnas för länet.
+
 # rddiagramkatalog 0.0.0.9133
 
 * Ny funktion `diag_hemtjanst_aldre_kolada()`: andel invånare 65-79 år och 80+ år med hemtjänst (Kolada N21700 och N21704), som jämförelse mellan Dalarnas kommuner och riket ett år eller som tidsserie. Valbar åldersgrupp (`aldersgrupp`) och könsuppdelning (`konsuppdelat`). Nyckeltalen finns inte för län.

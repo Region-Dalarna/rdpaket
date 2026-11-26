@@ -4,9 +4,10 @@
 #' i ordinärt boende (Kolada N21700 och N21704), antingen som en jämförelse
 #' mellan regioner ett visst år (`diagramtyp = "regioner"`) eller som en
 #' tidsserie (`diagramtyp = "tidsserie"`). Nyckeltalen finns bara för
-#' kommuner och riket, inte för länet.
+#' kommuner och riket i Kolada, så länets värde räknas ut här (se Details).
 #'
-#' @param region_vekt Regionkoder (kommuner, `"00"` för riket). Standard är
+#' @param region_vekt Regionkoder: kommuner, `"00"` för riket och länskod (t.ex. `"20"`).
+#'   Länet beräknas som ett viktat värde (se Details). Standard är
 #'   Dalarnas kommuner och riket. Länskoden `"20"` tas bort, eftersom
 #'   nyckeltalen saknar värden för län.
 #' @param diagramtyp `"regioner"` (standard) jämför regionerna ett år,
@@ -31,9 +32,16 @@
 #' @param diag_fargvekt Färger för de två åldersgrupperna. Standard:
 #'   `rddiagram::diagramfarger("rus_sex")`.
 #'
+#' @details Länsvärdet finns inte i Kolada. Det räknas här som summan av
+#' kommunernas antal hemtjänsttagare (N21703 för 65-79 år, N21705 för 80+)
+#' dividerat med summan av kommunernas folkmängd i åldersgruppen (SCB). Det
+#' är alltså viktat efter befolkning, till skillnad från Koladas ovägda
+#' medelvärde av kommuner. Antalet är från 2021 en kommunindividuell median
+#' över årets månader. År där någon kommun saknar värde utelämnas för länet.
+#'
 #' @return En namngiven lista med ett `ggplot`-objekt.
 #' @export
-diag_hemtjanst_aldre_kolada <- function(region_vekt = rdverktyg::hamtakommuner("20", tamedlan = FALSE, tamedriket = TRUE),
+diag_hemtjanst_aldre_kolada <- function(region_vekt = rdverktyg::hamtakommuner("20", tamedlan = TRUE, tamedriket = TRUE),
                                         diagramtyp = c("regioner", "tidsserie"),
                                         aldersgrupp = c("bada", "65-79", "80+"),
                                         konsuppdelat = FALSE,
@@ -52,8 +60,9 @@ diag_hemtjanst_aldre_kolada <- function(region_vekt = rdverktyg::hamtakommuner("
   if (all(is.na(diag_fargvekt))) diag_fargvekt <- rddiagram::diagramfarger("rus_sex")
   utmapp <- intern_sakerstall_utmapp(utmapp, skriv_diagramfil)
 
-  # Kolada har inga värden för län (bara kommuner och riket)
-  region_vekt <- setdiff(region_vekt, "20")
+  # Kolada har inga värden för län: länsvärdet räknas ut själv (se intern_hemtjanst_lan_viktat())
+  lan_vekt <- region_vekt[nchar(region_vekt) <= 2 & region_vekt != "00"]
+  kolada_vekt <- setdiff(region_vekt, lan_vekt)
 
   # ========================================== Hämta data ============================================
 
@@ -63,7 +72,7 @@ diag_hemtjanst_aldre_kolada <- function(region_vekt = rdverktyg::hamtakommuner("
   flera_aldrar <- length(aldersgrupper) > 1
 
   hemtjanst_aldre <- rdverktyg::hamta_kolada_df(kpi_id = names(aldersgrupper),
-                                                valda_kommuner = region_vekt,
+                                                valda_kommuner = kolada_vekt,
                                                 valda_ar = intern_tolka_ar_intervall(tid_koder),
                                                 konsuppdelat = konsuppdelat) |>
     dplyr::filter(!is.na(varde)) |>
@@ -71,6 +80,13 @@ diag_hemtjanst_aldre_kolada <- function(region_vekt = rdverktyg::hamtakommuner("
                   region = rdverktyg::skapa_kortnamn_lan(region),
                   ar = as.integer(ar)) |>
     dplyr::select(ar, regionkod, region, kon, aldersgrupp, varde)
+
+  for (lan in lan_vekt) {
+    hemtjanst_aldre <- dplyr::bind_rows(
+      hemtjanst_aldre,
+      intern_hemtjanst_lan_viktat(lan, ar_vekt = unique(hemtjanst_aldre$ar), konsuppdelat = konsuppdelat,
+                                  aldersgrupper = unname(aldersgrupper)))
+  }
 
   if (nrow(hemtjanst_aldre) == 0) stop("Inga data från Kolada för valda regioner och år.", call. = FALSE)
   if (konsuppdelat && !all(unique(hemtjanst_aldre$kon) %in% c("Kvinnor", "Män"))) {
@@ -84,7 +100,8 @@ diag_hemtjanst_aldre_kolada <- function(region_vekt = rdverktyg::hamtakommuner("
   }
 
   diagram_capt <- paste0("Källa: Kolada (RKA)\nBearbetning: Samhällsanalys, Region Dalarna\n",
-                         "Diagramförklaring: Personer i åldersgruppen med hemtjänst i ordinärt boende, dividerat med antal invånare i åldersgruppen den 31/12.")
+                         "Diagramförklaring: Personer i åldersgruppen med hemtjänst i ordinärt boende, dividerat med antal invånare i åldersgruppen den 31/12.",
+                         if (length(lan_vekt) > 0) "\nLänet är summan av kommunernas antal med hemtjänst dividerat med summan av kommunernas invånare (SCB), inte ett medelvärde av kommunerna." else "")
   gg_list <- list()
 
   # Vad som skiljs åt med färg och vad som delas i rutor:
@@ -164,4 +181,46 @@ diag_hemtjanst_aldre_kolada <- function(region_vekt = rdverktyg::hamtakommuner("
 
   if (diagramtyp == "regioner") gg_list[[sub("\\.png$", "", filnamn)]] <- gg_obj
   if (returnera_figur) return(gg_list)
+}
+
+# Länets andel med hemtjänst, viktad: summa antal hemtjänsttagare / summa folkmängd i åldersgruppen.
+# Antal från Kolada (N21703 = 65-79 år, N21705 = 80+ år), folkmängd från SCB (31/12).
+# Returnerar samma kolumner som Kolada-uttaget: ar, regionkod, region, kon, aldersgrupp, varde.
+intern_hemtjanst_lan_viktat <- function(lan, ar_vekt, konsuppdelat, aldersgrupper) {
+  kommuner <- rdverktyg::hamtakommuner(lan, tamedlan = FALSE, tamedriket = FALSE)
+  antal_kpi <- c("N21703" = "65-79 år", "N21705" = "80+ år")
+  antal_kpi <- antal_kpi[antal_kpi %in% aldersgrupper]
+
+  antal_df <- rdverktyg::hamta_kolada_df(kpi_id = names(antal_kpi), valda_kommuner = kommuner,
+                                         valda_ar = ar_vekt, konsuppdelat = konsuppdelat) |>
+    dplyr::mutate(aldersgrupp = unname(antal_kpi[variabelkod]), ar = as.integer(ar),
+                  kon = if (konsuppdelat) kon else "Båda könen")
+
+  pop_df <- pxweb2r::pxweb2_get_data(
+    table = c("TAB638", "TAB5557"),
+    query = list(Region = kommuner,
+                 Civilstand = c("OG", "G", "SK", "ÄNKL"),
+                 Alder = c(65:99, "100+", "100+1", "100+10"),   # kodnamnen för 100+ skiljer mellan tabellerna
+                 Kon = c("män", "kvinnor"), ContentsCode = "Folkmängd",
+                 Tid = as.character(unique(antal_df$ar))),
+    quiet = TRUE, on_all_values_invalid = "null") |>
+    dplyr::distinct(table_id, region_kod, civilstånd, ålder, kön, år, .keep_all = TRUE) |>   # 100+ kan komma med två koder
+    dplyr::mutate(aldersgrupp = ifelse(readr::parse_number(ålder) >= 80, "80+ år", "65-79 år"),
+                  kon = if (konsuppdelat) ifelse(kön == "kvinnor", "Kvinnor", "Män") else "Båda könen",
+                  ar = as.integer(år)) |>
+    dplyr::group_by(regionkod = region_kod, ar, kon, aldersgrupp) |>
+    dplyr::summarise(pop = sum(value, na.rm = TRUE), .groups = "drop")
+
+  antal_df |>
+    dplyr::filter(!is.na(varde)) |>
+    dplyr::select(ar, regionkod, kon, aldersgrupp, antal = varde) |>
+    dplyr::left_join(pop_df, by = c("ar", "regionkod", "kon", "aldersgrupp")) |>
+    dplyr::group_by(ar, kon, aldersgrupp) |>
+    # län-året utelämnas om någon kommun saknar antal eller folkmängd
+    dplyr::filter(dplyr::n() == length(kommuner), !any(is.na(pop))) |>
+    dplyr::summarise(varde = sum(antal) / sum(pop) * 100, .groups = "drop") |>
+    dplyr::mutate(regionkod = lan,
+                  region = rdverktyg::skapa_kortnamn_lan(rdverktyg::hamtaregion_kod_namn(lan)$region),
+                  aldersgrupp = factor(aldersgrupp, levels = unname(aldersgrupper))) |>
+    dplyr::select(ar, regionkod, region, kon, aldersgrupp, varde)
 }

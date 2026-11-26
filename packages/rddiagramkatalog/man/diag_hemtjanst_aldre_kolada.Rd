@@ -5,7 +5,7 @@
 \title{Diagram: andel äldre med hemtjänst (Kolada)}
 \usage{
 diag_hemtjanst_aldre_kolada(
-  region_vekt = rdverktyg::hamtakommuner("20", tamedlan = FALSE, tamedriket = TRUE),
+  region_vekt = rdverktyg::hamtakommuner("20", tamedlan = TRUE, tamedriket = TRUE),
   diagramtyp = c("regioner", "tidsserie"),
   aldersgrupp = c("bada", "65-79", "80+"),
   konsuppdelat = FALSE,
@@ -21,7 +21,8 @@ diag_hemtjanst_aldre_kolada(
 )
 }
 \arguments{
-\item{region_vekt}{Regionkoder (kommuner, \code{"00"} för riket). Standard är
+\item{region_vekt}{Regionkoder: kommuner, \code{"00"} för riket och länskod (t.ex. \code{"20"}).
+Länet beräknas som ett viktat värde (se Details). Standard är
 Dalarnas kommuner och riket. Länskoden \code{"20"} tas bort, eftersom
 nyckeltalen saknar värden för län.}
 
@@ -66,5 +67,13 @@ Andel av invånarna i åldersgrupperna 65-79 år och 80+ år som har hemtjänst
 i ordinärt boende (Kolada N21700 och N21704), antingen som en jämförelse
 mellan regioner ett visst år (\code{diagramtyp = "regioner"}) eller som en
 tidsserie (\code{diagramtyp = "tidsserie"}). Nyckeltalen finns bara för
-kommuner och riket, inte för länet.
+kommuner och riket i Kolada, så länets värde räknas ut här (se Details).
+}
+\details{
+Länsvärdet finns inte i Kolada. Det räknas här som summan av
+kommunernas antal hemtjänsttagare (N21703 för 65-79 år, N21705 för 80+)
+dividerat med summan av kommunernas folkmängd i åldersgruppen (SCB). Det
+är alltså viktat efter befolkning, till skillnad från Koladas ovägda
+medelvärde av kommuner. Antalet är från 2021 en kommunindividuell median
+över årets månader. År där någon kommun saknar värde utelämnas för länet.
 }
