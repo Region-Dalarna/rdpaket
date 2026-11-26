@@ -2,27 +2,51 @@
 % Please edit documentation in R/diag_gymnasieantagna_antal.R
 \name{diag_gymnasieantagna_antal}
 \alias{diag_gymnasieantagna_antal}
-\title{Diagram: antagna gymnasieelever per program}
+\title{Diagram: gymnasieantagningen per program eller över tid}
 \usage{
 diag_gymnasieantagna_antal(
+  matt = c("antagna", "forstahandssokande", "platser", "outnyttjade"),
+  konsuppdelat = FALSE,
+  diagramtyp = c("program", "tidsserie"),
+  ar = "9999",
+  program = NULL,
+  niva = c("program", "inriktning"),
+  kommun = NULL,
   utmapp = rdverktyg::utskriftsmapp(),
   output_mapp_data = NA,
   filnamn_data = "gymnasieantagning.xlsx",
   diag_fargvekt = rddiagram::diagramfarger("rus_sex"),
   skriv_diagramfil = TRUE,
-  diagram_capt =
-    "Källa: Gymnasieantagningen, Dalarnas kommunförbund\\nBearbetning:Samhällsanalys, Region Dalarna\\nDiagramförklaring: Antagna i början av september",
-  diagram_capt_fleraar =
-    "Källa: Gymnasieantagningen, Dalarnas kommunförbund\\nBearbetning:Samhällsanalys, Region Dalarna\\nDiagramförklaring: Antagna i början av september\\nEnbart program som existerat samtliga år",
-  diag_antal = TRUE,
-  diag_antal_fleraar = TRUE,
-  valda_ar = c("99", 2017, "9999"),
-  konsuppdelat = FALSE,
+  diagram_capt = "auto",
   returnera_figur = TRUE,
   returnera_data = FALSE
 )
 }
 \arguments{
+\item{matt}{Vilket mått som ska visas: \code{"antagna"} (standard),
+\code{"forstahandssokande"}, \code{"platser"} eller \code{"outnyttjade"}.}
+
+\item{konsuppdelat}{Om \code{TRUE} delas diagrammet upp på kvinnor och män. Går
+bara för \code{"antagna"} och \code{"forstahandssokande"}.}
+
+\item{diagramtyp}{\code{"program"} (standard) jämför alla program ett år,
+\code{"tidsserie"} visar utvecklingen över tid.}
+
+\item{ar}{Vilket år som visas i programdiagrammet. \code{"9999"} (standard) =
+senaste året i data. Används inte för tidsserien.}
+
+\item{program}{Valfritt: ett eller flera program (eller programinriktningar
+om \code{niva = "inriktning"}) som tidsserien ska visas för, ett diagram per
+program. \code{NULL} (standard) = alla program sammantaget. I
+programdiagrammet begränsas urvalet till de angivna programmen.}
+
+\item{niva}{\code{"program"} (standard) eller \code{"inriktning"}
+(\code{program_inriktning} i källan).}
+
+\item{kommun}{Valfritt: kommunkoder eller kommunnamn att begränsa till,
+t.ex. \code{c("2080", "2081")} eller \code{"Falun"}. \code{NULL} (standard) = hela
+Dalarna.}
+
 \item{utmapp}{Mapp där figuren sparas. Måste finnas om
 \code{skriv_diagramfil = TRUE}.}
 
@@ -35,31 +59,26 @@ anges. \code{NA} (standard) = data sparas inte.}
 
 \item{skriv_diagramfil}{Om TRUE sparas figuren till \code{utmapp}.}
 
-\item{diagram_capt}{Diagrammets källtext (diagram för senaste år).}
-
-\item{diagram_capt_fleraar}{Diagrammets källtext (diagram för flera år).}
-
-\item{diag_antal}{Skapar ett diagram för senaste år.}
-
-\item{diag_antal_fleraar}{Skapar ett diagram för flera år.}
-
-\item{valda_ar}{Vilka år som ska väljas. \code{"99"} ger första året, \code{"9999"}
-ger senaste året.}
-
-\item{konsuppdelat}{Skall diagrammet (för senaste år) vara uppdelat på
-kön.}
+\item{diagram_capt}{Diagrammets källtext. \code{"auto"} (standard) väljer text
+utifrån vilket mått som visas.}
 
 \item{returnera_figur}{Skall figur returneras (i en lista).}
 
 \item{returnera_data}{Skall data returneras (till R-studios globala
-miljö).}
+miljö, som \code{gymnasieantagning_df}).}
 }
 \value{
 En namngiven lista med \code{ggplot}-objekt.
 }
 \description{
-Antal antagna gymnasieelever i Dalarna per program - antingen för
-senaste år (uppdelat på kön eller inte) eller jämfört mellan valda år.
-Data hämtas från en lokal, manuellt underhållen källa (Dalarnas
-kommunförbunds egen Excel-export).
+Visar antagna, förstahandssökande, platser eller outnyttjade platser i
+gymnasieantagningen i Dalarna, antingen som en jämförelse mellan alla
+program ett visst år (\code{diagramtyp = "program"}) eller som en tidsserie
+(\code{diagramtyp = "tidsserie"}) för alla program sammantaget eller ett valt
+program. Data hämtas från tabellen \code{dkf.gymnasieantagna} i databasen
+\code{oppna_data}, samma källa som utbildningsappen.
+}
+\details{
+Antagna och förstahandssökande kan delas upp på kön. Platser och
+outnyttjade platser finns bara totalt i källan.
 }

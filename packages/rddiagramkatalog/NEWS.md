@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9131
+
+* `diag_gymnasieantagna_antal()` läser nu `dkf.gymnasieantagna` i `oppna_data` (samma källa som utbildningsappen) i stället för den lokala skriptfilen på G:. Ny `matt` (antagna, förstahandssökande, platser, outnyttjade; kön bara för de två första), `diagramtyp` ("program" för ett år eller "tidsserie"), `ar`, `program`, `niva` (program eller inriktning) och `kommun`. Parametrarna `diag_antal`, `diag_antal_fleraar`, `valda_ar` och `diagram_capt_fleraar` är borttagna.
+
 # rddiagramkatalog 0.0.0.9130
 
 * `diag_befprognos_diff_tot_per_region_scb()`: diagrammet summerade förändringen över alla åldersgrupper (en rad per åldersgrupp från `hamta_befprognos_diff_data()`) och blev därför kraftigt överdrivet (t.ex. Orsa +50 %). Filtrerar nu på totalen (`aldergrp == "totalt"`).
