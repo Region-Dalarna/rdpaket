@@ -1,6 +1,8 @@
 # rddiagramkatalog 0.0.0.9130
 
-* `diag_befprognos_diff_tot_per_region_scb()`: diagrammet summerade förändringen över alla åldersgrupper (en rad per åldersgrupp från `hamta_befprognos_diff_data()`) och blev därför kraftigt överdrivet (t.ex. Orsa +50 # rddiagramkatalog 0.0.0.9129
+* `diag_befprognos_diff_tot_per_region_scb()`: diagrammet summerade förändringen över alla åldersgrupper (en rad per åldersgrupp från `hamta_befprognos_diff_data()`) och blev därför kraftigt överdrivet (t.ex. Orsa +50 %). Filtrerar nu på totalen (`aldergrp == "totalt"`).
+
+# rddiagramkatalog 0.0.0.9129
 
 * `diag_matchning_e2_jobbfloden_naringsgren_scb(visa_flode = "jobbytare")` visar bara jobbytare från respektive till annan näringsgren.
 
