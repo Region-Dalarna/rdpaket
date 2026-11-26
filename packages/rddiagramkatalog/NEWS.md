@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9133
+
+* Ny funktion `diag_hemtjanst_aldre_kolada()`: andel invånare 65-79 år och 80+ år med hemtjänst (Kolada N21700 och N21704), som jämförelse mellan Dalarnas kommuner och riket ett år eller som tidsserie. Valbar åldersgrupp (`aldersgrupp`) och könsuppdelning (`konsuppdelat`). Nyckeltalen finns inte för län.
+
 # rddiagramkatalog 0.0.0.9132
 
 * `diag_gymnasieantagna_antal()`: nya `max_antal` (högst så många staplar; 25 som standard på inriktningsnivå utan valt program, eftersom det finns över hundra inriktningar) och `exkludera_introduktion`. Med `niva = "inriktning"` kan `program` vara ett helt program, vilket ger dess inriktningar. Filnamnen får suffix för inriktning och valt program så att diagram inte skriver över varandra.
