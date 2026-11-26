@@ -9,6 +9,7 @@ diag_sjalvskattad_halsa_kon_lan_kommun_fohm(
   andel_konfinterv_klartext = "Andel",
   kon_klartext = c("Kvinnor", "Män"),
   tid_koder = "9999",
+  diagramtyp = c("stapel", "linje"),
   region_sort = FALSE,
   diag_fargvekt = NA,
   utmapp = rdverktyg::utskriftsmapp(),
@@ -30,7 +31,10 @@ diag_sjalvskattad_halsa_kon_lan_kommun_fohm(
 
 \item{kon_klartext}{\code{c("Kvinnor", "Män")} (finns också \code{"Totalt"}), eller \code{NA} för ingen könsuppdelning.}
 
-\item{tid_koder}{\code{"9999"} = senaste år.}
+\item{tid_koder}{\code{"9999"} = senaste år, \code{"*"} = alla perioder.}
+
+\item{diagramtyp}{\code{"stapel"} (standard) eller \code{"linje"}. Linjediagram gäller när flera
+perioder visas (\code{tid_koder}); med en period ritas alltid staplar.} = senaste år.}
 
 \item{region_sort}{TRUE så sorteras regionerna enligt ordningen i \code{region_vekt}.}
 

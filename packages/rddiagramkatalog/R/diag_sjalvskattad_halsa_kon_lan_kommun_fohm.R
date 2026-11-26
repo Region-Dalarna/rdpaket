@@ -10,7 +10,9 @@
 #' @param region_vekt Region(er) - län eller kommuner.
 #' @param andel_konfinterv_klartext `"Andel"` eller konfidensintervall-varianter.
 #' @param kon_klartext `c("Kvinnor", "Män")` (finns också `"Totalt"`), eller `NA` för ingen könsuppdelning.
-#' @param tid_koder `"9999"` = senaste år.
+#' @param tid_koder `"9999"` = senaste år, `"*"` = alla perioder.
+#' @param diagramtyp `"stapel"` (standard) eller `"linje"`. Linjediagram gäller när flera
+#'   perioder visas (`tid_koder`); med en period ritas alltid staplar.
 #' @param region_sort TRUE så sorteras regionerna enligt ordningen i `region_vekt`.
 #' @param diag_fargvekt Valfri färgvektor.
 #' @param utmapp Mapp där diagrammet sparas. Måste finnas om `skriv_diagramfil = TRUE`.
@@ -30,6 +32,7 @@ diag_sjalvskattad_halsa_kon_lan_kommun_fohm <- function(
     andel_konfinterv_klartext = "Andel",
     kon_klartext = c("Kvinnor", "Män"),
     tid_koder = "9999",
+    diagramtyp = c("stapel", "linje"),
     region_sort = FALSE,
     diag_fargvekt = NA,
     utmapp = rdverktyg::utskriftsmapp(),
@@ -58,6 +61,8 @@ diag_sjalvskattad_halsa_kon_lan_kommun_fohm <- function(
   # diag_sjalvskattad_halsa_kon_lan_fohm.R (mot en annan FoHM-tabell, halsgodyreg.px i stället för
   # hlv1allmxreg.px - den här tabellen har bara ett hälsotillstånd men stödjer både län och kommuner).
   # ===============================================================================================
+
+  diagramtyp <- match.arg(diagramtyp)
 
   if (!requireNamespace("pxweb", quietly = TRUE)) install.packages("pxweb")
 
@@ -156,6 +161,26 @@ diag_sjalvskattad_halsa_kon_lan_kommun_fohm <- function(
   konsuppdelat <- length(unique(sjalvskattad_halsa_df$Kön)) > 1
   flera_regioner <- length(unique(sjalvskattad_halsa_df$region)) > 1
 
+  if (diagramtyp == "linje" && flera_ar) {
+    diagramfil <- sub("\\.png$", "_linje.png", diagramfil)
+    gg_obj <- rddiagram::SkapaLinjeDiagram(skickad_df = sjalvskattad_halsa_df,
+                               skickad_x_var = "År",
+                               skickad_y_var = "Hälsa efter region, kön och år. Andel",
+                               skickad_x_grupp = if (konsuppdelat) "Kön" else NA,
+                               diagram_titel = if (ta_bort_diagramtitel) NULL else diagramtitel,
+                               diagram_capt = diagram_capt,
+                               stodlinjer_avrunda_fem = TRUE,
+                               filnamn_diagram = diagramfil,
+                               manual_y_axis_title = "procent",
+                               procent_0_100_10intervaller = diagram_0_till_100_procent,
+                               lagga_till_punkter = TRUE,
+                               x_axis_lutning = 45,
+                               manual_color = diag_fargvekt,
+                               lagg_pa_logga = if (is.null(logga_sokvag)) FALSE else TRUE,
+                               logga_path = logga_sokvag,
+                               output_mapp = utmapp,
+                               skriv_till_diagramfil = skriv_diagramfil)
+  } else {
   gg_obj <- rddiagram::SkapaStapelDiagram(skickad_df = sjalvskattad_halsa_df,
                                skickad_x_var = if (flera_ar) "År" else "region",
                                skickad_y_var = "Hälsa efter region, kön och år. Andel",
@@ -180,6 +205,7 @@ diag_sjalvskattad_halsa_kon_lan_kommun_fohm <- function(
                                facet_legend_bottom = if (konsuppdelat) TRUE else FALSE,
                                skriv_till_diagramfil = skriv_diagramfil
   )
+  }
 
   gg_list <- c(gg_list, list(gg_obj))
   names(gg_list)[[length(gg_list)]] <- stringr::str_remove(diagramfil, ".png")
