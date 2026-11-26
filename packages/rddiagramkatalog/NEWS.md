@@ -1,3 +1,7 @@
+# rddiagramkatalog 0.0.0.9132
+
+* `diag_gymnasieantagna_antal()`: nya `max_antal` (högst så många staplar; 25 som standard på inriktningsnivå utan valt program, eftersom det finns över hundra inriktningar) och `exkludera_introduktion`. Med `niva = "inriktning"` kan `program` vara ett helt program, vilket ger dess inriktningar. Filnamnen får suffix för inriktning och valt program så att diagram inte skriver över varandra.
+
 # rddiagramkatalog 0.0.0.9131
 
 * `diag_gymnasieantagna_antal()` läser nu `dkf.gymnasieantagna` i `oppna_data` (samma källa som utbildningsappen) i stället för den lokala skriptfilen på G:. Ny `matt` (antagna, förstahandssökande, platser, outnyttjade; kön bara för de två första), `diagramtyp` ("program" för ett år eller "tidsserie"), `ar`, `program`, `niva` (program eller inriktning) och `kommun`. Parametrarna `diag_antal`, `diag_antal_fleraar`, `valda_ar` och `diagram_capt_fleraar` är borttagna.

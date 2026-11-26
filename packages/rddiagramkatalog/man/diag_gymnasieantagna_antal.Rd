@@ -11,6 +11,8 @@ diag_gymnasieantagna_antal(
   ar = "9999",
   program = NULL,
   niva = c("program", "inriktning"),
+  max_antal = NULL,
+  exkludera_introduktion = FALSE,
   kommun = NULL,
   utmapp = rdverktyg::utskriftsmapp(),
   output_mapp_data = NA,
@@ -38,7 +40,15 @@ senaste året i data. Används inte för tidsserien.}
 \item{program}{Valfritt: ett eller flera program (eller programinriktningar
 om \code{niva = "inriktning"}) som tidsserien ska visas för, ett diagram per
 program. \code{NULL} (standard) = alla program sammantaget. I
-programdiagrammet begränsas urvalet till de angivna programmen.}
+programdiagrammet begränsas urvalet till de angivna programmen. Med
+\code{niva = "inriktning"} går det också att ange ett helt program (t.ex.
+\code{"Teknikprogrammet"}), vilket ger programmets alla inriktningar.}
+
+\item{max_antal}{Högst så många staplar i programdiagrammet (de största).
+\code{NULL} (standard) = alla program, men 25 om \code{niva = "inriktning"} och
+inget \code{program} är valt (det finns över hundra inriktningar).}
+
+\item{exkludera_introduktion}{Om \code{TRUE} utelämnas introduktionsprogrammen.}
 
 \item{niva}{\code{"program"} (standard) eller \code{"inriktning"}
 (\code{program_inriktning} i källan).}

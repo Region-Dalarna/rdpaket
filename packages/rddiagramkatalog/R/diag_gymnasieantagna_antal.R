@@ -21,9 +21,15 @@
 #' @param program Valfritt: ett eller flera program (eller programinriktningar
 #'   om `niva = "inriktning"`) som tidsserien ska visas för, ett diagram per
 #'   program. `NULL` (standard) = alla program sammantaget. I
-#'   programdiagrammet begränsas urvalet till de angivna programmen.
+#'   programdiagrammet begränsas urvalet till de angivna programmen. Med
+#'   `niva = "inriktning"` går det också att ange ett helt program (t.ex.
+#'   `"Teknikprogrammet"`), vilket ger programmets alla inriktningar.
 #' @param niva `"program"` (standard) eller `"inriktning"`
 #'   (`program_inriktning` i källan).
+#' @param max_antal Högst så många staplar i programdiagrammet (de största).
+#'   `NULL` (standard) = alla program, men 25 om `niva = "inriktning"` och
+#'   inget `program` är valt (det finns över hundra inriktningar).
+#' @param exkludera_introduktion Om `TRUE` utelämnas introduktionsprogrammen.
 #' @param kommun Valfritt: kommunkoder eller kommunnamn att begränsa till,
 #'   t.ex. `c("2080", "2081")` eller `"Falun"`. `NULL` (standard) = hela
 #'   Dalarna.
@@ -48,6 +54,8 @@ diag_gymnasieantagna_antal <- function(matt = c("antagna", "forstahandssokande",
                                        ar = "9999",
                                        program = NULL,
                                        niva = c("program", "inriktning"),
+                                       max_antal = NULL,
+                                       exkludera_introduktion = FALSE,
                                        kommun = NULL,
                                        utmapp = rdverktyg::utskriftsmapp(),
                                        output_mapp_data = NA,
@@ -96,13 +104,16 @@ diag_gymnasieantagna_antal <- function(matt = c("antagna", "forstahandssokande",
   # =============================================== Läser in data ===============================================
 
   rad <- rdpostgres::oppnadata_hamta("dkf", "gymnasieantagna")
-  df <- intern_gymnasieantagna_bearbeta(rad, matt_info, konsuppdelat, niva, kommun)
+  df <- intern_gymnasieantagna_bearbeta(rad, matt_info, konsuppdelat, niva, kommun, exkludera_introduktion)
   kommun_namn <- if (is.null(kommun)) NULL else unique(rad$kommun[as.character(rad$kommkod) %in% kommun | rad$kommun %in% kommun])
 
   if (nrow(df) == 0) stop("Inga rader i dkf.gymnasieantagna för valt urval.", call. = FALSE)
 
+  # Ett helt program får anges även på inriktningsnivå (ger dess inriktningar)
+  program_match <- function(d, prog) d$program %in% prog | d$overordnat %in% prog
+
   if (!is.null(program)) {
-    saknas <- setdiff(program, unique(df$program))
+    saknas <- setdiff(program, c(df$program, df$overordnat))
     if (length(saknas) > 0) {
       stop("Hittar inte: ", paste(saknas, collapse = ", "), ". Finns: ",
            paste(sort(unique(df$program)), collapse = "; "), call. = FALSE)
@@ -124,10 +135,20 @@ diag_gymnasieantagna_antal <- function(matt = c("antagna", "forstahandssokande",
   if (diagramtyp == "program") {
     valt_ar <- if (identical(as.character(ar), "9999")) max(df$ar) else as.integer(ar)
     plot_df <- dplyr::filter(df, ar == valt_ar)
-    if (!is.null(program)) plot_df <- dplyr::filter(plot_df, program %in% !!program)
+    if (!is.null(program)) plot_df <- plot_df[program_match(plot_df, program), ]
+    antal_staplar <- if (!is.null(max_antal)) max_antal else if (niva == "inriktning" && is.null(program)) 25 else Inf
+    if (is.finite(antal_staplar)) {
+      storst <- plot_df |>
+        dplyr::group_by(program) |>
+        dplyr::summarise(summa = sum(varde, na.rm = TRUE), .groups = "drop") |>
+        dplyr::slice_max(summa, n = antal_staplar, with_ties = FALSE)
+      plot_df <- dplyr::filter(plot_df, program %in% storst$program)
+    }
     if (nrow(plot_df) == 0) stop("Inga data för år ", valt_ar, ".", call. = FALSE)
 
-    filnamn <- paste0("gymnasieantagning_", matt_info$fil, if (konsuppdelat) "_kon" else "", "_", valt_ar, ".png")
+    filnamn <- paste0("gymnasieantagning_", matt_info$fil, if (konsuppdelat) "_kon" else "", if (niva == "inriktning") "_inriktning" else "",
+                       if (!is.null(program)) paste0("_", gsub("^_+|_+$", "", gsub("[^a-z0-9]+", "_", chartr("åäöéü", "aaoeu", tolower(paste(program, collapse = "_")))))) else "",
+                       "_", valt_ar, ".png")
     gg_obj <- rddiagram::SkapaStapelDiagram(
       skickad_df = plot_df,
       skickad_x_var = "program",
@@ -157,14 +178,14 @@ diag_gymnasieantagna_antal <- function(matt = c("antagna", "forstahandssokande",
     urval <- if (is.null(program)) list(NULL) else as.list(program)
 
     for (prog in urval) {
-      plot_df <- if (is.null(prog)) df else dplyr::filter(df, program == prog)
+      plot_df <- if (is.null(prog)) df else df[program_match(df, prog), ]
       plot_df <- plot_df |>
         dplyr::group_by(dplyr::across(dplyr::any_of(c("ar", "Kon")))) |>
         dplyr::summarise(varde = sum(varde, na.rm = TRUE), .groups = "drop") |>
         dplyr::mutate(ar = as.character(ar))
 
       namn_del <- if (is.null(prog)) "alla_program" else gsub("^_+|_+$", "", gsub("[^a-z0-9]+", "_", chartr("åäöéü", "aaoeu", tolower(prog))))
-      filnamn <- paste0("gymnasieantagning_", matt_info$fil, if (konsuppdelat) "_kon" else "", "_tidsserie_", namn_del, ".png")
+      filnamn <- paste0("gymnasieantagning_", matt_info$fil, if (konsuppdelat) "_kon" else "", if (niva == "inriktning") "_inriktning" else "", "_tidsserie_", namn_del, ".png")
       titel_del <- if (is.null(prog)) "alla program" else prog
 
       gg_obj <- rddiagram::SkapaLinjeDiagram(
@@ -191,7 +212,7 @@ diag_gymnasieantagna_antal <- function(matt = c("antagna", "forstahandssokande",
 
 # Råtabellen -> en rad per år, program (eller inriktning) och ev. kön, med kolumnen `varde`.
 # Egen funktion så att den kan testas utan databas.
-intern_gymnasieantagna_bearbeta <- function(rad, matt_info, konsuppdelat, niva, kommun_urval) {
+intern_gymnasieantagna_bearbeta <- function(rad, matt_info, konsuppdelat, niva, kommun_urval, exkludera_introduktion = FALSE) {
   # Gy25 förde in Anpassad gymnasieskola i samma tabell - en annan skolform som inte ska blandas in
   # (samma filter som i utbildningsappen).
   if ("skolform" %in% names(rad)) rad <- dplyr::filter(rad, is.na(skolform) | skolform != "Anpassad gymnasieskola")
@@ -200,17 +221,18 @@ intern_gymnasieantagna_bearbeta <- function(rad, matt_info, konsuppdelat, niva, 
   if (!is.null(kommun_urval)) rad <- dplyr::filter(rad, kommkod %in% !!kommun_urval | kommun %in% !!kommun_urval)
 
   programkol <- if (niva == "program") "program" else "program_inriktning"
-  rad <- dplyr::mutate(rad, ar = as.integer(ar), program = .data[[programkol]])
+  rad <- dplyr::mutate(rad, ar = as.integer(ar), overordnat = program, program = .data[[programkol]])
   rad <- dplyr::filter(rad, !is.na(program))
+  if (exkludera_introduktion) rad <- dplyr::filter(rad, !grepl("^Introduktionsprogram", overordnat))
 
   if (konsuppdelat) {
     df <- tidyr::pivot_longer(
-      dplyr::select(rad, ar, program, Kvinnor = dplyr::all_of(matt_info$kv), Män = dplyr::all_of(matt_info$man)),
+      dplyr::select(rad, ar, program, overordnat, Kvinnor = dplyr::all_of(matt_info$kv), Män = dplyr::all_of(matt_info$man)),
       c(Kvinnor, Män), names_to = "Kon", values_to = "varde")
-    df <- dplyr::group_by(df, ar, program, Kon)
+    df <- dplyr::group_by(df, ar, program, overordnat, Kon)
   } else {
-    df <- dplyr::transmute(rad, ar, program, varde = .data[[matt_info$tot]])
-    df <- dplyr::group_by(df, ar, program)
+    df <- dplyr::transmute(rad, ar, program, overordnat, varde = .data[[matt_info$tot]])
+    df <- dplyr::group_by(df, ar, program, overordnat)
   }
   dplyr::summarise(df, varde = sum(varde, na.rm = TRUE), .groups = "drop")
 }
