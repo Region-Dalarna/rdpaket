@@ -34,7 +34,7 @@ diag_sjalvskattad_halsa_kon_lan_kommun_fohm(
 \item{tid_koder}{\code{"9999"} = senaste år, \code{"*"} = alla perioder.}
 
 \item{diagramtyp}{\code{"stapel"} (standard) eller \code{"linje"}. Linjediagram gäller när flera
-perioder visas (\code{tid_koder}); med en period ritas alltid staplar.} = senaste år.}
+perioder visas (\code{tid_koder}); med en period ritas alltid staplar.}
 
 \item{region_sort}{TRUE så sorteras regionerna enligt ordningen i \code{region_vekt}.}
 
